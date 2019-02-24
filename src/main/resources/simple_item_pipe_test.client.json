@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "alexiil.mc.mod.pipes.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "BlockModelRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

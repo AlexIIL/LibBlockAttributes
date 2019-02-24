@@ -1,0 +1,18 @@
+{
+  "id": "simple_item_pipe_test",
+  "name": "SimpleItemPipeTest",
+  "description": "This is an example description! Tell everyone what your mod is about!",
+  "version": "1.0.0",
+  "side": "universal",
+  "initializers": [
+    "alexiil.mc.mod.pipes.SimplePipes",
+    "alexiil.mc.mod.pipes.SimplePipesClient"
+  ],
+  "requires": {
+    "fabric": "*"
+  },
+  "mixins": {
+    "client": "simple_item_pipe_test.client.json",
+    "common": "simple_item_pipe_test.common.json"
+  }
+}
