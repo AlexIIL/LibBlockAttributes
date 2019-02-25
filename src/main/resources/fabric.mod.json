@@ -1,7 +1,7 @@
 {
   "id": "simple_item_pipe_test",
   "name": "SimpleItemPipeTest",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "A simple pipes mod for testing Lib Block Attributes implementations",
   "version": "1.0.0",
   "side": "universal",
   "initializers": [

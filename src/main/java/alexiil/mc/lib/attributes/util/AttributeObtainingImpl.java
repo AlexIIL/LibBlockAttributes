@@ -8,6 +8,7 @@ import javax.annotation.Nonnull;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
+import net.minecraft.block.HopperBlock;
 import net.minecraft.block.InventoryProvider;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.ChestBlockEntity;
@@ -184,7 +185,9 @@ public class AttributeObtainingImpl {
 
         } else
         // Vanilla wrappers
-        if (block instanceof InventoryProvider) {
+        if (block instanceof HopperBlock && state.get(HopperBlock.FACING) == direction) {
+            // Explicitly don't add an insertable
+        } else if (block instanceof InventoryProvider) {
             InventoryProvider provider = (InventoryProvider) block;
             SidedInventory inventory = provider.getInventory(state, world, pos);
             if (inventory != null) {
@@ -248,7 +251,9 @@ public class AttributeObtainingImpl {
 
         } else
         // Vanilla wrappers
-        if (block instanceof InventoryProvider) {
+        if (block instanceof HopperBlock && state.get(HopperBlock.FACING) == direction) {
+            list.add(EmptyItemExtractable.SUPPLIER);
+        } else if (block instanceof InventoryProvider) {
             InventoryProvider provider = (InventoryProvider) block;
             SidedInventory inventory = provider.getInventory(state, world, pos);
             if (inventory != null) {
