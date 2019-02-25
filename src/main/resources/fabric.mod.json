@@ -1,18 +1,16 @@
 {
-  "id": "simple_item_pipe_test",
-  "name": "SimpleItemPipeTest",
-  "description": "A simple pipes mod for testing Lib Block Attributes implementations",
-  "version": "1.0.0",
+  "id": "libblockattributes",
+  "name": "LibBlockAttributes",
+  "description": "Various definitions for item inventory access for blocks.",
+  "version": "$version",
   "side": "universal",
   "initializers": [
-    "alexiil.mc.mod.pipes.SimplePipes",
-    "alexiil.mc.mod.pipes.SimplePipesClient"
   ],
   "requires": {
     "fabric": "*"
   },
   "mixins": {
-    "client": "simple_item_pipe_test.client.json",
-    "common": "simple_item_pipe_test.common.json"
+    "client": "libblockattributes.client.json",
+    "common": "libblockattributes.common.json"
   }
 }
