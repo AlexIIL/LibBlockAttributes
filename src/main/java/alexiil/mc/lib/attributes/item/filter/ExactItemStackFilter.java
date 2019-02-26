@@ -4,8 +4,8 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
 
-/** An {@link IStackFilter} that only matches on a single {@link ItemStack}. */
-public final class ExactItemStackFilter implements IStackFilter {
+/** An {@link IItemFilter} that only matches on a single {@link ItemStack}. */
+public final class ExactItemStackFilter implements IItemFilter {
 
     public final ItemStack stack;
 

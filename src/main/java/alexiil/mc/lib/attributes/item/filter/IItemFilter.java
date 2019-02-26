@@ -4,21 +4,22 @@ import java.util.function.Predicate;
 
 import net.minecraft.item.ItemStack;
 
+/** A general {@link Predicate} interface for {@link ItemStack}s. */
 @FunctionalInterface
-public interface IStackFilter extends Predicate<ItemStack> {
+public interface IItemFilter extends Predicate<ItemStack> {
 
-    /** An {@link IStackFilter} that matches any {@link ItemStack}. */
-    public static final IStackFilter ANY_STACK = stack -> {
+    /** An {@link IItemFilter} that matches any {@link ItemStack}. */
+    public static final IItemFilter ANY_STACK = stack -> {
         if (stack.isEmpty()) {
-            throw new IllegalArgumentException("You should never test an IStackFilter with an empty stack!");
+            throw new IllegalArgumentException("You should never test an IItemFilter with an empty stack!");
         }
         return true;
     };
 
-    /** An {@link IStackFilter} that matches absolutely nothing. There's no reason to use this(?) */
-    public static final IStackFilter NOTHING = stack -> {
+    /** An {@link IItemFilter} that matches absolutely nothing. There's no reason to use this(?) */
+    public static final IItemFilter NOTHING = stack -> {
         if (stack.isEmpty()) {
-            throw new IllegalArgumentException("You should never test an IStackFilter with an empty stack!");
+            throw new IllegalArgumentException("You should never test an IItemFilter with an empty stack!");
         }
         return false;
     };

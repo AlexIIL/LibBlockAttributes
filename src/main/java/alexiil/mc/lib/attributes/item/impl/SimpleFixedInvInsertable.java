@@ -99,7 +99,7 @@ public final class SimpleFixedInvInsertable implements IItemInsertable {
                     inSlot.addAmount(addable);
                 }
                 if (inv.setInvStack(s, inSlot, simulation)) {
-                    stack = stack.split(addable);
+                    stack.subtractAmount(addable);
                     if (stack.isEmpty()) {
                         return ItemStack.EMPTY;
                     }

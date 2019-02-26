@@ -6,7 +6,7 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
 import alexiil.mc.lib.attributes.item.IInvSlotChangeListener;
-import alexiil.mc.lib.attributes.item.filter.IStackFilter;
+import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
 /** An {@link IFixedItemInvView} that delegates to a list of them instead of storing items directly. */
 public class CombinedFixedItemInvView<InvType extends IFixedItemInvView> implements IFixedItemInvView {
@@ -85,7 +85,7 @@ public class CombinedFixedItemInvView<InvType extends IFixedItemInvView> impleme
     }
 
     @Override
-    public IStackFilter getFilterForSlot(int slot) {
+    public IItemFilter getFilterForSlot(int slot) {
         return getInv(slot).getFilterForSlot(getSubSlot(slot));
     }
 

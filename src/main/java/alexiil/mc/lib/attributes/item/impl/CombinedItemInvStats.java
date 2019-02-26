@@ -7,7 +7,7 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.item.IItemInvStats;
 import alexiil.mc.lib.attributes.item.ItemStackCollections;
-import alexiil.mc.lib.attributes.item.filter.IStackFilter;
+import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
 public class CombinedItemInvStats implements IItemInvStats {
 
@@ -18,7 +18,7 @@ public class CombinedItemInvStats implements IItemInvStats {
     }
 
     @Override
-    public ItemInvStatistic getStatistics(IStackFilter filter) {
+    public ItemInvStatistic getStatistics(IItemFilter filter) {
         int amount = 0;
         int spaceAddable = 0;
         int spaceTotal = 0;

@@ -5,7 +5,7 @@ import java.util.Set;
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.CombinableAttribute;
-import alexiil.mc.lib.attributes.item.filter.IStackFilter;
+import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 import alexiil.mc.lib.attributes.item.impl.CombinedItemInvStats;
 import alexiil.mc.lib.attributes.item.impl.EmptyItemInvStats;
 
@@ -18,10 +18,10 @@ public interface IItemInvStats {
     public static final CombinableAttribute<IItemInvStats> ATTRIBUTE_STATS =
         new CombinableAttribute<>(IItemInvStats.class, EmptyItemInvStats.INSTANCE, CombinedItemInvStats::new);
 
-    ItemInvStatistic getStatistics(IStackFilter filter);
+    ItemInvStatistic getStatistics(IItemFilter filter);
 
     /** @return A count of all the {@link ItemStack}'s that match the given filter. */
-    default int getAmount(IStackFilter filter) {
+    default int getAmount(IItemFilter filter) {
         return getStatistics(filter).amount;
     }
 
@@ -30,10 +30,10 @@ public interface IItemInvStats {
      *         won't work correctly! */
     Set<ItemStack> getStoredStacks();
 
-    /** Statistics associated with a single {@link IStackFilter} in a given inventory. */
+    /** Statistics associated with a single {@link IItemFilter} in a given inventory. */
     public static final class ItemInvStatistic {
 
-        public final IStackFilter filter;
+        public final IItemFilter filter;
 
         /** The total amount of the given filter. */
         public final int amount;
@@ -46,7 +46,7 @@ public interface IItemInvStats {
          * isn't specific enough to properly calculate this value. */
         public final int spaceTotal;
 
-        public ItemInvStatistic(IStackFilter filter, int amount, int spaceAddable, int spaceTotal) {
+        public ItemInvStatistic(IItemFilter filter, int amount, int spaceAddable, int spaceTotal) {
             this.filter = filter;
             this.amount = amount;
             this.spaceAddable = spaceAddable;

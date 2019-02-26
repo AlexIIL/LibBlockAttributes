@@ -26,16 +26,18 @@ import alexiil.mc.lib.attributes.item.IFixedItemInv;
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
 import alexiil.mc.lib.attributes.item.IItemExtractable;
 import alexiil.mc.lib.attributes.item.IItemInsertable;
+import alexiil.mc.lib.attributes.item.IItemInvStats;
 import alexiil.mc.lib.attributes.item.ItemInvUtil;
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.EmptyItemExtractable;
+import alexiil.mc.lib.attributes.item.impl.EmptyItemInvStats;
 import alexiil.mc.lib.attributes.item.impl.FixedInventoryVanillaWrapper;
 import alexiil.mc.lib.attributes.item.impl.FixedInventoryViewVanillaWrapper;
 import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
 
 /** Various plumbing methods for {@link ItemInvUtil} amongst others. it's generally recommended that you don't use this
  * class directly, and instead rely on the many other abstractions. */
-public class AttributeObtainingImpl {
+/* module-private */ public class AttributeObtainingImpl {
 
     // #######################
     // IFixedItemInvView
@@ -150,6 +152,65 @@ public class AttributeObtainingImpl {
         ItemInvViewGetterHooks.addItemInventories(world, pos, list);
 
         return IFixedItemInv.ATTRIBUTE_FIXED_ITEM_INV.combine(list);
+    }
+
+    // #######################
+    // IItemInvStats
+    // #######################
+    // Entry points for ItemInvUtil,
+    // caches (TODO) e t c
+    // #######################
+
+    public static IItemInvStats getItemInventoryStats(World world, BlockPos pos) {
+
+        // As this is basically the same as "getFixedInventoryView" this is pretty much just a copy-paste
+        // and as such every change to that should be copied into here
+
+        List<IItemInvStats> list = new ArrayList<>();
+        BlockState state = world.getBlockState(pos);
+        Block block = state.getBlock();
+
+        // Normal
+        if (block instanceof IAttributeBlock) {
+            IAttributeBlock attributeBlock = (IAttributeBlock) block;
+            attributeBlock.addAllAttributes(world, pos, state, IItemInvStats.ATTRIBUTE_STATS, list);
+        } else if (block instanceof IDelegatingAttributeBlock) {
+
+            for (IAttributeProvider provider : ((IDelegatingAttributeBlock) block).getAttributeProviders(world, pos,
+                state)) {
+                IItemInvStats stats = provider.getAttribute(IItemInvStats.ATTRIBUTE_STATS);
+                if (stats != null && stats != EmptyItemInvStats.INSTANCE) {
+                    list.add(stats);
+                }
+            }
+
+        } else
+        // Vanilla wrappers
+        if (block instanceof InventoryProvider) {
+            InventoryProvider provider = (InventoryProvider) block;
+            SidedInventory inventory = provider.getInventory(state, world, pos);
+            if (inventory != null) {
+                list.add(new FixedInventoryVanillaWrapper(inventory).getStatistics());
+            }
+        } else if (block.hasBlockEntity()) {
+            BlockEntity be = world.getBlockEntity(pos);
+            if (be instanceof ChestBlockEntity) {
+                // Special case chests here, rather than through a mixin because it just simplifies everything
+
+                // method_17458: something like "get chest inventory"
+                Inventory chestInv = ChestBlock.method_17458(state, world, pos,
+                    /* Check if the top is blocked by a solid block or a cat */false);
+                if (chestInv != null) {
+                    list.add(new FixedInventoryVanillaWrapper(chestInv).getStatistics());
+                }
+            } else if (be instanceof Inventory) {
+                list.add(new FixedInventoryVanillaWrapper((Inventory) be).getStatistics());
+            }
+        }
+
+        ItemInvViewGetterHooks.addItemInvStats(world, pos, list);
+
+        return IItemInvStats.ATTRIBUTE_STATS.combine(list);
     }
 
     // #######################

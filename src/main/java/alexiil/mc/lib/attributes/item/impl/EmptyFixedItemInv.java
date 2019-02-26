@@ -9,7 +9,7 @@ import alexiil.mc.lib.attributes.item.IInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.IItemExtractable;
 import alexiil.mc.lib.attributes.item.IItemInsertable;
 import alexiil.mc.lib.attributes.item.IItemInvStats;
-import alexiil.mc.lib.attributes.item.filter.IStackFilter;
+import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
 /** An {@link IFixedItemInv} with no slots. Because this inventory is unmodifiable this also doubles as the empty
  * implementation for {@link IFixedItemInvView}. */
@@ -36,7 +36,7 @@ public enum EmptyFixedItemInv implements IFixedItemInv {
     }
 
     @Override
-    public IStackFilter getFilterForSlot(int slot) {
+    public IItemFilter getFilterForSlot(int slot) {
         throw throwInvalidSlotException();
     }
 

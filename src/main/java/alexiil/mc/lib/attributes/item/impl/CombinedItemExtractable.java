@@ -8,7 +8,7 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.IItemExtractable;
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
 import alexiil.mc.lib.attributes.item.filter.ExactItemStackFilter;
-import alexiil.mc.lib.attributes.item.filter.IStackFilter;
+import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
 public final class CombinedItemExtractable implements IItemExtractable {
 
@@ -19,7 +19,7 @@ public final class CombinedItemExtractable implements IItemExtractable {
     }
 
     @Override
-    public ItemStack attemptExtraction(IStackFilter filter, int maxAmount, Simulation simulation) {
+    public ItemStack attemptExtraction(IItemFilter filter, int maxAmount, Simulation simulation) {
         if (maxAmount < 0) {
             throw new IllegalArgumentException("maxCount cannot be negative! (was " + maxAmount + ")");
         }

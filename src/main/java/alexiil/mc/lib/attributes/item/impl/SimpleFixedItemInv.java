@@ -11,7 +11,7 @@ import alexiil.mc.lib.attributes.AttributeDebugging;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.IFixedItemInv;
 import alexiil.mc.lib.attributes.item.IInvSlotChangeListener;
-import alexiil.mc.lib.attributes.item.filter.IStackFilter;
+import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet;
 
@@ -25,6 +25,8 @@ import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet;
  * (like a chest). */
 public class SimpleFixedItemInv implements IFixedItemInv {
 
+    // TODO: NBT serialisation and a test mod with chests!
+
     private static final IInvSlotChangeListener[] NO_LISTENERS = new IInvSlotChangeListener[0];
 
     protected final DefaultedList<ItemStack> slots;
@@ -32,6 +34,7 @@ public class SimpleFixedItemInv implements IFixedItemInv {
     private final Set<IInvSlotChangeListener> listeners =
         new ObjectLinkedOpenCustomHashSet<>(SystemUtil.identityHashStrategy());
 
+    // Should this use WeakReference instead of storing them directly?
     private IInvSlotChangeListener[] bakedListeners = NO_LISTENERS;
 
     public SimpleFixedItemInv(int invSize) {
@@ -54,7 +57,7 @@ public class SimpleFixedItemInv implements IFixedItemInv {
     }
 
     @Override
-    public IStackFilter getFilterForSlot(int slot) {
+    public IItemFilter getFilterForSlot(int slot) {
         if (AttributeDebugging.DEBUG_CHECK_EVERYTHING) {
             Class<?> cls = getClass();
             if (cls != SimpleFixedItemInv.class) {
@@ -72,7 +75,7 @@ public class SimpleFixedItemInv implements IFixedItemInv {
                 }
             }
         }
-        return IStackFilter.ANY_STACK;
+        return IItemFilter.ANY_STACK;
     }
 
     @Override

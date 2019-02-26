@@ -6,7 +6,7 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.IFixedItemInv;
 import alexiil.mc.lib.attributes.item.IItemExtractable;
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
-import alexiil.mc.lib.attributes.item.filter.IStackFilter;
+import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
 public final class SimpleFixedInvExtractable implements IItemExtractable {
 
@@ -21,7 +21,7 @@ public final class SimpleFixedInvExtractable implements IItemExtractable {
     }
 
     @Override
-    public ItemStack attemptExtraction(IStackFilter filter, int maxCount, Simulation simulation) {
+    public ItemStack attemptExtraction(IItemFilter filter, int maxCount, Simulation simulation) {
 
         ItemStack stack = ItemStack.EMPTY;
         if (slots == null) {

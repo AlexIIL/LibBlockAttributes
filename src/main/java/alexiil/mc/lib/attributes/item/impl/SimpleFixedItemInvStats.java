@@ -8,8 +8,8 @@ import alexiil.mc.lib.attributes.item.IFixedItemInvView;
 import alexiil.mc.lib.attributes.item.IItemInvStats;
 import alexiil.mc.lib.attributes.item.ItemStackCollections;
 import alexiil.mc.lib.attributes.item.filter.AggregateStackFilter;
-import alexiil.mc.lib.attributes.item.filter.IStackFilter;
-import alexiil.mc.lib.attributes.item.filter.StackFilterUtil;
+import alexiil.mc.lib.attributes.item.filter.IItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ItemStackFilterUtil;
 
 public final class SimpleFixedItemInvStats implements IItemInvStats {
 
@@ -20,7 +20,7 @@ public final class SimpleFixedItemInvStats implements IItemInvStats {
     }
 
     @Override
-    public ItemInvStatistic getStatistics(IStackFilter filter) {
+    public ItemInvStatistic getStatistics(IItemFilter filter) {
         int amount = 0;
         int space = 0;
         int totalSpace = 0;
@@ -35,8 +35,8 @@ public final class SimpleFixedItemInvStats implements IItemInvStats {
                 }
                 continue;
             }
-            IStackFilter realFilter = AggregateStackFilter.and(filter, inv.getFilterForSlot(s));
-            int max = StackFilterUtil.findMaximumStackAmount(realFilter);
+            IItemFilter realFilter = AggregateStackFilter.and(filter, inv.getFilterForSlot(s));
+            int max = ItemStackFilterUtil.findMaximumStackAmount(realFilter);
             max = Math.min(max, inv.getMaxAmount(s, stack));
             if (max < 0) {
                 // Nothing we can do

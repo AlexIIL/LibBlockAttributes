@@ -9,6 +9,7 @@ import alexiil.mc.lib.attributes.item.IFixedItemInv;
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
 import alexiil.mc.lib.attributes.item.IItemExtractable;
 import alexiil.mc.lib.attributes.item.IItemInsertable;
+import alexiil.mc.lib.attributes.item.IItemInvStats;
 
 public class ItemInvViewGetterHooks {
 
@@ -20,6 +21,10 @@ public class ItemInvViewGetterHooks {
 
     }
 
+    public static void addItemInvStats(World world, BlockPos pos, List<IItemInvStats> list) {
+
+    }
+
     public static void addItemInsertables(World world, BlockPos pos, List<IItemInsertable> list) {
 
     }
@@ -27,4 +32,5 @@ public class ItemInvViewGetterHooks {
     public static void addItemExtractables(World world, BlockPos pos, List<IItemExtractable> list) {
 
     }
+
 }

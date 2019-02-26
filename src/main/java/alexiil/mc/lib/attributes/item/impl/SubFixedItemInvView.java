@@ -4,7 +4,7 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
 import alexiil.mc.lib.attributes.item.IInvSlotChangeListener;
-import alexiil.mc.lib.attributes.item.filter.IStackFilter;
+import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
 /** A sub-view of an existing {@link IFixedItemInvView}. */
 public class SubFixedItemInvView<InvType extends IFixedItemInvView> implements IFixedItemInvView {
@@ -51,7 +51,7 @@ public class SubFixedItemInvView<InvType extends IFixedItemInvView> implements I
     }
 
     @Override
-    public IStackFilter getFilterForSlot(int slot) {
+    public IItemFilter getFilterForSlot(int slot) {
         return inv.getFilterForSlot(getInternalSlot(slot));
     }
 

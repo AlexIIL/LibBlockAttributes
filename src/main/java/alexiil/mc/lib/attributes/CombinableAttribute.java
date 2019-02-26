@@ -5,6 +5,7 @@ import java.util.List;
 public class CombinableAttribute<T> extends Attribute<T> {
 
     /** The instance to use when combining an empty list in {@link #combine(List)}. */
+    // Is this a good idea? Or should this always just be "null"?
     private final T nullInstance;
     private final IAttributeCombiner<T> combiner;
 

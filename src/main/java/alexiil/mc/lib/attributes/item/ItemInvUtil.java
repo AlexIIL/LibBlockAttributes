@@ -9,8 +9,9 @@ import net.minecraft.world.World;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.filter.AggregateStackFilter;
-import alexiil.mc.lib.attributes.item.filter.IStackFilter;
+import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv;
+import alexiil.mc.lib.attributes.item.impl.EmptyItemInvStats;
 import alexiil.mc.lib.attributes.util.AttributeObtainingImpl;
 
 /** Various hooks and methods for dealing with obtaining {@link IFixedItemInv}, {@link IFixedItemInvView},
@@ -47,6 +48,15 @@ public enum ItemInvUtil {
 
     /** @param world
      * @param pos
+     * @return A combined version of all {@link IItemInvStats}'s available at the given location, or
+     *         {@link EmptyItemInvStats} if none were found. */
+    @Nonnull
+    public static IItemInvStats getItemInvStats(World world, BlockPos pos) {
+        return AttributeObtainingImpl.getItemInventoryStats(world, pos);
+    }
+
+    /** @param world
+     * @param pos
      * @return A combined version of all {@link IFixedItemInv}'s available at the given location, or
      *         {@link EmptyFixedItemInv} if none were found. */
     @Nonnull
@@ -75,18 +85,18 @@ public enum ItemInvUtil {
      * {@link IItemInsertable}.
      * 
      * @return The number of items moved.
-     * @see #move(IItemExtractable, IItemInsertable, IStackFilter, int) */
+     * @see #move(IItemExtractable, IItemInsertable, IItemFilter, int) */
     public static int move(IItemExtractable from, IItemInsertable to, int maximum) {
         return move(from, to, null, maximum);
     }
 
     /** Attempts to move up to the given maximum number of items from the {@link IItemExtractable} to the
-     * {@link IItemInsertable}, provided they match the given {@link IStackFilter}.
+     * {@link IItemInsertable}, provided they match the given {@link IItemFilter}.
      * 
      * @return The number of items moved. */
-    public static int move(IItemExtractable from, IItemInsertable to, IStackFilter filter, int maximum) {
-        IStackFilter insertionFilter = to.getInsertionFilter();
-        if (filter != null && filter != IStackFilter.ANY_STACK) {
+    public static int move(IItemExtractable from, IItemInsertable to, IItemFilter filter, int maximum) {
+        IItemFilter insertionFilter = to.getInsertionFilter();
+        if (filter != null && filter != IItemFilter.ANY_STACK) {
             insertionFilter = AggregateStackFilter.and(insertionFilter, filter);
         }
 

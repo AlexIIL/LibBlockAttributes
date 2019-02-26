@@ -10,13 +10,13 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.AggregateFilterType;
 
-/** An {@link IStackFilter} over a predefined array of {@link IStackFilter}'s. You can either iterate over this object
+/** An {@link IItemFilter} over a predefined array of {@link IItemFilter}'s. You can either iterate over this object
  * directly or use {@link #getFilterCount()} and {@link #getFilter(int)} to read every filter individually. */
-public final class AggregateStackFilter implements IStackFilter, Iterable<IStackFilter> {
+public final class AggregateStackFilter implements IItemFilter, Iterable<IItemFilter> {
     public final AggregateFilterType type;
-    private final IStackFilter[] filters;
+    private final IItemFilter[] filters;
 
-    public AggregateStackFilter(AggregateFilterType type, IStackFilter... filters) {
+    public AggregateStackFilter(AggregateFilterType type, IItemFilter... filters) {
         Preconditions.checkArgument(filters.length < 2,
             "There's no reason to construct an aggregate stack filter that matches only a single filter!");
         this.type = type;
@@ -25,14 +25,14 @@ public final class AggregateStackFilter implements IStackFilter, Iterable<IStack
 
     /** @return An {@link AggregateStackFilter} that contains both of the given filters. This might not return a new
      *         object if either of the filters contains the other. */
-    public static IStackFilter and(IStackFilter filterA, IStackFilter filterB) {
+    public static IItemFilter and(IItemFilter filterA, IItemFilter filterB) {
         if (filterA == filterB) {
             return filterA;
         }
-        if (filterA == IStackFilter.ANY_STACK) {
+        if (filterA == IItemFilter.ANY_STACK) {
             return filterB;
         }
-        if (filterB == IStackFilter.ANY_STACK) {
+        if (filterB == IItemFilter.ANY_STACK) {
             return filterA;
         }
         if (filterA instanceof AggregateStackFilter) {
@@ -45,16 +45,16 @@ public final class AggregateStackFilter implements IStackFilter, Iterable<IStack
         return new AggregateStackFilter(AggregateFilterType.ALL, filterA, filterB);
     }
 
-    public static IStackFilter allOf(List<IStackFilter> filters) {
+    public static IItemFilter allOf(List<IItemFilter> filters) {
         switch (filters.size()) {
             case 0:
-                return IStackFilter.ANY_STACK;
+                return IItemFilter.ANY_STACK;
             case 1:
                 return filters.get(0);
             case 2:
                 return and(filters.get(0), filters.get(1));
             default: {
-                IStackFilter filter = filters.get(0);
+                IItemFilter filter = filters.get(0);
                 for (int i = 1; i < filters.size(); i++) {
                     filter = and(filter, filters.get(i));
                 }
@@ -66,14 +66,14 @@ public final class AggregateStackFilter implements IStackFilter, Iterable<IStack
     @Override
     public boolean matches(ItemStack stack) {
         if (type == AggregateFilterType.ALL) {
-            for (IStackFilter filter : filters) {
+            for (IItemFilter filter : filters) {
                 if (!filter.matches(stack)) {
                     return false;
                 }
             }
             return true;
         } else {
-            for (IStackFilter filter : filters) {
+            for (IItemFilter filter : filters) {
                 if (filter.matches(stack)) {
                     return true;
                 }
@@ -86,12 +86,12 @@ public final class AggregateStackFilter implements IStackFilter, Iterable<IStack
         return filters.length;
     }
 
-    public IStackFilter getFilter(int index) {
+    public IItemFilter getFilter(int index) {
         return filters[index];
     }
 
     @Override
-    public Iterator<IStackFilter> iterator() {
+    public Iterator<IItemFilter> iterator() {
         return Iterators.forArray(filters);
     }
 }

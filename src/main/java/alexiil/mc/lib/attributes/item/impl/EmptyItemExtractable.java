@@ -5,10 +5,10 @@ import net.minecraft.item.ItemStack;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.IItemExtractable;
 import alexiil.mc.lib.attributes.item.IItemInsertable;
-import alexiil.mc.lib.attributes.item.filter.IStackFilter;
+import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
 /** An {@link IItemExtractable} that never returns any items from
- * {@link #attemptExtraction(IStackFilter, int, Simulation)}. */
+ * {@link #attemptExtraction(IItemFilter, int, Simulation)}. */
 public enum EmptyItemExtractable implements IItemExtractable {
     /** An {@link IItemExtractable} that should be treated as equal to null in all circumstances - that is any checks
      * that depend on an object being extractable should be considered FALSE for this instance. */
@@ -23,7 +23,7 @@ public enum EmptyItemExtractable implements IItemExtractable {
     SUPPLIER;
 
     @Override
-    public ItemStack attemptExtraction(IStackFilter filter, int maxCount, Simulation simulation) {
+    public ItemStack attemptExtraction(IItemFilter filter, int maxCount, Simulation simulation) {
         return ItemStack.EMPTY;
     }
 }
