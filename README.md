@@ -35,3 +35,20 @@ In addition there are various utility classes:
 - ItemStackCollections (utility methods for creating Sets and Maps that compare ItemStack's correctly (as ItemStack itself doesn't override equals() or hashCode()).
 
 The "impl" subpackage is also for public use, and it contains a lot of concrete implementations for the core API's.
+
+### Maven
+
+Currently you can use this by adding this to your build.gradle:
+
+```
+repositories {
+    maven {
+        name = "BuildCraft"
+        url = "https://mod-buildcraft.com/maven"
+    }
+}
+
+dependencies {
+    modCompile "alexiil.mc:libblockattributes:0.1.1"
+}
+```
