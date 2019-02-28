@@ -27,6 +27,7 @@ import alexiil.mc.lib.attributes.item.IFixedItemInvView;
 import alexiil.mc.lib.attributes.item.IItemExtractable;
 import alexiil.mc.lib.attributes.item.IItemInsertable;
 import alexiil.mc.lib.attributes.item.IItemInvStats;
+import alexiil.mc.lib.attributes.item.ItemAttributes;
 import alexiil.mc.lib.attributes.item.ItemInvUtil;
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.EmptyItemExtractable;
@@ -56,12 +57,12 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
         // Normal
         if (block instanceof IAttributeBlock) {
             IAttributeBlock attributeBlock = (IAttributeBlock) block;
-            attributeBlock.addAllAttributes(world, pos, state, IFixedItemInvView.ATTRIBUTE_FIXED_INV_VIEW, list);
+            attributeBlock.addAllAttributes(world, pos, state, ItemAttributes.FIXED_INV_VIEW, list);
         } else if (block instanceof IDelegatingAttributeBlock) {
 
             for (IAttributeProvider provider : ((IDelegatingAttributeBlock) block).getAttributeProviders(world, pos,
                 state)) {
-                IFixedItemInvView inv = provider.getAttribute(IFixedItemInvView.ATTRIBUTE_FIXED_INV_VIEW);
+                IFixedItemInvView inv = provider.getAttribute(ItemAttributes.FIXED_INV_VIEW);
                 if (inv != null && inv != EmptyFixedItemInv.INSTANCE) {
                     list.add(inv);
                 }
@@ -93,7 +94,7 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
 
         ItemInvViewGetterHooks.addItemInvViews(world, pos, list);
 
-        return IFixedItemInvView.ATTRIBUTE_FIXED_INV_VIEW.combine(list);
+        return ItemAttributes.FIXED_INV_VIEW.combine(list);
     }
 
     // #######################
@@ -115,12 +116,12 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
         // Normal
         if (block instanceof IAttributeBlock) {
             IAttributeBlock attributeBlock = (IAttributeBlock) block;
-            attributeBlock.addAllAttributes(world, pos, state, IFixedItemInv.ATTRIBUTE_FIXED_ITEM_INV, list);
+            attributeBlock.addAllAttributes(world, pos, state, ItemAttributes.FIXED_INV, list);
         } else if (block instanceof IDelegatingAttributeBlock) {
 
             for (IAttributeProvider provider : ((IDelegatingAttributeBlock) block).getAttributeProviders(world, pos,
                 state)) {
-                IFixedItemInv inv = provider.getAttribute(IFixedItemInv.ATTRIBUTE_FIXED_ITEM_INV);
+                IFixedItemInv inv = provider.getAttribute(ItemAttributes.FIXED_INV);
                 if (inv != null && inv != EmptyFixedItemInv.INSTANCE) {
                     list.add(inv);
                 }
@@ -153,7 +154,7 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
 
         ItemInvViewGetterHooks.addItemInventories(world, pos, list);
 
-        return IFixedItemInv.ATTRIBUTE_FIXED_ITEM_INV.combine(list);
+        return ItemAttributes.FIXED_INV.combine(list);
     }
 
     // #######################
@@ -175,12 +176,12 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
         // Normal
         if (block instanceof IAttributeBlock) {
             IAttributeBlock attributeBlock = (IAttributeBlock) block;
-            attributeBlock.addAllAttributes(world, pos, state, IItemInvStats.ATTRIBUTE_STATS, list);
+            attributeBlock.addAllAttributes(world, pos, state, ItemAttributes.INV_STATS, list);
         } else if (block instanceof IDelegatingAttributeBlock) {
 
             for (IAttributeProvider provider : ((IDelegatingAttributeBlock) block).getAttributeProviders(world, pos,
                 state)) {
-                IItemInvStats stats = provider.getAttribute(IItemInvStats.ATTRIBUTE_STATS);
+                IItemInvStats stats = provider.getAttribute(ItemAttributes.INV_STATS);
                 if (stats != null && stats != EmptyItemInvStats.INSTANCE) {
                     list.add(stats);
                 }
@@ -213,7 +214,7 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
 
         ItemInvViewGetterHooks.addItemInvStats(world, pos, list);
 
-        return IItemInvStats.ATTRIBUTE_STATS.combine(list);
+        return ItemAttributes.INV_STATS.combine(list);
     }
 
     // #######################
@@ -235,21 +236,21 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
         // Normal
         if (block instanceof IAttributeBlock) {
             IAttributeBlock attributeBlock = (IAttributeBlock) block;
-            attributeBlock.addAllAttributesFromDirection(world, pos, state, IItemInsertable.ATTRIBUTE_INSERTABLE, list,
+            attributeBlock.addAllAttributesFromDirection(world, pos, state, ItemAttributes.INSERTABLE, list,
                 direction);
         } else if (block instanceof IDelegatingAttributeBlock) {
 
             for (IAttributeProvider provider : ((IDelegatingAttributeBlock) block).getAttributeProviders(world, pos,
                 state)) {
-                IItemInsertable inv = provider.getAttribute(IItemInsertable.ATTRIBUTE_INSERTABLE);
-                if (inv != null && inv != RejectingItemInsertable.NULL_INSERTABLE) {
+                IItemInsertable inv = provider.getAttribute(ItemAttributes.INSERTABLE);
+                if (inv != null && inv != RejectingItemInsertable.NULL) {
                     list.add(inv);
                 }
             }
 
         } else
         // Vanilla wrappers
-        if (block instanceof HopperBlock && state.get(HopperBlock.FACING) == direction) {
+        if (block instanceof HopperBlock && state.get(HopperBlock.FACING) == direction.getOpposite()) {
             // Explicitly don't add an insertable
         } else if (block instanceof InventoryProvider) {
             InventoryProvider provider = (InventoryProvider) block;
@@ -259,7 +260,7 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
                     FixedInventoryVanillaWrapper wrapper = new FixedInventoryVanillaWrapper(inventory);
                     list.add(wrapper.getInsertable(inventory.getInvAvailableSlots(direction.getOpposite())));
                 } else {
-                    list.add(RejectingItemInsertable.NULL_INSERTABLE);
+                    list.add(RejectingItemInsertable.NULL);
                 }
             }
         } else if (block.hasBlockEntity()) {
@@ -284,7 +285,7 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
 
         ItemInvViewGetterHooks.addItemInsertables(world, pos, list);
 
-        return IItemInsertable.ATTRIBUTE_INSERTABLE.combine(list);
+        return ItemAttributes.INSERTABLE.combine(list);
     }
     // #######################
     // IItemExtractable
@@ -305,14 +306,14 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
         // Normal
         if (block instanceof IAttributeBlock) {
             IAttributeBlock attributeBlock = (IAttributeBlock) block;
-            attributeBlock.addAllAttributesFromDirection(world, pos, state, IItemExtractable.ATTRIBUTE_EXTRACTABLE,
+            attributeBlock.addAllAttributesFromDirection(world, pos, state, ItemAttributes.EXTRACTABLE,
                 list, direction);
         } else if (block instanceof IDelegatingAttributeBlock) {
 
             for (IAttributeProvider provider : ((IDelegatingAttributeBlock) block).getAttributeProviders(world, pos,
                 state)) {
-                IItemExtractable inv = provider.getAttribute(IItemExtractable.ATTRIBUTE_EXTRACTABLE);
-                if (inv != null && inv != EmptyItemExtractable.NULL_EXTRACTABLE) {
+                IItemExtractable inv = provider.getAttribute(ItemAttributes.EXTRACTABLE);
+                if (inv != null && inv != EmptyItemExtractable.NULL) {
                     list.add(inv);
                 }
             }
@@ -329,7 +330,7 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
                     FixedInventoryVanillaWrapper wrapper = new FixedInventoryVanillaWrapper(inventory);
                     list.add(wrapper.getExtractable(inventory.getInvAvailableSlots(direction.getOpposite())));
                 } else {
-                    list.add(EmptyItemExtractable.NULL_EXTRACTABLE);
+                    list.add(EmptyItemExtractable.NULL);
                 }
             }
         } else if (block.hasBlockEntity()) {
@@ -354,7 +355,7 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
 
         ItemInvViewGetterHooks.addItemExtractables(world, pos, list);
 
-        return IItemExtractable.ATTRIBUTE_EXTRACTABLE.combine(list);
+        return ItemAttributes.EXTRACTABLE.combine(list);
     }
 
     // #######################

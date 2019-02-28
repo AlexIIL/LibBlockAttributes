@@ -1,0 +1,6 @@
+Breaking Changes:
+
+* Moved all of the item attributes out of their own interfaces and into ItemAttributes.
+    * This fixes a bug where every attribute's null instance was actually null, rather than a null object.
+* Renamed "EmptyItemExtractable.NULL_EXTRACTABLE" to "NULL".
+* Renamed "RejectingItemInsertable.NULL_INSERTABLE" to "NULL".

@@ -8,8 +8,7 @@ import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
 /** An {@link IItemInsertable} that always refuses to accept any inserted {@link ItemStack}. */
 public enum RejectingItemInsertable implements IItemInsertable {
-    NULL_INSERTABLE,
-
+    NULL,
     EXTRACTOR;
 
     @Override

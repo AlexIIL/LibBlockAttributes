@@ -68,26 +68,26 @@ public enum EmptyFixedItemInv implements IFixedItemInv {
 
     @Override
     public IItemInsertable getInsertable() {
-        return RejectingItemInsertable.NULL_INSERTABLE;
+        return RejectingItemInsertable.NULL;
     }
 
     @Override
     public IItemInsertable getInsertable(int[] slots) {
         if (slots.length == 0) {
-            return RejectingItemInsertable.NULL_INSERTABLE;
+            return RejectingItemInsertable.NULL;
         }
         throw throwInvalidSlotException();
     }
 
     @Override
     public IItemExtractable getExtractable() {
-        return EmptyItemExtractable.NULL_EXTRACTABLE;
+        return EmptyItemExtractable.NULL;
     }
 
     @Override
     public IItemExtractable getExtractable(int[] slots) {
         if (slots.length == 0) {
-            return EmptyItemExtractable.NULL_EXTRACTABLE;
+            return EmptyItemExtractable.NULL;
         }
         throw throwInvalidSlotException();
     }

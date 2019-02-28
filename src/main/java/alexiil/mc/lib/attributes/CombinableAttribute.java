@@ -37,6 +37,6 @@ public class CombinableAttribute<T> extends Attribute<T> {
 
     @FunctionalInterface
     public interface IAttributeCombiner<T> {
-        T combine(List<T> attributes);
+        T combine(List<? extends T> attributes);
     }
 }

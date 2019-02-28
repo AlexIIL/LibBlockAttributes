@@ -6,7 +6,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import alexiil.mc.lib.attributes.CombinableAttribute;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInvView;
@@ -22,6 +21,8 @@ import alexiil.mc.lib.attributes.item.impl.SubFixedItemInvView;
  * of an {@link IFixedItemInv} will reflect that change in {@link #getInvStack(int)}).</li>
  * </ul>
  * <p>
+ * The attribute is stored in {@link ItemAttributes#FIXED_INV_VIEW}.
+ * <p>
  * There are various classes of interest:
  * <ul>
  * <li>A modifiable version of this is {@link IFixedItemInv}.</li>
@@ -36,9 +37,6 @@ import alexiil.mc.lib.attributes.item.impl.SubFixedItemInvView;
  * </ul>
  */
 public interface IFixedItemInvView {
-
-    public static final CombinableAttribute<IFixedItemInvView> ATTRIBUTE_FIXED_INV_VIEW =
-        new CombinableAttribute<>(IFixedItemInvView.class, EmptyFixedItemInv.INSTANCE, CombinedFixedItemInvView::new);
 
     /** @return The number of slots in this inventory. */
     int getInvSize();
@@ -74,9 +72,9 @@ public interface IFixedItemInvView {
 
     /** @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getInvSize()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
-     * @return An {@link IItemFilter} for this slot. If this slot is filtered by an {@link IItemFilter} internally
-     *         then it is highly recommended that this be overridden to return *that* filter rather than a newly
-     *         constructed one.
+     * @return An {@link IItemFilter} for this slot. If this slot is filtered by an {@link IItemFilter} internally then
+     *         it is highly recommended that this be overridden to return *that* filter rather than a newly constructed
+     *         one.
      * @throws RuntimeException if the given slot wasn't a valid index. */
     default IItemFilter getFilterForSlot(int slot) {
         return stack -> isItemValidForSlot(slot, stack);

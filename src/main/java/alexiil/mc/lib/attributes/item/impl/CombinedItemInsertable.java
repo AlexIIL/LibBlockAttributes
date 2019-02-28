@@ -12,10 +12,10 @@ import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
 public final class CombinedItemInsertable implements IItemInsertable {
 
-    private final List<IItemInsertable> insertables;
+    private final List<? extends IItemInsertable> insertables;
     private final IItemFilter filter;
 
-    public CombinedItemInsertable(List<IItemInsertable> list) {
+    public CombinedItemInsertable(List<? extends IItemInsertable> list) {
         List<IItemFilter> filters = new ArrayList<>(list.size());
         for (int i = 0; i < list.size(); i++) {
             filters.add(list.get(i).getInsertionFilter());

@@ -12,9 +12,9 @@ import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
 public final class CombinedItemExtractable implements IItemExtractable {
 
-    private final List<IItemExtractable> list;
+    private final List<? extends IItemExtractable> list;
 
-    public CombinedItemExtractable(List<IItemExtractable> list) {
+    public CombinedItemExtractable(List<? extends IItemExtractable> list) {
         this.list = list;
     }
 

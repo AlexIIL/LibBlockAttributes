@@ -1,8 +1,9 @@
 package alexiil.mc.lib.attributes.item;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
-import alexiil.mc.lib.attributes.CombinableAttribute;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv;
@@ -15,11 +16,22 @@ import alexiil.mc.lib.attributes.item.impl.SubFixedItemInv;
 /** A changeable {@link IFixedItemInvView} that can have it's contents changed. Note that this does not imply that the
  * contents can be changed to anything the caller wishes them to be.
  * <p>
- * There are a few */
+ * The attribute is stored in {@link ItemAttributes#FIXED_INV}.
+ * <p>
+ * <p>
+ * There are various classes of interest:
+ * <ul>
+ * <li>The null instance is {@link EmptyFixedItemInv}</li>
+ * <li>A combined view of several sub-inventories is {@link CombinedFixedItemInv}.</li>
+ * <li>A partial view of a single inventory is {@link SubFixedItemInv}</li>
+ * </ul>
+ * <p>
+ * There are several ways of obtaining instances of this from blocks:
+ * <ul>
+ * <li>{@link ItemInvUtil#getFixedInv(World, BlockPos)}</li>
+ * </ul>
+ */
 public interface IFixedItemInv extends IFixedItemInvView {
-
-    public static final CombinableAttribute<IFixedItemInv> ATTRIBUTE_FIXED_ITEM_INV =
-        new CombinableAttribute<>(IFixedItemInv.class, EmptyFixedItemInv.INSTANCE, CombinedFixedItemInv::new);
 
     /** Sets the stack in the given slot to the given stack.
      * 
@@ -37,7 +49,7 @@ public interface IFixedItemInv extends IFixedItemInvView {
      *         slots. */
     default IItemInsertable getInsertable(int[] slots) {
         if (slots.length == 0) {
-            return RejectingItemInsertable.NULL_INSERTABLE;
+            return RejectingItemInsertable.NULL;
         }
         return new SimpleFixedInvInsertable(this, slots);
     }
@@ -52,7 +64,7 @@ public interface IFixedItemInv extends IFixedItemInvView {
      *         slots. */
     default IItemExtractable getExtractable(int[] slots) {
         if (slots.length == 0) {
-            return EmptyItemExtractable.NULL_EXTRACTABLE;
+            return EmptyItemExtractable.NULL;
         }
         return new SimpleFixedInvExtractable(this, slots);
     }

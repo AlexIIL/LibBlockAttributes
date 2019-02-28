@@ -4,19 +4,13 @@ import java.util.Set;
 
 import net.minecraft.item.ItemStack;
 
-import alexiil.mc.lib.attributes.CombinableAttribute;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
-import alexiil.mc.lib.attributes.item.impl.CombinedItemInvStats;
-import alexiil.mc.lib.attributes.item.impl.EmptyItemInvStats;
 
 import it.unimi.dsi.fastutil.Hash.Strategy;
 
 /** Provides general statistics for any permanent inventory. The inventory in question doesn't have to be an
  * {@link IFixedItemInvView}. */
 public interface IItemInvStats {
-
-    public static final CombinableAttribute<IItemInvStats> ATTRIBUTE_STATS =
-        new CombinableAttribute<>(IItemInvStats.class, EmptyItemInvStats.INSTANCE, CombinedItemInvStats::new);
 
     ItemInvStatistic getStatistics(IItemFilter filter);
 
