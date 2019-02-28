@@ -1,0 +1,8 @@
+Changes:
+
+* Added a marker interface IReadableItemFilter that extends IItemFilter.
+    * This is intended for general methods that operate on IItemFilter's.
+
+Bug Fixes:
+
+* Actually implement ItemStackFilterUtil.findMaximumStackAmount.

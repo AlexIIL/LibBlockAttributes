@@ -14,7 +14,7 @@ import alexiil.mc.lib.attributes.AggregateFilterType;
 
 /** An {@link IItemFilter} over a predefined array of {@link IItemFilter}'s. You can either iterate over this object
  * directly or use {@link #getFilterCount()} and {@link #getFilter(int)} to read every filter individually. */
-public final class AggregateStackFilter implements IItemFilter, Iterable<IItemFilter> {
+public final class AggregateStackFilter implements IReadableItemFilter, Iterable<IItemFilter> {
     public final AggregateFilterType type;
     private final IItemFilter[] filters;
 
