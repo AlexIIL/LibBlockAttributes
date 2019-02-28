@@ -20,14 +20,18 @@ public class ItemAttributes {
     public static final CombinableAttribute<IItemExtractable> EXTRACTABLE;
 
     static {
-        FIXED_INV_VIEW = create(IFixedItemInvView.class, EmptyFixedItemInv.INSTANCE, CombinedFixedItemInvView::new);
-        FIXED_INV = create(IFixedItemInv.class, EmptyFixedItemInv.INSTANCE, CombinedFixedItemInv::new);
-        INV_STATS = create(IItemInvStats.class, EmptyItemInvStats.INSTANCE, CombinedItemInvStats::new);
-        INSERTABLE = create(IItemInsertable.class, RejectingItemInsertable.NULL, CombinedItemInsertable::new);
-        EXTRACTABLE = create(IItemExtractable.class, EmptyItemExtractable.NULL, CombinedItemExtractable::new);
+        FIXED_INV_VIEW = c(IFixedItemInvView.class, EmptyFixedItemInv.INSTANCE, CombinedFixedItemInvView::new);
+        FIXED_INV = c(IFixedItemInv.class, EmptyFixedItemInv.INSTANCE, CombinedFixedItemInv::new);
+
+        // For some reason the java compiler can't work out what <T> should be for these three
+        // So instead we create a lambda, which somehow gives it enough space to work out what it is.
+        // (and yet eclipse had no problems with it :/ )
+        INV_STATS = c(IItemInvStats.class, EmptyItemInvStats.INSTANCE, list -> new CombinedItemInvStats(list));
+        INSERTABLE = c(IItemInsertable.class, RejectingItemInsertable.NULL, list -> new CombinedItemInsertable(list));
+        EXTRACTABLE = c(IItemExtractable.class, EmptyItemExtractable.NULL, list -> new CombinedItemExtractable(list));
     }
 
-    private static <T> CombinableAttribute<T> create(Class<T> clazz, T nullInstance,
+    private static <T> CombinableAttribute<T> c(Class<T> clazz, T nullInstance,
         CombinableAttribute.IAttributeCombiner<T> combiner) {
         return new CombinableAttribute<>(clazz, nullInstance, combiner);
     }
