@@ -6,6 +6,8 @@ import alexiil.mc.lib.attributes.CombinableAttribute;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv;
+import alexiil.mc.lib.attributes.item.impl.EmptyItemExtractable;
+import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
 import alexiil.mc.lib.attributes.item.impl.SimpleFixedInvExtractable;
 import alexiil.mc.lib.attributes.item.impl.SimpleFixedInvInsertable;
 import alexiil.mc.lib.attributes.item.impl.SubFixedItemInv;
@@ -34,6 +36,9 @@ public interface IFixedItemInv extends IFixedItemInvView {
     /** @return An {@link IItemInsertable} for this inventory that will attempt to insert into only the given array of
      *         slots. */
     default IItemInsertable getInsertable(int[] slots) {
+        if (slots.length == 0) {
+            return RejectingItemInsertable.NULL_INSERTABLE;
+        }
         return new SimpleFixedInvInsertable(this, slots);
     }
 
@@ -46,6 +51,9 @@ public interface IFixedItemInv extends IFixedItemInvView {
     /** @return An {@link IItemExtractable} for this inventory that will attempt to extract from only the given array of
      *         slots. */
     default IItemExtractable getExtractable(int[] slots) {
+        if (slots.length == 0) {
+            return EmptyItemExtractable.NULL_EXTRACTABLE;
+        }
         return new SimpleFixedInvExtractable(this, slots);
     }
 

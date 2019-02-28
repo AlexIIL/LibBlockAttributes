@@ -68,6 +68,7 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
             }
         } else
         // Vanilla wrappers
+        // The hopper and composter don't need anything special.
         if (block instanceof InventoryProvider) {
             InventoryProvider provider = (InventoryProvider) block;
             SidedInventory inventory = provider.getInventory(state, world, pos);
@@ -127,6 +128,7 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
 
         } else
         // Vanilla wrappers
+        // The hopper and composter don't need anything special.
         if (block instanceof InventoryProvider) {
             InventoryProvider provider = (InventoryProvider) block;
             SidedInventory inventory = provider.getInventory(state, world, pos);
@@ -186,6 +188,7 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
 
         } else
         // Vanilla wrappers
+        // The composter doesn't need any special support for inventories as it always has one.
         if (block instanceof InventoryProvider) {
             InventoryProvider provider = (InventoryProvider) block;
             SidedInventory inventory = provider.getInventory(state, world, pos);
@@ -252,8 +255,12 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
             InventoryProvider provider = (InventoryProvider) block;
             SidedInventory inventory = provider.getInventory(state, world, pos);
             if (inventory != null) {
-                FixedInventoryVanillaWrapper wrapper = new FixedInventoryVanillaWrapper(inventory);
-                list.add(wrapper.getInsertable(inventory.getInvAvailableSlots(direction.getOpposite())));
+                if (inventory.getInvSize() > 0) {
+                    FixedInventoryVanillaWrapper wrapper = new FixedInventoryVanillaWrapper(inventory);
+                    list.add(wrapper.getInsertable(inventory.getInvAvailableSlots(direction.getOpposite())));
+                } else {
+                    list.add(RejectingItemInsertable.NULL_INSERTABLE);
+                }
             }
         } else if (block.hasBlockEntity()) {
             BlockEntity be = world.getBlockEntity(pos);
@@ -318,8 +325,12 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
             InventoryProvider provider = (InventoryProvider) block;
             SidedInventory inventory = provider.getInventory(state, world, pos);
             if (inventory != null) {
-                FixedInventoryVanillaWrapper wrapper = new FixedInventoryVanillaWrapper(inventory);
-                list.add(wrapper.getExtractable(inventory.getInvAvailableSlots(direction.getOpposite())));
+                if (inventory.getInvSize() > 0) {
+                    FixedInventoryVanillaWrapper wrapper = new FixedInventoryVanillaWrapper(inventory);
+                    list.add(wrapper.getExtractable(inventory.getInvAvailableSlots(direction.getOpposite())));
+                } else {
+                    list.add(EmptyItemExtractable.NULL_EXTRACTABLE);
+                }
             }
         } else if (block.hasBlockEntity()) {
             BlockEntity be = world.getBlockEntity(pos);

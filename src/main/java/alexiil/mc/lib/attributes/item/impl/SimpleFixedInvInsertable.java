@@ -1,5 +1,8 @@
 package alexiil.mc.lib.attributes.item.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
@@ -7,6 +10,8 @@ import alexiil.mc.lib.attributes.item.IFixedItemInv;
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
 import alexiil.mc.lib.attributes.item.IItemInsertable;
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
+import alexiil.mc.lib.attributes.item.filter.AggregateStackFilter;
+import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
 import it.unimi.dsi.fastutil.ints.IntList;
 
@@ -24,6 +29,52 @@ public final class SimpleFixedInvInsertable implements IItemInsertable {
     public SimpleFixedInvInsertable(IFixedItemInv inv, int[] slots) {
         this.inv = inv;
         this.slots = slots;
+    }
+
+    @Override
+    public IItemFilter getInsertionFilter() {
+        if (slots == null) {
+            int invSize = inv.getInvSize();
+            switch (invSize) {
+                case 0: {
+                    // What?
+                    return IItemFilter.NOTHING;
+                }
+                case 1: {
+                    return inv.getFilterForSlot(0);
+                }
+                case 2: {
+                    return inv.getFilterForSlot(0).and(inv.getFilterForSlot(1));
+                }
+                default: {
+                    List<IItemFilter> filters = new ArrayList<>(invSize);
+                    for (int i = 0; i < invSize; i++) {
+                        filters.add(inv.getFilterForSlot(i));
+                    }
+                    return AggregateStackFilter.anyOf(filters);
+                }
+            }
+        } else {
+            switch (slots.length) {
+                case 0: {
+                    // What?
+                    return IItemFilter.NOTHING;
+                }
+                case 1: {
+                    return inv.getFilterForSlot(slots[0]);
+                }
+                case 2: {
+                    return inv.getFilterForSlot(slots[0]).and(inv.getFilterForSlot(slots[1]));
+                }
+                default: {
+                    List<IItemFilter> filters = new ArrayList<>(slots.length);
+                    for (int s : slots) {
+                        filters.add(inv.getFilterForSlot(s));
+                    }
+                    return AggregateStackFilter.anyOf(filters);
+                }
+            }
+        }
     }
 
     @Override

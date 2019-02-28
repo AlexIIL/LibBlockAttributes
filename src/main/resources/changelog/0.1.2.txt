@@ -1,0 +1,15 @@
+Breaking Changes:
+
+* Made IItemFilter no longer extend java.util.Predicate.
+
+Changes:
+
+* Improved SimpleFixedItemInvInsertable.getInsertionFilter to combine all of the filters from the wrapped inventory.
+* Added IItemFilter.negate(), IItemFilter.and(), and IItemFilter.or() as replacements for said methods in java.util.Predicate.
+* Added IItemFilter.asPredicate() as a replacement for extending it.
+* Added various methods to AggregateStackFilter for combining filters.
+* Made IFixedItemInv.getInsertable(int[] slots) and getExtractable(int[] slots) return the null instances for RejectingItemInsertable and EmptyItemExtractable when the given slot array is empty. 
+
+Bug Fixes:
+
+* Fixed ItemInvUtil providing invalid IItemInsertable and IItemExtractable for vanilla composter blocks.

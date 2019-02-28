@@ -1,7 +1,9 @@
 package alexiil.mc.lib.attributes.item.filter;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.RandomAccess;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
@@ -26,6 +28,16 @@ public final class AggregateStackFilter implements IItemFilter, Iterable<IItemFi
     /** @return An {@link AggregateStackFilter} that contains both of the given filters. This might not return a new
      *         object if either of the filters contains the other. */
     public static IItemFilter and(IItemFilter filterA, IItemFilter filterB) {
+        return combine(AggregateFilterType.ALL, filterA, filterB);
+    }
+
+    /** @return An {@link AggregateStackFilter} that contains both of the given filters. This might not return a new
+     *         object if either of the filters contains the other. */
+    public static IItemFilter or(IItemFilter filterA, IItemFilter filterB) {
+        return combine(AggregateFilterType.ANY, filterA, filterB);
+    }
+
+    public static IItemFilter combine(AggregateFilterType type, IItemFilter filterA, IItemFilter filterB) {
         if (filterA == filterB) {
             return filterA;
         }
@@ -42,21 +54,45 @@ public final class AggregateStackFilter implements IItemFilter, Iterable<IItemFi
 
         }
 
-        return new AggregateStackFilter(AggregateFilterType.ALL, filterA, filterB);
+        return new AggregateStackFilter(type, filterA, filterB);
+    }
+
+    public static IItemFilter allOf(IItemFilter... filters) {
+        return combine(AggregateFilterType.ALL, filters);
+    }
+
+    public static IItemFilter anyOf(IItemFilter... filters) {
+        return combine(AggregateFilterType.ANY, filters);
+    }
+
+    public static IItemFilter combine(AggregateFilterType type, IItemFilter... filters) {
+        return combine(type, Arrays.asList(filters));
     }
 
     public static IItemFilter allOf(List<IItemFilter> filters) {
+        return combine(AggregateFilterType.ALL, filters);
+    }
+
+    public static IItemFilter anyOf(List<IItemFilter> filters) {
+        return combine(AggregateFilterType.ANY, filters);
+    }
+
+    public static IItemFilter combine(AggregateFilterType type, List<IItemFilter> filters) {
+        if (!(filters instanceof RandomAccess)) {
+            filters = Arrays.asList(filters.toArray(new IItemFilter[0]));
+        }
         switch (filters.size()) {
             case 0:
                 return IItemFilter.ANY_STACK;
             case 1:
                 return filters.get(0);
             case 2:
-                return and(filters.get(0), filters.get(1));
+                // I'm assuming this might be faster than putting everything into a list?
+                return combine(type, filters.get(0), filters.get(1));
             default: {
                 IItemFilter filter = filters.get(0);
                 for (int i = 1; i < filters.size(); i++) {
-                    filter = and(filter, filters.get(i));
+                    filter = combine(type, filter, filters.get(i));
                 }
                 return filter;
             }
