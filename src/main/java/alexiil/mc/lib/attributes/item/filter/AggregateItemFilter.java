@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.RandomAccess;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 
 import net.minecraft.item.ItemStack;
@@ -19,8 +18,10 @@ public final class AggregateItemFilter implements IReadableItemFilter, Iterable<
     private final IItemFilter[] filters;
 
     public AggregateItemFilter(AggregateFilterType type, IItemFilter... filters) {
-        Preconditions.checkArgument(filters.length < 2,
-            "There's no reason to construct an aggregate stack filter that matches only a single filter!");
+        if (filters.length < 2) {
+            throw new IllegalArgumentException("There's no reason to construct an aggregate stack filter that matches "
+                + filters.length + " filters!");
+        }
         this.type = type;
         this.filters = filters;
     }
