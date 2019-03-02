@@ -1,0 +1,3 @@
+Bug Fixes:
+
+* Fixed a crash caused by CacheInfo always being null.
