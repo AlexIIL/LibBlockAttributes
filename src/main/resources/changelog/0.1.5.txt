@@ -1,0 +1,16 @@
+Breaking Changes:
+
+* Major refactor of how you create and access attribute instances.
+    * There's now 3 classes for attributes: Attribute, AttributeDefaulted, and AttributeCombinable
+    * All of the attribute instance getter methods have been moved into the base Attribute class
+    * These must be created through the static factory methods in "Attributes"
+* Moved IItemFilter.ANY_STACK and IItemFilter.NOTHING to a new class ConstantItemFilter.
+
+Changes:
+
+* Added a new class: SearchParameter for specifying how to search for attributes at a given block location
+    * SearchParamDirectional: used to search in a specific direction.
+    * SearchParamInVoxel: used to search for attributes but only in a single VoxelShape
+    * SearchParamDirectionalVoxel: A combined form of the above.
+        * This can also order the resultant instance list by the order that the search would have encountered them.
+* Improved the implementation of AggregateItemFilter.combine.

@@ -1,8 +1,6 @@
 package alexiil.mc.lib.attributes.item;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInv;
@@ -24,11 +22,6 @@ import alexiil.mc.lib.attributes.item.impl.SubFixedItemInv;
  * <li>The null instance is {@link EmptyFixedItemInv}</li>
  * <li>A combined view of several sub-inventories is {@link CombinedFixedItemInv}.</li>
  * <li>A partial view of a single inventory is {@link SubFixedItemInv}</li>
- * </ul>
- * <p>
- * There are several ways of obtaining instances of this from blocks:
- * <ul>
- * <li>{@link ItemInvUtil#getFixedInv(World, BlockPos)}</li>
  * </ul>
  */
 public interface IFixedItemInv extends IFixedItemInvView {

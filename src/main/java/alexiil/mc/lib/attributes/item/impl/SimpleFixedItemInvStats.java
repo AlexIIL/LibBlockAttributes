@@ -7,7 +7,7 @@ import net.minecraft.item.ItemStack;
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
 import alexiil.mc.lib.attributes.item.IItemInvStats;
 import alexiil.mc.lib.attributes.item.ItemStackCollections;
-import alexiil.mc.lib.attributes.item.filter.AggregateStackFilter;
+import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemStackFilterUtil;
 
@@ -35,7 +35,7 @@ public final class SimpleFixedItemInvStats implements IItemInvStats {
                 }
                 continue;
             }
-            IItemFilter realFilter = AggregateStackFilter.and(filter, inv.getFilterForSlot(s));
+            IItemFilter realFilter = AggregateItemFilter.and(filter, inv.getFilterForSlot(s));
             int max = ItemStackFilterUtil.findMaximumStackAmount(realFilter);
             max = Math.min(max, inv.getMaxAmount(s, stack));
             if (max < 0) {

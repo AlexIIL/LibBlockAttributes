@@ -8,22 +8,6 @@ import net.minecraft.item.ItemStack;
 @FunctionalInterface
 public interface IItemFilter {
 
-    /** An {@link IItemFilter} that matches any {@link ItemStack}. */
-    public static final IItemFilter ANY_STACK = stack -> {
-        if (stack.isEmpty()) {
-            throw new IllegalArgumentException("You should never test an IItemFilter with an empty stack!");
-        }
-        return true;
-    };
-
-    /** An {@link IItemFilter} that matches absolutely nothing. There's no reason to use this(?) */
-    public static final IItemFilter NOTHING = stack -> {
-        if (stack.isEmpty()) {
-            throw new IllegalArgumentException("You should never test an IItemFilter with an empty stack!");
-        }
-        return false;
-    };
-
     /** Checks to see if the given filter matches the given stack. Note that this must not care about
      * {@link ItemStack#getAmount()}.
      * 
@@ -35,11 +19,11 @@ public interface IItemFilter {
     }
 
     default IItemFilter and(IItemFilter other) {
-        return AggregateStackFilter.and(this, other);
+        return AggregateItemFilter.and(this, other);
     }
 
     default IItemFilter or(IItemFilter other) {
-        return AggregateStackFilter.or(this, other);
+        return AggregateItemFilter.or(this, other);
     }
 
     default Predicate<ItemStack> asPredicate() {

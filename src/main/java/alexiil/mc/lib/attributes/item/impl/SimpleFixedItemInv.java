@@ -7,10 +7,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.DefaultedList;
 import net.minecraft.util.SystemUtil;
 
-import alexiil.mc.lib.attributes.AttributeDebugging;
+import alexiil.mc.lib.attributes.AttributeUtil;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.IFixedItemInv;
 import alexiil.mc.lib.attributes.item.IInvSlotChangeListener;
+import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet;
@@ -58,7 +59,7 @@ public class SimpleFixedItemInv implements IFixedItemInv {
 
     @Override
     public IItemFilter getFilterForSlot(int slot) {
-        if (AttributeDebugging.DEBUG_CHECK_EVERYTHING) {
+        if (AttributeUtil.EXPENSIVE_DEBUG_CHECKS) {
             Class<?> cls = getClass();
             if (cls != SimpleFixedItemInv.class) {
                 try {
@@ -75,7 +76,7 @@ public class SimpleFixedItemInv implements IFixedItemInv {
                 }
             }
         }
-        return IItemFilter.ANY_STACK;
+        return ConstantItemFilter.ANYTHING;
     }
 
     @Override

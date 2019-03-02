@@ -1,84 +1,19 @@
 package alexiil.mc.lib.attributes.item;
 
-import javax.annotation.Nonnull;
-
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.item.filter.AggregateStackFilter;
+import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
-import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv;
-import alexiil.mc.lib.attributes.item.impl.EmptyItemInvStats;
-import alexiil.mc.lib.attributes.util.AttributeObtainingImpl;
 
-/** Various hooks and methods for dealing with obtaining {@link IFixedItemInv}, {@link IFixedItemInvView},
- * {@link IItemInsertable}, {@link IItemExtractable}, and {@link IItemInvStats}. */
+/** Various hooks and methods for dealing with pairs of {@link IFixedItemInv}, {@link IFixedItemInvView},
+ * {@link IItemInsertable}, {@link IItemExtractable}, and {@link IItemInvStats} instances. */
 public enum ItemInvUtil {
     ;
 
     // #######################
-    // Public instance getters
-    // #######################
-    // All of these just delegate to
-    // AttributeObtainingImpl to keep
-    // all of the various plumbing
-    // methods in one private place.
-    // #######################
-
-    /** @param world
-     * @param pos
-     * @return A combined version of all {@link IFixedItemInv}'s available at the given location, or
-     *         {@link EmptyFixedItemInv} if none were found. */
-    @Nonnull
-    public static IFixedItemInv getFixedInv(World world, BlockPos pos) {
-        return AttributeObtainingImpl.getFixedInventory(world, pos);
-    }
-
-    /** @param world
-     * @param pos
-     * @return A combined version of all {@link IFixedItemInv}'s available at the given location, or
-     *         {@link EmptyFixedItemInv} if none were found. */
-    @Nonnull
-    public static IFixedItemInvView getFixedInvView(World world, BlockPos pos) {
-        return AttributeObtainingImpl.getFixedInventoryView(world, pos);
-    }
-
-    /** @param world
-     * @param pos
-     * @return A combined version of all {@link IItemInvStats}'s available at the given location, or
-     *         {@link EmptyItemInvStats} if none were found. */
-    @Nonnull
-    public static IItemInvStats getItemInvStats(World world, BlockPos pos) {
-        return AttributeObtainingImpl.getItemInventoryStats(world, pos);
-    }
-
-    /** @param world
-     * @param pos
-     * @return A combined version of all {@link IFixedItemInv}'s available at the given location, or
-     *         {@link EmptyFixedItemInv} if none were found. */
-    @Nonnull
-    public static IItemInsertable getInsertable(World world, BlockPos pos, Direction from) {
-        return AttributeObtainingImpl.getInsertable(world, pos, from);
-    }
-
-    /** @param world
-     * @param pos
-     * @return A combined version of all {@link IFixedItemInv}'s available at the given location, or
-     *         {@link EmptyFixedItemInv} if none were found. */
-    @Nonnull
-    public static IItemExtractable getExtractable(World world, BlockPos pos, Direction from) {
-        return AttributeObtainingImpl.getExtractable(world, pos, from);
-    }
-
-    // #######################
     // Direct utility methods
-    // #######################
-    // Most of these also delegate
-    // to various internal classes
-    // to do all of the heavy lifting
     // #######################
 
     /** Attempts to move up to the given maximum number of items from the {@link IItemExtractable} to the
@@ -96,8 +31,8 @@ public enum ItemInvUtil {
      * @return The number of items moved. */
     public static int move(IItemExtractable from, IItemInsertable to, IItemFilter filter, int maximum) {
         IItemFilter insertionFilter = to.getInsertionFilter();
-        if (filter != null && filter != IItemFilter.ANY_STACK) {
-            insertionFilter = AggregateStackFilter.and(insertionFilter, filter);
+        if (filter != null && filter != ConstantItemFilter.ANYTHING) {
+            insertionFilter = AggregateItemFilter.and(insertionFilter, filter);
         }
 
         ItemStack extracted = from.attemptExtraction(insertionFilter, maximum, Simulation.SIMULATE);

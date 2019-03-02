@@ -53,7 +53,9 @@ public enum EmptyFixedItemInv implements IFixedItemInv {
     @Override
     public IListenerToken addListener(IInvSlotChangeListener listener) {
         // We don't need to keep track of the listener because this empty inventory never changes.
-        return () -> {};
+        return () -> {
+            // (And we don't need to do anything when the listener is removed)
+        };
     }
 
     @Override

@@ -1,22 +1,34 @@
 package alexiil.mc.lib.attributes;
 
+import javax.annotation.Nullable;
+
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.world.World;
+
 public class Attribute<T> {
     public final Class<T> clazz;
 
-    // Is there a good reason why this constructor is protected?
+    @Nullable
+    final IAttributeCustomAdder<T> customAdder;
 
     protected Attribute(Class<T> clazz) {
+        this(clazz, null);
+    }
+
+    protected Attribute(Class<T> clazz, IAttributeCustomAdder<T> customAdder) {
         this.clazz = clazz;
+        this.customAdder = customAdder;
     }
 
-    public static <T> Attribute<T> create(Class<T> clazz) {
-        return new Attribute<>(clazz);
-    }
-
+    /** Checks to see if the given object is an {@link Class#isInstance(Object)} of this attribute. */
     public final boolean isInstance(Object obj) {
         return clazz.isInstance(obj);
     }
 
+    /** {@link Class#cast(Object) Casts} The given object to type of this attribute. */
     public final T cast(Object obj) {
         return clazz.cast(obj);
     }
@@ -31,12 +43,38 @@ public class Attribute<T> {
         return System.identityHashCode(this);
     }
 
-    // I'm not sure if this is a good idea?
-    // Either way we would need "directional attributes" vs "don't care" attributes...
+    final void addAll(World world, BlockPos pos, AttributeList<T> list) {
+        BlockState state = world.getBlockState(pos);
+        Block block = state.getBlock();
 
-    // @Nullable
-    // public final List<T> get(World world, BlockPos pos) {
-    // // Perhaps if this wasn't final then all of the hooks could be in subclasses rather than AttributeObtainingImpl?
-    // return AttributeUtil.getAttribute(world, pos, this);
-    // }
+        if (block instanceof IAttributeBlock) {
+            IAttributeBlock attributeBlock = (IAttributeBlock) block;
+            attributeBlock.addAllAttributes(world, pos, state, list);
+        } else if (block instanceof IDelegatingAttributeBlock) {
+            for (IAttributeProvider provider : ((IDelegatingAttributeBlock) block).getAttributeProviders(world, pos,
+                state)) {
+                provider.addAllAttributes(list);
+            }
+        } else if (customAdder != null) {
+            customAdder.addAll(world, pos, state, list);
+        }
+    }
+
+    public final AttributeList<T> getAll(World world, BlockPos pos, SearchParameter searchParam) {
+        VoxelShape blockShape = world.getBlockState(pos).getOutlineShape(world, pos);
+        AttributeList<T> list = new AttributeList<>(this, searchParam, blockShape);
+        addAll(world, pos, list);
+        list.finishAdding();
+        return list;
+    }
+
+    @Nullable
+    public final T getFirstOrNull(World world, BlockPos pos, SearchParameter searchParam) {
+        AttributeList<T> list = getAll(world, pos, searchParam);
+        if (list.list.isEmpty()) {
+            return null;
+        } else {
+            return list.get(0);
+        }
+    }
 }

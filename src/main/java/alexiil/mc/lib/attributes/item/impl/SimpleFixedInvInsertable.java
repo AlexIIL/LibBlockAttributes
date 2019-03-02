@@ -10,10 +10,9 @@ import alexiil.mc.lib.attributes.item.IFixedItemInv;
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
 import alexiil.mc.lib.attributes.item.IItemInsertable;
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
-import alexiil.mc.lib.attributes.item.filter.AggregateStackFilter;
+import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
-
-import it.unimi.dsi.fastutil.ints.IntList;
 
 /** An {@link IItemInsertable} wrapper over an {@link IFixedItemInv}. This implementation is the naive implementation
  * where every insertion operation will look at every slot in the target inventory in order to insert into the most
@@ -38,7 +37,7 @@ public final class SimpleFixedInvInsertable implements IItemInsertable {
             switch (invSize) {
                 case 0: {
                     // What?
-                    return IItemFilter.NOTHING;
+                    return ConstantItemFilter.NOTHING;
                 }
                 case 1: {
                     return inv.getFilterForSlot(0);
@@ -51,14 +50,14 @@ public final class SimpleFixedInvInsertable implements IItemInsertable {
                     for (int i = 0; i < invSize; i++) {
                         filters.add(inv.getFilterForSlot(i));
                     }
-                    return AggregateStackFilter.anyOf(filters);
+                    return AggregateItemFilter.anyOf(filters);
                 }
             }
         } else {
             switch (slots.length) {
                 case 0: {
                     // What?
-                    return IItemFilter.NOTHING;
+                    return ConstantItemFilter.NOTHING;
                 }
                 case 1: {
                     return inv.getFilterForSlot(slots[0]);
@@ -71,7 +70,7 @@ public final class SimpleFixedInvInsertable implements IItemInsertable {
                     for (int s : slots) {
                         filters.add(inv.getFilterForSlot(s));
                     }
-                    return AggregateStackFilter.anyOf(filters);
+                    return AggregateItemFilter.anyOf(filters);
                 }
             }
         }
@@ -96,11 +95,6 @@ public final class SimpleFixedInvInsertable implements IItemInsertable {
         // }
 
         return simpleDumbBadInsertionToBeRemoved(stack, simulation);
-    }
-
-    private void attemptAddToExisting(IntList slotsModified, int s, ItemStack leftover, Simulation simulation) {
-        ItemStack current = inv.getInvStack(s);
-
     }
 
     private ItemStack simpleDumbBadInsertionToBeRemoved(ItemStack stack, Simulation simulation) {

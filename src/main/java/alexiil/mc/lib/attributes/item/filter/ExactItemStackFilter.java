@@ -14,7 +14,7 @@ public final class ExactItemStackFilter implements IReadableItemFilter {
     }
 
     @Override
-    public boolean matches(ItemStack stack) {
-        return ItemStackUtil.areEqualIgnoreAmounts(this.stack, stack);
+    public boolean matches(ItemStack other) {
+        return ItemStackUtil.areEqualIgnoreAmounts(this.stack, other);
     }
 }

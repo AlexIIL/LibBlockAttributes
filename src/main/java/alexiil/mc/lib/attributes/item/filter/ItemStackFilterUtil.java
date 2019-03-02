@@ -7,10 +7,10 @@ public enum ItemStackFilterUtil {
 
     /** Attempts to find the maximum stack amount from all of the stacks in the filter. */
     public static int findMaximumStackAmount(IItemFilter filter) {
-        if (filter == IItemFilter.ANY_STACK) {
+        if (filter == ConstantItemFilter.ANYTHING) {
             return 64;
         }
-        if (filter == IItemFilter.NOTHING) {
+        if (filter == ConstantItemFilter.NOTHING) {
             return 0;
         }
 
@@ -18,9 +18,9 @@ public enum ItemStackFilterUtil {
             return ((ExactItemStackFilter) filter).stack.getMaxAmount();
         }
 
-        if (filter instanceof AggregateStackFilter) {
+        if (filter instanceof AggregateItemFilter) {
             int max = 1;
-            for (IItemFilter inner : (AggregateStackFilter) filter) {
+            for (IItemFilter inner : (AggregateItemFilter) filter) {
                 max = Math.max(max, findMaximumStackAmount(inner));
             }
             return max;

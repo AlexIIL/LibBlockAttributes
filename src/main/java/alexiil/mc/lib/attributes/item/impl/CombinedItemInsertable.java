@@ -7,7 +7,7 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.IItemInsertable;
-import alexiil.mc.lib.attributes.item.filter.AggregateStackFilter;
+import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
 public final class CombinedItemInsertable implements IItemInsertable {
@@ -20,7 +20,7 @@ public final class CombinedItemInsertable implements IItemInsertable {
         for (int i = 0; i < list.size(); i++) {
             filters.add(list.get(i).getInsertionFilter());
         }
-        this.filter = AggregateStackFilter.allOf(filters);
+        this.filter = AggregateItemFilter.allOf(filters);
         this.insertables = list;
     }
 
