@@ -3,6 +3,7 @@ package alexiil.mc.lib.attributes.item.impl;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 
+import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.item.IFixedItemInv;
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
 import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
@@ -20,7 +21,7 @@ public class FixedInventoryViewVanillaWrapper implements IFixedItemInvView {
     }
 
     @Override
-    public int getInvSize() {
+    public int getSlotCount() {
         return inv.getInvSize();
     }
 

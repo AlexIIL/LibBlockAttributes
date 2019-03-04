@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.minecraft.item.ItemStack;
 
+import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
 import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
@@ -22,14 +23,14 @@ public class CombinedFixedItemInvView<InvType extends IFixedItemInvView> impleme
         for (int i = 0; i < views.size(); i++) {
             subSlotStartIndex[i] = size;
             IFixedItemInvView view = views.get(i);
-            int s = view.getInvSize();
+            int s = view.getSlotCount();
             size += s;
         }
         invSize = size;
     }
 
     @Override
-    public int getInvSize() {
+    public int getSlotCount() {
         return invSize;
     }
 

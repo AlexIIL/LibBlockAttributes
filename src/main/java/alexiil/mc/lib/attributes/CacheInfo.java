@@ -4,5 +4,7 @@ public final class CacheInfo {
 
     public static final CacheInfo NOT_CACHABLE = new CacheInfo();
 
-    // TODO: Information and listeners for this cache!
+    private CacheInfo() {
+        // Private because we're going to change this in the future.
+    }
 }

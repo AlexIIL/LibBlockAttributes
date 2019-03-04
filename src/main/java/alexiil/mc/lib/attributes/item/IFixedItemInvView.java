@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.minecraft.item.ItemStack;
 
+import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInvView;
@@ -32,15 +33,15 @@ import alexiil.mc.lib.attributes.item.impl.SubFixedItemInvView;
 public interface IFixedItemInvView {
 
     /** @return The number of slots in this inventory. */
-    int getInvSize();
+    int getSlotCount();
 
-    /** @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getInvSize()} (exclusive) to be
+    /** @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
      * @return The ItemStack that is held in the inventory at the moment. The returned stack must never be modified!
      * @throws RuntimeException if the given slot wasn't a valid index. */
     ItemStack getInvStack(int slot);
 
-    /** @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getInvSize()} (exclusive) to be
+    /** @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
      * @param stack The stack to check for. May be an {@link ItemStack#isEmpty() empty} stack.
      * @return The maximum amount that the given slot can hold of the given stack. This method will ignore the current
@@ -58,12 +59,12 @@ public interface IFixedItemInvView {
 
     /** Checks to see if the given stack is valid for a given slot. This ignores any current stacks in the slot.
      * 
-     * @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getInvSize()} (exclusive) to be
+     * @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
      * @throws RuntimeException if the given slot wasn't a valid index. */
     boolean isItemValidForSlot(int slot, ItemStack stack);
 
-    /** @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getInvSize()} (exclusive) to be
+    /** @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
      * @return An {@link IItemFilter} for this slot. If this slot is filtered by an {@link IItemFilter} internally then
      *         it is highly recommended that this be overridden to return *that* filter rather than a newly constructed
@@ -106,8 +107,8 @@ public interface IFixedItemInvView {
         final IFixedItemInvView real = this;
         return new IFixedItemInvView() {
             @Override
-            public int getInvSize() {
-                return real.getInvSize();
+            public int getSlotCount() {
+                return real.getSlotCount();
             }
 
             @Override
@@ -146,10 +147,5 @@ public interface IFixedItemInvView {
                 });
             }
         };
-    }
-
-    public interface IListenerToken {
-        /** Removes the listener from the {@link IFixedItemInv}. */
-        void removeListener();
     }
 }

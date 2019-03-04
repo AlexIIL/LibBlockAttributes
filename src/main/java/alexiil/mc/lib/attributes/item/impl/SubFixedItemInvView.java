@@ -2,6 +2,7 @@ package alexiil.mc.lib.attributes.item.impl;
 
 import net.minecraft.item.ItemStack;
 
+import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
 import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
@@ -30,13 +31,13 @@ public class SubFixedItemInvView<InvType extends IFixedItemInvView> implements I
         slot += fromIndex;
         if (slot >= toIndex) {
             throw new IllegalArgumentException("The given slot " + (slot - fromIndex)
-                + "is greater than the size of this inventory! (" + getInvSize() + ")");
+                + "is greater than the size of this inventory! (" + getSlotCount() + ")");
         }
         return slot;
     }
 
     @Override
-    public int getInvSize() {
+    public int getSlotCount() {
         return toIndex - fromIndex;
     }
 

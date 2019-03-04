@@ -8,14 +8,14 @@ import alexiil.mc.lib.attributes.item.IItemExtractable;
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
-public final class SimpleFixedInvExtractable implements IItemExtractable {
+public final class SimpleFixedItemInvExtractable implements IItemExtractable {
 
     private final IFixedItemInv inv;
 
     /** Null means that this can extract from any of the slots. */
     private final int[] slots;
 
-    public SimpleFixedInvExtractable(IFixedItemInv inv, int[] slots) {
+    public SimpleFixedItemInvExtractable(IFixedItemInv inv, int[] slots) {
         this.inv = inv;
         this.slots = slots;
     }
@@ -25,7 +25,7 @@ public final class SimpleFixedInvExtractable implements IItemExtractable {
 
         ItemStack stack = ItemStack.EMPTY;
         if (slots == null) {
-            for (int s = 0; s < inv.getInvSize(); s++) {
+            for (int s = 0; s < inv.getSlotCount(); s++) {
                 ItemStack invStack = inv.getInvStack(s);
                 if (invStack.isEmpty() || !filter.matches(invStack)) {
                     continue;

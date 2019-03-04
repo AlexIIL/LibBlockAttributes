@@ -25,7 +25,7 @@ public final class SimpleFixedItemInvStats implements IItemInvStats {
         int space = 0;
         int totalSpace = 0;
         boolean totalSpaceValid = true;
-        for (int s = 0; s < inv.getInvSize(); s++) {
+        for (int s = 0; s < inv.getSlotCount(); s++) {
             ItemStack stack = inv.getInvStack(s);
             if (!stack.isEmpty()) {
                 if (filter.matches(stack)) {
@@ -36,6 +36,7 @@ public final class SimpleFixedItemInvStats implements IItemInvStats {
                 continue;
             }
             IItemFilter realFilter = AggregateItemFilter.and(filter, inv.getFilterForSlot(s));
+            // FIXME: I think this next bit might be a bit broken?
             int max = ItemStackFilterUtil.findMaximumStackAmount(realFilter);
             max = Math.min(max, inv.getMaxAmount(s, stack));
             if (max < 0) {
@@ -51,7 +52,7 @@ public final class SimpleFixedItemInvStats implements IItemInvStats {
     @Override
     public Set<ItemStack> getStoredStacks() {
         Set<ItemStack> set = ItemStackCollections.set();
-        for (int s = 0; s < inv.getInvSize(); s++) {
+        for (int s = 0; s < inv.getSlotCount(); s++) {
             ItemStack stack = inv.getInvStack(s);
             if (!stack.isEmpty()) {
                 set.add(stack);

@@ -20,19 +20,19 @@ public abstract class PartialInventoryFixedWrapper implements Inventory {
 
     @Override
     public void clear() {
-        for (int s = 0; s < inv.getInvSize(); s++) {
+        for (int s = 0; s < inv.getSlotCount(); s++) {
             inv.setInvStack(s, ItemStack.EMPTY, Simulation.ACTION);
         }
     }
 
     @Override
     public int getInvSize() {
-        return inv.getInvSize();
+        return inv.getSlotCount();
     }
 
     @Override
     public boolean isInvEmpty() {
-        for (int s = 0; s < inv.getInvSize(); s++) {
+        for (int s = 0; s < inv.getSlotCount(); s++) {
             if (!inv.getInvStack(s).isEmpty()) {
                 return false;
             }

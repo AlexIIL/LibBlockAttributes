@@ -77,6 +77,24 @@ public final class AggregateItemFilter implements IReadableItemFilter, Iterable<
             filters[from.length] = filterA;
             return new AggregateItemFilter(type, filters);
         }
+
+        if (filterA instanceof ExactItemStackFilter) {
+            ItemStack exactA = ((ExactItemStackFilter) filterA).stack;
+            if (filterB.matches(exactA)) {
+                return filterA;
+            } else {
+                return ConstantItemFilter.NOTHING;
+            }
+        }
+        if (filterB instanceof ExactItemStackFilter) {
+            ItemStack exactB = ((ExactItemStackFilter) filterB).stack;
+            if (filterA.matches(exactB)) {
+                return filterB;
+            } else {
+                return ConstantItemFilter.NOTHING;
+            }
+        }
+
         return new AggregateItemFilter(type, filterA, filterB);
     }
 

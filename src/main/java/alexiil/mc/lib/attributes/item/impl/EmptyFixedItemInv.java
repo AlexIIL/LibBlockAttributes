@@ -2,6 +2,7 @@ package alexiil.mc.lib.attributes.item.impl;
 
 import net.minecraft.item.ItemStack;
 
+import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.IFixedItemInv;
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
@@ -21,7 +22,7 @@ public enum EmptyFixedItemInv implements IFixedItemInv {
     }
 
     @Override
-    public int getInvSize() {
+    public int getSlotCount() {
         return 0;
     }
 

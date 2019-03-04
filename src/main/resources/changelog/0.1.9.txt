@@ -1,0 +1,14 @@
+Breaking Changes:
+
+* Rename SimpleFixedInvExtractable to SimpleFixedItemInvExtractable
+* Rename SimpleFixedInvInsertable to SimpleFixedItemInvInsertable
+* Moved IListenerToken out into it's own file
+* Made CacheInfo's no-arg constuctor private (as there's no cache information available yet)
+
+Changes:
+
+* Added fluid attributes as a nearly identical copy of the item attributes
+    * Instead of ItemStack everything is based on "FluidVolume" and "FluidKey"
+        * FluidKey is an immutable class with 2 fields: minecraft's Fluid class, and a CompoundTag.
+        * FluidVolume has Fluid, CompoundTag (modifiable), and amount (also modifiable).
+    * Everything filter wise is based around FluidKey, while everything else is based around FluidVolume

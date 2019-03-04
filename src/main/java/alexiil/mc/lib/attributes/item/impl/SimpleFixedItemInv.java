@@ -8,6 +8,7 @@ import net.minecraft.util.DefaultedList;
 import net.minecraft.util.SystemUtil;
 
 import alexiil.mc.lib.attributes.AttributeUtil;
+import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.IFixedItemInv;
 import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
@@ -43,7 +44,7 @@ public class SimpleFixedItemInv implements IFixedItemInv {
     }
 
     @Override
-    public final int getInvSize() {
+    public final int getSlotCount() {
         return slots.size();
     }
 

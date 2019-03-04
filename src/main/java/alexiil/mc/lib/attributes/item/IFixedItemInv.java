@@ -7,8 +7,8 @@ import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.EmptyItemExtractable;
 import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
-import alexiil.mc.lib.attributes.item.impl.SimpleFixedInvExtractable;
-import alexiil.mc.lib.attributes.item.impl.SimpleFixedInvInsertable;
+import alexiil.mc.lib.attributes.item.impl.SimpleFixedItemInvExtractable;
+import alexiil.mc.lib.attributes.item.impl.SimpleFixedItemInvInsertable;
 import alexiil.mc.lib.attributes.item.impl.SubFixedItemInv;
 
 /** A changeable {@link IFixedItemInvView} that can have it's contents changed. Note that this does not imply that the
@@ -35,7 +35,7 @@ public interface IFixedItemInv extends IFixedItemInvView {
     /** @return An {@link IItemInsertable} for this inventory that will attempt to insert into any of the slots in this
      *         inventory. */
     default IItemInsertable getInsertable() {
-        return new SimpleFixedInvInsertable(this, null);
+        return new SimpleFixedItemInvInsertable(this, null);
     }
 
     /** @return An {@link IItemInsertable} for this inventory that will attempt to insert into only the given array of
@@ -44,13 +44,13 @@ public interface IFixedItemInv extends IFixedItemInvView {
         if (slots.length == 0) {
             return RejectingItemInsertable.NULL;
         }
-        return new SimpleFixedInvInsertable(this, slots);
+        return new SimpleFixedItemInvInsertable(this, slots);
     }
 
     /** @return An {@link IItemExtractable} for this inventory that will attempt to extract from any of the slots in
      *         this inventory. */
     default IItemExtractable getExtractable() {
-        return new SimpleFixedInvExtractable(this, null);
+        return new SimpleFixedItemInvExtractable(this, null);
     }
 
     /** @return An {@link IItemExtractable} for this inventory that will attempt to extract from only the given array of
@@ -59,7 +59,7 @@ public interface IFixedItemInv extends IFixedItemInvView {
         if (slots.length == 0) {
             return EmptyItemExtractable.NULL;
         }
-        return new SimpleFixedInvExtractable(this, slots);
+        return new SimpleFixedItemInvExtractable(this, slots);
     }
 
     @Override

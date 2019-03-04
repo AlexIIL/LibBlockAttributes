@@ -17,15 +17,15 @@ import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 /** An {@link IItemInsertable} wrapper over an {@link IFixedItemInv}. This implementation is the naive implementation
  * where every insertion operation will look at every slot in the target inventory in order to insert into the most
  * appropriate slot first. As such the use of this class is discouraged whenever a more efficient version can be made
- * (unless the target inventory has a very small {@link IFixedItemInvView#getInvSize() size}. */
-public final class SimpleFixedInvInsertable implements IItemInsertable {
+ * (unless the target inventory has a very small {@link IFixedItemInvView#getSlotCount() size}. */
+public final class SimpleFixedItemInvInsertable implements IItemInsertable {
 
     private final IFixedItemInv inv;
 
     /** Null means that this can insert into any of the slots. */
     private final int[] slots;
 
-    public SimpleFixedInvInsertable(IFixedItemInv inv, int[] slots) {
+    public SimpleFixedItemInvInsertable(IFixedItemInv inv, int[] slots) {
         this.inv = inv;
         this.slots = slots;
     }
@@ -33,7 +33,7 @@ public final class SimpleFixedInvInsertable implements IItemInsertable {
     @Override
     public IItemFilter getInsertionFilter() {
         if (slots == null) {
-            int invSize = inv.getInvSize();
+            int invSize = inv.getSlotCount();
             switch (invSize) {
                 case 0: {
                     // What?
@@ -100,7 +100,7 @@ public final class SimpleFixedInvInsertable implements IItemInsertable {
     private ItemStack simpleDumbBadInsertionToBeRemoved(ItemStack stack, Simulation simulation) {
         stack = stack.copy();
         if (slots == null) {
-            for (int s = 0; s < inv.getInvSize(); s++) {
+            for (int s = 0; s < inv.getSlotCount(); s++) {
                 ItemStack inSlot = inv.getInvStack(s);
                 int current = inSlot.isEmpty() ? 0 : inSlot.getAmount();
                 int max = Math.min(current + stack.getAmount(), inv.getMaxAmount(s, stack));
