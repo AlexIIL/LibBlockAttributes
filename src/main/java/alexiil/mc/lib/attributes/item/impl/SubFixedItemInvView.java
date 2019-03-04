@@ -3,7 +3,7 @@ package alexiil.mc.lib.attributes.item.impl;
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
-import alexiil.mc.lib.attributes.item.IInvSlotChangeListener;
+import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
 /** A sub-view of an existing {@link IFixedItemInvView}. */
@@ -69,7 +69,7 @@ public class SubFixedItemInvView<InvType extends IFixedItemInvView> implements I
     }
 
     @Override
-    public IListenerToken addListener(IInvSlotChangeListener listener) {
+    public IListenerToken addListener(IItemInvSlotChangeListener listener) {
         IFixedItemInvView wrapper = this;
         return inv.addListener((realInv, slot, previous, current) -> {
             assert realInv == inv;

@@ -79,12 +79,12 @@ public interface IFixedItemInvView {
     }
 
     /** Adds the given listener to this inventory, such that the
-     * {@link IInvSlotChangeListener#onChange(IFixedItemInvView, int, ItemStack, ItemStack)} will be called every time
+     * {@link IItemInvSlotChangeListener#onChange(IFixedItemInvView, int, ItemStack, ItemStack)} will be called every time
      * that this inventory changes. However if this inventory doesn't support listeners then this will return a null
      * {@link IListenerToken token}.
      * 
      * @return A token that represents the listener, or null if the listener could not be added. */
-    IListenerToken addListener(IInvSlotChangeListener listener);
+    IListenerToken addListener(IItemInvSlotChangeListener listener);
 
     /** Equivalent to {@link List#subList(int, int)}.
      * 
@@ -136,7 +136,7 @@ public interface IFixedItemInvView {
             }
 
             @Override
-            public IListenerToken addListener(IInvSlotChangeListener listener) {
+            public IListenerToken addListener(IItemInvSlotChangeListener listener) {
                 final IFixedItemInvView view = this;
                 return real.addListener((inv, slot, prev, curr) -> {
                     // Defend against giving the listener the real (possibly changeable) inventory.

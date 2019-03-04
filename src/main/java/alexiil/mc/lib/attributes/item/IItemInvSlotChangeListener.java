@@ -2,7 +2,7 @@ package alexiil.mc.lib.attributes.item;
 
 import net.minecraft.item.ItemStack;
 
-public interface IInvSlotChangeListener {
+public interface IItemInvSlotChangeListener {
 
     /** @param inv The inventory that changed
      * @param slot The slot that changed

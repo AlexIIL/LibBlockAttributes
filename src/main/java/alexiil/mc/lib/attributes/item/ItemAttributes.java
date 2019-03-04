@@ -24,7 +24,8 @@ import alexiil.mc.lib.attributes.item.impl.FixedInventoryVanillaWrapper;
 import alexiil.mc.lib.attributes.item.impl.FixedInventoryViewVanillaWrapper;
 import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
 
-public class ItemAttributes {
+public enum ItemAttributes {
+    ;
 
     public static final AttributeCombinable<IFixedItemInvView> FIXED_INV_VIEW;
     public static final AttributeCombinable<IFixedItemInv> FIXED_INV;

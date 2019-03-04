@@ -5,7 +5,7 @@ import java.util.List;
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
-import alexiil.mc.lib.attributes.item.IInvSlotChangeListener;
+import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
 /** An {@link IFixedItemInvView} that delegates to a list of them instead of storing items directly. */
@@ -95,7 +95,7 @@ public class CombinedFixedItemInvView<InvType extends IFixedItemInvView> impleme
     }
 
     @Override
-    public IListenerToken addListener(IInvSlotChangeListener listener) {
+    public IListenerToken addListener(IItemInvSlotChangeListener listener) {
 
         IListenerToken[] tokens = new IListenerToken[views.size()];
         for (int i = 0; i < tokens.length; i++) {

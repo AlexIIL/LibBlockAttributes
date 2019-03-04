@@ -10,7 +10,7 @@ import net.minecraft.util.SystemUtil;
 import alexiil.mc.lib.attributes.AttributeUtil;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.IFixedItemInv;
-import alexiil.mc.lib.attributes.item.IInvSlotChangeListener;
+import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
@@ -28,15 +28,15 @@ public class SimpleFixedItemInv implements IFixedItemInv {
 
     // TODO: NBT serialisation and a test mod with chests!
 
-    private static final IInvSlotChangeListener[] NO_LISTENERS = new IInvSlotChangeListener[0];
+    private static final IItemInvSlotChangeListener[] NO_LISTENERS = new IItemInvSlotChangeListener[0];
 
     protected final DefaultedList<ItemStack> slots;
 
-    private final Set<IInvSlotChangeListener> listeners =
+    private final Set<IItemInvSlotChangeListener> listeners =
         new ObjectLinkedOpenCustomHashSet<>(SystemUtil.identityHashStrategy());
 
     // Should this use WeakReference instead of storing them directly?
-    private IInvSlotChangeListener[] bakedListeners = NO_LISTENERS;
+    private IItemInvSlotChangeListener[] bakedListeners = NO_LISTENERS;
 
     public SimpleFixedItemInv(int invSize) {
         slots = DefaultedList.create(invSize, ItemStack.EMPTY);
@@ -80,7 +80,7 @@ public class SimpleFixedItemInv implements IFixedItemInv {
     }
 
     @Override
-    public IListenerToken addListener(IInvSlotChangeListener listener) {
+    public IListenerToken addListener(IItemInvSlotChangeListener listener) {
         if (listeners.add(listener)) {
             bakeListeners();
         }
@@ -92,13 +92,13 @@ public class SimpleFixedItemInv implements IFixedItemInv {
     }
 
     private void bakeListeners() {
-        bakedListeners = listeners.toArray(new IInvSlotChangeListener[0]);
+        bakedListeners = listeners.toArray(new IItemInvSlotChangeListener[0]);
     }
 
     protected final void fireSlotChange(int slot, ItemStack previous, ItemStack current) {
         // Iterate over the previous array in case the listeners array is changed while we are iterating
-        final IInvSlotChangeListener[] baked = bakedListeners;
-        for (IInvSlotChangeListener listener : baked) {
+        final IItemInvSlotChangeListener[] baked = bakedListeners;
+        for (IItemInvSlotChangeListener listener : baked) {
             listener.onChange(this, slot, previous, current);
         }
     }

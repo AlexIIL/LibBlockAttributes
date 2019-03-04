@@ -5,7 +5,7 @@ import net.minecraft.item.ItemStack;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.IFixedItemInv;
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
-import alexiil.mc.lib.attributes.item.IInvSlotChangeListener;
+import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.IItemExtractable;
 import alexiil.mc.lib.attributes.item.IItemInsertable;
 import alexiil.mc.lib.attributes.item.IItemInvStats;
@@ -51,7 +51,7 @@ public enum EmptyFixedItemInv implements IFixedItemInv {
     }
 
     @Override
-    public IListenerToken addListener(IInvSlotChangeListener listener) {
+    public IListenerToken addListener(IItemInvSlotChangeListener listener) {
         // We don't need to keep track of the listener because this empty inventory never changes.
         return () -> {
             // (And we don't need to do anything when the listener is removed)
