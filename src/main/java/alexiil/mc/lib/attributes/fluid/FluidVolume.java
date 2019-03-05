@@ -88,6 +88,22 @@ public final class FluidVolume {
         return new FluidVolume(fluid, amount, data);
     }
 
+    public CompoundTag toTag() {
+        return toTag(new CompoundTag());
+    }
+
+    public CompoundTag toTag(CompoundTag tag) {
+        if (isEmpty()) {
+            return tag;
+        }
+        tag.putString(KEY_IDENTIFIER, Registry.FLUID.getId(fluid).toString());
+        tag.putInt(KEY_AMOUNT, amount);
+        if (this.extraData != null) {
+            tag.put(KEY_DATA, copyOf(extraData));
+        }
+        return tag;
+    }
+
     private static CompoundTag copyOf(CompoundTag tag) {
         return tag != null ? tag.method_10553() : null;
     }
