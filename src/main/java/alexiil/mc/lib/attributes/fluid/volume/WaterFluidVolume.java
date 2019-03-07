@@ -1,5 +1,6 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
 
@@ -13,6 +14,10 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 
     public WaterFluidVolume(Biome source, int amount) {
         super(WaterFluidKey.INSTANCE, source, amount);
+    }
+
+    public WaterFluidVolume(CompoundTag tag) {
+        super(WaterFluidKey.INSTANCE, tag);
     }
 
     @Override

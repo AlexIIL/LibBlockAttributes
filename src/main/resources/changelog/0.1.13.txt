@@ -1,0 +1,6 @@
+Changes:
+
+* Fixed WaterFluidVolume's not being read properly by the deserialiser.
+* Added IFluidItem: an interface for items to implement so that they can be filled or drained.
+    * Note that this is temporary: in the future items will need some way to expose normal attributes.
+* Added FluidVolumeUtil.move(IFluidExtractable from, IFluidInsertable to) for quickly and easily moving fluids from one object to another. 

@@ -3,6 +3,9 @@
   "package": "alexiil.mc.lib.attributes.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "BucketItemMixin",
+    "GlassBottleItemMixin",
+    "PotionItemMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -10,8 +10,8 @@ public final class PotionFluidKey extends FluidKey {
     private static final Identifier POTION_TEXTURE;
 
     static {
-        // POTION_TEXTURE = new Identifier("libblockattributes", "fluids/potion")
-        POTION_TEXTURE = new Identifier("minecraft", "blocks/water_still");
+        // POTION_TEXTURE = new Identifier("libblockattributes", "fluid/potion")
+        POTION_TEXTURE = new Identifier("minecraft", "block/water_still");
     }
 
     public final Potion potion;

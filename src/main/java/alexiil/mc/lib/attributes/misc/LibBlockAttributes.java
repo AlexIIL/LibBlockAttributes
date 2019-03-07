@@ -1,4 +1,4 @@
-package alexiil.mc.lib.attributes.util;
+package alexiil.mc.lib.attributes.misc;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

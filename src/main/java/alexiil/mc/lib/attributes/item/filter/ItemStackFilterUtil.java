@@ -1,6 +1,6 @@
 package alexiil.mc.lib.attributes.item.filter;
 
-import alexiil.mc.lib.attributes.util.LibBlockAttributes;
+import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
 
 public enum ItemStackFilterUtil {
     ;

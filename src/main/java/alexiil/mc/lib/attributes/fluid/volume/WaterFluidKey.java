@@ -1,6 +1,7 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
 import net.minecraft.fluid.Fluids;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.TranslatableTextComponent;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.biome.Biome;
@@ -13,6 +14,11 @@ import net.minecraft.world.biome.Biome;
         super(new NormalFluidKeyBuilder(Fluids.WATER)//
             .setSpriteId(new Identifier("minecraft", "block/water_still"))//
             .setTextComponent(new TranslatableTextComponent("block.minecraft.water")));
+    }
+
+    @Override
+    public BiomeSourcedFluidVolume readVolume(CompoundTag tag) {
+        return new WaterFluidVolume(tag);
     }
 
     @Override
