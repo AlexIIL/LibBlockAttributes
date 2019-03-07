@@ -1,0 +1,5 @@
+Breaking Changes:
+
+* Massive overhaul of how fluids are registered and handled.
+    * Now fluids are based on any registry, rather than just the fluid registry
+    * This allows potions to be used as fluids in tanks and gui's.

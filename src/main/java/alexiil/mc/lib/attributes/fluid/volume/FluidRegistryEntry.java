@@ -10,7 +10,7 @@ import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.util.registry.Registry;
 
-/* package-private */ final class FluidRegistryEntry<T> {
+public final class FluidRegistryEntry<T> {
 
     private static final String KEY_REGISTRY_TYPE = "Registry";
     private static final String KEY_OBJ_IDENTIFIER = "ObjName";
@@ -19,7 +19,7 @@ import net.minecraft.util.registry.Registry;
     final T backingObject;
     final int hash;
 
-    FluidRegistryEntry(DefaultedRegistry<T> backingRegistry, T backingObject) {
+    public FluidRegistryEntry(DefaultedRegistry<T> backingRegistry, T backingObject) {
         if (backingRegistry == null) {
             throw new NullPointerException("backingRegistry");
         }
@@ -27,15 +27,15 @@ import net.minecraft.util.registry.Registry;
             throw new NullPointerException("backingObject");
         }
         if (getName(backingRegistry) == null) {
-            throw new IllegalArgumentException("You cannot use the " + backingRegistry + " with this!\n"
-                + "The only registries that you can use are ");
+            throw new IllegalArgumentException("You cannot use the " + backingRegistry
+                + " with this because it's not registered with the main registry!");
         }
         this.backingRegistry = backingRegistry;
         this.backingObject = backingObject;
         hash = System.identityHashCode(backingRegistry) * 31 + getId().hashCode();
     }
 
-    private static String getName(DefaultedRegistry<?> registry) {
+    static String getName(DefaultedRegistry<?> registry) {
         if (registry == Registry.FLUID) {
             return "f";
         } else if (registry == Registry.POTION) {
@@ -65,7 +65,7 @@ import net.minecraft.util.registry.Registry;
         }
     }
 
-    static FluidRegistryEntry<?> fromTag(CompoundTag tag) {
+    public static FluidRegistryEntry<?> fromTag(CompoundTag tag) {
         DefaultedRegistry<?> registry = fromName(tag.getString(KEY_REGISTRY_TYPE));
         if (registry == null) {
             // The registry that contains the empty fluid
@@ -80,7 +80,7 @@ import net.minecraft.util.registry.Registry;
         return new FluidRegistryEntry<>(registry, obj);
     }
 
-    void toTag(CompoundTag tag) {
+    public void toTag(CompoundTag tag) {
         Identifier objId = backingRegistry.getId(backingObject);
         if (backingRegistry.getDefaultId().equals(objId)) {
             return;
@@ -89,7 +89,7 @@ import net.minecraft.util.registry.Registry;
         tag.putString(KEY_OBJ_IDENTIFIER, objId.toString());
     }
 
-    boolean isEmpty() {
+    public boolean isEmpty() {
         return backingRegistry.get(backingRegistry.getDefaultId()) == backingObject;
     }
 
@@ -105,7 +105,7 @@ import net.minecraft.util.registry.Registry;
             && Objects.equals(getId(), other.getId());
     }
 
-    private Identifier getId() {
+    Identifier getId() {
         return backingRegistry.getId(backingObject);
     }
 

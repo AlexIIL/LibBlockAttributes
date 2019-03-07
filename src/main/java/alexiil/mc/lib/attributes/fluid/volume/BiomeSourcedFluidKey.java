@@ -1,21 +1,11 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
-import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.Identifier;
 import net.minecraft.world.biome.Biome;
 
 public class BiomeSourcedFluidKey extends NormalFluidKey {
-    public BiomeSourcedFluidKey(Fluid fluid) {
-        super(fluid);
-    }
-
-    public BiomeSourcedFluidKey(Fluid fluid, Identifier spriteId) {
-        super(fluid, spriteId);
-    }
-
-    public BiomeSourcedFluidKey(Fluid fluid, Identifier spriteId, int renderColor) {
-        super(fluid, spriteId, renderColor);
+    public BiomeSourcedFluidKey(NormalFluidKeyBuilder builder) {
+        super(builder);
     }
 
     @Override

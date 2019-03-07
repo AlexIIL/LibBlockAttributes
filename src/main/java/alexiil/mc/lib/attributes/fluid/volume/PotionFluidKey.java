@@ -17,7 +17,7 @@ public final class PotionFluidKey extends FluidKey {
     public final Potion potion;
 
     /* package-private */ PotionFluidKey(Potion potion) {
-        super(new FluidRegistryEntry<>(Registry.POTION, potion), POTION_TEXTURE);
+        super(new FluidKeyBuilder(new FluidRegistryEntry<>(Registry.POTION, potion)).setSpriteId(POTION_TEXTURE));
         this.potion = potion;
     }
 

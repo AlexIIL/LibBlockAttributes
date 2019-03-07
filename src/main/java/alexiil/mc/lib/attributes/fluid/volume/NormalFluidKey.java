@@ -7,6 +7,7 @@ import net.minecraft.fluid.EmptyFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.text.TextComponent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -16,29 +17,47 @@ import alexiil.mc.lib.attributes.fluid.volume.NormalFluidVolume.SimpleFluidVolum
  * this is safe to use in normal maps and sets. */
 public abstract class NormalFluidKey extends FluidKey {
 
+    public static class NormalFluidKeyBuilder extends FluidKeyBuilder {
+
+        public final Fluid fluid;
+
+        public NormalFluidKeyBuilder(Fluid fluid) {
+            super(new FluidRegistryEntry<>(Registry.FLUID, fluid));
+            this.fluid = fluid;
+        }
+
+        @Override
+        public NormalFluidKeyBuilder setSpriteId(Identifier spriteId) {
+            return (NormalFluidKeyBuilder) super.setSpriteId(spriteId);
+        }
+
+        @Override
+        public NormalFluidKeyBuilder setRenderColor(int renderColor) {
+            return (NormalFluidKeyBuilder) super.setRenderColor(renderColor);
+        }
+
+        @Override
+        public NormalFluidKeyBuilder setTextComponent(TextComponent textComponent) {
+            return (NormalFluidKeyBuilder) super.setTextComponent(textComponent);
+        }
+    }
+
     @Nonnull
     public final Fluid fluid;
 
-    public NormalFluidKey(Fluid fluid) {
-        this(fluid, MISSING_SPRITE_IDENTIFIER, 0xFF_FF_FF);
-    }
-
-    public NormalFluidKey(Fluid fluid, Identifier spriteId) {
-        this(fluid, spriteId, 0xFF_FF_FF);
-    }
-
-    public NormalFluidKey(Fluid fluid, Identifier spriteId, int renderColor) {
-        super(new FluidRegistryEntry<>(Registry.FLUID, fluid), spriteId, renderColor);
-        if (fluid == null) {
+    public NormalFluidKey(NormalFluidKeyBuilder builder) {
+        super(builder);
+        Fluid fl = builder.fluid;
+        if (fl == null) {
             throw new NullPointerException("fluid");
         }
-        if (fluid instanceof EmptyFluid && fluid != Fluids.EMPTY) {
+        if (fl instanceof EmptyFluid && fl != Fluids.EMPTY) {
             throw new IllegalArgumentException("Different empty fluid!");
         }
-        if (fluid instanceof BaseFluid && fluid != ((BaseFluid) fluid).getStill()) {
+        if (fl instanceof BaseFluid && fl != ((BaseFluid) fl).getStill()) {
             throw new IllegalArgumentException("Only the still version of fluids are allowed!");
         }
-        this.fluid = fluid;
+        this.fluid = fl;
     }
 
     @Override
@@ -50,16 +69,8 @@ public abstract class NormalFluidKey extends FluidKey {
     /** A {@link NormalFluidKey} with no extra data. */
     public static final class SimpleFluidKey extends NormalFluidKey {
 
-        public SimpleFluidKey(Fluid fluid) {
-            super(fluid);
-        }
-
-        public SimpleFluidKey(Fluid fluid, Identifier spriteId) {
-            super(fluid, spriteId);
-        }
-
-        public SimpleFluidKey(Fluid fluid, Identifier spriteId, int renderColor) {
-            super(fluid, spriteId, renderColor);
+        public SimpleFluidKey(NormalFluidKeyBuilder builder) {
+            super(builder);
         }
 
         @Override

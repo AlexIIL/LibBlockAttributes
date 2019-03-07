@@ -1,10 +1,19 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.text.StringTextComponent;
+import net.minecraft.text.TextComponent;
+import net.minecraft.text.TextFormat;
 import net.minecraft.util.Identifier;
 
 import alexiil.mc.lib.attributes.Simulation;
@@ -229,4 +238,21 @@ public abstract class FluidVolume {
         return getFluidKey().renderColor;
     }
 
+    public TextComponent getTextComponent() {
+        return getFluidKey().textComponent;
+    }
+
+    @Environment(EnvType.CLIENT)
+    public List<TextComponent> getTooltipText(TooltipContext ctx) {
+        List<TextComponent> list = new ArrayList<>();
+        list.add(getTextComponent());
+        if (ctx.isAdvanced()) {
+            list.add(new StringTextComponent(
+                FluidRegistryEntry.getName(getFluidKey().registryEntry.backingRegistry).toString())
+                    .applyFormat(TextFormat.DARK_GRAY));
+            list.add(new StringTextComponent(getFluidKey().registryEntry.getId().toString())
+                .applyFormat(TextFormat.DARK_GRAY));
+        }
+        return list;
+    }
 }

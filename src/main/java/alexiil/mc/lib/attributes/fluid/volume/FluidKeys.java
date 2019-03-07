@@ -13,6 +13,7 @@ import net.minecraft.potion.Potions;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
+import alexiil.mc.lib.attributes.fluid.volume.NormalFluidKey.NormalFluidKeyBuilder;
 import alexiil.mc.lib.attributes.fluid.volume.NormalFluidKey.SimpleFluidKey;
 
 public class FluidKeys {
@@ -27,8 +28,9 @@ public class FluidKeys {
     private static final Map<Potion, FluidKey> POTIONS = new IdentityHashMap<>();
 
     static {
-        EMPTY = new SimpleFluidKey(Fluids.EMPTY);
-        LAVA = new SimpleFluidKey(Fluids.LAVA, new Identifier("minecraft", "textures/blocks/lava_still"));
+        EMPTY = new SimpleFluidKey(new NormalFluidKeyBuilder(Fluids.EMPTY));
+        LAVA = new SimpleFluidKey(new NormalFluidKeyBuilder(Fluids.LAVA)//
+            .setSpriteId(new Identifier("minecraft", "textures/blocks/lava_still")));
         WATER = WaterFluidKey.INSTANCE;
 
         put(Fluids.EMPTY, EMPTY);
