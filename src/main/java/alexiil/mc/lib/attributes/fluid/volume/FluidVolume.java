@@ -67,7 +67,7 @@ public abstract class FluidVolume {
 
     public static FluidVolume fromTag(CompoundTag tag) {
         if (tag.isEmpty()) {
-            return FluidKeys.EMPTY.withAmount(1);
+            return FluidKeys.EMPTY.withAmount(0);
         }
         return FluidKey.fromTag(tag).readVolume(tag);
     }
@@ -236,6 +236,10 @@ public abstract class FluidVolume {
      *         _RGB format: <code>(r << 16) | (g << 8) | b</code> */
     public int getRenderColor() {
         return getFluidKey().renderColor;
+    }
+
+    public static final int swapArgbForAbgr(int colour) {
+        return ((colour & 0xFF) << 16) | (colour & 0xFF_00) | ((colour & 0xFF_00_00) >> 16);
     }
 
     public TextComponent getTextComponent() {

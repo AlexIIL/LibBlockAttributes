@@ -32,7 +32,7 @@ public final class PotionFluidVolume extends FluidVolume {
 
     @Override
     public int getRenderColor() {
-        return PotionUtil.getColor(getFluidKey().potion);
+        return swapArgbForAbgr(PotionUtil.getColor(getFluidKey().potion));
     }
 
     @Override

@@ -30,7 +30,7 @@ public class FluidKeys {
     static {
         EMPTY = new SimpleFluidKey(new NormalFluidKeyBuilder(Fluids.EMPTY));
         LAVA = new SimpleFluidKey(new NormalFluidKeyBuilder(Fluids.LAVA)//
-            .setSpriteId(new Identifier("minecraft", "textures/blocks/lava_still")));
+            .setSpriteId(new Identifier("minecraft", "block/lava_still")));
         WATER = WaterFluidKey.INSTANCE;
 
         put(Fluids.EMPTY, EMPTY);

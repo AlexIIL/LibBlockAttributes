@@ -11,7 +11,7 @@ import net.minecraft.world.biome.Biome;
 
     private WaterFluidKey() {
         super(new NormalFluidKeyBuilder(Fluids.WATER)//
-            .setSpriteId(new Identifier("minecraft", "blocks/water_still"))//
+            .setSpriteId(new Identifier("minecraft", "block/water_still"))//
             .setTextComponent(new TranslatableTextComponent("block.minecraft.water")));
     }
 

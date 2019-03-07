@@ -22,10 +22,10 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
         switch (biomeCount) {
             case 0: {
                 // Um, what?
-                return Biomes.DEFAULT.getWaterColor();
+                return swapArgbForAbgr(Biomes.DEFAULT.getWaterColor());
             }
             case 1: {
-                return sources.keySet().iterator().next().getWaterColor();
+                return swapArgbForAbgr(sources.keySet().iterator().next().getWaterColor());
             }
             default: {
                 int r = 0;
@@ -36,9 +36,9 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
                 for (Biome biome : sources.keySet()) {
                     int amount = sources.getInt(biome);
                     int colour = biome.getWaterColor();
-                    r += colour * amount;
-                    g += (colour >> 8) * amount;
-                    b += (colour >> 16) * amount;
+                    r += (colour & 0xFF) * amount;
+                    g += ((colour & 0xFF) >> 8) * amount;
+                    b += ((colour & 0xFF) >> 16) * amount;
                     total += amount;
                 }
 
