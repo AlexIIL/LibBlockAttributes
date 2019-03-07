@@ -2,8 +2,6 @@ package alexiil.mc.lib.attributes.fluid.impl;
 
 import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.FluidKey;
-import alexiil.mc.lib.attributes.fluid.FluidVolume;
 import alexiil.mc.lib.attributes.fluid.IFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.IFixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.IFluidExtractable;
@@ -11,6 +9,8 @@ import alexiil.mc.lib.attributes.fluid.IFluidInsertable;
 import alexiil.mc.lib.attributes.fluid.IFluidInvStats;
 import alexiil.mc.lib.attributes.fluid.IFluidInvTankChangeListener;
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
+import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** An {@link IFixedFluidInv} with no tanks. Because this inventory is unmodifiable this also doubles as the empty
  * implementation for {@link IFixedFluidInvView}. */

@@ -3,11 +3,11 @@ package alexiil.mc.lib.attributes.fluid.impl;
 import java.util.List;
 
 import alexiil.mc.lib.attributes.IListenerToken;
-import alexiil.mc.lib.attributes.fluid.FluidKey;
-import alexiil.mc.lib.attributes.fluid.FluidVolume;
 import alexiil.mc.lib.attributes.fluid.IFixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.IFluidInvTankChangeListener;
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
+import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** An {@link IFixedFluidInvView} that delegates to a list of them instead of storing items directly. */
 public class CombinedFixedFluidInvView<InvType extends IFixedFluidInvView> implements IFixedFluidInvView {

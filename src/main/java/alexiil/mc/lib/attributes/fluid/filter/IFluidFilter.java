@@ -2,7 +2,7 @@ package alexiil.mc.lib.attributes.fluid.filter;
 
 import java.util.function.Predicate;
 
-import alexiil.mc.lib.attributes.fluid.FluidKey;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 
 /** A general {@link Predicate} interface for {@link FluidKey}s. */
 @FunctionalInterface

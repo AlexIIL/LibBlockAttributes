@@ -1,5 +1,7 @@
 package alexiil.mc.lib.attributes.fluid;
 
+import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+
 public enum FluidVolumeUtil {
     ;
 

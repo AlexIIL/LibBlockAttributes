@@ -1,10 +1,11 @@
 package alexiil.mc.lib.attributes.fluid.impl;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.FluidVolume;
 import alexiil.mc.lib.attributes.fluid.IFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.IFluidExtractable;
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
+import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 public final class SimpleFixedFluidInvExtractable implements IFluidExtractable {
 
@@ -21,29 +22,19 @@ public final class SimpleFixedFluidInvExtractable implements IFluidExtractable {
     @Override
     public FluidVolume attemptExtraction(IFluidFilter filter, int maxCount, Simulation simulation) {
 
-        FluidVolume fluid = new FluidVolume();
+        FluidVolume fluid = FluidKeys.EMPTY.withAmount(0);
         if (tanks == null) {
             for (int t = 0; t < inv.getTankCount(); t++) {
                 FluidVolume invFluid = inv.getInvFluid(t);
-                if (invFluid.isEmpty() || !filter.matches(invFluid.toKey())) {
+                if (invFluid.isEmpty() || !filter.matches(invFluid.fluidKey)) {
                     continue;
                 }
-                if (!fluid.isEmpty()) {
-                    if (!FluidVolume.areEqualExceptAmounts(fluid, invFluid)) {
-                        continue;
-                    }
-                }
                 invFluid = invFluid.copy();
-
                 FluidVolume addable = invFluid.split(maxCount);
-                if (inv.setInvFluid(t, invFluid, simulation)) {
-
-                    if (fluid.isEmpty()) {
-                        fluid = addable;
-                    } else {
-                        fluid.add(addable.getAmount());
-                    }
+                FluidVolume merged = FluidVolume.merge(fluid, addable);
+                if (merged != null && inv.setInvFluid(t, invFluid, simulation)) {
                     maxCount -= addable.getAmount();
+                    fluid = merged;
                     assert maxCount >= 0;
                     if (maxCount <= 0) {
                         return fluid;
@@ -54,25 +45,15 @@ public final class SimpleFixedFluidInvExtractable implements IFluidExtractable {
             for (int t : tanks) {
                 // Copy of above
                 FluidVolume invFluid = inv.getInvFluid(t);
-                if (invFluid.isEmpty() || !filter.matches(invFluid.toKey())) {
+                if (invFluid.isEmpty() || !filter.matches(invFluid.fluidKey)) {
                     continue;
                 }
-                if (!fluid.isEmpty()) {
-                    if (!FluidVolume.areEqualExceptAmounts(fluid, invFluid)) {
-                        continue;
-                    }
-                }
                 invFluid = invFluid.copy();
-
                 FluidVolume addable = invFluid.split(maxCount);
-                if (inv.setInvFluid(t, invFluid, simulation)) {
-
-                    if (fluid.isEmpty()) {
-                        fluid = addable;
-                    } else {
-                        fluid.add(addable.getAmount());
-                    }
+                FluidVolume merged = FluidVolume.merge(fluid, addable);
+                if (merged != null && inv.setInvFluid(t, invFluid, simulation)) {
                     maxCount -= addable.getAmount();
+                    fluid = merged;
                     assert maxCount >= 0;
                     if (maxCount <= 0) {
                         return fluid;

@@ -194,7 +194,7 @@ public class AttributeList<T> {
                         }
                     };
                     // Dammit fastutil why do you have to use the same name as java :(
-                    it.unimi.dsi.fastutil.Arrays.quickSort(0, list.size() - 1, comparator, swapper);
+                    it.unimi.dsi.fastutil.Arrays.quickSort(0, list.size(), comparator, swapper);
                 }
             }
         }

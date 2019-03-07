@@ -3,12 +3,12 @@ package alexiil.mc.lib.attributes.fluid.impl;
 import java.util.HashSet;
 import java.util.Set;
 
-import alexiil.mc.lib.attributes.fluid.FluidKey;
-import alexiil.mc.lib.attributes.fluid.FluidVolume;
 import alexiil.mc.lib.attributes.fluid.IFixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.IFluidInvStats;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilterUtil;
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
+import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 public final class SimpleFixedFluidInvStats implements IFluidInvStats {
 
@@ -28,7 +28,7 @@ public final class SimpleFixedFluidInvStats implements IFluidInvStats {
             int max = inv.getMaxAmount(t);
             FluidVolume fluid = inv.getInvFluid(t);
             if (!fluid.isEmpty()) {
-                if (filter.matches(fluid.toKey())) {
+                if (filter.matches(fluid.fluidKey)) {
                     amount += fluid.getAmount();
                     space += max - fluid.getAmount();
                 }
@@ -47,7 +47,7 @@ public final class SimpleFixedFluidInvStats implements IFluidInvStats {
         for (int s = 0; s < inv.getTankCount(); s++) {
             FluidVolume fluid = inv.getInvFluid(s);
             if (!fluid.isEmpty()) {
-                set.add(fluid.toKey());
+                set.add(fluid.fluidKey);
             }
         }
         return set;

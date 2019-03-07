@@ -3,6 +3,8 @@ package alexiil.mc.lib.attributes.fluid;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
+import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** Defines an object that can have items extracted from it. */
 public interface IFluidExtractable {

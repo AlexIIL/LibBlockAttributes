@@ -1,6 +1,6 @@
 package alexiil.mc.lib.attributes.fluid.filter;
 
-import alexiil.mc.lib.attributes.fluid.FluidKey;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 
 public enum ConstantFluidFilter implements IReadableFluidFilter {
     ANYTHING(true),

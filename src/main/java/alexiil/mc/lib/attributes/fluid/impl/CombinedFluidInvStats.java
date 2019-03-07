@@ -4,9 +4,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import alexiil.mc.lib.attributes.fluid.FluidKey;
 import alexiil.mc.lib.attributes.fluid.IFluidInvStats;
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 
 public class CombinedFluidInvStats implements IFluidInvStats {
 

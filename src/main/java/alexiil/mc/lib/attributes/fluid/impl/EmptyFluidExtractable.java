@@ -1,10 +1,11 @@
 package alexiil.mc.lib.attributes.fluid.impl;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.FluidVolume;
 import alexiil.mc.lib.attributes.fluid.IFluidExtractable;
 import alexiil.mc.lib.attributes.fluid.IFluidInsertable;
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
+import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** An {@link IFluidExtractable} that never returns any items from
  * {@link #attemptExtraction(IFluidFilter, int, Simulation)}. */
@@ -23,6 +24,6 @@ public enum EmptyFluidExtractable implements IFluidExtractable {
 
     @Override
     public FluidVolume attemptExtraction(IFluidFilter filter, int maxCount, Simulation simulation) {
-        return new FluidVolume();
+        return FluidKeys.EMPTY.withAmount(0);
     }
 }

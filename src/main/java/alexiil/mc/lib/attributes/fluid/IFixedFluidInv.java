@@ -7,6 +7,8 @@ import alexiil.mc.lib.attributes.fluid.impl.RejectingFluidInsertable;
 import alexiil.mc.lib.attributes.fluid.impl.SimpleFixedFluidInvExtractable;
 import alexiil.mc.lib.attributes.fluid.impl.SimpleFixedFluidInvInsertable;
 import alexiil.mc.lib.attributes.fluid.impl.SubFixedFluidInv;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
+import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 public interface IFixedFluidInv extends IFixedFluidInvView {
 

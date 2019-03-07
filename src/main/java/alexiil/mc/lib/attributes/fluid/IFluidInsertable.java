@@ -2,6 +2,7 @@ package alexiil.mc.lib.attributes.fluid;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** Defines an object that can have fluids inserted into it. */
 public interface IFluidInsertable {

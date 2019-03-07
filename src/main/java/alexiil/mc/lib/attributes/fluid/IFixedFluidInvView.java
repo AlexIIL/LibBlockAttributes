@@ -10,6 +10,8 @@ import alexiil.mc.lib.attributes.fluid.impl.EmptyFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.impl.SimpleFixedFluidInvStats;
 import alexiil.mc.lib.attributes.fluid.impl.SubFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.impl.SubFixedFluidInvView;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
+import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** A view of a fixed inventory for fluids, where the number of tanks never changes, and every tank is "simple":
  * <ul>

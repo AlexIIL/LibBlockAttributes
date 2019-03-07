@@ -9,12 +9,13 @@ import net.minecraft.util.SystemUtil;
 import alexiil.mc.lib.attributes.AttributeUtil;
 import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.FluidKey;
-import alexiil.mc.lib.attributes.fluid.FluidVolume;
 import alexiil.mc.lib.attributes.fluid.IFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.IFluidInvTankChangeListener;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
+import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet;
 
@@ -42,7 +43,7 @@ public class SimpleFixedFluidInv implements IFixedFluidInv {
     private IFluidInvTankChangeListener[] bakedListeners = NO_LISTENERS;
 
     public SimpleFixedFluidInv(int invSize, int tankCapacity) {
-        tanks = DefaultedList.create(invSize, new FluidVolume());
+        tanks = DefaultedList.create(invSize, FluidKeys.EMPTY.withAmount(0));
         this.tankCapacity = tankCapacity;
     }
 
@@ -114,7 +115,7 @@ public class SimpleFixedFluidInv implements IFixedFluidInv {
 
     @Override
     public boolean setInvFluid(int tank, FluidVolume to, Simulation simulation) {
-        if (isFluidValidForTank(tank, to.toKey()) && to.getAmount() <= getMaxAmount(tank)) {
+        if (isFluidValidForTank(tank, to.fluidKey) && to.getAmount() <= getMaxAmount(tank)) {
             if (simulation == Simulation.ACTION) {
                 FluidVolume before = tanks.get(tank);
                 tanks.set(tank, to);

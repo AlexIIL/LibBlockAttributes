@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.FluidVolume;
 import alexiil.mc.lib.attributes.fluid.IFluidInsertable;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
+import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 public final class CombinedFluidInsertable implements IFluidInsertable {
 
@@ -28,7 +29,7 @@ public final class CombinedFluidInsertable implements IFluidInsertable {
         for (IFluidInsertable insertable : insertables) {
             stack = insertable.attemptInsertion(stack, simulation);
             if (stack.isEmpty()) {
-                return new FluidVolume();
+                return FluidKeys.EMPTY.withAmount(0);
             }
         }
         return stack;

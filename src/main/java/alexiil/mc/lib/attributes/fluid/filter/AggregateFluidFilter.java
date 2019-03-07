@@ -8,7 +8,7 @@ import java.util.RandomAccess;
 import com.google.common.collect.Iterators;
 
 import alexiil.mc.lib.attributes.AggregateFilterType;
-import alexiil.mc.lib.attributes.fluid.FluidKey;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 
 /** An {@link IFluidFilter} over a predefined array of {@link IFluidFilter}'s. You can either iterate over this object
  * directly or use {@link #getFilterCount()} and {@link #getFilter(int)} to read every filter individually. */

@@ -3,6 +3,7 @@ package alexiil.mc.lib.attributes.fluid;
 import java.util.Set;
 
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 
 ///** Provides general statistics for any permanent fluid storing inventory. The inventory in question doesn't have to be
 // * an {@link IFixedFluidInvView}. */

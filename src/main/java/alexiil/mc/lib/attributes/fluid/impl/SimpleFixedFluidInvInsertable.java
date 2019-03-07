@@ -4,13 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.FluidVolume;
 import alexiil.mc.lib.attributes.fluid.IFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.IFixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.IFluidInsertable;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
+import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** An {@link IFluidInsertable} wrapper over an {@link IFixedFluidInv}. This implementation is the naive implementation
  * where every insertion operation will look at every tank in the target inventory in order to insert into the most
@@ -106,19 +107,14 @@ public final class SimpleFixedFluidInvInsertable implements IFluidInsertable {
                 if (addable <= 0) {
                     continue;
                 }
-                if (current > 0 && !FluidVolume.areEqualExceptAmounts(fluid, inTank)) {
-                    continue;
-                }
-                if (inTank.isEmpty()) {
-                    inTank = fluid.copy();
-                    inTank.setAmount(addable);
-                } else {
-                    inTank.add(addable);
-                }
-                if (inv.setInvFluid(t, inTank, simulation)) {
-                    fluid.subtract(addable);
+                FluidVolume fluidCopy = fluid.copy();
+                FluidVolume fluidAddable = fluidCopy.split(addable);
+                FluidVolume merged = FluidVolume.merge(inTank, fluidAddable);
+
+                if (merged != null && inv.setInvFluid(t, merged, simulation)) {
+                    fluid = fluidCopy;
                     if (fluid.isEmpty()) {
-                        return new FluidVolume();
+                        return FluidKeys.EMPTY.withAmount(0);
                     }
                 }
             }
@@ -132,19 +128,14 @@ public final class SimpleFixedFluidInvInsertable implements IFluidInsertable {
                 if (addable <= 0) {
                     continue;
                 }
-                if (current > 0 && !FluidVolume.areEqualExceptAmounts(fluid, inTank)) {
-                    continue;
-                }
-                if (inTank.isEmpty()) {
-                    inTank = fluid.copy();
-                    inTank.setAmount(addable);
-                } else {
-                    inTank.add(addable);
-                }
-                if (inv.setInvFluid(t, inTank, simulation)) {
-                    fluid.subtract(addable);
+                FluidVolume fluidCopy = fluid.copy();
+                FluidVolume fluidAddable = fluidCopy.split(addable);
+                FluidVolume merged = FluidVolume.merge(inTank, fluidAddable);
+
+                if (merged != null && inv.setInvFluid(t, merged, simulation)) {
+                    fluid = fluidCopy;
                     if (fluid.isEmpty()) {
-                        return new FluidVolume();
+                        return FluidKeys.EMPTY.withAmount(0);
                     }
                 }
             }

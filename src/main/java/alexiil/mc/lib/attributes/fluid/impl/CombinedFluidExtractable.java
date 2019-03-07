@@ -3,10 +3,11 @@ package alexiil.mc.lib.attributes.fluid.impl;
 import java.util.List;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.FluidVolume;
 import alexiil.mc.lib.attributes.fluid.IFluidExtractable;
 import alexiil.mc.lib.attributes.fluid.filter.ExactFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
+import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 public final class CombinedFluidExtractable implements IFluidExtractable {
 
@@ -21,7 +22,7 @@ public final class CombinedFluidExtractable implements IFluidExtractable {
         if (maxAmount < 0) {
             throw new IllegalArgumentException("maxCount cannot be negative! (was " + maxAmount + ")");
         }
-        FluidVolume extracted = new FluidVolume();
+        FluidVolume extracted = FluidKeys.EMPTY.withAmount(0);
         for (IFluidExtractable extractable : list) {
             if (extracted.isEmpty()) {
                 extracted = extractable.attemptExtraction(filter, maxAmount, simulation);
@@ -31,17 +32,17 @@ public final class CombinedFluidExtractable implements IFluidExtractable {
                 if (extracted.getAmount() >= maxAmount) {
                     return extracted;
                 }
-                filter = new ExactFluidFilter(extracted.toKey());
+                filter = new ExactFluidFilter(extracted.fluidKey);
             } else {
                 int newMaxCount = maxAmount - extracted.getAmount();
                 FluidVolume additional = extractable.attemptExtraction(filter, newMaxCount, simulation);
                 if (additional.isEmpty()) {
                     continue;
                 }
-                if (!FluidVolume.areEqualExceptAmounts(additional, extracted)) {
+                extracted = FluidVolume.merge(extracted, additional);
+                if (extracted == null) {
                     throw new IllegalStateException("bad IFluidExtractable " + extractable.getClass().getName());
                 }
-                extracted.add(additional.getAmount());
                 if (extracted.getAmount() >= maxAmount) {
                     return extracted;
                 }
