@@ -209,7 +209,10 @@ public abstract class FluidVolume {
     }
 
     public final FluidVolume split(int toRemove) {
-        if (isEmpty()) {
+        if (toRemove < 0) {
+            throw new IllegalArgumentException("Cannot split off a negative amount!");
+        }
+        if (toRemove == 0 || isEmpty()) {
             return FluidKeys.EMPTY.withAmount(0);
         } else if (amount <= toRemove) {
             FluidVolume newFluid = copy();

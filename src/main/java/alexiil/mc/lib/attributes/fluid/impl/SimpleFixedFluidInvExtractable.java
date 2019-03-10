@@ -20,9 +20,14 @@ public final class SimpleFixedFluidInvExtractable implements IFluidExtractable {
     }
 
     @Override
-    public FluidVolume attemptExtraction(IFluidFilter filter, int maxCount, Simulation simulation) {
-
+    public FluidVolume attemptExtraction(IFluidFilter filter, int maxAmount, Simulation simulation) {
+        if (maxAmount < 0) {
+            throw new IllegalArgumentException("maxAmount cannot be negative! (was " + maxAmount + ")");
+        }
         FluidVolume fluid = FluidKeys.EMPTY.withAmount(0);
+        if (maxAmount == 0) {
+            return fluid;
+        }
         if (tanks == null) {
             for (int t = 0; t < inv.getTankCount(); t++) {
                 FluidVolume invFluid = inv.getInvFluid(t);
@@ -30,13 +35,13 @@ public final class SimpleFixedFluidInvExtractable implements IFluidExtractable {
                     continue;
                 }
                 invFluid = invFluid.copy();
-                FluidVolume addable = invFluid.split(maxCount);
+                FluidVolume addable = invFluid.split(maxAmount);
                 FluidVolume merged = FluidVolume.merge(fluid, addable);
                 if (merged != null && inv.setInvFluid(t, invFluid, simulation)) {
-                    maxCount -= addable.getAmount();
+                    maxAmount -= addable.getAmount();
                     fluid = merged;
-                    assert maxCount >= 0;
-                    if (maxCount <= 0) {
+                    assert maxAmount >= 0;
+                    if (maxAmount <= 0) {
                         return fluid;
                     }
                 }
@@ -49,13 +54,13 @@ public final class SimpleFixedFluidInvExtractable implements IFluidExtractable {
                     continue;
                 }
                 invFluid = invFluid.copy();
-                FluidVolume addable = invFluid.split(maxCount);
+                FluidVolume addable = invFluid.split(maxAmount);
                 FluidVolume merged = FluidVolume.merge(fluid, addable);
                 if (merged != null && inv.setInvFluid(t, invFluid, simulation)) {
-                    maxCount -= addable.getAmount();
+                    maxAmount -= addable.getAmount();
                     fluid = merged;
-                    assert maxCount >= 0;
-                    if (maxCount <= 0) {
+                    assert maxAmount >= 0;
+                    if (maxAmount <= 0) {
                         return fluid;
                     }
                 }

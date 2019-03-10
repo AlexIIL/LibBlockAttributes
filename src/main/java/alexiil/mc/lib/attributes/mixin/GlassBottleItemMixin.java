@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
+import net.minecraft.potion.Potions;
 
 import alexiil.mc.lib.attributes.fluid.IFluidItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
@@ -29,17 +30,21 @@ public class GlassBottleItemMixin extends Item implements IFluidItem {
 
     @Override
     public boolean fill(Ref<ItemStack> stack, Ref<FluidVolume> with) {
+        final Potion potion;
         if (with.obj instanceof PotionFluidVolume) {
-            PotionFluidVolume potionFluid = (PotionFluidVolume) with.obj;
-            Potion potion = potionFluid.getPotion();
-            with.obj = with.obj.copy();
-            FluidVolume split = with.obj.split(FluidVolume.BOTTLE);
-            if (!split.isEmpty()) {
-                ItemStack potionStack = new ItemStack(Items.POTION);
-                PotionUtil.setPotion(potionStack, potion);
-                stack.obj = potionStack;
-                return true;
-            }
+            potion = ((PotionFluidVolume) with.obj).getPotion();
+        } else if (with.obj.fluidKey == FluidKeys.WATER) {
+            potion = Potions.WATER;
+        } else {
+            return false;
+        }
+        with.obj = with.obj.copy();
+        FluidVolume split = with.obj.split(FluidVolume.BOTTLE);
+        if (!split.isEmpty()) {
+            ItemStack potionStack = new ItemStack(Items.POTION);
+            PotionUtil.setPotion(potionStack, potion);
+            stack.obj = potionStack;
+            return true;
         }
         return false;
     }

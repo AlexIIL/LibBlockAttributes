@@ -23,7 +23,14 @@ public final class SimpleFixedItemInvExtractable implements IItemExtractable {
     @Override
     public ItemStack attemptExtraction(IItemFilter filter, int maxCount, Simulation simulation) {
 
+        if (maxCount < 0) {
+            throw new IllegalArgumentException("maxAmount cannot be negative! (was " + maxCount + ")");
+        }
         ItemStack stack = ItemStack.EMPTY;
+        if (maxCount == 0) {
+            return stack;
+        }
+
         if (slots == null) {
             for (int s = 0; s < inv.getSlotCount(); s++) {
                 ItemStack invStack = inv.getInvStack(s);

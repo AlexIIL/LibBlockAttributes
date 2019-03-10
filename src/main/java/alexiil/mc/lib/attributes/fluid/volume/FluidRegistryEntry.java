@@ -105,6 +105,11 @@ public final class FluidRegistryEntry<T> {
             && Objects.equals(getId(), other.getId());
     }
 
+    @Override
+    public String toString() {
+        return getId().toString();
+    }
+
     Identifier getId() {
         return backingRegistry.getId(backingObject);
     }

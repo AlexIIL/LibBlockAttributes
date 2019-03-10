@@ -100,7 +100,6 @@ public class BiomeSourcedFluidVolume extends NormalFluidVolume {
         for (Biome biome : other.biomeSources.keySet()) {
             addAmount(biome, other.biomeSources.getInt(biome));
         }
-        setAmount(getAmount() + other.getAmount());
         other.setAmount(0);
         other.biomeSources.clear();
     }

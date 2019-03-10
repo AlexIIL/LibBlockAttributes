@@ -1,0 +1,4 @@
+Bug Fixes:
+
+* Fixed a crash when you merged water volumes together.
+* Added a lot of precondition checking to various methods.

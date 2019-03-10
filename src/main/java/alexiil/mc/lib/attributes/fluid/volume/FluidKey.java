@@ -83,6 +83,11 @@ public abstract class FluidKey {
         return tag;
     }
 
+    @Override
+    public String toString() {
+        return registryEntry.toString();
+    }
+
     public abstract FluidVolume readVolume(CompoundTag tag);
 
     public final boolean isEmpty() {
