@@ -86,8 +86,8 @@ public class BiomeSourcedFluidVolume extends NormalFluidVolume {
     }
 
     @Override
-    public BiomeSourcedFluidVolume copy() {
-        BiomeSourcedFluidVolume copy = (BiomeSourcedFluidVolume) super.copy();
+    protected FluidVolume copy0() {
+        BiomeSourcedFluidVolume copy = (BiomeSourcedFluidVolume) super.copy0();
         copy.biomeSources.clear();
         copy.biomeSources.putAll(biomeSources);
         return copy;

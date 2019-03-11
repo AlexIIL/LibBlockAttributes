@@ -4,6 +4,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.StringTextComponent;
 import net.minecraft.text.TextComponent;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.ViewableWorld;
 
 public abstract class FluidKey {
 
@@ -95,4 +97,9 @@ public abstract class FluidKey {
     }
 
     public abstract FluidVolume withAmount(int amount);
+
+    /** Called when this is pumped out from the world. */
+    public FluidVolume fromWorld(ViewableWorld world, BlockPos pos) {
+        return withAmount(FluidVolume.BLOCK);
+    }
 }

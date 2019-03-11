@@ -1,0 +1,10 @@
+Breaking Changes:
+
+* Removed IDelegatingAttributeBlock, as it's basically useless.
+
+Changes:
+
+* Added FluidWorldUtil.drain(World, BlockPos, Simulation), which attempts to drain a FluidVolume from that particular position in the world.
+* Fixed a bug where SimpleFixedFluidInvInsertable and SimpleFixedItemInvInsertable didn't respect their respective inventories "do not modify" rule.
+* Added FluidKey.fromWorld(ViewableWorld, BlockPos) -> FluidVolume for FluidWorldUtil.drain to use.
+* Added a mixin to vanilla's FluidBlock to get the Fluid object contained within. 

@@ -25,13 +25,13 @@ public enum FluidVolumeUtil {
             }
             // TODO: Actual localisation!
             // (I'd like to copy this almost directly from buildcraft's LocaleUtil.localizeFluid)
-            if (amount < FluidVolume.NUGGET) {
-                return (amount / (double) FluidVolume.NUGGET) + " Nuggets";
+            if (amount > FluidVolume.BUCKET) {
+                return (amount / (double) FluidVolume.BUCKET) + " Buckets";
             }
-            if (amount < FluidVolume.INGOT) {
+            if (amount > FluidVolume.INGOT) {
                 return (amount / (double) FluidVolume.INGOT) + " Ingots";
             }
-            return (amount / (double) FluidVolume.BUCKET) + " Buckets";
+            return (amount / (double) FluidVolume.NUGGET) + " Nuggets";
         } else {
             return amount / (double) FluidVolume.BUCKET + "Buckets";
         }

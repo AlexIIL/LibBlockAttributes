@@ -139,7 +139,11 @@ public abstract class FluidVolume {
         return fluidKey;
     }
 
-    public FluidVolume copy() {
+    public final FluidVolume copy() {
+        return isEmpty() ? FluidKeys.EMPTY.withAmount(0) : copy0();
+    }
+
+    protected FluidVolume copy0() {
         return getFluidKey().withAmount(amount);
     }
 

@@ -101,12 +101,13 @@ public final class SimpleFixedFluidInvInsertable implements IFluidInsertable {
         if (tanks == null) {
             for (int t = 0; t < inv.getTankCount(); t++) {
                 FluidVolume inTank = inv.getInvFluid(t);
-                int current = inTank.isEmpty() ? 0 : inTank.getAmount();
+                int current = inTank.getAmount();
                 int max = Math.min(current + fluid.getAmount(), inv.getMaxAmount(t));
                 int addable = max - current;
                 if (addable <= 0) {
                     continue;
                 }
+                inTank = inTank.copy();
                 FluidVolume fluidCopy = fluid.copy();
                 FluidVolume fluidAddable = fluidCopy.split(addable);
                 FluidVolume merged = FluidVolume.merge(inTank, fluidAddable);

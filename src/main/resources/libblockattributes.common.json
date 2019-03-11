@@ -5,7 +5,8 @@
   "mixins": [
     "BucketItemMixin",
     "GlassBottleItemMixin",
-    "PotionItemMixin"
+    "PotionItemMixin",
+    "FluidBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,6 +1,8 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.ViewableWorld;
 import net.minecraft.world.biome.Biome;
 
 public class BiomeSourcedFluidKey extends NormalFluidKey {
@@ -37,5 +39,10 @@ public class BiomeSourcedFluidKey extends NormalFluidKey {
 
     public BiomeSourcedFluidVolume withAmount(Biome source, int amount) {
         return new BiomeSourcedFluidVolume(this, source, amount);
+    }
+
+    @Override
+    public FluidVolume fromWorld(ViewableWorld world, BlockPos pos) {
+        return withAmount(world.getBiome(pos), FluidVolume.BLOCK);
     }
 }

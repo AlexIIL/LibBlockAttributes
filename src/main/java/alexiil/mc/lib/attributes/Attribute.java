@@ -50,11 +50,6 @@ public class Attribute<T> {
         if (block instanceof IAttributeBlock) {
             IAttributeBlock attributeBlock = (IAttributeBlock) block;
             attributeBlock.addAllAttributes(world, pos, state, list);
-        } else if (block instanceof IDelegatingAttributeBlock) {
-            for (IAttributeProvider provider : ((IDelegatingAttributeBlock) block).getAttributeProviders(world, pos,
-                state)) {
-                provider.addAllAttributes(list);
-            }
         } else if (customAdder != null) {
             customAdder.addAll(world, pos, state, list);
         }
