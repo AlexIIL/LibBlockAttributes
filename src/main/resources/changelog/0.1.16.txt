@@ -1,0 +1,11 @@
+Breaking Changes:
+
+* Made the fluid sprite and name mandatory components for the fluid key builder
+* Renamed "FluidVolume.getTextComponent()" to "FluidVolume.getName()"
+
+Changes:
+
+* Fixed a crash when splitting a single unit of fluid from a BiomeSourcedFluidVolume
+* Added methods to get the tooltip from a FluidKey itself as well as the FluidVolume
+* Changed the sprite identifier for potions to "libblockattributes:fluid/potion" rather than the water one
+* Fixed a bug where multiple biome sources for water didn't produce the corret render colour.

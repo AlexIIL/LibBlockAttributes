@@ -9,7 +9,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.text.TextComponent;
-import net.minecraft.text.TranslatableTextComponent;
 
 public final class PotionFluidVolume extends FluidVolume {
 
@@ -28,16 +27,6 @@ public final class PotionFluidVolume extends FluidVolume {
     @Override
     public PotionFluidKey getFluidKey() {
         return (PotionFluidKey) fluidKey;
-    }
-
-    @Override
-    public int getRenderColor() {
-        return swapArgbForAbgr(PotionUtil.getColor(getFluidKey().potion));
-    }
-
-    @Override
-    public TextComponent getTextComponent() {
-        return new TranslatableTextComponent(getPotion().getName("item.minecraft.potion.effect."));
     }
 
     @Override

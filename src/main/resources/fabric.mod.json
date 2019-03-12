@@ -5,6 +5,7 @@
   "version": "$version",
   "side": "universal",
   "initializers": [
+    "alexiil.mc.lib.attributes.fluid.volume.ClientInit"
   ],
   "requires": {
     "fabric": "*"

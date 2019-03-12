@@ -249,14 +249,14 @@ public abstract class FluidVolume {
         return ((colour & 0xFF) << 16) | (colour & 0xFF_00) | ((colour & 0xFF_00_00) >> 16);
     }
 
-    public TextComponent getTextComponent() {
-        return getFluidKey().textComponent;
+    public TextComponent getName() {
+        return getFluidKey().name;
     }
 
     @Environment(EnvType.CLIENT)
     public List<TextComponent> getTooltipText(TooltipContext ctx) {
         List<TextComponent> list = new ArrayList<>();
-        list.add(getTextComponent());
+        list.add(getName());
         if (ctx.isAdvanced()) {
             list.add(new StringTextComponent(
                 FluidRegistryEntry.getName(getFluidKey().registryEntry.backingRegistry).toString())

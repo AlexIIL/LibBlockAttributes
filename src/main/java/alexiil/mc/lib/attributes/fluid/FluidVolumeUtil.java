@@ -12,13 +12,9 @@ public enum FluidVolumeUtil {
 
     private static final boolean LONG_LOCALISATION = true;
     private static final boolean USE_FULL_NAMES = true;
-    private static final boolean FULLY_EXPAND = true;
 
     /** @param amount The amount in {@link FluidVolume#BASE_UNIT base units} */
     public static String localizeFluidAmount(int amount) {
-        if (FULLY_EXPAND) {
-
-        }
         if (LONG_LOCALISATION) {
             if (amount < FluidVolume.BASE_UNIT) {
                 return "0";

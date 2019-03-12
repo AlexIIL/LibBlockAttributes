@@ -10,6 +10,8 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.Potions;
+import net.minecraft.text.StringTextComponent;
+import net.minecraft.text.TranslatableTextComponent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -28,9 +30,15 @@ public class FluidKeys {
     private static final Map<Potion, FluidKey> POTIONS = new IdentityHashMap<>();
 
     static {
-        EMPTY = new SimpleFluidKey(new NormalFluidKeyBuilder(Fluids.EMPTY));
-        LAVA = new SimpleFluidKey(new NormalFluidKeyBuilder(Fluids.LAVA)//
-            .setSpriteId(new Identifier("minecraft", "block/lava_still")));
+        // Empty doesn't have a proper sprite or text component because it doesn't ever make sense to use it.
+        EMPTY = new SimpleFluidKey(new NormalFluidKeyBuilder(Fluids.EMPTY, //
+            new Identifier("minecraft", "missingno"), //
+            new StringTextComponent("!EMPTY FLUID!")//
+        ));
+        LAVA = new SimpleFluidKey(new NormalFluidKeyBuilder(Fluids.LAVA, //
+            new Identifier("minecraft", "block/lava_still"), //
+            new TranslatableTextComponent("block.minecraft.lava")//
+        ));
         WATER = WaterFluidKey.INSTANCE;
 
         put(Fluids.EMPTY, EMPTY);

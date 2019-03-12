@@ -11,9 +11,10 @@ import net.minecraft.world.biome.Biome;
     static final WaterFluidKey INSTANCE = new WaterFluidKey();
 
     private WaterFluidKey() {
-        super(new NormalFluidKeyBuilder(Fluids.WATER)//
-            .setSpriteId(new Identifier("minecraft", "block/water_still"))//
-            .setTextComponent(new TranslatableTextComponent("block.minecraft.water")));
+        super(new NormalFluidKeyBuilder(Fluids.WATER, //
+            new Identifier("minecraft", "block/water_still"), //
+            new TranslatableTextComponent("block.minecraft.water")//
+        ));
     }
 
     @Override

@@ -42,8 +42,8 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
                     int amount = sources.getInt(biome);
                     int colour = biome.getWaterColor();
                     r += (colour & 0xFF) * amount;
-                    g += ((colour & 0xFF) >> 8) * amount;
-                    b += ((colour & 0xFF) >> 16) * amount;
+                    g += ((colour & 0xFF_00) >> 8) * amount;
+                    b += ((colour & 0xFF_00_00) >> 16) * amount;
                     total += amount;
                 }
 

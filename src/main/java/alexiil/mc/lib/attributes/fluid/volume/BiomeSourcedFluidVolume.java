@@ -1,7 +1,13 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import java.util.List;
+
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.text.StringTextComponent;
+import net.minecraft.text.TextComponent;
+import net.minecraft.text.TextFormat;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
@@ -142,7 +148,7 @@ public class BiomeSourcedFluidVolume extends NormalFluidVolume {
                 int takeAmountB = amountB * toTake / total;
                 int rem = amountB * toTake % total;
                 int takeAmountA = toTake - takeAmountB;
-                if (rem > 0 && takeAmountA > 0) {
+                if (rem > 0 && takeAmountA > 1) {
                     // The opposite way round to normal to make it bounce around the same ratio
                     if (Math.random() * total < rem) {
                         takeAmountA--;
@@ -172,7 +178,6 @@ public class BiomeSourcedFluidVolume extends NormalFluidVolume {
             default: {
                 Biome[] biomes = biomeSources.keySet().toArray(new Biome[0]);
                 int[] amounts = biomeSources.values().toIntArray();
-                // Dammit fastutil why did you have to use the same name as java :(
                 IntComparator comp = (a, b) -> Integer.compare(amounts[a], amounts[b]);
                 Swapper swapper = (a, b) -> {
                     Biome biome = biomes[a];
@@ -183,6 +188,7 @@ public class BiomeSourcedFluidVolume extends NormalFluidVolume {
                     amounts[a] = amounts[b];
                     amounts[b] = amount;
                 };
+                // Dammit fastutil why did you have to use the same name as java :(
                 it.unimi.dsi.fastutil.Arrays.quickSort(0, amounts.length, comp, swapper);
                 int total = getAmount();
                 // assert total = sum(amounts);
@@ -235,5 +241,18 @@ public class BiomeSourcedFluidVolume extends NormalFluidVolume {
         for (Biome biome : sources.keySet()) {
             addAmount(biome, sources.getInt(biome));
         }
+    }
+
+    @Override
+    public List<TextComponent> getTooltipText(TooltipContext ctx) {
+        List<TextComponent> list = super.getTooltipText(ctx);
+        if (ctx.isAdvanced()) {
+            for (Biome biome : biomeSources.keySet()) {
+                int amount = biomeSources.getInt(biome);
+                TextComponent text = new StringTextComponent(amount + " / " + BUCKET + " of ");
+                list.add(text.append(biome.getTextComponent()).applyFormat(TextFormat.GRAY));
+            }
+        }
+        return list;
     }
 }

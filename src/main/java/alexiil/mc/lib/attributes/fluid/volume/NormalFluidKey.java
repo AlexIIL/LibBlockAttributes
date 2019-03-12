@@ -21,24 +21,14 @@ public abstract class NormalFluidKey extends FluidKey {
 
         public final Fluid fluid;
 
-        public NormalFluidKeyBuilder(Fluid fluid) {
-            super(new FluidRegistryEntry<>(Registry.FLUID, fluid));
+        public NormalFluidKeyBuilder(Fluid fluid, Identifier spriteId, TextComponent name) {
+            super(new FluidRegistryEntry<>(Registry.FLUID, fluid), spriteId, name);
             this.fluid = fluid;
-        }
-
-        @Override
-        public NormalFluidKeyBuilder setSpriteId(Identifier spriteId) {
-            return (NormalFluidKeyBuilder) super.setSpriteId(spriteId);
         }
 
         @Override
         public NormalFluidKeyBuilder setRenderColor(int renderColor) {
             return (NormalFluidKeyBuilder) super.setRenderColor(renderColor);
-        }
-
-        @Override
-        public NormalFluidKeyBuilder setTextComponent(TextComponent textComponent) {
-            return (NormalFluidKeyBuilder) super.setTextComponent(textComponent);
         }
     }
 
