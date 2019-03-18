@@ -1,12 +1,15 @@
 package alexiil.mc.lib.attributes.fluid.impl;
 
 import java.lang.reflect.Method;
-import java.util.Set;
+import java.util.Map;
 
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.util.DefaultedList;
 import net.minecraft.util.SystemUtil;
 
 import alexiil.mc.lib.attributes.AttributeUtil;
+import alexiil.mc.lib.attributes.IListenerRemovalToken;
 import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.IFixedFluidInv;
@@ -17,7 +20,7 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
-import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
 
 /** A simple, extendible, fixed size item inventory that supports all of the features that {@link IFixedFluidInv}
  * exposes.
@@ -29,15 +32,16 @@ import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet;
  * tanks (like a chest). */
 public class SimpleFixedFluidInv implements IFixedFluidInv {
 
-    // TODO: NBT serialisation and a test mod with chests!
-
     private static final IFluidInvTankChangeListener[] NO_LISTENERS = new IFluidInvTankChangeListener[0];
+
+    /** Sentinel value used during {@link #invalidateListeners()}. */
+    private static final IFluidInvTankChangeListener[] INVALIDATING_LISTENERS = new IFluidInvTankChangeListener[0];
 
     public final int tankCapacity;
     protected final DefaultedList<FluidVolume> tanks;
 
-    private final Set<IFluidInvTankChangeListener> listeners =
-        new ObjectLinkedOpenCustomHashSet<>(SystemUtil.identityHashStrategy());
+    private final Map<IFluidInvTankChangeListener, IListenerRemovalToken> listeners =
+        new Object2ObjectLinkedOpenCustomHashMap<>(SystemUtil.identityHashStrategy());
 
     // Should this use WeakReference instead of storing them directly?
     private IFluidInvTankChangeListener[] bakedListeners = NO_LISTENERS;
@@ -46,6 +50,8 @@ public class SimpleFixedFluidInv implements IFixedFluidInv {
         tanks = DefaultedList.create(invSize, FluidKeys.EMPTY.withAmount(0));
         this.tankCapacity = tankCapacity;
     }
+
+    // IFixedFluidInv
 
     @Override
     public final int getTankCount() {
@@ -90,30 +96,6 @@ public class SimpleFixedFluidInv implements IFixedFluidInv {
     }
 
     @Override
-    public IListenerToken addListener(IFluidInvTankChangeListener listener) {
-        if (listeners.add(listener)) {
-            bakeListeners();
-        }
-        return () -> {
-            if (listeners.remove(listener)) {
-                bakeListeners();
-            }
-        };
-    }
-
-    private void bakeListeners() {
-        bakedListeners = listeners.toArray(new IFluidInvTankChangeListener[0]);
-    }
-
-    protected final void fireTankChange(int tank, FluidVolume previous, FluidVolume current) {
-        // Iterate over the previous array in case the listeners array is changed while we are iterating
-        final IFluidInvTankChangeListener[] baked = bakedListeners;
-        for (IFluidInvTankChangeListener listener : baked) {
-            listener.onChange(this, tank, previous, current);
-        }
-    }
-
-    @Override
     public boolean setInvFluid(int tank, FluidVolume to, Simulation simulation) {
         if (isFluidValidForTank(tank, to.fluidKey) && to.getAmount() <= getMaxAmount(tank)) {
             if (simulation == Simulation.ACTION) {
@@ -124,5 +106,76 @@ public class SimpleFixedFluidInv implements IFixedFluidInv {
             return true;
         }
         return false;
+    }
+
+    // Others
+
+    @Override
+    public IListenerToken addListener(IFluidInvTankChangeListener listener, IListenerRemovalToken removalToken) {
+        if (bakedListeners == INVALIDATING_LISTENERS) {
+            // It doesn't really make sense to add listeners while we are invalidating them
+            return null;
+        }
+        IListenerRemovalToken previous = listeners.put(listener, removalToken);
+        if (previous == null) {
+            bakeListeners();
+        } else {
+            assert previous == removalToken : "The same listener object must be registered with the same removal token";
+        }
+        return () -> {
+            IListenerRemovalToken token = listeners.remove(listener);
+            if (token != null) {
+                assert token == removalToken;
+                bakeListeners();
+                removalToken.onListenerRemoved();
+            }
+        };
+    }
+
+    private void bakeListeners() {
+        bakedListeners = listeners.keySet().toArray(new IFluidInvTankChangeListener[0]);
+    }
+
+    public void invalidateListeners() {
+        bakedListeners = INVALIDATING_LISTENERS;
+        IListenerRemovalToken[] removalTokens = listeners.values().toArray(new IListenerRemovalToken[0]);
+        listeners.clear();
+        for (IListenerRemovalToken token : removalTokens) {
+            token.onListenerRemoved();
+        }
+        bakedListeners = NO_LISTENERS;
+    }
+
+    protected final void fireTankChange(int tank, FluidVolume previous, FluidVolume current) {
+        // Iterate over the previous array in case the listeners array is changed while we are iterating
+        final IFluidInvTankChangeListener[] baked = bakedListeners;
+        for (IFluidInvTankChangeListener listener : baked) {
+            listener.onChange(this, tank, previous, current);
+        }
+    }
+
+    // NBT support
+
+    public final CompoundTag toTag() {
+        return toTag(new CompoundTag());
+    }
+
+    public CompoundTag toTag(CompoundTag tag) {
+        ListTag tanksTag = new ListTag();
+        for (FluidVolume volume : tanks) {
+            tanksTag.add(volume.toTag());
+        }
+        tag.put("tanks", tanksTag);
+        return tag;
+    }
+
+    public void fromTag(CompoundTag tag) {
+        ListTag tanksTag = tag.getList("tanks", new CompoundTag().getType());
+        for (int i = 0; i < tanksTag.size() && i < tanks.size(); i++) {
+            tanks.set(i, FluidVolume.fromTag(tanksTag.getCompoundTag(i)));
+        }
+        for (int i = tanksTag.size(); i < tanks.size(); i++) {
+            tanks.set(i, FluidKeys.EMPTY.withAmount(0));
+        }
     }
 }

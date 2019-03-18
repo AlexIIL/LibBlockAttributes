@@ -1,5 +1,6 @@
 package alexiil.mc.lib.attributes.fluid.impl;
 
+import alexiil.mc.lib.attributes.IListenerRemovalToken;
 import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.fluid.IFixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.IFluidInvTankChangeListener;
@@ -70,7 +71,7 @@ public class SubFixedFluidInvView<InvType extends IFixedFluidInvView> implements
     }
 
     @Override
-    public IListenerToken addListener(IFluidInvTankChangeListener listener) {
+    public IListenerToken addListener(IFluidInvTankChangeListener listener, IListenerRemovalToken removalToken) {
         IFixedFluidInvView wrapper = this;
         return inv.addListener((realInv, tank, previous, current) -> {
             assert realInv == inv;
@@ -78,6 +79,6 @@ public class SubFixedFluidInvView<InvType extends IFixedFluidInvView> implements
                 int exposedTank = tank - fromIndex;
                 listener.onChange(wrapper, exposedTank, previous, current);
             }
-        });
+        }, removalToken);
     }
 }

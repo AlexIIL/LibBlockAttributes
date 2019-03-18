@@ -3,6 +3,7 @@ package alexiil.mc.lib.attributes.item.impl;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 
+import alexiil.mc.lib.attributes.IListenerRemovalToken;
 import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.item.IFixedItemInv;
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
@@ -41,7 +42,7 @@ public class FixedInventoryViewVanillaWrapper implements IFixedItemInvView {
     }
 
     @Override
-    public IListenerToken addListener(IItemInvSlotChangeListener listener) {
+    public IListenerToken addListener(IItemInvSlotChangeListener listener, IListenerRemovalToken remToken) {
         // Oddly enough vanilla doesn't support listeners.
         return null;
     }

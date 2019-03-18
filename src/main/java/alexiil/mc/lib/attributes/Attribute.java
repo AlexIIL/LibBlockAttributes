@@ -1,5 +1,7 @@
 package alexiil.mc.lib.attributes;
 
+import java.util.ArrayList;
+
 import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
@@ -11,16 +13,15 @@ import net.minecraft.world.World;
 public class Attribute<T> {
     public final Class<T> clazz;
 
-    @Nullable
-    final IAttributeCustomAdder<T> customAdder;
+    private final ArrayList<IAttributeCustomAdder<T>> customAdders = new ArrayList<>();
 
     protected Attribute(Class<T> clazz) {
-        this(clazz, null);
+        this.clazz = clazz;
     }
 
     protected Attribute(Class<T> clazz, IAttributeCustomAdder<T> customAdder) {
         this.clazz = clazz;
-        this.customAdder = customAdder;
+        customAdders.add(customAdder);
     }
 
     /** Checks to see if the given object is an {@link Class#isInstance(Object)} of this attribute. */
@@ -43,6 +44,12 @@ public class Attribute<T> {
         return System.identityHashCode(this);
     }
 
+    /** Appends a single {@link IAttributeCustomAdder} to the list of custom adders. These are called in order for
+     * blocks that don't implement {@link IAttributeBlock}. */
+    public final void appendCustomAdder(IAttributeCustomAdder<T> customAdder) {
+        customAdders.add(customAdder);
+    }
+
     final void addAll(World world, BlockPos pos, AttributeList<T> list) {
         BlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
@@ -50,8 +57,10 @@ public class Attribute<T> {
         if (block instanceof IAttributeBlock) {
             IAttributeBlock attributeBlock = (IAttributeBlock) block;
             attributeBlock.addAllAttributes(world, pos, state, list);
-        } else if (customAdder != null) {
-            customAdder.addAll(world, pos, state, list);
+        } else {
+            for (IAttributeCustomAdder<T> custom : customAdders) {
+                custom.addAll(world, pos, state, list);
+            }
         }
     }
 

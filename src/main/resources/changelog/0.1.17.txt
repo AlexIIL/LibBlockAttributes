@@ -1,0 +1,13 @@
+Breaking Changes:
+
+* Removed the generic type token from IAttributeBlock.addAllAttributes()
+* Added listener removal tokens: so that you can listen for when your listener is removed from the object you were listening to.
+
+Changes:
+
+* Changed custom attribute adders to be stored in a list, so that you can add multiple custom ones to an attribute.
+* Added FluidVolumeUtil.createItemInventoryInsertable and createItemInventoryExtractable for inserting to and extracting from a held itemstack.
+* Added FluidVolumeUtil.interactWithTank for filling or emptying buckets of fluids.
+* Added SimpleFixed{Fluid|Item}Inv.toTag() and fromTag(CompoundTag)
+* Fixed the potion texture being registered for all sprite atlases, rather than just the block atlas.
+* Fixed the potion texture not being defined as an animation.

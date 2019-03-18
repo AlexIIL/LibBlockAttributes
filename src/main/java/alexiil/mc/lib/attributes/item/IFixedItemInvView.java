@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.minecraft.item.ItemStack;
 
+import alexiil.mc.lib.attributes.IListenerRemovalToken;
 import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
@@ -38,6 +39,8 @@ public interface IFixedItemInvView {
     /** @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
      * @return The ItemStack that is held in the inventory at the moment. The returned stack must never be modified!
+     *         Note that this stack might not be valid for this slot in either
+     *         {@link #isItemValidForSlot(int, ItemStack)} or {@link #getFilterForSlot(int)}.
      * @throws RuntimeException if the given slot wasn't a valid index. */
     ItemStack getInvStack(int slot);
 
@@ -80,12 +83,14 @@ public interface IFixedItemInvView {
     }
 
     /** Adds the given listener to this inventory, such that the
-     * {@link IItemInvSlotChangeListener#onChange(IFixedItemInvView, int, ItemStack, ItemStack)} will be called every time
-     * that this inventory changes. However if this inventory doesn't support listeners then this will return a null
-     * {@link IListenerToken token}.
+     * {@link IItemInvSlotChangeListener#onChange(IFixedItemInvView, int, ItemStack, ItemStack)} will be called every
+     * time that this inventory changes. However if this inventory doesn't support listeners then this will return a
+     * null {@link IListenerToken token}.
      * 
+     * @param removalToken A token that will be called whenever the given listener is removed from this inventory (or if
+     *            this inventory itself is unloaded or otherwise invalidated).
      * @return A token that represents the listener, or null if the listener could not be added. */
-    IListenerToken addListener(IItemInvSlotChangeListener listener);
+    IListenerToken addListener(IItemInvSlotChangeListener listener, IListenerRemovalToken removalToken);
 
     /** Equivalent to {@link List#subList(int, int)}.
      * 
@@ -137,14 +142,14 @@ public interface IFixedItemInvView {
             }
 
             @Override
-            public IListenerToken addListener(IItemInvSlotChangeListener listener) {
+            public IListenerToken addListener(IItemInvSlotChangeListener listener, IListenerRemovalToken removalToken) {
                 final IFixedItemInvView view = this;
                 return real.addListener((inv, slot, prev, curr) -> {
                     // Defend against giving the listener the real (possibly changeable) inventory.
                     // In addition the listener would probably cache *this view* rather than the backing inventory
                     // so they most likely need it to be this inventory.
                     listener.onChange(view, slot, prev, curr);
-                });
+                }, removalToken);
             }
         };
     }

@@ -1,5 +1,8 @@
 package alexiil.mc.lib.attributes.item;
 
+import java.util.function.Consumer;
+
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
@@ -15,6 +18,17 @@ public enum ItemInvUtil {
     // #######################
     // Direct utility methods
     // #######################
+
+    public static Consumer<ItemStack> createPlayerInsertable(PlayerEntity player) {
+        return stack -> insertItemIntoPlayerInventory(player, stack);
+    }
+
+    public static void insertItemIntoPlayerInventory(PlayerEntity player, ItemStack stack) {
+        if (player.inventory.insertStack(stack) && stack.isEmpty()) {
+            return;
+        }
+        player.dropItem(stack, /* PreventPlayerQuickPickup = */ false);
+    }
 
     /** Attempts to move up to the given maximum number of items from the {@link IItemExtractable} to the
      * {@link IItemInsertable}.

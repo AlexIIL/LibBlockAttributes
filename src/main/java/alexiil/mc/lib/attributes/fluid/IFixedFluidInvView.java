@@ -2,6 +2,7 @@ package alexiil.mc.lib.attributes.fluid;
 
 import java.util.List;
 
+import alexiil.mc.lib.attributes.IListenerRemovalToken;
 import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
@@ -80,8 +81,10 @@ public interface IFixedFluidInvView {
      * every time that this inventory changes. However if this inventory doesn't support listeners then this will return
      * a null {@link IListenerToken token}.
      * 
+     * @param removalToken A token that will be called whenever the given listener is removed from this inventory (or if
+     *            this inventory itself is unloaded or otherwise invalidated).
      * @return A token that represents the listener, or null if the listener could not be added. */
-    IListenerToken addListener(IFluidInvTankChangeListener listener);
+    IListenerToken addListener(IFluidInvTankChangeListener listener, IListenerRemovalToken removalToken);
 
     /** Equivalent to {@link List#subList(int, int)}.
      * 
@@ -133,14 +136,15 @@ public interface IFixedFluidInvView {
             }
 
             @Override
-            public IListenerToken addListener(IFluidInvTankChangeListener listener) {
+            public IListenerToken addListener(IFluidInvTankChangeListener listener,
+                IListenerRemovalToken removalToken) {
                 final IFixedFluidInvView view = this;
                 return real.addListener((inv, tank, prev, curr) -> {
                     // Defend against giving the listener the real (possibly changeable) inventory.
                     // In addition the listener would probably cache *this view* rather than the backing inventory
                     // so they most likely need it to be this inventory.
                     listener.onChange(view, tank, prev, curr);
-                });
+                }, removalToken);
             }
         };
     }

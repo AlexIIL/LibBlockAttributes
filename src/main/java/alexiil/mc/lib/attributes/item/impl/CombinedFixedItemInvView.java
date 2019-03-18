@@ -4,10 +4,12 @@ import java.util.List;
 
 import net.minecraft.item.ItemStack;
 
+import alexiil.mc.lib.attributes.IListenerRemovalToken;
 import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
 import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
+import alexiil.mc.lib.attributes.misc.BoolRef;
 
 /** An {@link IFixedItemInvView} that delegates to a list of them instead of storing items directly. */
 public class CombinedFixedItemInvView<InvType extends IFixedItemInvView> implements IFixedItemInvView {
@@ -96,14 +98,29 @@ public class CombinedFixedItemInvView<InvType extends IFixedItemInvView> impleme
     }
 
     @Override
-    public IListenerToken addListener(IItemInvSlotChangeListener listener) {
+    public IListenerToken addListener(IItemInvSlotChangeListener listener, IListenerRemovalToken removalToken) {
+        final IListenerToken[] tokens = new IListenerToken[views.size()];
+        final BoolRef hasAlreadyRemoved = new BoolRef(false);
+        final IListenerRemovalToken ourRemToken = () -> {
+            for (IListenerToken token : tokens) {
+                if (token == null) {
+                    // This means we have only half-initialised
+                    // (and all of the next tokens must also be null)
+                    return;
+                }
+                token.removeListener();
+            }
+            if (!hasAlreadyRemoved.value) {
+                hasAlreadyRemoved.value = true;
+                removalToken.onListenerRemoved();
+            }
 
-        IListenerToken[] tokens = new IListenerToken[views.size()];
+        };
         for (int i = 0; i < tokens.length; i++) {
             final int index = i;
-            tokens[i] = views.get(i).addListener((inv, subSlot, previous, current) -> {
-                listener.onChange(this, subSlotStartIndex[index] + subSlot, previous, current);
-            });
+            tokens[i] = views.get(i).addListener((inv, subTank, previous, current) -> {
+                listener.onChange(this, subSlotStartIndex[index] + subTank, previous, current);
+            }, ourRemToken);
             if (tokens[i] == null) {
                 for (int j = 0; j < i; j++) {
                     tokens[j].removeListener();

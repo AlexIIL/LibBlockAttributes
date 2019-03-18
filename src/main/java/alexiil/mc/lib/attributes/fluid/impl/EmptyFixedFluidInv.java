@@ -1,5 +1,6 @@
 package alexiil.mc.lib.attributes.fluid.impl;
 
+import alexiil.mc.lib.attributes.IListenerRemovalToken;
 import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.IFixedFluidInv;
@@ -52,11 +53,12 @@ public enum EmptyFixedFluidInv implements IFixedFluidInv {
     }
 
     @Override
-    public IListenerToken addListener(IFluidInvTankChangeListener listener) {
+    public IListenerToken addListener(IFluidInvTankChangeListener listener, IListenerRemovalToken removalToken) {
         // We don't need to keep track of the listener because this empty inventory never changes.
         return () -> {
             // (And we don't need to do anything when the listener is removed)
         };
+        // Never call the removal token as it's unnecessary (and saves the caller from re-adding it every tick)
     }
 
     @Override

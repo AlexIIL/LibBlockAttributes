@@ -1,11 +1,25 @@
 package alexiil.mc.lib.attributes.fluid;
 
+import java.util.function.Consumer;
+
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.GlassBottleItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.PotionItem;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Hand;
+
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.item.ItemInvUtil;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
+import alexiil.mc.lib.attributes.misc.Ref;
 
 public enum FluidVolumeUtil {
     ;
@@ -33,20 +47,28 @@ public enum FluidVolumeUtil {
         }
     }
 
-    /** Attempts to move up to the given maximum number of items from the {@link IFluidExtractable} to the
+    /** Attempts to move as much fluid as possible from the {@link IFluidExtractable} to the {@link IFluidInsertable}.
+     * 
+     * @return A copy of the fluid moved.
+     * @see #move(IFluidExtractable, IFluidInsertable, IFluidFilter, int) */
+    public static FluidVolume move(IFluidExtractable from, IFluidInsertable to) {
+        return move(from, to, null, Integer.MAX_VALUE);
+    }
+
+    /** Attempts to move up to the given amount of fluid from the {@link IFluidExtractable} to the
      * {@link IFluidInsertable}.
      * 
-     * @return The number of items moved.
+     * @return A copy of the fluid moved.
      * @see #move(IFluidExtractable, IFluidInsertable, IFluidFilter, int) */
-    public static int move(IFluidExtractable from, IFluidInsertable to, int maximum) {
+    public static FluidVolume move(IFluidExtractable from, IFluidInsertable to, int maximum) {
         return move(from, to, null, maximum);
     }
 
     /** Attempts to move up to the given maximum amount of fluids from the {@link IFluidExtractable} to the
      * {@link IFluidInsertable}, provided they match the given {@link IItemFilter}.
      * 
-     * @return The number of items moved. */
-    public static int move(IFluidExtractable from, IFluidInsertable to, IFluidFilter filter, int maximum) {
+     * @return A copy of the fluid moved. */
+    public static FluidVolume move(IFluidExtractable from, IFluidInsertable to, IFluidFilter filter, int maximum) {
         IFluidFilter insertionFilter = to.getInsertionFilter();
         if (filter != null && filter != ConstantFluidFilter.ANYTHING) {
             insertionFilter = AggregateFluidFilter.and(insertionFilter, filter);
@@ -54,7 +76,7 @@ public enum FluidVolumeUtil {
 
         FluidVolume extracted = from.attemptExtraction(insertionFilter, maximum, Simulation.SIMULATE);
         if (extracted.isEmpty()) {
-            return 0;
+            return FluidKeys.EMPTY.withAmount(0);
         }
         FluidVolume leftover = to.attemptInsertion(extracted, Simulation.ACTION);
         int insertedAmount = extracted.getAmount() - (leftover.isEmpty() ? 0 : leftover.getAmount());
@@ -72,7 +94,144 @@ public enum FluidVolumeUtil {
                 new String[] { "from A", "to B", "filter C", "originally extracted", "really extracted" },
                 new Object[] { from, to, insertionFilter, extracted, reallyExtracted });
         }
-        return insertedAmount;
+        return extracted;
+    }
+
+    /** @return An {@link IFluidInsertable} that will insert fluids into the given stack (overflowing into the given
+     *         {@link Consumer}) */
+    public static IFluidInsertable createItemInventoryInsertable(Ref<ItemStack> stackRef,
+        Consumer<ItemStack> excessStacks) {
+        return (FluidVolume fluid, Simulation simulate) -> {
+            ItemStack stack = stackRef.obj;
+            if (simulate == Simulation.SIMULATE) {
+                stack = stack.copy();
+            }
+            ItemStack split = stack;
+            boolean didSplit = false;
+            if (stack.getAmount() > 1) {
+                split = split.split(1);
+                didSplit = true;
+            }
+            if (stack.getItem() instanceof IFluidItem) {
+                IFluidItem fluidItem = (IFluidItem) stack.getItem();
+                Ref<ItemStack> single = new Ref<>(split);
+                FluidVolume prevFluid = fluid;
+                Ref<FluidVolume> incomingFluid = new Ref<>(fluid);
+                if (fluidItem.fill(single, incomingFluid)) {
+                    fluid = incomingFluid.obj;
+                    if (simulate == Simulation.ACTION) {
+                        if (didSplit) {
+                            excessStacks.accept(single.obj);
+                        } else {
+                            stackRef.obj = single.obj;
+                        }
+                    }
+                }
+            }
+            return fluid;
+        };
+    }
+
+    public static IFluidExtractable createItemInventoryExtractable(Ref<ItemStack> stackRef,
+        Consumer<ItemStack> excessStacks) {
+        return (IFluidFilter filter, int amount, Simulation simulate) -> {
+
+            ItemStack stack = stackRef.obj;
+            if (simulate == Simulation.SIMULATE) {
+                stack = stack.copy();
+            }
+            ItemStack split = stack;
+            boolean didSplit = false;
+            if (stack.getAmount() > 1) {
+                split = split.split(1);
+                didSplit = true;
+            }
+            FluidVolume drained = FluidKeys.EMPTY.withAmount(0);
+            if (stack.getItem() instanceof IFluidItem) {
+                IFluidItem fluidItem = (IFluidItem) stack.getItem();
+                Ref<ItemStack> single = new Ref<>(split);
+                drained = fluidItem.drain(single);
+                if (!drained.isEmpty() && simulate == Simulation.ACTION) {
+                    if (didSplit) {
+                        if (didSplit) {
+                            excessStacks.accept(single.obj);
+                        } else {
+                            stackRef.obj = single.obj;
+                        }
+                    }
+                }
+            }
+            return drained;
+        };
+    }
+
+    public static boolean interactWithTank(IFixedFluidInv inv, PlayerEntity player, Hand hand) {
+        ItemStack inHand = player.getStackInHand(hand);
+        if (inHand.isEmpty()) {
+            return false;
+        }
+        Ref<ItemStack> stack = new Ref<>(inHand.copy());
+        FluidTankInteraction result = interactWithTank(inv, stack, ItemInvUtil.createPlayerInsertable(player));
+        if (!result.didMoveAny()) {
+            return false;
+        }
+        final SoundEvent soundEvent;
+        if (result.fluidMoved.fluidKey == FluidKeys.LAVA) {
+            soundEvent = result.intoTank ? SoundEvents.ITEM_BUCKET_EMPTY_LAVA : SoundEvents.ITEM_BUCKET_FILL_LAVA;
+        } else {
+            boolean isBottle = inHand.getItem() instanceof GlassBottleItem || inHand.getItem() instanceof PotionItem;
+            if (isBottle) {
+                soundEvent = result.intoTank ? SoundEvents.ITEM_BOTTLE_EMPTY : SoundEvents.ITEM_BOTTLE_FILL;
+            } else {
+                soundEvent = result.intoTank ? SoundEvents.ITEM_BUCKET_EMPTY : SoundEvents.ITEM_BUCKET_FILL;
+            }
+        }
+        player.playSound(soundEvent, SoundCategory.BLOCK, 1.0f, 1.0f);
+        return true;
+    }
+
+    /** @param inv The fluid inventory to interact with
+     * @param stack The held {@link ItemStack} to interact with.
+     * @param excessStacks A {@link Consumer} to take the excess itemstack. */
+    public static FluidTankInteraction interactWithTank(IFixedFluidInv inv, Ref<ItemStack> stack,
+        Consumer<ItemStack> excessStacks) {
+        if (stack.obj.isEmpty() || !(stack.obj.getItem() instanceof IFluidItem)) {
+            return FluidTankInteraction.NONE;
+        }
+        FluidVolume fluidMoved = move(inv.getExtractable(), createItemInventoryInsertable(stack, excessStacks));
+        if (!fluidMoved.isEmpty()) {
+            return FluidTankInteraction.fromTank(fluidMoved);
+        }
+        fluidMoved = move(createItemInventoryExtractable(stack, excessStacks), inv.getInsertable());
+        return FluidTankInteraction.intoTank(fluidMoved);
+    }
+
+    public static final class FluidTankInteraction {
+        public static final FluidTankInteraction NONE = new FluidTankInteraction(FluidKeys.EMPTY.withAmount(0), false);
+
+        public final FluidVolume fluidMoved;
+        public final boolean intoTank;
+
+        public static FluidTankInteraction intoTank(FluidVolume fluid) {
+            return new FluidTankInteraction(fluid, true);
+        }
+
+        public static FluidTankInteraction fromTank(FluidVolume fluid) {
+            return new FluidTankInteraction(fluid, false);
+        }
+
+        public FluidTankInteraction(FluidVolume fluidMoved, boolean intoTank) {
+            this.fluidMoved = fluidMoved;
+            this.intoTank = intoTank;
+        }
+
+        public boolean didMoveAny() {
+            return !fluidMoved.isEmpty();
+        }
+
+        public int amountMoved() {
+            return fluidMoved.getAmount();
+        }
     }
 
     private static IllegalStateException throwBadImplException(String reason, String[] names, Object[] objs) {

@@ -2,6 +2,7 @@ package alexiil.mc.lib.attributes.item.impl;
 
 import net.minecraft.item.ItemStack;
 
+import alexiil.mc.lib.attributes.IListenerRemovalToken;
 import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
 import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
@@ -70,7 +71,7 @@ public class SubFixedItemInvView<InvType extends IFixedItemInvView> implements I
     }
 
     @Override
-    public IListenerToken addListener(IItemInvSlotChangeListener listener) {
+    public IListenerToken addListener(IItemInvSlotChangeListener listener, IListenerRemovalToken removalToken) {
         IFixedItemInvView wrapper = this;
         return inv.addListener((realInv, slot, previous, current) -> {
             assert realInv == inv;
@@ -78,6 +79,6 @@ public class SubFixedItemInvView<InvType extends IFixedItemInvView> implements I
                 int exposedSlot = slot - fromIndex;
                 listener.onChange(wrapper, exposedSlot, previous, current);
             }
-        });
+        }, removalToken);
     }
 }

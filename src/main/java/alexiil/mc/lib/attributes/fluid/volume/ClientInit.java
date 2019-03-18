@@ -6,7 +6,7 @@ import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 public class ClientInit implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        ClientSpriteRegistryCallback.EVENT.register((atlasTexture, registry) -> {
+        ClientSpriteRegistryCallback.registerBlockAtlas((atlasTexture, registry) -> {
             registry.register(PotionFluidKey.POTION_TEXTURE);
         });
     }

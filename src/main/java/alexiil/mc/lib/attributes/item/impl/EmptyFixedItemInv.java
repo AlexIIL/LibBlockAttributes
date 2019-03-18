@@ -2,13 +2,14 @@ package alexiil.mc.lib.attributes.item.impl;
 
 import net.minecraft.item.ItemStack;
 
+import alexiil.mc.lib.attributes.IListenerRemovalToken;
 import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.IFixedItemInv;
 import alexiil.mc.lib.attributes.item.IFixedItemInvView;
-import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.IItemExtractable;
 import alexiil.mc.lib.attributes.item.IItemInsertable;
+import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.IItemInvStats;
 import alexiil.mc.lib.attributes.item.filter.IItemFilter;
 
@@ -52,11 +53,12 @@ public enum EmptyFixedItemInv implements IFixedItemInv {
     }
 
     @Override
-    public IListenerToken addListener(IItemInvSlotChangeListener listener) {
+    public IListenerToken addListener(IItemInvSlotChangeListener listener, IListenerRemovalToken remToken) {
         // We don't need to keep track of the listener because this empty inventory never changes.
         return () -> {
             // (And we don't need to do anything when the listener is removed)
         };
+        // Never call the removal token as it's unnecessary (and saves the caller from re-adding it every tick)
     }
 
     @Override

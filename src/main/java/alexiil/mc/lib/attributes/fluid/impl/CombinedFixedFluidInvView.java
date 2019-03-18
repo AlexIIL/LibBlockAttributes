@@ -2,12 +2,14 @@ package alexiil.mc.lib.attributes.fluid.impl;
 
 import java.util.List;
 
+import alexiil.mc.lib.attributes.IListenerRemovalToken;
 import alexiil.mc.lib.attributes.IListenerToken;
 import alexiil.mc.lib.attributes.fluid.IFixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.IFluidInvTankChangeListener;
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.misc.BoolRef;
 
 /** An {@link IFixedFluidInvView} that delegates to a list of them instead of storing items directly. */
 public class CombinedFixedFluidInvView<InvType extends IFixedFluidInvView> implements IFixedFluidInvView {
@@ -96,13 +98,29 @@ public class CombinedFixedFluidInvView<InvType extends IFixedFluidInvView> imple
     }
 
     @Override
-    public IListenerToken addListener(IFluidInvTankChangeListener listener) {
-        IListenerToken[] tokens = new IListenerToken[views.size()];
+    public IListenerToken addListener(IFluidInvTankChangeListener listener, IListenerRemovalToken removalToken) {
+        final IListenerToken[] tokens = new IListenerToken[views.size()];
+        final BoolRef hasAlreadyRemoved = new BoolRef(false);
+        final IListenerRemovalToken ourRemToken = () -> {
+            for (IListenerToken token : tokens) {
+                if (token == null) {
+                    // This means we have only half-initialised
+                    // (and all of the next tokens must also be null)
+                    return;
+                }
+                token.removeListener();
+            }
+            if (!hasAlreadyRemoved.value) {
+                hasAlreadyRemoved.value = true;
+                removalToken.onListenerRemoved();
+            }
+
+        };
         for (int i = 0; i < tokens.length; i++) {
             final int index = i;
             tokens[i] = views.get(i).addListener((inv, subTank, previous, current) -> {
                 listener.onChange(this, subTankStartIndex[index] + subTank, previous, current);
-            });
+            }, ourRemToken);
             if (tokens[i] == null) {
                 for (int j = 0; j < i; j++) {
                     tokens[j].removeListener();
