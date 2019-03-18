@@ -81,7 +81,7 @@ public enum FluidVolumeUtil {
             return EMPTY;
         }
         FluidVolume leftover = to.attemptInsertion(extracted, Simulation.ACTION);
-        int insertedAmount = extracted.getAmount() - (leftover.isEmpty() ? 0 : leftover.getAmount());
+        int insertedAmount = extracted.getAmount() - leftover.getAmount();
         FluidVolume reallyExtracted = from.attemptExtraction(insertionFilter, insertedAmount, Simulation.ACTION);
 
         if (reallyExtracted.isEmpty()) {
@@ -112,7 +112,7 @@ public enum FluidVolumeUtil {
             final ItemStack split = stack.getAmount() > 1 ? stack.split(1) : stack;
             IFluidItem fluidItem = (IFluidItem) stack.getItem();
             Ref<ItemStack> filledStackRef = new Ref<>(split);
-            Ref<FluidVolume> incomingFluid = new Ref<>(fluid);
+            Ref<FluidVolume> incomingFluid = new Ref<>(fluid.copy());
             if (fluidItem.fill(filledStackRef, incomingFluid)) {
                 fluid = incomingFluid.obj;
                 if (simulate == Simulation.ACTION) {
