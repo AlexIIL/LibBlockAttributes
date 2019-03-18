@@ -1,0 +1,3 @@
+Changes:
+
+* Fixed IFluidInsertable.getInsertionFilter()'s default implementation not working with implementations of IFluidInsertable.attemptInsertion that require a minimum amount of fluid. 

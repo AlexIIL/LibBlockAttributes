@@ -23,6 +23,9 @@ public interface IFluidInsertable {
      * @return A filter to determine if {@link #attemptInsertion(FluidVolume, Simulation)} will accept the entirety of a
      *         given stack. */
     default IFluidFilter getInsertionFilter() {
-        return fluid -> attemptInsertion(fluid.withAmount(1), Simulation.SIMULATE).isEmpty();
+        return fluid -> {
+            FluidVolume volume = fluid.withAmount(Integer.MAX_VALUE);
+            return attemptInsertion(volume, Simulation.SIMULATE).getAmount() < Integer.MAX_VALUE;
+        };
     }
 }
