@@ -111,15 +111,16 @@ public enum FluidVolumeUtil {
             stack = stack.copy();
             final ItemStack split = stack.getAmount() > 1 ? stack.split(1) : stack;
             IFluidItem fluidItem = (IFluidItem) stack.getItem();
-            Ref<ItemStack> single = new Ref<>(split);
+            Ref<ItemStack> filledStackRef = new Ref<>(split);
             Ref<FluidVolume> incomingFluid = new Ref<>(fluid);
-            if (fluidItem.fill(single, incomingFluid)) {
+            if (fluidItem.fill(filledStackRef, incomingFluid)) {
                 fluid = incomingFluid.obj;
                 if (simulate == Simulation.ACTION) {
                     if (/* If we split the stack */ stack != split) {
-                        excessStacks.accept(single.obj);
+                        excessStacks.accept(filledStackRef.obj);
+                        stackRef.obj = stack;
                     } else {
-                        stackRef.obj = single.obj;
+                        stackRef.obj = filledStackRef.obj;
                     }
                 }
             }
