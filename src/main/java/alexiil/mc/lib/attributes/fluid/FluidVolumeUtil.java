@@ -24,6 +24,8 @@ import alexiil.mc.lib.attributes.misc.Ref;
 public enum FluidVolumeUtil {
     ;
 
+    private static final FluidVolume EMPTY = FluidKeys.EMPTY.withAmount(0);
+
     private static final boolean LONG_LOCALISATION = true;
     private static final boolean USE_FULL_NAMES = true;
 
@@ -76,7 +78,7 @@ public enum FluidVolumeUtil {
 
         FluidVolume extracted = from.attemptExtraction(insertionFilter, maximum, Simulation.SIMULATE);
         if (extracted.isEmpty()) {
-            return FluidKeys.EMPTY.withAmount(0);
+            return EMPTY;
         }
         FluidVolume leftover = to.attemptInsertion(extracted, Simulation.ACTION);
         int insertedAmount = extracted.getAmount() - (leftover.isEmpty() ? 0 : leftover.getAmount());
@@ -103,28 +105,21 @@ public enum FluidVolumeUtil {
         Consumer<ItemStack> excessStacks) {
         return (FluidVolume fluid, Simulation simulate) -> {
             ItemStack stack = stackRef.obj;
-            if (simulate == Simulation.SIMULATE) {
-                stack = stack.copy();
+            if (!(stack.getItem() instanceof IFluidItem)) {
+                return fluid;
             }
-            ItemStack split = stack;
-            boolean didSplit = false;
-            if (stack.getAmount() > 1) {
-                split = split.split(1);
-                didSplit = true;
-            }
-            if (stack.getItem() instanceof IFluidItem) {
-                IFluidItem fluidItem = (IFluidItem) stack.getItem();
-                Ref<ItemStack> single = new Ref<>(split);
-                FluidVolume prevFluid = fluid;
-                Ref<FluidVolume> incomingFluid = new Ref<>(fluid);
-                if (fluidItem.fill(single, incomingFluid)) {
-                    fluid = incomingFluid.obj;
-                    if (simulate == Simulation.ACTION) {
-                        if (didSplit) {
-                            excessStacks.accept(single.obj);
-                        } else {
-                            stackRef.obj = single.obj;
-                        }
+            stack = stack.copy();
+            final ItemStack split = stack.getAmount() > 1 ? stack.split(1) : stack;
+            IFluidItem fluidItem = (IFluidItem) stack.getItem();
+            Ref<ItemStack> single = new Ref<>(split);
+            Ref<FluidVolume> incomingFluid = new Ref<>(fluid);
+            if (fluidItem.fill(single, incomingFluid)) {
+                fluid = incomingFluid.obj;
+                if (simulate == Simulation.ACTION) {
+                    if (/* If we split the stack */ stack != split) {
+                        excessStacks.accept(single.obj);
+                    } else {
+                        stackRef.obj = single.obj;
                     }
                 }
             }
@@ -134,30 +129,24 @@ public enum FluidVolumeUtil {
 
     public static IFluidExtractable createItemInventoryExtractable(Ref<ItemStack> stackRef,
         Consumer<ItemStack> excessStacks) {
-        return (IFluidFilter filter, int amount, Simulation simulate) -> {
+        return (IFluidFilter filter, int maxAmount, Simulation simulate) -> {
 
-            ItemStack stack = stackRef.obj;
-            if (simulate == Simulation.SIMULATE) {
-                stack = stack.copy();
-            }
-            ItemStack split = stack;
-            boolean didSplit = false;
-            if (stack.getAmount() > 1) {
-                split = split.split(1);
-                didSplit = true;
-            }
-            FluidVolume drained = FluidKeys.EMPTY.withAmount(0);
+            final ItemStack stack = stackRef.obj.copy();
+            final ItemStack split = stack.getAmount() > 1 ? stack.split(1) : stack;
+            FluidVolume drained = EMPTY;
             if (stack.getItem() instanceof IFluidItem) {
                 IFluidItem fluidItem = (IFluidItem) stack.getItem();
-                Ref<ItemStack> single = new Ref<>(split);
-                drained = fluidItem.drain(single);
+                Ref<ItemStack> drainedStackRef = new Ref<>(split);
+                drained = fluidItem.drain(drainedStackRef);
+                if (drained.getAmount() > maxAmount) {
+                    return EMPTY;
+                }
                 if (!drained.isEmpty() && simulate == Simulation.ACTION) {
-                    if (didSplit) {
-                        if (didSplit) {
-                            excessStacks.accept(single.obj);
-                        } else {
-                            stackRef.obj = single.obj;
-                        }
+                    if (/* If we split the stack */ stack != split) {
+                        excessStacks.accept(drainedStackRef.obj);
+                        stackRef.obj = stack;
+                    } else {
+                        stackRef.obj = drainedStackRef.obj;
                     }
                 }
             }
@@ -170,11 +159,12 @@ public enum FluidVolumeUtil {
         if (inHand.isEmpty()) {
             return false;
         }
-        Ref<ItemStack> stack = new Ref<>(inHand.copy());
+        Ref<ItemStack> stack = new Ref<>(inHand);
         FluidTankInteraction result = interactWithTank(inv, stack, ItemInvUtil.createPlayerInsertable(player));
         if (!result.didMoveAny()) {
             return false;
         }
+        player.setStackInHand(hand, stack.obj);
         final SoundEvent soundEvent;
         if (result.fluidMoved.fluidKey == FluidKeys.LAVA) {
             soundEvent = result.intoTank ? SoundEvents.ITEM_BUCKET_EMPTY_LAVA : SoundEvents.ITEM_BUCKET_FILL_LAVA;
@@ -207,7 +197,7 @@ public enum FluidVolumeUtil {
     }
 
     public static final class FluidTankInteraction {
-        public static final FluidTankInteraction NONE = new FluidTankInteraction(FluidKeys.EMPTY.withAmount(0), false);
+        public static final FluidTankInteraction NONE = new FluidTankInteraction(EMPTY, false);
 
         public final FluidVolume fluidMoved;
         public final boolean intoTank;
