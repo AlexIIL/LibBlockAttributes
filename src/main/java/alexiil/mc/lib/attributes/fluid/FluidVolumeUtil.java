@@ -14,6 +14,7 @@ import net.minecraft.util.Hand;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
+import alexiil.mc.lib.attributes.fluid.filter.ExactFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
@@ -82,7 +83,8 @@ public enum FluidVolumeUtil {
         }
         FluidVolume leftover = to.attemptInsertion(extracted, Simulation.ACTION);
         int insertedAmount = extracted.getAmount() - leftover.getAmount();
-        FluidVolume reallyExtracted = from.attemptExtraction(insertionFilter, insertedAmount, Simulation.ACTION);
+        ExactFluidFilter exactFilter = new ExactFluidFilter(extracted.fluidKey);
+        FluidVolume reallyExtracted = from.attemptExtraction(exactFilter, insertedAmount, Simulation.ACTION);
 
         if (reallyExtracted.isEmpty()) {
             throw throwBadImplException("Tried to extract the filter (C) from A but it returned an empty item stack "
