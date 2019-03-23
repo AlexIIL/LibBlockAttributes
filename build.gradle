@@ -71,7 +71,7 @@ publishing {
     }
     publications {
        publishRemapJar(MavenPublication) {
-            groupId "alexiil.mc"
+            groupId "alexiil.mc.lib"
             artifactId "libblockattributes"
             version project.version
 
@@ -80,7 +80,7 @@ publishing {
             }
         }
         publishRemapSrcJar(MavenPublication) {
-            groupId "alexiil.mc"
+            groupId "alexiil.mc.lib"
             artifactId "libblockattributes"
             version project.version
 

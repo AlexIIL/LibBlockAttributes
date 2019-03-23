@@ -138,6 +138,6 @@ repositories {
 }
 
 dependencies {
-    modCompile "alexiil.mc:libblockattributes:0.2.0"
+    modCompile "alexiil.mc.lib:libblockattributes:0.2.0"
 }
 ```
