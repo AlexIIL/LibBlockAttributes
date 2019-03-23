@@ -30,6 +30,11 @@ public abstract class NormalFluidKey extends FluidKey {
         public NormalFluidKeyBuilder setRenderColor(int renderColor) {
             return (NormalFluidKeyBuilder) super.setRenderColor(renderColor);
         }
+
+        @Override
+        public NormalFluidKeyBuilder setUnit(FluidUnit unit) {
+            return (NormalFluidKeyBuilder) super.setUnit(unit);
+        }
     }
 
     @Nonnull

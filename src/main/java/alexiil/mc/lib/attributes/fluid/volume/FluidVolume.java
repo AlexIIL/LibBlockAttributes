@@ -17,20 +17,18 @@ import net.minecraft.text.TextFormat;
 import net.minecraft.util.Identifier;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
+import alexiil.mc.lib.attributes.fluid.render.DefaultFluidVolumeRenderer;
+import alexiil.mc.lib.attributes.fluid.render.FluidRenderFace;
+import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer;
 
 public abstract class FluidVolume {
 
-    /** The base unit for all fluids. This is arbitrarily chosen to be one twentieth the value of a nugget. NOTE: YOu
-     * should <i>never</i> tell the player what unit this is! Instead */
+    /** The base unit for all fluids. This is arbitrarily chosen to be 1 / 1620 of a bucket. NOTE: You should
+     * <i>never</i> tell the player what unit this is! Instead use */
     // and to establish easy compatibility with silk, which is where the numbers came from
     public static final int BASE_UNIT = 1;
 
-    public static final int NUGGET = 20 * BASE_UNIT;
-    public static final int INGOT = 9 * NUGGET;
-    public static final int BLOCK = 9 * INGOT;
-
-    public static final int BUCKET = BLOCK;
+    public static final int BUCKET = 20 * 9 * 9 * BASE_UNIT;
     public static final int BOTTLE = BUCKET / 3;
 
     private static final String KEY_AMOUNT = "Amount";
@@ -113,7 +111,7 @@ public abstract class FluidVolume {
 
     @Override
     public String toString() {
-        return fluidKey + " " + FluidVolumeUtil.localizeFluidAmount(amount);
+        return fluidKey + " " + fluidKey.unit.localizeAmount(getAmount());
     }
 
     /** @deprecated Use {@link Objects#equals(Object)} instead of this. */
@@ -240,13 +238,9 @@ public abstract class FluidVolume {
     }
 
     /** @return The colour tint to use when rendering this fluid volume in gui's or in-world. Note that this MUST be in
-     *         _RGB format: <code>(r << 16) | (g << 8) | b</code> */
+     *         0xRR_GG_BB format: <code>(r << 16) | (g << 8) | (b)</code> */
     public int getRenderColor() {
         return getFluidKey().renderColor;
-    }
-
-    public static final int swapArgbForAbgr(int colour) {
-        return ((colour & 0xFF) << 16) | (colour & 0xFF_00) | ((colour & 0xFF_00_00) >> 16);
     }
 
     public TextComponent getName() {
@@ -265,5 +259,19 @@ public abstract class FluidVolume {
                 .applyFormat(TextFormat.DARK_GRAY));
         }
         return list;
+    }
+
+    /** Returns the {@link FluidVolumeRenderer} to use for rendering this fluid. */
+    @Environment(EnvType.CLIENT)
+    public FluidVolumeRenderer getRenderer() {
+        return DefaultFluidVolumeRenderer.INSTANCE;
+    }
+
+    /** Delegate method to
+     * {@link #getRenderer()}.{@link FluidVolumeRenderer#render(FluidVolume, List, double, double, double) render(faces,
+     * x, y, z)} */
+    @Environment(EnvType.CLIENT)
+    public final void render(List<FluidRenderFace> faces, double x, double y, double z) {
+        getRenderer().render(this, faces, x, y, z);
     }
 }

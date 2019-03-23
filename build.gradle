@@ -8,7 +8,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 archivesBaseName = "LibBlockAttributes"
-version = "0.1.22"
+version = "0.1.23"
 
 minecraft {
 }
@@ -21,6 +21,9 @@ dependencies {
     //Fabric api
     modCompile "net.fabricmc:fabric:0.2.3.107"
     compile "com.google.code.findbugs:jsr305:3.0.1"
+
+    // Silk API
+    modCompile "io.github.prospector.silk:SilkAPI:1.2.3-38"
 
     testCompile "junit:junit:4.12"
 }

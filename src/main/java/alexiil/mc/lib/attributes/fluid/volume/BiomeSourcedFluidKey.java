@@ -43,6 +43,6 @@ public class BiomeSourcedFluidKey extends NormalFluidKey {
 
     @Override
     public FluidVolume fromWorld(ViewableWorld world, BlockPos pos) {
-        return withAmount(world.getBiome(pos), FluidVolume.BLOCK);
+        return withAmount(world.getBiome(pos), FluidVolume.BUCKET);
     }
 }

@@ -27,10 +27,10 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
         switch (biomeCount) {
             case 0: {
                 // Um, what?
-                return swapArgbForAbgr(Biomes.DEFAULT.getWaterColor());
+                return Biomes.DEFAULT.getWaterColor();
             }
             case 1: {
-                return swapArgbForAbgr(sources.keySet().iterator().next().getWaterColor());
+                return sources.keySet().iterator().next().getWaterColor();
             }
             default: {
                 int r = 0;
@@ -42,8 +42,8 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
                     int amount = sources.getInt(biome);
                     int colour = biome.getWaterColor();
                     r += (colour & 0xFF) * amount;
-                    g += ((colour & 0xFF_00) >> 8) * amount;
-                    b += ((colour & 0xFF_00_00) >> 16) * amount;
+                    g += ((colour >> 8) & 0xFF) * amount;
+                    b += ((colour >> 16) & 0xFF) * amount;
                     total += amount;
                 }
 
@@ -59,8 +59,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
                 assert g < 256;
                 assert b < 256;
 
-                // Opposite way round because biomes are apparently the wrong way round for opengl
-                return (r << 16) | (g << 8) | (b);
+                return (r) | (g << 8) | (b << 16);
             }
         }
     }

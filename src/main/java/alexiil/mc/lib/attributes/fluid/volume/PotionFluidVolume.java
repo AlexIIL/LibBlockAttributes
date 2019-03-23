@@ -2,6 +2,9 @@ package alexiil.mc.lib.attributes.fluid.volume;
 
 import java.util.List;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -9,6 +12,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.text.TextComponent;
+
+import alexiil.mc.lib.attributes.fluid.render.DefaultFluidVolumeRenderer;
+import alexiil.mc.lib.attributes.fluid.render.EnchantmentGlintFluidRenderer;
+import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer;
 
 public final class PotionFluidVolume extends FluidVolume {
 
@@ -30,9 +37,20 @@ public final class PotionFluidVolume extends FluidVolume {
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public List<TextComponent> getTooltipText(TooltipContext ctx) {
         List<TextComponent> list = super.getTooltipText(ctx);
         PotionUtil.buildTooltip(PotionUtil.setPotion(new ItemStack(Items.POTION), getPotion()), list, 1.0F);
         return list;
+    }
+
+    @Override
+    @Environment(EnvType.CLIENT)
+    public FluidVolumeRenderer getRenderer() {
+        if (getPotion().getEffects().isEmpty()) {
+            return DefaultFluidVolumeRenderer.INSTANCE;
+        } else {
+            return EnchantmentGlintFluidRenderer.INSTANCE;
+        }
     }
 }

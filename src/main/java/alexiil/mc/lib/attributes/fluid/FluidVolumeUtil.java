@@ -27,29 +27,6 @@ public enum FluidVolumeUtil {
 
     private static final FluidVolume EMPTY = FluidKeys.EMPTY.withAmount(0);
 
-    private static final boolean LONG_LOCALISATION = true;
-    private static final boolean USE_FULL_NAMES = true;
-
-    /** @param amount The amount in {@link FluidVolume#BASE_UNIT base units} */
-    public static String localizeFluidAmount(int amount) {
-        if (LONG_LOCALISATION) {
-            if (amount < FluidVolume.BASE_UNIT) {
-                return "0";
-            }
-            // TODO: Actual localisation!
-            // (I'd like to copy this almost directly from buildcraft's LocaleUtil.localizeFluid)
-            if (amount > FluidVolume.BUCKET) {
-                return (amount / (double) FluidVolume.BUCKET) + " Buckets";
-            }
-            if (amount > FluidVolume.INGOT) {
-                return (amount / (double) FluidVolume.INGOT) + " Ingots";
-            }
-            return (amount / (double) FluidVolume.NUGGET) + " Nuggets";
-        } else {
-            return amount / (double) FluidVolume.BUCKET + "Buckets";
-        }
-    }
-
     /** Attempts to move as much fluid as possible from the {@link IFluidExtractable} to the {@link IFluidInsertable}.
      * 
      * @return A copy of the fluid moved.

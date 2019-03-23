@@ -1,7 +1,11 @@
 package alexiil.mc.lib.attributes.fluid;
 
+import io.github.prospector.silk.fluid.FluidContainer;
+import io.github.prospector.silk.fluid.FluidContainerProvider;
+
 import alexiil.mc.lib.attributes.AttributeCombinable;
 import alexiil.mc.lib.attributes.Attributes;
+import alexiil.mc.lib.attributes.fluid.compat.silk.SilkFluidCompat;
 import alexiil.mc.lib.attributes.fluid.impl.CombinedFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.impl.CombinedFixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.impl.CombinedFluidExtractable;
@@ -11,6 +15,7 @@ import alexiil.mc.lib.attributes.fluid.impl.EmptyFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.impl.EmptyFluidExtractable;
 import alexiil.mc.lib.attributes.fluid.impl.EmptyFluidInvStats;
 import alexiil.mc.lib.attributes.fluid.impl.RejectingFluidInsertable;
+import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
 
 public enum FluidAttributes {
     ;
@@ -36,6 +41,13 @@ public enum FluidAttributes {
             list -> new CombinedFluidInsertable(list));
         EXTRACTABLE = Attributes.createCombinable(IFluidExtractable.class, EmptyFluidExtractable.NULL,
             list -> new CombinedFluidExtractable(list));
-        // TODO: Silk compat!
+
+        try {
+            Class.forName("io.github.prospector.silk.fluid.FluidContainerProvider");
+            LibBlockAttributes.LOGGER.info("Silk found, loading compatibility for fluids.");
+            SilkFluidCompat.load();
+        } catch (ClassNotFoundException cnfe) {
+            LibBlockAttributes.LOGGER.info("Silk not found, not loading compatibility for fluids.");
+        }
     }
 }

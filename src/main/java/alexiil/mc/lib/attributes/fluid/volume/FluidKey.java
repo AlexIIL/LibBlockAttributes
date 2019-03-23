@@ -10,12 +10,15 @@ public abstract class FluidKey {
 
     /* package-private */ final FluidRegistryEntry<?> registryEntry;
 
+    /** The units to use when displaying amounts, capacities, and flow rates to the player. */
+    public final FluidUnit unit;
+
     /** The sprite to use when rendering this {@link FluidKey}'s specifically.
      * <p>
      * Note that this might differ from the one returned by {@link FluidVolume#getSprite()}! */
     public final Identifier spriteId;
 
-    /** The sprite to use when rendering this {@link FluidKey}'s specifically.
+    /** The colour to use when rendering this {@link FluidKey}'s specifically.
      * <p>
      * Note that this might differ from the one returned by {@link FluidVolume#getRenderColor()}! */
     public final int renderColor;
@@ -26,10 +29,11 @@ public abstract class FluidKey {
     public final TextComponent name;
 
     public static class FluidKeyBuilder {
-        private final FluidRegistryEntry<?> registryEntry;
-        private final Identifier spriteId;
-        private final TextComponent name;
-        private int renderColor = 0xFF_FF_FF;
+        /* package-private */ final FluidRegistryEntry<?> registryEntry;
+        /* package-private */ final Identifier spriteId;
+        /* package-private */ final TextComponent name;
+        /* package-private */ int renderColor = 0xFF_FF_FF;
+        /* package-private */ FluidUnit unit = FluidUnit.BUCKET;
 
         public FluidKeyBuilder(FluidRegistryEntry<?> registryEntry, Identifier spriteId, TextComponent name) {
             this.registryEntry = registryEntry;
@@ -41,11 +45,19 @@ public abstract class FluidKey {
             this.renderColor = renderColor;
             return this;
         }
+
+        public FluidKeyBuilder setUnit(FluidUnit unit) {
+            this.unit = unit;
+            return this;
+        }
     }
 
     public FluidKey(FluidKeyBuilder builder) {
         if (builder.registryEntry == null) {
             throw new NullPointerException("registryEntry");
+        }
+        if (builder.unit == null) {
+            throw new NullPointerException("unit");
         }
         if (builder.spriteId == null) {
             throw new NullPointerException("spriteId");
@@ -54,13 +66,10 @@ public abstract class FluidKey {
             throw new NullPointerException("textComponent");
         }
         this.registryEntry = builder.registryEntry;
+        this.unit = builder.unit;
         this.spriteId = builder.spriteId;
         this.name = builder.name;
         this.renderColor = builder.renderColor;
-    }
-
-    public static final int swapArgbForAbgr(int colour) {
-        return ((colour & 0xFF) << 16) | (colour & 0xFF_00) | ((colour & 0xFF_00_00) >> 16);
     }
 
     public static FluidKey fromTag(CompoundTag tag) {
@@ -101,6 +110,6 @@ public abstract class FluidKey {
 
     /** Called when this is pumped out from the world. */
     public FluidVolume fromWorld(ViewableWorld world, BlockPos pos) {
-        return withAmount(FluidVolume.BLOCK);
+        return withAmount(FluidVolume.BUCKET);
     }
 }

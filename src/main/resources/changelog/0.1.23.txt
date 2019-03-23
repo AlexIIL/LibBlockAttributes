@@ -1,0 +1,5 @@
+Changes:
+
+* Added FluidUnit: so that different fluids can pick the most appropriate unit (so water uses buckets, and potions use bottles)
+* Added various fluid rendering helpers
+* Add basic silk fluid compatibility

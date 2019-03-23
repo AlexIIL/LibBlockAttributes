@@ -1,0 +1,16 @@
+{
+    "libblockattributes.fluid.amount": "%2$s %1$s",
+    "libblockattributes.fluid.flow_rate": "%3$s %1$s per %2$s",
+    "libblockattributes.fluid.tank_empty": "Empty %2$s %1$s Tank",
+    "libblockattributes.fluid.tank_partial": "%2$s / %3$s %1$s Tank",
+    "libblockattributes.fluid.tank_full": "Full %2$s %1$s Tank",
+
+    "libblockattributes.time_unit.tick": "Tick",
+    "libblockattributes.time_unit.second": "Second",
+    "libblockattributes.time_unit.minute": "Minute",
+
+    "libblockattributes.fluid_unit.bucket.singular": "Bucket",
+    "libblockattributes.fluid_unit.bucket.plural": "Buckets",
+    "libblockattributes.fluid_unit.bottle.singular": "Bottle",
+    "libblockattributes.fluid_unit.bottle.plural": "Bottles"
+}

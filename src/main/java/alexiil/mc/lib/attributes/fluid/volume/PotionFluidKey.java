@@ -24,7 +24,7 @@ public final class PotionFluidKey extends FluidKey {
         super(new FluidKeyBuilder(new FluidRegistryEntry<>(Registry.POTION, potion), //
             POTION_TEXTURE, //
             new TranslatableTextComponent(potion.getName("item.minecraft.potion.effect."))//
-        ).setRenderColor(swapArgbForAbgr(PotionUtil.getColor(potion))));
+        ).setUnit(FluidUnit.BOTTLE).setRenderColor(PotionUtil.getColor(potion)));
         this.potion = potion;
     }
 
