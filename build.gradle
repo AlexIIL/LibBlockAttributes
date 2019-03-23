@@ -8,18 +8,18 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 archivesBaseName = "LibBlockAttributes"
-version = "0.1.23"
+version = "0.2.0"
 
 minecraft {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:19w08b"
-    mappings "net.fabricmc:yarn:19w08b.6"
+    minecraft "com.mojang:minecraft:19w12b"
+    mappings "net.fabricmc:yarn:19w12b.3"
     modCompile "net.fabricmc:fabric-loader:0.3.7.109"
 
     //Fabric api
-    modCompile "net.fabricmc:fabric:0.2.3.107"
+    modCompile "net.fabricmc:fabric:0.2.5.114"
     compile "com.google.code.findbugs:jsr305:3.0.1"
 
     // Silk API

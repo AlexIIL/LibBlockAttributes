@@ -1,8 +1,5 @@
 package alexiil.mc.lib.attributes.fluid;
 
-import io.github.prospector.silk.fluid.FluidContainer;
-import io.github.prospector.silk.fluid.FluidContainerProvider;
-
 import alexiil.mc.lib.attributes.AttributeCombinable;
 import alexiil.mc.lib.attributes.Attributes;
 import alexiil.mc.lib.attributes.fluid.compat.silk.SilkFluidCompat;
