@@ -21,6 +21,13 @@ public class AttributeDefaulted<T> extends Attribute<T> {
         this.defaultValue = defaultValue;
     }
 
+    /** @param searchParam The search parameters to use for accessing instances. Many blocks only offer attributes from
+     *            a certain direction, which should be provided as a {@link SearchParamDirectional}. (However there is
+     *            also {@link SearchParamInVoxel} and {@link SearchParamDirectionalVoxel} if you need to filter only
+     *            attribute instances that are in a certain subspace of the block).Alternatively you can provide
+     *            {@link SearchParameter#NONE} if you don't have a direction or voxel space to search in.
+     * @return The first attribute instance (as obtained by {@link #getAll(World, BlockPos, SearchParameter)}), or the
+     *         {@link #defaultValue} if the search didn't find any attribute instances at the specified position. */
     @Nonnull
     public final T getFirst(World world, BlockPos pos, SearchParameter searchParam) {
         VoxelShape blockShape = world.getBlockState(pos).getOutlineShape(world, pos);
