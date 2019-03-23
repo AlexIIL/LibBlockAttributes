@@ -98,8 +98,11 @@ public enum ItemStackCollections {
         if (a.getItem() != b.getItem()) {
             Identifier idA = Registry.ITEM.getId(a.getItem());
             Identifier idB = Registry.ITEM.getId(b.getItem());
-            int comp = idA.compareTo(idB);
-            if (comp != 0) {
+            int comp;
+            if ((comp = idA.getNamespace().compareTo(idB.getNamespace())) != 0) {
+                return comp;
+            }
+            if ((comp = idA.getPath().compareTo(idB.getPath())) != 0) {
                 return comp;
             }
         }
