@@ -11,11 +11,13 @@ import net.minecraft.text.TextComponent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
-import alexiil.mc.lib.attributes.fluid.volume.NormalFluidVolume.SimpleFluidVolume;
-
 /** Identical to {@link NormalFluidVolume}, but without an amount and with extra data hidden from public view. As such
  * this is safe to use in normal maps and sets. */
-public abstract class NormalFluidKey extends FluidKey {
+public class NormalFluidKey extends FluidKey {
+
+    public static NormalFluidKeyBuilder builder(Fluid fluid, Identifier spriteId, TextComponent name) {
+        return new NormalFluidKeyBuilder(fluid, spriteId, name);
+    }
 
     public static class NormalFluidKeyBuilder extends FluidKeyBuilder {
 
@@ -34,6 +36,10 @@ public abstract class NormalFluidKey extends FluidKey {
         @Override
         public NormalFluidKeyBuilder setUnit(FluidUnit unit) {
             return (NormalFluidKeyBuilder) super.setUnit(unit);
+        }
+
+        public NormalFluidKey build() {
+            return new NormalFluidKey(this);
         }
     }
 
@@ -56,26 +62,12 @@ public abstract class NormalFluidKey extends FluidKey {
     }
 
     @Override
-    public abstract NormalFluidVolume readVolume(CompoundTag tag);
+    public NormalFluidVolume withAmount(int amount) {
+        return new NormalFluidVolume(this, amount);
+    }
 
     @Override
-    public abstract NormalFluidVolume withAmount(int amount);
-
-    /** A {@link NormalFluidKey} with no extra data. */
-    public static final class SimpleFluidKey extends NormalFluidKey {
-
-        public SimpleFluidKey(NormalFluidKeyBuilder builder) {
-            super(builder);
-        }
-
-        @Override
-        public NormalFluidVolume readVolume(CompoundTag tag) {
-            return new SimpleFluidVolume(this, tag);
-        }
-
-        @Override
-        public NormalFluidVolume withAmount(int amount) {
-            return new SimpleFluidVolume(this, amount);
-        }
+    public NormalFluidVolume readVolume(CompoundTag tag) {
+        return new NormalFluidVolume(this, tag);
     }
 }

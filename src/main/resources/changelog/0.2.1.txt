@@ -1,0 +1,10 @@
+Breaking Changes:
+
+* Removed SimpleFluidKey and SimpleFluidVolume - you should use NormalFluidKey and NormalFluidVolume instead.
+
+Changes:
+
+* Made NormalFluidKey and NormalFluidVolume not-abstract
+* Changed FluidKeys.put(Fluid, FluidKey) to also register both the still and flowing variants of fluids if the fluid passed is a vanilla minecraft BaseFluid
+* Added NormalFluidKey.builder(), as an (optional) replacement for a new NormalFluidKeyBuilder()
+* Added NormalFluidKeyBuilder.build(), which is a shorter way of writing new NormalFluidKey(builder /* extra settings */);

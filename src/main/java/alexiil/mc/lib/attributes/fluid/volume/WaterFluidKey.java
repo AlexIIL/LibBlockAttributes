@@ -11,7 +11,7 @@ import net.minecraft.world.biome.Biome;
     static final WaterFluidKey INSTANCE = new WaterFluidKey();
 
     private WaterFluidKey() {
-        super(new NormalFluidKeyBuilder(Fluids.WATER, //
+        super(NormalFluidKey.builder(Fluids.WATER, //
             new Identifier("minecraft", "block/water_still"), //
             new TranslatableTextComponent("block.minecraft.water")//
         ));

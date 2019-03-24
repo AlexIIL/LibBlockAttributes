@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.fluid.BaseFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.potion.Potion;
@@ -16,7 +17,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 import alexiil.mc.lib.attributes.fluid.volume.NormalFluidKey.NormalFluidKeyBuilder;
-import alexiil.mc.lib.attributes.fluid.volume.NormalFluidKey.SimpleFluidKey;
 
 public class FluidKeys {
 
@@ -31,21 +31,19 @@ public class FluidKeys {
 
     static {
         // Empty doesn't have a proper sprite or text component because it doesn't ever make sense to use it.
-        EMPTY = new SimpleFluidKey(new NormalFluidKeyBuilder(Fluids.EMPTY, //
+        EMPTY = new NormalFluidKeyBuilder(Fluids.EMPTY, //
             new Identifier("minecraft", "missingno"), //
             new StringTextComponent("!EMPTY FLUID!")//
-        ));
-        LAVA = new SimpleFluidKey(new NormalFluidKeyBuilder(Fluids.LAVA, //
+        ).build();
+        LAVA = new NormalFluidKeyBuilder(Fluids.LAVA, //
             new Identifier("minecraft", "block/lava_still"), //
             new TranslatableTextComponent("block.minecraft.lava")//
-        ));
+        ).build();
         WATER = WaterFluidKey.INSTANCE;
 
         put(Fluids.EMPTY, EMPTY);
         put(Fluids.LAVA, LAVA);
         put(Fluids.WATER, WATER);
-        put(Fluids.FLOWING_LAVA, LAVA);
-        put(Fluids.FLOWING_WATER, WATER);
         put(Potions.EMPTY, EMPTY);
         put(Potions.WATER, WATER);
     }
@@ -53,6 +51,10 @@ public class FluidKeys {
     public static void put(Fluid fluid, FluidKey fluidKey) {
         FLUIDS.put(fluid, fluidKey);
         MASTER_MAP.put(fluidKey.registryEntry, fluidKey);
+        if (fluid instanceof BaseFluid) {
+            FLUIDS.put(((BaseFluid) fluid).getStill(), fluidKey);
+            FLUIDS.put(((BaseFluid) fluid).getFlowing(), fluidKey);
+        }
     }
 
     public static void put(Potion potion, FluidKey fluidKey) {
