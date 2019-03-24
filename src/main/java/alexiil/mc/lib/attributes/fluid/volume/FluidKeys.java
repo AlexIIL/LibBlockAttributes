@@ -12,6 +12,7 @@ import net.minecraft.fluid.Fluids;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.Potions;
 import net.minecraft.text.StringTextComponent;
+import net.minecraft.text.TextComponent;
 import net.minecraft.text.TranslatableTextComponent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -19,6 +20,8 @@ import net.minecraft.util.registry.Registry;
 import alexiil.mc.lib.attributes.fluid.volume.NormalFluidKey.NormalFluidKeyBuilder;
 
 public class FluidKeys {
+
+    private static final Identifier MISSING_SPRITE = new Identifier("minecraft", "missingno");
 
     public static final NormalFluidKey EMPTY;
     public static final NormalFluidKey LAVA;
@@ -32,7 +35,7 @@ public class FluidKeys {
     static {
         // Empty doesn't have a proper sprite or text component because it doesn't ever make sense to use it.
         EMPTY = new NormalFluidKeyBuilder(Fluids.EMPTY, //
-            new Identifier("minecraft", "missingno"), //
+            MISSING_SPRITE, //
             new StringTextComponent("!EMPTY FLUID!")//
         ).build();
         LAVA = new NormalFluidKeyBuilder(Fluids.LAVA, //
@@ -72,7 +75,18 @@ public class FluidKeys {
 
     @Nullable
     public static FluidKey get(@Nullable Fluid fluid) {
-        return FLUIDS.get(fluid);
+        if (fluid == null) {
+            return null;
+        }
+        FluidKey fluidKey = FLUIDS.get(fluid);
+        if (fluidKey == null && fluid instanceof BaseFluid) {
+            BaseFluid base = (BaseFluid) fluid;
+            TextComponent name = new StringTextComponent("!IMPLICIT UNSUPPORTED FLUID!");
+            NormalFluidKeyBuilder builder = NormalFluidKey.builder(base.getStill(), MISSING_SPRITE, name);
+            fluidKey = new ImplicitVanillaFluidKey(builder);
+            put(fluid, fluidKey);
+        }
+        return fluidKey;
     }
 
     public static FluidKey get(Potion potion) {
@@ -93,6 +107,13 @@ public class FluidKeys {
         if (fluidKey == null && entry.backingRegistry == Registry.POTION) {
             Potion potion = (Potion) entry.backingObject;
             return get(potion);
+        }
+        // custom, simple, modded fluids are also created "on demand"
+        // However unlike normal fluids we can't support them very well.
+        // (as there's no way to get it's name or sprite location or render tint from vanilla)
+        if (fluidKey == null && entry.backingRegistry == Registry.FLUID) {
+            Fluid fluid = (Fluid) entry.backingObject;
+            return get(fluid);
         }
         return fluidKey;
     }
