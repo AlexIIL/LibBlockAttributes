@@ -2,8 +2,13 @@ package alexiil.mc.lib.attributes.item;
 
 import java.util.List;
 
-import net.minecraft.item.ItemStack;
+import javax.annotation.Nullable;
 
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.shape.VoxelShape;
+
+import alexiil.mc.lib.attributes.AttributeList;
+import alexiil.mc.lib.attributes.CacheInfo;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
@@ -69,8 +74,8 @@ public interface FixedItemInvView {
 
     /** @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
-     * @return An {@link ItemFilter} for this slot. If this slot is filtered by an {@link ItemFilter} internally then
-     *         it is highly recommended that this be overridden to return *that* filter rather than a newly constructed
+     * @return An {@link ItemFilter} for this slot. If this slot is filtered by an {@link ItemFilter} internally then it
+     *         is highly recommended that this be overridden to return *that* filter rather than a newly constructed
      *         one.
      * @throws RuntimeException if the given slot wasn't a valid index. */
     default ItemFilter getFilterForSlot(int slot) {
@@ -83,9 +88,9 @@ public interface FixedItemInvView {
     }
 
     /** Adds the given listener to this inventory, such that the
-     * {@link ItemInvSlotChangeListener#onChange(FixedItemInvView, int, ItemStack, ItemStack)} will be called every
-     * time that this inventory changes. However if this inventory doesn't support listeners then this will return a
-     * null {@link ListenerToken token}.
+     * {@link ItemInvSlotChangeListener#onChange(FixedItemInvView, int, ItemStack, ItemStack)} will be called every time
+     * that this inventory changes. However if this inventory doesn't support listeners then this will return a null
+     * {@link ListenerToken token}.
      * 
      * @param removalToken A token that will be called whenever the given listener is removed from this inventory (or if
      *            this inventory itself is unloaded or otherwise invalidated).
@@ -103,6 +108,15 @@ public interface FixedItemInvView {
             return EmptyFixedItemInv.INSTANCE;
         }
         return new SubFixedItemInvView<>(this, fromIndex, toIndex);
+    }
+
+    /** Offers this object and {@link #getStatistics()} to the attribute list.
+     * <p>
+     * Sub classes (such as {@link FixedItemInv}) are encouraged to override this to also offer their
+     * {@link FixedItemInv#getInsertable()} and {@link FixedItemInv#getExtractable()}. */
+    default void offerSelfAsAttribute(AttributeList<?> list, @Nullable CacheInfo cacheInfo, @Nullable VoxelShape shape) {
+        list.offer(this, cacheInfo, shape);
+        list.offer(getStatistics(), cacheInfo, shape);
     }
 
     /** @return An object that only implements {@link FixedItemInvView}, and does not expose the modification methods

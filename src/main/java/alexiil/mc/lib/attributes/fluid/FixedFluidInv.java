@@ -1,5 +1,9 @@
 package alexiil.mc.lib.attributes.fluid;
 
+import net.minecraft.util.shape.VoxelShape;
+
+import alexiil.mc.lib.attributes.AttributeList;
+import alexiil.mc.lib.attributes.CacheInfo;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.impl.EmptyFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.impl.EmptyFluidExtractable;
@@ -39,8 +43,8 @@ public interface FixedFluidInv extends FixedFluidInvView {
         return new SimpleFixedFluidInvExtractable(this, null);
     }
 
-    /** @return An {@link FluidExtractable} for this inventory that will attempt to extract from only the given array
-     *         of tanks. */
+    /** @return An {@link FluidExtractable} for this inventory that will attempt to extract from only the given array of
+     *         tanks. */
     default FluidExtractable getExtractable(int[] tanks) {
         if (tanks.length == 0) {
             return EmptyFluidExtractable.NULL;
@@ -54,5 +58,12 @@ public interface FixedFluidInv extends FixedFluidInvView {
             return EmptyFixedFluidInv.INSTANCE;
         }
         return new SubFixedFluidInv<>(this, fromIndex, toIndex);
+    }
+
+    @Override
+    default void offerSelfAsAttribute(AttributeList<?> list, CacheInfo cacheInfo, VoxelShape shape) {
+        FixedFluidInvView.super.offerSelfAsAttribute(list, cacheInfo, shape);
+        list.offer(getInsertable(), cacheInfo, shape);
+        list.offer(getExtractable(), cacheInfo, shape);
     }
 }

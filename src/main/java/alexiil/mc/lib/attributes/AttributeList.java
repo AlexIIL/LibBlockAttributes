@@ -75,22 +75,22 @@ public class AttributeList<T> {
     // Adders (used by attribute providers)
 
     public void add(T obj) {
-        // FIXME: We default to null, but in most cases it's possible to get the shape
-        // of the block anyway - as most normal blocks only have their normal shape.
-        // perhaps we should default it to their whole shape if it's not given?
-        add(obj, CacheInfo.NOT_CACHABLE, null);
+        add(obj, null, null);
     }
 
-    public void add(T obj, CacheInfo cacheInfo) {
+    public void add(T obj, @Nullable CacheInfo cacheInfo) {
         add(obj, cacheInfo, null);
     }
 
     public void add(T obj, @Nullable VoxelShape shape) {
-        add(obj, CacheInfo.NOT_CACHABLE, shape);
+        add(obj, null, shape);
     }
 
-    public void add(T obj, CacheInfo cacheInfo, @Nullable VoxelShape shape) {
+    public void add(T obj, @Nullable CacheInfo cacheInfo, @Nullable VoxelShape shape) {
         assertAdding();
+        if (cacheInfo == null) {
+            cacheInfo = CacheInfo.NOT_CACHABLE;
+        }
         if (shape == null) {
             shape = defaultShape;
         }
@@ -122,18 +122,18 @@ public class AttributeList<T> {
     }
 
     public void offer(Object object) {
-        offer(object, CacheInfo.NOT_CACHABLE, null);
+        offer(object, null, null);
     }
 
-    public void offer(Object object, CacheInfo cacheInfo) {
+    public void offer(Object object, @Nullable CacheInfo cacheInfo) {
         offer(object, cacheInfo, null);
     }
 
     public void offer(Object object, @Nullable VoxelShape shape) {
-        offer(object, CacheInfo.NOT_CACHABLE, shape);
+        offer(object, null, shape);
     }
 
-    public void offer(Object object, CacheInfo cacheInfo, @Nullable VoxelShape shape) {
+    public void offer(Object object, @Nullable CacheInfo cacheInfo, @Nullable VoxelShape shape) {
         // Always check before to throw the error as early as possible
         assertAdding();
         if (attribute.isInstance(object)) {

@@ -2,6 +2,12 @@ package alexiil.mc.lib.attributes.fluid;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import net.minecraft.util.shape.VoxelShape;
+
+import alexiil.mc.lib.attributes.AttributeList;
+import alexiil.mc.lib.attributes.CacheInfo;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
@@ -63,9 +69,9 @@ public interface FixedFluidInvView {
 
     /** @param tank The tank index. Must be a value between 0 (inclusive) and {@link #getTankCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
-     * @return An {@link FluidFilter} for this tank. If this tank is filtered by an {@link FluidFilter} internally
-     *         then it is highly recommended that this be overridden to return *that* filter rather than a newly
-     *         constructed one.
+     * @return An {@link FluidFilter} for this tank. If this tank is filtered by an {@link FluidFilter} internally then
+     *         it is highly recommended that this be overridden to return *that* filter rather than a newly constructed
+     *         one.
      * @throws RuntimeException if the given tank wasn't a valid index. */
     default FluidFilter getFilterForTank(int tank) {
         return stack -> isFluidValidForTank(tank, stack);
@@ -97,6 +103,16 @@ public interface FixedFluidInvView {
             return EmptyFixedFluidInv.INSTANCE;
         }
         return new SubFixedFluidInvView<>(this, fromIndex, toIndex);
+    }
+
+    /** Offers this object and {@link #getStatistics()} to the attribute list.
+     * <p>
+     * Sub classes (such as {@link FixedFluidInv}) are encouraged to override this to also offer their
+     * {@link FixedFluidInv#getInsertable()} and {@link FixedFluidInv#getExtractable()}. */
+    default void offerSelfAsAttribute(AttributeList<?> list, @Nullable CacheInfo cacheInfo,
+        @Nullable VoxelShape shape) {
+        list.offer(this, cacheInfo, shape);
+        list.offer(getStatistics(), cacheInfo, shape);
     }
 
     /** @return An object that only implements {@link FixedFluidInvView}, and does not expose the modification methods
@@ -136,8 +152,7 @@ public interface FixedFluidInvView {
             }
 
             @Override
-            public ListenerToken addListener(FluidInvTankChangeListener listener,
-                ListenerRemovalToken removalToken) {
+            public ListenerToken addListener(FluidInvTankChangeListener listener, ListenerRemovalToken removalToken) {
                 final FixedFluidInvView view = this;
                 return real.addListener((inv, tank, prev, curr) -> {
                     // Defend against giving the listener the real (possibly changeable) inventory.

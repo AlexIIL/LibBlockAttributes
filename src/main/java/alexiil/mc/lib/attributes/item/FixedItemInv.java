@@ -1,7 +1,10 @@
 package alexiil.mc.lib.attributes.item;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.shape.VoxelShape;
 
+import alexiil.mc.lib.attributes.AttributeList;
+import alexiil.mc.lib.attributes.CacheInfo;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv;
@@ -47,8 +50,8 @@ public interface FixedItemInv extends FixedItemInvView {
         return new SimpleFixedItemInvInsertable(this, slots);
     }
 
-    /** @return An {@link ItemExtractable} for this inventory that will attempt to extract from any of the slots in
-     *         this inventory. */
+    /** @return An {@link ItemExtractable} for this inventory that will attempt to extract from any of the slots in this
+     *         inventory. */
     default ItemExtractable getExtractable() {
         return new SimpleFixedItemInvExtractable(this, null);
     }
@@ -68,5 +71,12 @@ public interface FixedItemInv extends FixedItemInvView {
             return EmptyFixedItemInv.INSTANCE;
         }
         return new SubFixedItemInv<>(this, fromIndex, toIndex);
+    }
+
+    @Override
+    default void offerSelfAsAttribute(AttributeList<?> list, CacheInfo cacheInfo, VoxelShape shape) {
+        FixedItemInvView.super.offerSelfAsAttribute(list, cacheInfo, shape);
+        list.offer(getInsertable(), cacheInfo, shape);
+        list.offer(getExtractable(), cacheInfo, shape);
     }
 }

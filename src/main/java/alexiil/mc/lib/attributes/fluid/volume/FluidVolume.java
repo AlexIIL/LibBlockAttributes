@@ -274,4 +274,11 @@ public abstract class FluidVolume {
     public final void render(List<FluidRenderFace> faces, double x, double y, double z) {
         getRenderer().render(this, faces, x, y, z);
     }
+
+    /** Delegate method to
+     * {@link #getRenderer()}.{@link FluidVolumeRenderer#renderGuiRectangle(FluidVolume, double, double, double, double)} */
+    @Environment(EnvType.CLIENT)
+    public final void renderGuiRect(double x0, double y0, double x1, double y1) {
+        getRenderer().renderGuiRectangle(this, x0, y0, x1, y1);
+    }
 }
