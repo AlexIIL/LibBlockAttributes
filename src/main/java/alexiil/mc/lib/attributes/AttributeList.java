@@ -98,7 +98,7 @@ public class AttributeList<T> {
             return;
         }
         if (searchParam instanceof SearchOptionInVoxel) {
-            if (!VoxelShapes.compareShapes(shape, ((SearchOptionInVoxel<?>) searchParam).shape,
+            if (!VoxelShapes.matchesAnywhere(shape, ((SearchOptionInVoxel<?>) searchParam).shape,
                 BooleanBiFunction.AND)) {
                 return;
             }
@@ -111,7 +111,7 @@ public class AttributeList<T> {
                 }
                 combinedShapeList.add(combined);
             } else {
-                if (!VoxelShapes.compareShapes(shape, voxelSearch.shape, BooleanBiFunction.AND)) {
+                if (!VoxelShapes.matchesAnywhere(shape, voxelSearch.shape, BooleanBiFunction.AND)) {
                     return;
                 }
             }
@@ -159,7 +159,7 @@ public class AttributeList<T> {
         }
         // TODO: Improve this algorithm!
         VoxelShape combined = VoxelShapes.empty();
-        for (BoundingBox box : shape.getBoundingBoxList()) {
+        for (BoundingBox box : shape.getBoundingBoxes()) {
             double minX = box.minX;
             double minY = box.minY;
             double minZ = box.minZ;
