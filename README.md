@@ -6,14 +6,12 @@ This project has 3 major concepts: attributes, item management, and fluid manage
 
 ### Attributes
 
-Unfortunately this part of the API hasn't been very thoroughly thought out :(
-
 An "attribute" is just a class that has an instance of "alexiil.mc.lib.attributes.Attribute" stored in a public static final field.
 
-A block can provide attribute instances by implementing IAttributeBlock and then offering instances like this:
+A block can provide attribute instances by implementing AttributeProviderBlock and then offering instances like this:
 
 ```java
-public class MyBlock extends Block implements IAttributeBlock {
+public class MyBlock extends Block implements AttributeProviderBlock {
     @Override
     public void addAllAttributes(World world, BlockPos pos, BlockState state, AttributeList<?> to) {
         to.offer(an_attribute_instance);
@@ -25,32 +23,32 @@ A block can request instances of a specific attribute by:
 
 1. Finding the appropriate `public static final Attribute<>` field.
     - This defines item attributes in "ItemAttributes", and fluid attributes in "FluidAttributes"
-2. Calling either "getAll", "getFirstOrNull", "getFirst", or "get" and passing in the appropriate world, position, and SearchParameter.
+2. Calling either "getAll", "getFirstOrNull", "getFirst", or "get" and passing in the appropriate world, position, and `SearchOption`.
 
 For example a hopper-like block might call this:
 
 ```java
 /**
- * Finds an {@link IItemInsertable} in the given direction.
+ * Finds an {@link ItemInsertable} in the given direction.
  *
  * @param world The world object to search within
  * @param thisPos The position to search from.
  * @param direction The direction to search in.
- * @return An {@link IItemInsertable} that we can attempt to insert into.
+ * @return An {@link ItemInsertable} that we can attempt to insert into.
  */
-public static IItemInsertable getNeighbourInsertable(World world, BlockPos thisPos, Direction direction) {
+public static ItemInsertable getNeighbourInsertable(World world, BlockPos thisPos, Direction direction) {
 
     BlockPos offsetPos = thisPos.offset(direction);
 
     // Note that the direction is always the direction of the search:
     // so it's always from the hopper to it's neighbour, and not the
     // side of the neighbour to search.
-    SearchParameter searchParam = SearchParamDirectional.of(direction);
+    SearchOption option = SearchOptions.inDirection(direction);
 
     // Note that this object will never be null - it will just return
     // a "rejecting" item insertable that never allows anything to be
     // inserted if there's no valid item insertable there. 
-    return ItemAttributes.INSERTABLE.get(world, offsetPos, searchParam);
+    return ItemAttributes.INSERTABLE.get(world, offsetPos, option);
 }
 ```
 
@@ -61,8 +59,8 @@ attribute in a `public static final Attribute<MyAttributeClass>` field.
 In addition there are three type of attribute:
 
 - Attribute: The base type, implies nothing about attribute instances but only provides the `getAll()` and `getFirstOrNull()` accessor methods.
-- AttributeDefaulted: This implies that it is always possible to have a default instance which can used safely everywhere that normal instances could be. This also provides the `getFirst()` accessor method.
-- AttributeCombinable: (extends AttributeDefaulted) This implies that it is always possible to combine multiple attribute instances and use them safely everywhere that normal instances can be. This provides the `get()` method which returns a combined version of `getAll()`.
+- DefaultedAttribute: This implies that it is always possible to have a default instance which can used safely everywhere that normal instances could be. This also provides the `getFirst()` accessor method.
+- CombinableAttribute: (extends DefaultedAttribute) This implies that it is always possible to combine multiple attribute instances and use them safely everywhere that normal instances can be. This provides the `get()` method which returns a combined version of `getAll()`.
 
 For example a custom attribute based around a fictional class `RobotDockingPort` (which could be used by buildcraft robots) would be defined like this:
 
@@ -78,13 +76,13 @@ Everything in the "alexiil.mc.lib.attributes.item" package is dedicated to item 
 
 The core API's are:
 
-- IFixedItemInv* (A version of minecraft's Inventory class that only deals with indexed item slot accessors and modification).
-- IFixedItemInvView* (A read-only version of IFixedItemInv).
-- IItemInvStats* (containing statistics for any inventory).
-- IItemInsertable* (containing item insertion)
-- IItemExtractable* (containing item extraction)
-- IItemFilter (a Predicate for ItemStacks)
-- IItemInvSlotChangeListener (for listening to changes in an IFixedItemInvView - although not all implementations will support this).
+- FixedItemInv* (A version of minecraft's Inventory class that only deals with indexed item slot accessors and modification).
+- FixedItemInvView* (A read-only version of FixedItemInv).
+- ItemInvStats* (containing statistics for any inventory).
+- ItemInsertable* (containing item insertion)
+- ItemExtractable* (containing item extraction)
+- ItemFilter (a Predicate for ItemStacks)
+- ItemInvSlotChangeListener (for listening to changes in a FixedItemInvView - although not all implementations will support this).
 
 (*Is an attribute by default)
 
@@ -108,13 +106,13 @@ Everything in the "alexiil.mc.lib.attributes.fluid" package is dedicated to flui
 
 The core API's are:
 
-- IFixedFluidInv*.
-- IFixedFluidInvView* (A read-only version of IFixedFluidInv).
-- IFluidInvStats* (containing statistics for any fluid inventory).
-- IFluidInsertable* (containing fluid insertion)
-- IFluidExtractable* (containing fluid extraction)
-- IFluidFilter (a Predicate for FluidKey's)
-- IFluidInvTankChangeListener (for listening to changes in an IFixedItemInvView - although not all implementations will support this).
+- FixedFluidInv*.
+- FixedFluidInvView* (A read-only version of FixedFluidInv).
+- FluidInvStats* (containing statistics for any fluid inventory).
+- FluidInsertable* (containing fluid insertion)
+- FluidExtractable* (containing fluid extraction)
+- FluidFilter (a Predicate for FluidKey's)
+- FluidInvTankChangeListener (for listening to changes in a FixedItemInvView - although not all implementations will support this).
 
 (*Is an attribute by default)
 
@@ -138,6 +136,6 @@ repositories {
 }
 
 dependencies {
-    modCompile "alexiil.mc.lib:libblockattributes:0.2.0"
+    modCompile "alexiil.mc.lib:libblockattributes:0.3.0"
 }
 ```
