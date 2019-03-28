@@ -2,6 +2,10 @@ package alexiil.mc.lib.attributes.fluid.render;
 
 import java.util.List;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
+import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
+
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.MinecraftClient;
@@ -21,6 +25,8 @@ public class EnchantmentGlintFluidRenderer extends FluidVolumeRenderer {
 
     @Override
     public void render(FluidVolume fluid, List<FluidRenderFace> faces, double x, double y, double z) {
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
         Tessellator tess = Tessellator.getInstance();
         BufferBuilder bb = tess.getBufferBuilder();
 
@@ -56,6 +62,10 @@ public class EnchantmentGlintFluidRenderer extends FluidVolumeRenderer {
             bb.setOffset(0, 0, 0);
             tess.draw();
         }, 8);
+
+        // opengl cleanup
+        GlStateManager.disableLighting();
+        GlStateManager.disableBlend();
     }
 
     private static void glintVertex(BufferBuilder bb, double x, double y, double z, float u, float v) {

@@ -54,17 +54,17 @@ public final class FluidRenderFace {
         final double s = textureScale;
         if (positive) {
             return new FluidRenderFace(//
-                x1, y0, z0, y0 * s, z0 * s, //
-                x1, y1, z0, y1 * s, z0 * s, //
-                x1, y1, z1, y1 * s, z1 * s, //
-                x1, y0, z1, y0 * s, z1 * s//
+                x1, y0, z0, z0 * s, y0 * s, //
+                x1, y1, z0, z1 * s, y0 * s, //
+                x1, y1, z1, z1 * s, y1 * s, //
+                x1, y0, z1, z0 * s, y1 * s//
             );
         } else {
             return new FluidRenderFace(//
-                x0, y0, z0, y0 * s, z0 * s, //
-                x0, y0, z1, y0 * s, z1 * s, //
-                x0, y1, z1, y1 * s, z1 * s, //
-                x0, y1, z0, y1 * s, z0 * s //
+                x0, y0, z0, z0 * s, y0 * s, //
+                x0, y0, z1, z0 * s, y1 * s, //
+                x0, y1, z1, z1 * s, y1 * s, //
+                x0, y1, z0, z1 * s, y0 * s //
             );
         }
     }

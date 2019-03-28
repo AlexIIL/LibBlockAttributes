@@ -14,3 +14,4 @@ Changes:
 
 * Added much better support for ordinary fluid classes - now lava is defined through the implicit fluids system without any problems.
 * Added a static utility class "SearchOptions" which contains factories for creating all of the different types of SearchOption.
+* Fixed fluid renders not binding the texture map and setting up blending before rendering.

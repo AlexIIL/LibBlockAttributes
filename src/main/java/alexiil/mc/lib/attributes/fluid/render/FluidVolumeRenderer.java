@@ -3,12 +3,18 @@ package alexiil.mc.lib.attributes.fluid.render;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
+import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
+
 import org.lwjgl.opengl.GL11;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.texture.Sprite;
+import net.minecraft.client.texture.SpriteAtlasTexture;
 
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
@@ -73,6 +79,10 @@ public abstract class FluidVolumeRenderer {
             vertex(bb, f.x3, f.y3, f.z3, sprite.getU(f.u3), sprite.getV(f.v3), r, g, b);
         }
         bb.setOffset(0, 0, 0);
+
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
+        MinecraftClient.getInstance().getTextureManager().bindTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEX);
         tess.draw();
     }
 
