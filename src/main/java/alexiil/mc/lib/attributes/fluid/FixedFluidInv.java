@@ -10,38 +10,38 @@ import alexiil.mc.lib.attributes.fluid.impl.SubFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
-public interface IFixedFluidInv extends IFixedFluidInvView {
+public interface FixedFluidInv extends FixedFluidInvView {
 
     /** Sets the fluid in the given tank to the given fluid.
      * 
      * @return True if the modification was allowed, false otherwise. (For example if the given stack doesn't pass the
-     *         {@link IFixedFluidInvView#isFluidValidForTank(int, FluidKey)} test). */
+     *         {@link FixedFluidInvView#isFluidValidForTank(int, FluidKey)} test). */
     boolean setInvFluid(int tank, FluidVolume to, Simulation simulation);
 
-    /** @return An {@link IFluidInsertable} for this inventory that will attempt to insert into any of the tanks in this
+    /** @return An {@link FluidInsertable} for this inventory that will attempt to insert into any of the tanks in this
      *         inventory. */
-    default IFluidInsertable getInsertable() {
+    default FluidInsertable getInsertable() {
         return new SimpleFixedFluidInvInsertable(this, null);
     }
 
-    /** @return An {@link IFluidInsertable} for this inventory that will attempt to insert into only the given array of
+    /** @return An {@link FluidInsertable} for this inventory that will attempt to insert into only the given array of
      *         tanks. */
-    default IFluidInsertable getInsertable(int[] tanks) {
+    default FluidInsertable getInsertable(int[] tanks) {
         if (tanks.length == 0) {
             return RejectingFluidInsertable.NULL;
         }
         return new SimpleFixedFluidInvInsertable(this, tanks);
     }
 
-    /** @return An {@link IFluidExtractable} for this inventory that will attempt to extract from any of the tanks in
+    /** @return An {@link FluidExtractable} for this inventory that will attempt to extract from any of the tanks in
      *         this inventory. */
-    default IFluidExtractable getExtractable() {
+    default FluidExtractable getExtractable() {
         return new SimpleFixedFluidInvExtractable(this, null);
     }
 
-    /** @return An {@link IFluidExtractable} for this inventory that will attempt to extract from only the given array
+    /** @return An {@link FluidExtractable} for this inventory that will attempt to extract from only the given array
      *         of tanks. */
-    default IFluidExtractable getExtractable(int[] tanks) {
+    default FluidExtractable getExtractable(int[] tanks) {
         if (tanks.length == 0) {
             return EmptyFluidExtractable.NULL;
         }
@@ -49,7 +49,7 @@ public interface IFixedFluidInv extends IFixedFluidInvView {
     }
 
     @Override
-    default IFixedFluidInv getSubInv(int fromIndex, int toIndex) {
+    default FixedFluidInv getSubInv(int fromIndex, int toIndex) {
         if (fromIndex == toIndex) {
             return EmptyFixedFluidInv.INSTANCE;
         }

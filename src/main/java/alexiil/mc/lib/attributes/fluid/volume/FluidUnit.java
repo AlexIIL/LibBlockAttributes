@@ -66,7 +66,7 @@ public final class FluidUnit {
         try {
             return String.format(translatedKey, translatedUnit, translatedtime, format);
         } catch (IllegalFormatException ife) {
-            return KEY_FLOW_RATE + " [" + format + "]";
+            return KEY_FLOW_RATE + " [" + format + "] " + ife.getMessage();
         }
     }
 
@@ -77,7 +77,7 @@ public final class FluidUnit {
         try {
             return String.format(translatedKey, translatedUnit, format);
         } catch (IllegalFormatException ife) {
-            return key + " [" + format + "]";
+            return key + " [" + format + "] " + ife.getMessage();
         }
     }
 
@@ -93,7 +93,7 @@ public final class FluidUnit {
         try {
             return String.format(translatedKey, translatedUnit, format1, format2);
         } catch (IllegalFormatException ife) {
-            return key + " [" + format1 + ", " + format2 + "]";
+            return key + " [" + format1 + ", " + format2 + "] " + ife.getMessage();
         }
     }
 

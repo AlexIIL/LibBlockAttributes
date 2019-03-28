@@ -5,26 +5,26 @@ import java.util.List;
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.item.IItemExtractable;
+import alexiil.mc.lib.attributes.item.ItemExtractable;
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
 import alexiil.mc.lib.attributes.item.filter.ExactItemStackFilter;
-import alexiil.mc.lib.attributes.item.filter.IItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
-public final class CombinedItemExtractable implements IItemExtractable {
+public final class CombinedItemExtractable implements ItemExtractable {
 
-    private final List<? extends IItemExtractable> list;
+    private final List<? extends ItemExtractable> list;
 
-    public CombinedItemExtractable(List<? extends IItemExtractable> list) {
+    public CombinedItemExtractable(List<? extends ItemExtractable> list) {
         this.list = list;
     }
 
     @Override
-    public ItemStack attemptExtraction(IItemFilter filter, int maxAmount, Simulation simulation) {
+    public ItemStack attemptExtraction(ItemFilter filter, int maxAmount, Simulation simulation) {
         if (maxAmount < 0) {
             throw new IllegalArgumentException("maxCount cannot be negative! (was " + maxAmount + ")");
         }
         ItemStack extracted = ItemStack.EMPTY;
-        for (IItemExtractable extractable : list) {
+        for (ItemExtractable extractable : list) {
             if (extracted.isEmpty()) {
                 extracted = extractable.attemptExtraction(filter, maxAmount, simulation);
                 if (extracted.isEmpty()) {

@@ -4,17 +4,17 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.item.IFixedItemInv;
+import alexiil.mc.lib.attributes.item.FixedItemInv;
 
-/** An {@link Inventory} that wraps an {@link IFixedItemInv}.
+/** An {@link Inventory} that wraps an {@link FixedItemInv}.
  * <p>
  * Two of the {@link Inventory} methods must be overridden by subclasses however: {@link Inventory#markDirty()} and
  * {@link Inventory#canPlayerUseInv(net.minecraft.entity.player.PlayerEntity)}. */
 public abstract class PartialInventoryFixedWrapper implements Inventory {
 
-    private final IFixedItemInv inv;
+    private final FixedItemInv inv;
 
-    public PartialInventoryFixedWrapper(IFixedItemInv inv) {
+    public PartialInventoryFixedWrapper(FixedItemInv inv) {
         this.inv = inv;
     }
 

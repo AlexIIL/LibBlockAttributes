@@ -1,15 +1,15 @@
 package alexiil.mc.lib.attributes.fluid.impl;
 
-import alexiil.mc.lib.attributes.IListenerRemovalToken;
-import alexiil.mc.lib.attributes.IListenerToken;
-import alexiil.mc.lib.attributes.fluid.IFixedFluidInvView;
-import alexiil.mc.lib.attributes.fluid.IFluidInvTankChangeListener;
-import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.ListenerRemovalToken;
+import alexiil.mc.lib.attributes.ListenerToken;
+import alexiil.mc.lib.attributes.fluid.FixedFluidInvView;
+import alexiil.mc.lib.attributes.fluid.FluidInvTankChangeListener;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
-/** A sub-view of an existing {@link IFixedFluidInvView}. */
-public class SubFixedFluidInvView<InvType extends IFixedFluidInvView> implements IFixedFluidInvView {
+/** A sub-view of an existing {@link FixedFluidInvView}. */
+public class SubFixedFluidInvView<InvType extends FixedFluidInvView> implements FixedFluidInvView {
 
     /** The inventory that is wrapped. */
     protected final InvType inv;
@@ -53,7 +53,7 @@ public class SubFixedFluidInvView<InvType extends IFixedFluidInvView> implements
     }
 
     @Override
-    public IFluidFilter getFilterForTank(int tank) {
+    public FluidFilter getFilterForTank(int tank) {
         return inv.getFilterForTank(getInternalTank(tank));
     }
 
@@ -63,16 +63,16 @@ public class SubFixedFluidInvView<InvType extends IFixedFluidInvView> implements
     }
 
     @Override
-    public IFixedFluidInvView getView() {
+    public FixedFluidInvView getView() {
         if (getClass() == SubFixedFluidInvView.class) {
             return this;
         }
-        return IFixedFluidInvView.super.getView();
+        return FixedFluidInvView.super.getView();
     }
 
     @Override
-    public IListenerToken addListener(IFluidInvTankChangeListener listener, IListenerRemovalToken removalToken) {
-        IFixedFluidInvView wrapper = this;
+    public ListenerToken addListener(FluidInvTankChangeListener listener, ListenerRemovalToken removalToken) {
+        FixedFluidInvView wrapper = this;
         return inv.addListener((realInv, tank, previous, current) -> {
             assert realInv == inv;
             if (tank >= fromIndex && tank < toIndex) {

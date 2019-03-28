@@ -1,8 +1,20 @@
 package alexiil.mc.lib.attributes;
 
-public class SearchParameter {
+import java.util.function.Predicate;
 
-    public static final SearchParameter NONE = new SearchParameter();
+public class SearchOption<T> {
 
-    SearchParameter() {}
+    private final Predicate<T> searchMatcher;
+
+    SearchOption() {
+        this.searchMatcher = null;
+    }
+
+    public SearchOption(Predicate<T> searchMatcher) {
+        this.searchMatcher = searchMatcher;
+    }
+
+    public final boolean matches(T obj) {
+        return searchMatcher != null ? searchMatcher.test(obj) : true;
+    }
 }

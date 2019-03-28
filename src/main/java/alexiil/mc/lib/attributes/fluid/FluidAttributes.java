@@ -1,7 +1,7 @@
 package alexiil.mc.lib.attributes.fluid;
 
-import alexiil.mc.lib.attributes.AttributeCombinable;
 import alexiil.mc.lib.attributes.Attributes;
+import alexiil.mc.lib.attributes.CombinableAttribute;
 import alexiil.mc.lib.attributes.fluid.compat.silk.SilkFluidCompat;
 import alexiil.mc.lib.attributes.fluid.impl.CombinedFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.impl.CombinedFixedFluidInvView;
@@ -17,26 +17,26 @@ import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
 public enum FluidAttributes {
     ;
 
-    public static final AttributeCombinable<IFixedFluidInvView> FIXED_INV_VIEW;
-    public static final AttributeCombinable<IFixedFluidInv> FIXED_INV;
-    public static final AttributeCombinable<IFluidInvStats> INV_STATS;
-    public static final AttributeCombinable<IFluidInsertable> INSERTABLE;
-    public static final AttributeCombinable<IFluidExtractable> EXTRACTABLE;
+    public static final CombinableAttribute<FixedFluidInvView> FIXED_INV_VIEW;
+    public static final CombinableAttribute<FixedFluidInv> FIXED_INV;
+    public static final CombinableAttribute<FluidInvStats> INV_STATS;
+    public static final CombinableAttribute<FluidInsertable> INSERTABLE;
+    public static final CombinableAttribute<FluidExtractable> EXTRACTABLE;
 
     static {
-        FIXED_INV_VIEW = Attributes.createCombinable(IFixedFluidInvView.class, EmptyFixedFluidInv.INSTANCE,
+        FIXED_INV_VIEW = Attributes.createCombinable(FixedFluidInvView.class, EmptyFixedFluidInv.INSTANCE,
             CombinedFixedFluidInvView::new);
         FIXED_INV =
-            Attributes.createCombinable(IFixedFluidInv.class, EmptyFixedFluidInv.INSTANCE, CombinedFixedFluidInv::new);
+            Attributes.createCombinable(FixedFluidInv.class, EmptyFixedFluidInv.INSTANCE, CombinedFixedFluidInv::new);
 
         // For some reason the java compiler can't work out what <T> should be for these three
         // So instead we create a lambda, which somehow gives it enough space to work out what it is.
         // (and yet eclipse had no problems with it :/ )
-        INV_STATS = Attributes.createCombinable(IFluidInvStats.class, EmptyFluidInvStats.INSTANCE,
+        INV_STATS = Attributes.createCombinable(FluidInvStats.class, EmptyFluidInvStats.INSTANCE,
             list -> new CombinedFluidInvStats(list));
-        INSERTABLE = Attributes.createCombinable(IFluidInsertable.class, RejectingFluidInsertable.NULL,
+        INSERTABLE = Attributes.createCombinable(FluidInsertable.class, RejectingFluidInsertable.NULL,
             list -> new CombinedFluidInsertable(list));
-        EXTRACTABLE = Attributes.createCombinable(IFluidExtractable.class, EmptyFluidExtractable.NULL,
+        EXTRACTABLE = Attributes.createCombinable(FluidExtractable.class, EmptyFluidExtractable.NULL,
             list -> new CombinedFluidExtractable(list));
 
         try {

@@ -13,13 +13,13 @@ import net.minecraft.world.World;
 public class Attribute<T> {
     public final Class<T> clazz;
 
-    private final ArrayList<IAttributeCustomAdder<T>> customAdders = new ArrayList<>();
+    private final ArrayList<CustomAttributeAdder<T>> customAdders = new ArrayList<>();
 
     protected Attribute(Class<T> clazz) {
         this.clazz = clazz;
     }
 
-    protected Attribute(Class<T> clazz, IAttributeCustomAdder<T> customAdder) {
+    protected Attribute(Class<T> clazz, CustomAttributeAdder<T> customAdder) {
         this.clazz = clazz;
         customAdders.add(customAdder);
     }
@@ -44,9 +44,9 @@ public class Attribute<T> {
         return System.identityHashCode(this);
     }
 
-    /** Appends a single {@link IAttributeCustomAdder} to the list of custom adders. These are called in order for
-     * blocks that don't implement {@link IAttributeBlock}. */
-    public final void appendCustomAdder(IAttributeCustomAdder<T> customAdder) {
+    /** Appends a single {@link CustomAttributeAdder} to the list of custom adders. These are called only for blocks
+     * that don't implement {@link AttributeProvider}. */
+    public final void appendCustomAdder(CustomAttributeAdder<T> customAdder) {
         customAdders.add(customAdder);
     }
 
@@ -54,24 +54,27 @@ public class Attribute<T> {
         BlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
 
-        if (block instanceof IAttributeBlock) {
-            IAttributeBlock attributeBlock = (IAttributeBlock) block;
+        if (block instanceof AttributeProvider) {
+            AttributeProvider attributeBlock = (AttributeProvider) block;
             attributeBlock.addAllAttributes(world, pos, state, list);
         } else {
-            for (IAttributeCustomAdder<T> custom : customAdders) {
+            for (CustomAttributeAdder<T> custom : customAdders) {
                 custom.addAll(world, pos, state, list);
             }
         }
     }
 
+    /** @return A complete {@link AttributeList} of every attribute instance that can be found. */
+    public final AttributeList<T> getAll(World world, BlockPos pos) {
+        return getAll(world, pos, null);
+    }
+
     /** @param searchParam The search parameters to use for accessing instances. Many blocks only offer attributes from
-     *            a certain direction, which should be provided as a {@link SearchParamDirectional}. (However there is
-     *            also {@link SearchParamInVoxel} and {@link SearchParamDirectionalVoxel} if you need to filter only
-     *            attribute instances that are in a certain subspace of the block).Alternatively you can provide
-     *            {@link SearchParameter#NONE} if you don't have a direction or voxel space to search in.
+     *            a certain direction, which should be provided as a {@link SearchOptionDirectional}. A full list of
+     *            possible {@link SearchOption}'s is in {@link SearchOptions}.
      * @return A complete {@link AttributeList} of every attribute instance that can be found with the supplied search
      *         parameters. */
-    public final AttributeList<T> getAll(World world, BlockPos pos, SearchParameter searchParam) {
+    public final AttributeList<T> getAll(World world, BlockPos pos, SearchOption<? super T> searchParam) {
         VoxelShape blockShape = world.getBlockState(pos).getOutlineShape(world, pos);
         AttributeList<T> list = new AttributeList<>(this, searchParam, blockShape);
         addAll(world, pos, list);
@@ -79,15 +82,20 @@ public class Attribute<T> {
         return list;
     }
 
-    /** @param searchParam The search parameters to use for accessing instances. Many blocks only offer attributes from
-     *            a certain direction, which should be provided as a {@link SearchParamDirectional}. (However there is
-     *            also {@link SearchParamInVoxel} and {@link SearchParamDirectionalVoxel} if you need to filter only
-     *            attribute instances that are in a certain subspace of the block).Alternatively you can provide
-     *            {@link SearchParameter#NONE} if you don't have a direction or voxel space to search in.
-     * @return The first attribute instance (as obtained by {@link #getAll(World, BlockPos, SearchParameter)}), or null
-     *         if the search didn't find any attribute instances at the specified position. */
+    /** @return The first attribute instance (as obtained by {@link #getAll(World, BlockPos)}), or null if this didn't
+     *         find any instances. */
     @Nullable
-    public final T getFirstOrNull(World world, BlockPos pos, SearchParameter searchParam) {
+    public final T getFirstOrNull(World world, BlockPos pos) {
+        return getFirstOrNull(world, pos, null);
+    }
+
+    /** @param searchParam The search parameters to use for accessing instances. Many blocks only offer attributes from
+     *            a certain direction, which should be provided as a {@link SearchOptionDirectional}. A full list of
+     *            possible {@link SearchOption}'s is in {@link SearchOptions}.
+     * @return The first attribute instance (as obtained by {@link #getAll(World, BlockPos, SearchOption)}), or null if
+     *         the search didn't find any attribute instances at the specified position. */
+    @Nullable
+    public final T getFirstOrNull(World world, BlockPos pos, @Nullable SearchOption<? super T> searchParam) {
         AttributeList<T> list = getAll(world, pos, searchParam);
         if (list.list.isEmpty()) {
             return null;

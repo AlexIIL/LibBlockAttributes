@@ -3,14 +3,14 @@ package alexiil.mc.lib.attributes.item.impl;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 
-import alexiil.mc.lib.attributes.IListenerRemovalToken;
-import alexiil.mc.lib.attributes.IListenerToken;
-import alexiil.mc.lib.attributes.item.IFixedItemInv;
-import alexiil.mc.lib.attributes.item.IFixedItemInvView;
-import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
+import alexiil.mc.lib.attributes.ListenerRemovalToken;
+import alexiil.mc.lib.attributes.ListenerToken;
+import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.item.FixedItemInvView;
+import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
 
-/** An {@link IFixedItemInv} that wraps a vanilla {@link Inventory}. */
-public class FixedInventoryViewVanillaWrapper implements IFixedItemInvView {
+/** An {@link FixedItemInv} that wraps a vanilla {@link Inventory}. */
+public class FixedInventoryViewVanillaWrapper implements FixedItemInvView {
     final Inventory inv;
 
     FixedInventoryViewVanillaWrapper(Inventory inv) {
@@ -42,7 +42,7 @@ public class FixedInventoryViewVanillaWrapper implements IFixedItemInvView {
     }
 
     @Override
-    public IListenerToken addListener(IItemInvSlotChangeListener listener, IListenerRemovalToken remToken) {
+    public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken remToken) {
         // Oddly enough vanilla doesn't support listeners.
         return null;
     }

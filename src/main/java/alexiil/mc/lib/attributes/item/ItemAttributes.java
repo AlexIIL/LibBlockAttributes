@@ -10,7 +10,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.util.math.Direction;
 
-import alexiil.mc.lib.attributes.AttributeCombinable;
+import alexiil.mc.lib.attributes.CombinableAttribute;
 import alexiil.mc.lib.attributes.Attributes;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInvView;
@@ -27,14 +27,14 @@ import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
 public enum ItemAttributes {
     ;
 
-    public static final AttributeCombinable<IFixedItemInvView> FIXED_INV_VIEW;
-    public static final AttributeCombinable<IFixedItemInv> FIXED_INV;
-    public static final AttributeCombinable<IItemInvStats> INV_STATS;
-    public static final AttributeCombinable<IItemInsertable> INSERTABLE;
-    public static final AttributeCombinable<IItemExtractable> EXTRACTABLE;
+    public static final CombinableAttribute<FixedItemInvView> FIXED_INV_VIEW;
+    public static final CombinableAttribute<FixedItemInv> FIXED_INV;
+    public static final CombinableAttribute<ItemInvStats> INV_STATS;
+    public static final CombinableAttribute<ItemInsertable> INSERTABLE;
+    public static final CombinableAttribute<ItemExtractable> EXTRACTABLE;
 
     static {
-        FIXED_INV_VIEW = Attributes.createCombinable(IFixedItemInvView.class, EmptyFixedItemInv.INSTANCE,
+        FIXED_INV_VIEW = Attributes.createCombinable(FixedItemInvView.class, EmptyFixedItemInv.INSTANCE,
             CombinedFixedItemInvView::new, (world, pos, state, list) -> {
                 Block block = state.getBlock();
 
@@ -63,7 +63,7 @@ public enum ItemAttributes {
                     }
                 }
             });
-        FIXED_INV = Attributes.createCombinable(IFixedItemInv.class, EmptyFixedItemInv.INSTANCE,
+        FIXED_INV = Attributes.createCombinable(FixedItemInv.class, EmptyFixedItemInv.INSTANCE,
             CombinedFixedItemInv::new, (world, pos, state, list) -> {
                 Block block = state.getBlock();
 
@@ -96,7 +96,7 @@ public enum ItemAttributes {
         // For some reason the java compiler can't work out what <T> should be for these three
         // So instead we create a lambda, which somehow gives it enough space to work out what it is.
         // (and yet eclipse had no problems with it :/ )
-        INV_STATS = Attributes.createCombinable(IItemInvStats.class, EmptyItemInvStats.INSTANCE,
+        INV_STATS = Attributes.createCombinable(ItemInvStats.class, EmptyItemInvStats.INSTANCE,
             list -> new CombinedItemInvStats(list), (world, pos, state, list) -> {
 
                 Block block = state.getBlock();
@@ -124,7 +124,7 @@ public enum ItemAttributes {
                     }
                 }
             });
-        INSERTABLE = Attributes.createCombinable(IItemInsertable.class, RejectingItemInsertable.NULL,
+        INSERTABLE = Attributes.createCombinable(ItemInsertable.class, RejectingItemInsertable.NULL,
             list -> new CombinedItemInsertable(list), (world, pos, state, list) -> {
                 Block block = state.getBlock();
                 Direction direction = list.getSearchDirection();
@@ -173,7 +173,7 @@ public enum ItemAttributes {
                     }
                 }
             });
-        EXTRACTABLE = Attributes.createCombinable(IItemExtractable.class, EmptyItemExtractable.NULL,
+        EXTRACTABLE = Attributes.createCombinable(ItemExtractable.class, EmptyItemExtractable.NULL,
             list -> new CombinedItemExtractable(list), (world, pos, state, list) -> {
                 Block block = state.getBlock();
                 Direction direction = list.getSearchDirection();

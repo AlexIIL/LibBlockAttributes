@@ -15,11 +15,11 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ExactFluidFilter;
-import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.item.ItemInvUtil;
-import alexiil.mc.lib.attributes.item.filter.IItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 import alexiil.mc.lib.attributes.misc.Ref;
 
 public enum FluidVolumeUtil {
@@ -27,29 +27,29 @@ public enum FluidVolumeUtil {
 
     private static final FluidVolume EMPTY = FluidKeys.EMPTY.withAmount(0);
 
-    /** Attempts to move as much fluid as possible from the {@link IFluidExtractable} to the {@link IFluidInsertable}.
+    /** Attempts to move as much fluid as possible from the {@link FluidExtractable} to the {@link FluidInsertable}.
      * 
      * @return A copy of the fluid moved.
-     * @see #move(IFluidExtractable, IFluidInsertable, IFluidFilter, int) */
-    public static FluidVolume move(IFluidExtractable from, IFluidInsertable to) {
+     * @see #move(FluidExtractable, FluidInsertable, FluidFilter, int) */
+    public static FluidVolume move(FluidExtractable from, FluidInsertable to) {
         return move(from, to, null, Integer.MAX_VALUE);
     }
 
-    /** Attempts to move up to the given amount of fluid from the {@link IFluidExtractable} to the
-     * {@link IFluidInsertable}.
+    /** Attempts to move up to the given amount of fluid from the {@link FluidExtractable} to the
+     * {@link FluidInsertable}.
      * 
      * @return A copy of the fluid moved.
-     * @see #move(IFluidExtractable, IFluidInsertable, IFluidFilter, int) */
-    public static FluidVolume move(IFluidExtractable from, IFluidInsertable to, int maximum) {
+     * @see #move(FluidExtractable, FluidInsertable, FluidFilter, int) */
+    public static FluidVolume move(FluidExtractable from, FluidInsertable to, int maximum) {
         return move(from, to, null, maximum);
     }
 
-    /** Attempts to move up to the given maximum amount of fluids from the {@link IFluidExtractable} to the
-     * {@link IFluidInsertable}, provided they match the given {@link IItemFilter}.
+    /** Attempts to move up to the given maximum amount of fluids from the {@link FluidExtractable} to the
+     * {@link FluidInsertable}, provided they match the given {@link ItemFilter}.
      * 
      * @return A copy of the fluid moved. */
-    public static FluidVolume move(IFluidExtractable from, IFluidInsertable to, IFluidFilter filter, int maximum) {
-        IFluidFilter insertionFilter = to.getInsertionFilter();
+    public static FluidVolume move(FluidExtractable from, FluidInsertable to, FluidFilter filter, int maximum) {
+        FluidFilter insertionFilter = to.getInsertionFilter();
         if (filter != null && filter != ConstantFluidFilter.ANYTHING) {
             insertionFilter = AggregateFluidFilter.and(insertionFilter, filter);
         }
@@ -78,18 +78,18 @@ public enum FluidVolumeUtil {
         return extracted;
     }
 
-    /** @return An {@link IFluidInsertable} that will insert fluids into the given stack (overflowing into the given
+    /** @return An {@link FluidInsertable} that will insert fluids into the given stack (overflowing into the given
      *         {@link Consumer}) */
-    public static IFluidInsertable createItemInventoryInsertable(Ref<ItemStack> stackRef,
+    public static FluidInsertable createItemInventoryInsertable(Ref<ItemStack> stackRef,
         Consumer<ItemStack> excessStacks) {
         return (FluidVolume fluid, Simulation simulate) -> {
             ItemStack stack = stackRef.obj;
-            if (!(stack.getItem() instanceof IFluidItem)) {
+            if (!(stack.getItem() instanceof FluidProviderItem)) {
                 return fluid;
             }
             stack = stack.copy();
             final ItemStack split = stack.getAmount() > 1 ? stack.split(1) : stack;
-            IFluidItem fluidItem = (IFluidItem) stack.getItem();
+            FluidProviderItem fluidItem = (FluidProviderItem) stack.getItem();
             Ref<ItemStack> filledStackRef = new Ref<>(split);
             Ref<FluidVolume> incomingFluid = new Ref<>(fluid.copy());
             if (fluidItem.fill(filledStackRef, incomingFluid)) {
@@ -107,15 +107,15 @@ public enum FluidVolumeUtil {
         };
     }
 
-    public static IFluidExtractable createItemInventoryExtractable(Ref<ItemStack> stackRef,
+    public static FluidExtractable createItemInventoryExtractable(Ref<ItemStack> stackRef,
         Consumer<ItemStack> excessStacks) {
-        return (IFluidFilter filter, int maxAmount, Simulation simulate) -> {
+        return (FluidFilter filter, int maxAmount, Simulation simulate) -> {
 
             final ItemStack stack = stackRef.obj.copy();
             final ItemStack split = stack.getAmount() > 1 ? stack.split(1) : stack;
             FluidVolume drained = EMPTY;
-            if (stack.getItem() instanceof IFluidItem) {
-                IFluidItem fluidItem = (IFluidItem) stack.getItem();
+            if (stack.getItem() instanceof FluidProviderItem) {
+                FluidProviderItem fluidItem = (FluidProviderItem) stack.getItem();
                 Ref<ItemStack> drainedStackRef = new Ref<>(split);
                 drained = fluidItem.drain(drainedStackRef);
                 if (drained.getAmount() > maxAmount) {
@@ -134,7 +134,7 @@ public enum FluidVolumeUtil {
         };
     }
 
-    public static boolean interactWithTank(IFixedFluidInv inv, PlayerEntity player, Hand hand) {
+    public static boolean interactWithTank(FixedFluidInv inv, PlayerEntity player, Hand hand) {
         ItemStack inHand = player.getStackInHand(hand);
         if (inHand.isEmpty()) {
             return false;
@@ -163,9 +163,9 @@ public enum FluidVolumeUtil {
     /** @param inv The fluid inventory to interact with
      * @param stack The held {@link ItemStack} to interact with.
      * @param excessStacks A {@link Consumer} to take the excess itemstack. */
-    public static FluidTankInteraction interactWithTank(IFixedFluidInv inv, Ref<ItemStack> stack,
+    public static FluidTankInteraction interactWithTank(FixedFluidInv inv, Ref<ItemStack> stack,
         Consumer<ItemStack> excessStacks) {
-        if (stack.obj.isEmpty() || !(stack.obj.getItem() instanceof IFluidItem)) {
+        if (stack.obj.isEmpty() || !(stack.obj.getItem() instanceof FluidProviderItem)) {
             return FluidTankInteraction.NONE;
         }
         FluidVolume fluidMoved = move(inv.getExtractable(), createItemInventoryInsertable(stack, excessStacks));

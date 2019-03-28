@@ -6,32 +6,32 @@ import java.util.List;
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.item.IFixedItemInv;
-import alexiil.mc.lib.attributes.item.IFixedItemInvView;
-import alexiil.mc.lib.attributes.item.IItemInsertable;
+import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.item.FixedItemInvView;
+import alexiil.mc.lib.attributes.item.ItemInsertable;
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
 import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
-import alexiil.mc.lib.attributes.item.filter.IItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
-/** An {@link IItemInsertable} wrapper over an {@link IFixedItemInv}. This implementation is the naive implementation
+/** An {@link ItemInsertable} wrapper over an {@link FixedItemInv}. This implementation is the naive implementation
  * where every insertion operation will look at every slot in the target inventory in order to insert into the most
  * appropriate slot first. As such the use of this class is discouraged whenever a more efficient version can be made
- * (unless the target inventory has a very small {@link IFixedItemInvView#getSlotCount() size}. */
-public final class SimpleFixedItemInvInsertable implements IItemInsertable {
+ * (unless the target inventory has a very small {@link FixedItemInvView#getSlotCount() size}. */
+public final class SimpleFixedItemInvInsertable implements ItemInsertable {
 
-    private final IFixedItemInv inv;
+    private final FixedItemInv inv;
 
     /** Null means that this can insert into any of the slots. */
     private final int[] slots;
 
-    public SimpleFixedItemInvInsertable(IFixedItemInv inv, int[] slots) {
+    public SimpleFixedItemInvInsertable(FixedItemInv inv, int[] slots) {
         this.inv = inv;
         this.slots = slots;
     }
 
     @Override
-    public IItemFilter getInsertionFilter() {
+    public ItemFilter getInsertionFilter() {
         if (slots == null) {
             int invSize = inv.getSlotCount();
             switch (invSize) {
@@ -46,7 +46,7 @@ public final class SimpleFixedItemInvInsertable implements IItemInsertable {
                     return inv.getFilterForSlot(0).and(inv.getFilterForSlot(1));
                 }
                 default: {
-                    List<IItemFilter> filters = new ArrayList<>(invSize);
+                    List<ItemFilter> filters = new ArrayList<>(invSize);
                     for (int i = 0; i < invSize; i++) {
                         filters.add(inv.getFilterForSlot(i));
                     }
@@ -66,7 +66,7 @@ public final class SimpleFixedItemInvInsertable implements IItemInsertable {
                     return inv.getFilterForSlot(slots[0]).and(inv.getFilterForSlot(slots[1]));
                 }
                 default: {
-                    List<IItemFilter> filters = new ArrayList<>(slots.length);
+                    List<ItemFilter> filters = new ArrayList<>(slots.length);
                     for (int s : slots) {
                         filters.add(inv.getFilterForSlot(s));
                     }

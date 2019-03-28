@@ -4,10 +4,10 @@ import java.util.List;
 
 import net.minecraft.item.ItemStack;
 
-import alexiil.mc.lib.attributes.IListenerRemovalToken;
-import alexiil.mc.lib.attributes.IListenerToken;
+import alexiil.mc.lib.attributes.ListenerRemovalToken;
+import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.item.filter.IItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInvView;
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.SimpleFixedItemInvStats;
@@ -18,20 +18,20 @@ import alexiil.mc.lib.attributes.item.impl.SubFixedItemInvView;
  * <ul>
  * <li>The amount of every slot will never exceed 64, the normal maximum stack size of minecraft.</li>
  * <li>The stack will stay in the slot until it is removed or changed by something else. (So setting the stack in a slot
- * of an {@link IFixedItemInv} will reflect that change in {@link #getInvStack(int)}).</li>
+ * of an {@link FixedItemInv} will reflect that change in {@link #getInvStack(int)}).</li>
  * </ul>
  * <p>
  * The attribute is stored in {@link ItemAttributes#FIXED_INV_VIEW}.
  * <p>
  * There are various classes of interest:
  * <ul>
- * <li>A modifiable version of this is {@link IFixedItemInv}.</li>
+ * <li>A modifiable version of this is {@link FixedItemInv}.</li>
  * <li>The null instance is {@link EmptyFixedItemInv}</li>
  * <li>A combined view of several sub-inventories is {@link CombinedFixedItemInvView}.</li>
  * <li>A partial view of a single inventory is {@link SubFixedItemInv}</li>
  * </ul>
  */
-public interface IFixedItemInvView {
+public interface FixedItemInvView {
 
     /** @return The number of slots in this inventory. */
     int getSlotCount();
@@ -50,7 +50,7 @@ public interface IFixedItemInvView {
      * @return The maximum amount that the given slot can hold of the given stack. This method will ignore the current
      *         stack in {@link #getInvStack(int)}. The default implementation just delegates to
      *         {@link ItemStack#getMaxAmount()}. Note that any setters that this object implements (like
-     *         {@link IFixedItemInv#setInvStack(int, ItemStack, Simulation)} should reject stacks that are greater than
+     *         {@link FixedItemInv#setInvStack(int, ItemStack, Simulation)} should reject stacks that are greater than
      *         this value. (and callers should only call this if they need to check the amounts separately. Note that it
      *         is meaningless to return values greater than the maximum amount an item can be stacked to here, and
      *         callers are free to throw an exception if this is violated. (Basically huge single-slot inventories
@@ -69,28 +69,28 @@ public interface IFixedItemInvView {
 
     /** @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
-     * @return An {@link IItemFilter} for this slot. If this slot is filtered by an {@link IItemFilter} internally then
+     * @return An {@link ItemFilter} for this slot. If this slot is filtered by an {@link ItemFilter} internally then
      *         it is highly recommended that this be overridden to return *that* filter rather than a newly constructed
      *         one.
      * @throws RuntimeException if the given slot wasn't a valid index. */
-    default IItemFilter getFilterForSlot(int slot) {
+    default ItemFilter getFilterForSlot(int slot) {
         return stack -> isItemValidForSlot(slot, stack);
     }
 
     /** @return A statistical view of this inventory. */
-    default IItemInvStats getStatistics() {
+    default ItemInvStats getStatistics() {
         return new SimpleFixedItemInvStats(this);
     }
 
     /** Adds the given listener to this inventory, such that the
-     * {@link IItemInvSlotChangeListener#onChange(IFixedItemInvView, int, ItemStack, ItemStack)} will be called every
+     * {@link ItemInvSlotChangeListener#onChange(FixedItemInvView, int, ItemStack, ItemStack)} will be called every
      * time that this inventory changes. However if this inventory doesn't support listeners then this will return a
-     * null {@link IListenerToken token}.
+     * null {@link ListenerToken token}.
      * 
      * @param removalToken A token that will be called whenever the given listener is removed from this inventory (or if
      *            this inventory itself is unloaded or otherwise invalidated).
      * @return A token that represents the listener, or null if the listener could not be added. */
-    IListenerToken addListener(IItemInvSlotChangeListener listener, IListenerRemovalToken removalToken);
+    ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken);
 
     /** Equivalent to {@link List#subList(int, int)}.
      * 
@@ -98,19 +98,19 @@ public interface IFixedItemInvView {
      * @param toIndex The slot after the last slot to expose.
      * @return a view of this inventory that only exposes the given number of slots.
      * @throws RuntimeException if any of the given slots weren't valid. */
-    default IFixedItemInvView getSubInv(int fromIndex, int toIndex) {
+    default FixedItemInvView getSubInv(int fromIndex, int toIndex) {
         if (fromIndex == toIndex) {
             return EmptyFixedItemInv.INSTANCE;
         }
         return new SubFixedItemInvView<>(this, fromIndex, toIndex);
     }
 
-    /** @return An object that only implements {@link IFixedItemInvView}, and does not expose the modification methods
-     *         that {@link IFixedItemInv} does. Implementations that don't expose any modification methods themselves
+    /** @return An object that only implements {@link FixedItemInvView}, and does not expose the modification methods
+     *         that {@link FixedItemInv} does. Implementations that don't expose any modification methods themselves
      *         should override this method to just return themselves. */
-    default IFixedItemInvView getView() {
-        final IFixedItemInvView real = this;
-        return new IFixedItemInvView() {
+    default FixedItemInvView getView() {
+        final FixedItemInvView real = this;
+        return new FixedItemInvView() {
             @Override
             public int getSlotCount() {
                 return real.getSlotCount();
@@ -132,18 +132,18 @@ public interface IFixedItemInvView {
             }
 
             @Override
-            public IItemFilter getFilterForSlot(int slot) {
+            public ItemFilter getFilterForSlot(int slot) {
                 return real.getFilterForSlot(slot);
             }
 
             @Override
-            public IItemInvStats getStatistics() {
+            public ItemInvStats getStatistics() {
                 return new SimpleFixedItemInvStats(this);
             }
 
             @Override
-            public IListenerToken addListener(IItemInvSlotChangeListener listener, IListenerRemovalToken removalToken) {
-                final IFixedItemInvView view = this;
+            public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken) {
+                final FixedItemInvView view = this;
                 return real.addListener((inv, slot, prev, curr) -> {
                     // Defend against giving the listener the real (possibly changeable) inventory.
                     // In addition the listener would probably cache *this view* rather than the backing inventory

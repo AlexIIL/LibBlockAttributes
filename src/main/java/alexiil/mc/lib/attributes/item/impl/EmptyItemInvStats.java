@@ -5,15 +5,15 @@ import java.util.Set;
 
 import net.minecraft.item.ItemStack;
 
-import alexiil.mc.lib.attributes.item.IItemInvStats;
-import alexiil.mc.lib.attributes.item.filter.IItemFilter;
+import alexiil.mc.lib.attributes.item.ItemInvStats;
+import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
-/** {@link IItemInvStats} for an empty inventory. */
-public enum EmptyItemInvStats implements IItemInvStats {
+/** {@link ItemInvStats} for an empty inventory. */
+public enum EmptyItemInvStats implements ItemInvStats {
     INSTANCE;
 
     @Override
-    public ItemInvStatistic getStatistics(IItemFilter filter) {
+    public ItemInvStatistic getStatistics(ItemFilter filter) {
         return new ItemInvStatistic(filter, 0, 0, 0);
     }
 

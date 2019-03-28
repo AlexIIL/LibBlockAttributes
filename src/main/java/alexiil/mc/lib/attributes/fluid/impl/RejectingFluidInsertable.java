@@ -1,13 +1,13 @@
 package alexiil.mc.lib.attributes.fluid.impl;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.IFluidInsertable;
+import alexiil.mc.lib.attributes.fluid.FluidInsertable;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
-import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
-/** An {@link IFluidInsertable} that always refuses to accept any inserted {@link FluidVolume}. */
-public enum RejectingFluidInsertable implements IFluidInsertable {
+/** An {@link FluidInsertable} that always refuses to accept any inserted {@link FluidVolume}. */
+public enum RejectingFluidInsertable implements FluidInsertable {
     NULL,
     EXTRACTOR;
 
@@ -17,7 +17,7 @@ public enum RejectingFluidInsertable implements IFluidInsertable {
     }
 
     @Override
-    public IFluidFilter getInsertionFilter() {
+    public FluidFilter getInsertionFilter() {
         return ConstantFluidFilter.NOTHING;
     }
 }

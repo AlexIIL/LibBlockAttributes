@@ -4,33 +4,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.IFixedFluidInv;
-import alexiil.mc.lib.attributes.fluid.IFixedFluidInvView;
-import alexiil.mc.lib.attributes.fluid.IFluidInsertable;
+import alexiil.mc.lib.attributes.fluid.FixedFluidInv;
+import alexiil.mc.lib.attributes.fluid.FixedFluidInvView;
+import alexiil.mc.lib.attributes.fluid.FluidInsertable;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
-import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
-/** An {@link IFluidInsertable} wrapper over an {@link IFixedFluidInv}. This implementation is the naive implementation
+/** An {@link FluidInsertable} wrapper over an {@link FixedFluidInv}. This implementation is the naive implementation
  * where every insertion operation will look at every tank in the target inventory in order to insert into the most
  * appropriate tank first. As such the use of this class is discouraged whenever a more efficient version can be made
- * (unless the target inventory has a very small {@link IFixedFluidInvView#getTankCount() size}. */
-public final class SimpleFixedFluidInvInsertable implements IFluidInsertable {
+ * (unless the target inventory has a very small {@link FixedFluidInvView#getTankCount() size}. */
+public final class SimpleFixedFluidInvInsertable implements FluidInsertable {
 
-    private final IFixedFluidInv inv;
+    private final FixedFluidInv inv;
 
     /** Null means that this can insert into any of the tanks. */
     private final int[] tanks;
 
-    public SimpleFixedFluidInvInsertable(IFixedFluidInv inv, int[] tanks) {
+    public SimpleFixedFluidInvInsertable(FixedFluidInv inv, int[] tanks) {
         this.inv = inv;
         this.tanks = tanks;
     }
 
     @Override
-    public IFluidFilter getInsertionFilter() {
+    public FluidFilter getInsertionFilter() {
         if (tanks == null) {
             int tankCount = inv.getTankCount();
             switch (tankCount) {
@@ -45,7 +45,7 @@ public final class SimpleFixedFluidInvInsertable implements IFluidInsertable {
                     return inv.getFilterForTank(0).and(inv.getFilterForTank(1));
                 }
                 default: {
-                    List<IFluidFilter> filters = new ArrayList<>(tankCount);
+                    List<FluidFilter> filters = new ArrayList<>(tankCount);
                     for (int i = 0; i < tankCount; i++) {
                         filters.add(inv.getFilterForTank(i));
                     }
@@ -65,7 +65,7 @@ public final class SimpleFixedFluidInvInsertable implements IFluidInsertable {
                     return inv.getFilterForTank(tanks[0]).and(inv.getFilterForTank(tanks[1]));
                 }
                 default: {
-                    List<IFluidFilter> filters = new ArrayList<>(tanks.length);
+                    List<FluidFilter> filters = new ArrayList<>(tanks.length);
                     for (int s : tanks) {
                         filters.add(inv.getFilterForTank(s));
                     }

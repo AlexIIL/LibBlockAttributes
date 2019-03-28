@@ -2,17 +2,17 @@ package alexiil.mc.lib.attributes.fluid.impl;
 
 import java.util.List;
 
-import alexiil.mc.lib.attributes.IListenerRemovalToken;
-import alexiil.mc.lib.attributes.IListenerToken;
-import alexiil.mc.lib.attributes.fluid.IFixedFluidInvView;
-import alexiil.mc.lib.attributes.fluid.IFluidInvTankChangeListener;
-import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.ListenerRemovalToken;
+import alexiil.mc.lib.attributes.ListenerToken;
+import alexiil.mc.lib.attributes.fluid.FixedFluidInvView;
+import alexiil.mc.lib.attributes.fluid.FluidInvTankChangeListener;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.misc.BoolRef;
 
-/** An {@link IFixedFluidInvView} that delegates to a list of them instead of storing items directly. */
-public class CombinedFixedFluidInvView<InvType extends IFixedFluidInvView> implements IFixedFluidInvView {
+/** An {@link FixedFluidInvView} that delegates to a list of them instead of storing items directly. */
+public class CombinedFixedFluidInvView<InvType extends FixedFluidInvView> implements FixedFluidInvView {
 
     public final List<? extends InvType> views;
     private final int[] subTankStartIndex;
@@ -24,7 +24,7 @@ public class CombinedFixedFluidInvView<InvType extends IFixedFluidInvView> imple
         int size = 0;
         for (int i = 0; i < views.size(); i++) {
             subTankStartIndex[i] = size;
-            IFixedFluidInvView view = views.get(i);
+            FixedFluidInvView view = views.get(i);
             int s = view.getTankCount();
             size += s;
         }
@@ -88,7 +88,7 @@ public class CombinedFixedFluidInvView<InvType extends IFixedFluidInvView> imple
     }
 
     @Override
-    public IFluidFilter getFilterForTank(int tank) {
+    public FluidFilter getFilterForTank(int tank) {
         return getInv(tank).getFilterForTank(getSubTank(tank));
     }
 
@@ -98,11 +98,11 @@ public class CombinedFixedFluidInvView<InvType extends IFixedFluidInvView> imple
     }
 
     @Override
-    public IListenerToken addListener(IFluidInvTankChangeListener listener, IListenerRemovalToken removalToken) {
-        final IListenerToken[] tokens = new IListenerToken[views.size()];
+    public ListenerToken addListener(FluidInvTankChangeListener listener, ListenerRemovalToken removalToken) {
+        final ListenerToken[] tokens = new ListenerToken[views.size()];
         final BoolRef hasAlreadyRemoved = new BoolRef(false);
-        final IListenerRemovalToken ourRemToken = () -> {
-            for (IListenerToken token : tokens) {
+        final ListenerRemovalToken ourRemToken = () -> {
+            for (ListenerToken token : tokens) {
                 if (token == null) {
                     // This means we have only half-initialised
                     // (and all of the next tokens must also be null)
@@ -129,7 +129,7 @@ public class CombinedFixedFluidInvView<InvType extends IFixedFluidInvView> imple
             }
         }
         return () -> {
-            for (IListenerToken token : tokens) {
+            for (ListenerToken token : tokens) {
                 token.removeListener();
             }
         };

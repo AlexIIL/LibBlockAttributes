@@ -10,17 +10,17 @@ import net.minecraft.util.DefaultedList;
 import net.minecraft.util.SystemUtil;
 
 import alexiil.mc.lib.attributes.AttributeUtil;
-import alexiil.mc.lib.attributes.IListenerRemovalToken;
-import alexiil.mc.lib.attributes.IListenerToken;
+import alexiil.mc.lib.attributes.ListenerRemovalToken;
+import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.item.IFixedItemInv;
-import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
+import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
-import alexiil.mc.lib.attributes.item.filter.IItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
 
-/** A simple, extendible, fixed size item inventory that supports all of the features that {@link IFixedItemInv}
+/** A simple, extendible, fixed size item inventory that supports all of the features that {@link FixedItemInv}
  * exposes.
  * <p>
  * Extending classes should take care to override {@link #getFilterForSlot(int)} if they also override
@@ -28,20 +28,20 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
  * <p>
  * Note: Generally it is better to extend/use {@link JumboFixedItemInv} for inventories with a large number of similar
  * slots (like a chest). */
-public class SimpleFixedItemInv implements IFixedItemInv {
+public class SimpleFixedItemInv implements FixedItemInv {
 
-    private static final IItemInvSlotChangeListener[] NO_LISTENERS = new IItemInvSlotChangeListener[0];
+    private static final ItemInvSlotChangeListener[] NO_LISTENERS = new ItemInvSlotChangeListener[0];
 
     /** Sentinel value used during {@link #invalidateListeners()}. */
-    private static final IItemInvSlotChangeListener[] INVALIDATING_LISTENERS = new IItemInvSlotChangeListener[0];
+    private static final ItemInvSlotChangeListener[] INVALIDATING_LISTENERS = new ItemInvSlotChangeListener[0];
 
     protected final DefaultedList<ItemStack> slots;
 
-    private final Map<IItemInvSlotChangeListener, IListenerRemovalToken> listeners =
+    private final Map<ItemInvSlotChangeListener, ListenerRemovalToken> listeners =
         new Object2ObjectLinkedOpenCustomHashMap<>(SystemUtil.identityHashStrategy());
 
     // Should this use WeakReference instead of storing them directly?
-    private IItemInvSlotChangeListener[] bakedListeners = NO_LISTENERS;
+    private ItemInvSlotChangeListener[] bakedListeners = NO_LISTENERS;
 
     public SimpleFixedItemInv(int invSize) {
         slots = DefaultedList.create(invSize, ItemStack.EMPTY);
@@ -63,7 +63,7 @@ public class SimpleFixedItemInv implements IFixedItemInv {
     }
 
     @Override
-    public IItemFilter getFilterForSlot(int slot) {
+    public ItemFilter getFilterForSlot(int slot) {
         if (AttributeUtil.EXPENSIVE_DEBUG_CHECKS) {
             Class<?> cls = getClass();
             if (cls != SimpleFixedItemInv.class) {
@@ -85,19 +85,19 @@ public class SimpleFixedItemInv implements IFixedItemInv {
     }
 
     @Override
-    public IListenerToken addListener(IItemInvSlotChangeListener listener, IListenerRemovalToken removalToken) {
+    public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken) {
         if (bakedListeners == INVALIDATING_LISTENERS) {
             // It doesn't really make sense to add listeners while we are invalidating them
             return null;
         }
-        IListenerRemovalToken previous = listeners.put(listener, removalToken);
+        ListenerRemovalToken previous = listeners.put(listener, removalToken);
         if (previous == null) {
             bakeListeners();
         } else {
             assert previous == removalToken : "The same listener object must be registered with the same removal token";
         }
         return () -> {
-            IListenerRemovalToken token = listeners.remove(listener);
+            ListenerRemovalToken token = listeners.remove(listener);
             if (token != null) {
                 assert token == removalToken;
                 bakeListeners();
@@ -107,14 +107,14 @@ public class SimpleFixedItemInv implements IFixedItemInv {
     }
 
     private void bakeListeners() {
-        bakedListeners = listeners.keySet().toArray(new IItemInvSlotChangeListener[0]);
+        bakedListeners = listeners.keySet().toArray(new ItemInvSlotChangeListener[0]);
     }
 
     public void invalidateListeners() {
         bakedListeners = INVALIDATING_LISTENERS;
-        IListenerRemovalToken[] removalTokens = listeners.values().toArray(new IListenerRemovalToken[0]);
+        ListenerRemovalToken[] removalTokens = listeners.values().toArray(new ListenerRemovalToken[0]);
         listeners.clear();
-        for (IListenerRemovalToken token : removalTokens) {
+        for (ListenerRemovalToken token : removalTokens) {
             token.onListenerRemoved();
         }
         bakedListeners = NO_LISTENERS;
@@ -122,8 +122,8 @@ public class SimpleFixedItemInv implements IFixedItemInv {
 
     protected final void fireSlotChange(int slot, ItemStack previous, ItemStack current) {
         // Iterate over the previous array in case the listeners array is changed while we are iterating
-        final IItemInvSlotChangeListener[] baked = bakedListeners;
-        for (IItemInvSlotChangeListener listener : baked) {
+        final ItemInvSlotChangeListener[] baked = bakedListeners;
+        for (ItemInvSlotChangeListener listener : baked) {
             listener.onChange(this, slot, previous, current);
         }
     }

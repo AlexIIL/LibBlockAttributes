@@ -11,13 +11,13 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.AggregateFilterType;
 
-/** An {@link IItemFilter} over a predefined array of {@link IItemFilter}'s. You can either iterate over this object
+/** An {@link ItemFilter} over a predefined array of {@link ItemFilter}'s. You can either iterate over this object
  * directly or use {@link #getFilterCount()} and {@link #getFilter(int)} to read every filter individually. */
-public final class AggregateItemFilter implements IReadableItemFilter, Iterable<IItemFilter> {
+public final class AggregateItemFilter implements ReadableItemFilter, Iterable<ItemFilter> {
     public final AggregateFilterType type;
-    private final IItemFilter[] filters;
+    private final ItemFilter[] filters;
 
-    public AggregateItemFilter(AggregateFilterType type, IItemFilter... filters) {
+    public AggregateItemFilter(AggregateFilterType type, ItemFilter... filters) {
         if (filters.length < 2) {
             throw new IllegalArgumentException("There's no reason to construct an aggregate stack filter that matches "
                 + filters.length + " filters!");
@@ -28,17 +28,17 @@ public final class AggregateItemFilter implements IReadableItemFilter, Iterable<
 
     /** @return An {@link AggregateItemFilter} that contains both of the given filters. This might not return a new
      *         object if either of the filters contains the other. */
-    public static IItemFilter and(IItemFilter filterA, IItemFilter filterB) {
+    public static ItemFilter and(ItemFilter filterA, ItemFilter filterB) {
         return combine(AggregateFilterType.ALL, filterA, filterB);
     }
 
     /** @return An {@link AggregateItemFilter} that contains both of the given filters. This might not return a new
      *         object if either of the filters contains the other. */
-    public static IItemFilter or(IItemFilter filterA, IItemFilter filterB) {
+    public static ItemFilter or(ItemFilter filterA, ItemFilter filterB) {
         return combine(AggregateFilterType.ANY, filterA, filterB);
     }
 
-    public static IItemFilter combine(AggregateFilterType type, IItemFilter filterA, IItemFilter filterB) {
+    public static ItemFilter combine(AggregateFilterType type, ItemFilter filterA, ItemFilter filterB) {
         final boolean all = type == AggregateFilterType.ALL;
         if (filterA == filterB) {
             return filterA;
@@ -57,22 +57,22 @@ public final class AggregateItemFilter implements IReadableItemFilter, Iterable<
         }
         if (filterA instanceof AggregateItemFilter && ((AggregateItemFilter) filterA).type == type) {
             if (filterB instanceof AggregateItemFilter && ((AggregateItemFilter) filterB).type == type) {
-                IItemFilter[] filtersA = ((AggregateItemFilter) filterA).filters;
-                IItemFilter[] filtersB = ((AggregateItemFilter) filterB).filters;
-                IItemFilter[] filters = new IItemFilter[filtersA.length + filtersB.length];
+                ItemFilter[] filtersA = ((AggregateItemFilter) filterA).filters;
+                ItemFilter[] filtersB = ((AggregateItemFilter) filterB).filters;
+                ItemFilter[] filters = new ItemFilter[filtersA.length + filtersB.length];
                 System.arraycopy(filtersA, 0, filters, 0, filtersA.length);
                 System.arraycopy(filtersB, 0, filters, filtersA.length, filtersB.length);
                 return new AggregateItemFilter(type, filters);
             }
-            IItemFilter[] from = ((AggregateItemFilter) filterA).filters;
-            IItemFilter[] filters = new IItemFilter[from.length + 1];
+            ItemFilter[] from = ((AggregateItemFilter) filterA).filters;
+            ItemFilter[] filters = new ItemFilter[from.length + 1];
             System.arraycopy(from, 0, filters, 0, from.length);
             filters[from.length] = filterB;
             return new AggregateItemFilter(type, filters);
         }
         if (filterB instanceof AggregateItemFilter && ((AggregateItemFilter) filterB).type == type) {
-            IItemFilter[] from = ((AggregateItemFilter) filterB).filters;
-            IItemFilter[] filters = new IItemFilter[from.length + 1];
+            ItemFilter[] from = ((AggregateItemFilter) filterB).filters;
+            ItemFilter[] filters = new ItemFilter[from.length + 1];
             System.arraycopy(from, 0, filters, 0, from.length);
             filters[from.length] = filterA;
             return new AggregateItemFilter(type, filters);
@@ -98,29 +98,29 @@ public final class AggregateItemFilter implements IReadableItemFilter, Iterable<
         return new AggregateItemFilter(type, filterA, filterB);
     }
 
-    public static IItemFilter allOf(IItemFilter... filters) {
+    public static ItemFilter allOf(ItemFilter... filters) {
         return combine(AggregateFilterType.ALL, filters);
     }
 
-    public static IItemFilter anyOf(IItemFilter... filters) {
+    public static ItemFilter anyOf(ItemFilter... filters) {
         return combine(AggregateFilterType.ANY, filters);
     }
 
-    public static IItemFilter combine(AggregateFilterType type, IItemFilter... filters) {
+    public static ItemFilter combine(AggregateFilterType type, ItemFilter... filters) {
         return combine(type, Arrays.asList(filters));
     }
 
-    public static IItemFilter allOf(List<IItemFilter> filters) {
+    public static ItemFilter allOf(List<ItemFilter> filters) {
         return combine(AggregateFilterType.ALL, filters);
     }
 
-    public static IItemFilter anyOf(List<IItemFilter> filters) {
+    public static ItemFilter anyOf(List<ItemFilter> filters) {
         return combine(AggregateFilterType.ANY, filters);
     }
 
-    public static IItemFilter combine(AggregateFilterType type, List<IItemFilter> filters) {
+    public static ItemFilter combine(AggregateFilterType type, List<ItemFilter> filters) {
         if (!(filters instanceof RandomAccess)) {
-            filters = Arrays.asList(filters.toArray(new IItemFilter[0]));
+            filters = Arrays.asList(filters.toArray(new ItemFilter[0]));
         }
         switch (filters.size()) {
             case 0:
@@ -131,7 +131,7 @@ public final class AggregateItemFilter implements IReadableItemFilter, Iterable<
                 // I'm assuming this might be faster than putting everything into a list?
                 return combine(type, filters.get(0), filters.get(1));
             default: {
-                IItemFilter filter = filters.get(0);
+                ItemFilter filter = filters.get(0);
                 for (int i = 1; i < filters.size(); i++) {
                     filter = combine(type, filter, filters.get(i));
                 }
@@ -143,14 +143,14 @@ public final class AggregateItemFilter implements IReadableItemFilter, Iterable<
     @Override
     public boolean matches(ItemStack stack) {
         if (type == AggregateFilterType.ALL) {
-            for (IItemFilter filter : filters) {
+            for (ItemFilter filter : filters) {
                 if (!filter.matches(stack)) {
                     return false;
                 }
             }
             return true;
         } else {
-            for (IItemFilter filter : filters) {
+            for (ItemFilter filter : filters) {
                 if (filter.matches(stack)) {
                     return true;
                 }
@@ -163,12 +163,12 @@ public final class AggregateItemFilter implements IReadableItemFilter, Iterable<
         return filters.length;
     }
 
-    public IItemFilter getFilter(int index) {
+    public ItemFilter getFilter(int index) {
         return filters[index];
     }
 
     @Override
-    public Iterator<IItemFilter> iterator() {
+    public Iterator<ItemFilter> iterator() {
         return Iterators.forArray(filters);
     }
 }

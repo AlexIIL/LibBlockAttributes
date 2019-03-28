@@ -3,23 +3,23 @@ package alexiil.mc.lib.attributes.fluid.impl;
 import java.util.HashSet;
 import java.util.Set;
 
-import alexiil.mc.lib.attributes.fluid.IFixedFluidInvView;
-import alexiil.mc.lib.attributes.fluid.IFluidInvStats;
+import alexiil.mc.lib.attributes.fluid.FixedFluidInvView;
+import alexiil.mc.lib.attributes.fluid.FluidInvStats;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilterUtil;
-import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
-public final class SimpleFixedFluidInvStats implements IFluidInvStats {
+public final class SimpleFixedFluidInvStats implements FluidInvStats {
 
-    private final IFixedFluidInvView inv;
+    private final FixedFluidInvView inv;
 
-    public SimpleFixedFluidInvStats(IFixedFluidInvView inv) {
+    public SimpleFixedFluidInvStats(FixedFluidInvView inv) {
         this.inv = inv;
     }
 
     @Override
-    public FluidInvStatistic getStatistics(IFluidFilter filter) {
+    public FluidInvStatistic getStatistics(FluidFilter filter) {
         int amount = 0;
         int space = 0;
         int totalSpace = 0;

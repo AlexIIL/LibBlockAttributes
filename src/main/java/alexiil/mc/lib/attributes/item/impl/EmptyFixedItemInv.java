@@ -2,20 +2,20 @@ package alexiil.mc.lib.attributes.item.impl;
 
 import net.minecraft.item.ItemStack;
 
-import alexiil.mc.lib.attributes.IListenerRemovalToken;
-import alexiil.mc.lib.attributes.IListenerToken;
+import alexiil.mc.lib.attributes.ListenerRemovalToken;
+import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.item.IFixedItemInv;
-import alexiil.mc.lib.attributes.item.IFixedItemInvView;
-import alexiil.mc.lib.attributes.item.IItemExtractable;
-import alexiil.mc.lib.attributes.item.IItemInsertable;
-import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
-import alexiil.mc.lib.attributes.item.IItemInvStats;
-import alexiil.mc.lib.attributes.item.filter.IItemFilter;
+import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.item.FixedItemInvView;
+import alexiil.mc.lib.attributes.item.ItemExtractable;
+import alexiil.mc.lib.attributes.item.ItemInsertable;
+import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
+import alexiil.mc.lib.attributes.item.ItemInvStats;
+import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
-/** An {@link IFixedItemInv} with no slots. Because this inventory is unmodifiable this also doubles as the empty
- * implementation for {@link IFixedItemInvView}. */
-public enum EmptyFixedItemInv implements IFixedItemInv {
+/** An {@link FixedItemInv} with no slots. Because this inventory is unmodifiable this also doubles as the empty
+ * implementation for {@link FixedItemInvView}. */
+public enum EmptyFixedItemInv implements FixedItemInv {
     INSTANCE;
 
     private static IllegalArgumentException throwInvalidSlotException() {
@@ -38,7 +38,7 @@ public enum EmptyFixedItemInv implements IFixedItemInv {
     }
 
     @Override
-    public IItemFilter getFilterForSlot(int slot) {
+    public ItemFilter getFilterForSlot(int slot) {
         throw throwInvalidSlotException();
     }
 
@@ -48,12 +48,12 @@ public enum EmptyFixedItemInv implements IFixedItemInv {
     }
 
     @Override
-    public IItemInvStats getStatistics() {
+    public ItemInvStats getStatistics() {
         return EmptyItemInvStats.INSTANCE;
     }
 
     @Override
-    public IListenerToken addListener(IItemInvSlotChangeListener listener, IListenerRemovalToken remToken) {
+    public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken remToken) {
         // We don't need to keep track of the listener because this empty inventory never changes.
         return () -> {
             // (And we don't need to do anything when the listener is removed)
@@ -67,17 +67,17 @@ public enum EmptyFixedItemInv implements IFixedItemInv {
     }
 
     @Override
-    public IFixedItemInvView getView() {
+    public FixedItemInvView getView() {
         return this;
     }
 
     @Override
-    public IItemInsertable getInsertable() {
+    public ItemInsertable getInsertable() {
         return RejectingItemInsertable.NULL;
     }
 
     @Override
-    public IItemInsertable getInsertable(int[] slots) {
+    public ItemInsertable getInsertable(int[] slots) {
         if (slots.length == 0) {
             return RejectingItemInsertable.NULL;
         }
@@ -85,12 +85,12 @@ public enum EmptyFixedItemInv implements IFixedItemInv {
     }
 
     @Override
-    public IItemExtractable getExtractable() {
+    public ItemExtractable getExtractable() {
         return EmptyItemExtractable.NULL;
     }
 
     @Override
-    public IItemExtractable getExtractable(int[] slots) {
+    public ItemExtractable getExtractable(int[] slots) {
         if (slots.length == 0) {
             return EmptyItemExtractable.NULL;
         }

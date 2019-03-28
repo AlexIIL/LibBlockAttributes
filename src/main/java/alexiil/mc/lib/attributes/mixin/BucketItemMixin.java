@@ -1,5 +1,6 @@
 package alexiil.mc.lib.attributes.mixin;
 
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
@@ -11,15 +12,16 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.registry.Registry;
 
-import alexiil.mc.lib.attributes.fluid.IFluidItem;
+import alexiil.mc.lib.attributes.fluid.FluidProviderItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.misc.Ref;
 
 @Mixin(BucketItem.class)
-public class BucketItemMixin extends Item implements IFluidItem {
+public class BucketItemMixin extends Item implements FluidProviderItem {
 
+    @Final
     @Shadow
     private Fluid fluid;
 
@@ -48,8 +50,8 @@ public class BucketItemMixin extends Item implements IFluidItem {
             return false;
         }
         for (Item item : Registry.ITEM) {
-            if (item instanceof IFluidItem) {
-                IFluidItem bucket = (IFluidItem) item;
+            if (item instanceof FluidProviderItem) {
+                FluidProviderItem bucket = (FluidProviderItem) item;
                 ItemStack newStack = new ItemStack(item);
 
                 Ref<ItemStack> stackRef = new Ref<>(newStack);

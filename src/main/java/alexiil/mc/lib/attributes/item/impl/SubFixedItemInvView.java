@@ -2,14 +2,14 @@ package alexiil.mc.lib.attributes.item.impl;
 
 import net.minecraft.item.ItemStack;
 
-import alexiil.mc.lib.attributes.IListenerRemovalToken;
-import alexiil.mc.lib.attributes.IListenerToken;
-import alexiil.mc.lib.attributes.item.IFixedItemInvView;
-import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
-import alexiil.mc.lib.attributes.item.filter.IItemFilter;
+import alexiil.mc.lib.attributes.ListenerRemovalToken;
+import alexiil.mc.lib.attributes.ListenerToken;
+import alexiil.mc.lib.attributes.item.FixedItemInvView;
+import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
+import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
-/** A sub-view of an existing {@link IFixedItemInvView}. */
-public class SubFixedItemInvView<InvType extends IFixedItemInvView> implements IFixedItemInvView {
+/** A sub-view of an existing {@link FixedItemInvView}. */
+public class SubFixedItemInvView<InvType extends FixedItemInvView> implements FixedItemInvView {
 
     /** The inventory that is wrapped. */
     protected final InvType inv;
@@ -53,7 +53,7 @@ public class SubFixedItemInvView<InvType extends IFixedItemInvView> implements I
     }
 
     @Override
-    public IItemFilter getFilterForSlot(int slot) {
+    public ItemFilter getFilterForSlot(int slot) {
         return inv.getFilterForSlot(getInternalSlot(slot));
     }
 
@@ -63,16 +63,16 @@ public class SubFixedItemInvView<InvType extends IFixedItemInvView> implements I
     }
 
     @Override
-    public IFixedItemInvView getView() {
+    public FixedItemInvView getView() {
         if (getClass() == SubFixedItemInvView.class) {
             return this;
         }
-        return IFixedItemInvView.super.getView();
+        return FixedItemInvView.super.getView();
     }
 
     @Override
-    public IListenerToken addListener(IItemInvSlotChangeListener listener, IListenerRemovalToken removalToken) {
-        IFixedItemInvView wrapper = this;
+    public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken) {
+        FixedItemInvView wrapper = this;
         return inv.addListener((realInv, slot, previous, current) -> {
             assert realInv == inv;
             if (slot >= fromIndex && slot < toIndex) {

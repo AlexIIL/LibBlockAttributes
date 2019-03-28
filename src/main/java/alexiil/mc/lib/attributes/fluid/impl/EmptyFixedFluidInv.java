@@ -1,21 +1,21 @@
 package alexiil.mc.lib.attributes.fluid.impl;
 
-import alexiil.mc.lib.attributes.IListenerRemovalToken;
-import alexiil.mc.lib.attributes.IListenerToken;
+import alexiil.mc.lib.attributes.ListenerRemovalToken;
+import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.IFixedFluidInv;
-import alexiil.mc.lib.attributes.fluid.IFixedFluidInvView;
-import alexiil.mc.lib.attributes.fluid.IFluidExtractable;
-import alexiil.mc.lib.attributes.fluid.IFluidInsertable;
-import alexiil.mc.lib.attributes.fluid.IFluidInvStats;
-import alexiil.mc.lib.attributes.fluid.IFluidInvTankChangeListener;
-import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.FixedFluidInv;
+import alexiil.mc.lib.attributes.fluid.FixedFluidInvView;
+import alexiil.mc.lib.attributes.fluid.FluidExtractable;
+import alexiil.mc.lib.attributes.fluid.FluidInsertable;
+import alexiil.mc.lib.attributes.fluid.FluidInvStats;
+import alexiil.mc.lib.attributes.fluid.FluidInvTankChangeListener;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
-/** An {@link IFixedFluidInv} with no tanks. Because this inventory is unmodifiable this also doubles as the empty
- * implementation for {@link IFixedFluidInvView}. */
-public enum EmptyFixedFluidInv implements IFixedFluidInv {
+/** An {@link FixedFluidInv} with no tanks. Because this inventory is unmodifiable this also doubles as the empty
+ * implementation for {@link FixedFluidInvView}. */
+public enum EmptyFixedFluidInv implements FixedFluidInv {
     INSTANCE;
 
     private static IllegalArgumentException throwInvalidTankException() {
@@ -38,7 +38,7 @@ public enum EmptyFixedFluidInv implements IFixedFluidInv {
     }
 
     @Override
-    public IFluidFilter getFilterForTank(int tank) {
+    public FluidFilter getFilterForTank(int tank) {
         throw throwInvalidTankException();
     }
 
@@ -48,12 +48,12 @@ public enum EmptyFixedFluidInv implements IFixedFluidInv {
     }
 
     @Override
-    public IFluidInvStats getStatistics() {
+    public FluidInvStats getStatistics() {
         return EmptyFluidInvStats.INSTANCE;
     }
 
     @Override
-    public IListenerToken addListener(IFluidInvTankChangeListener listener, IListenerRemovalToken removalToken) {
+    public ListenerToken addListener(FluidInvTankChangeListener listener, ListenerRemovalToken removalToken) {
         // We don't need to keep track of the listener because this empty inventory never changes.
         return () -> {
             // (And we don't need to do anything when the listener is removed)
@@ -67,17 +67,17 @@ public enum EmptyFixedFluidInv implements IFixedFluidInv {
     }
 
     @Override
-    public IFixedFluidInvView getView() {
+    public FixedFluidInvView getView() {
         return this;
     }
 
     @Override
-    public IFluidInsertable getInsertable() {
+    public FluidInsertable getInsertable() {
         return RejectingFluidInsertable.NULL;
     }
 
     @Override
-    public IFluidInsertable getInsertable(int[] tanks) {
+    public FluidInsertable getInsertable(int[] tanks) {
         if (tanks.length == 0) {
             return RejectingFluidInsertable.NULL;
         }
@@ -85,12 +85,12 @@ public enum EmptyFixedFluidInv implements IFixedFluidInv {
     }
 
     @Override
-    public IFluidExtractable getExtractable() {
+    public FluidExtractable getExtractable() {
         return EmptyFluidExtractable.NULL;
     }
 
     @Override
-    public IFluidExtractable getExtractable(int[] tanks) {
+    public FluidExtractable getExtractable(int[] tanks) {
         if (tanks.length == 0) {
             return EmptyFluidExtractable.NULL;
         }

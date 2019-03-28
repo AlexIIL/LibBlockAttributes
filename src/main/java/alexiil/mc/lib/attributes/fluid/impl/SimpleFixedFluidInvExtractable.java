@@ -1,26 +1,26 @@
 package alexiil.mc.lib.attributes.fluid.impl;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.IFixedFluidInv;
-import alexiil.mc.lib.attributes.fluid.IFluidExtractable;
-import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.FixedFluidInv;
+import alexiil.mc.lib.attributes.fluid.FluidExtractable;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
-public final class SimpleFixedFluidInvExtractable implements IFluidExtractable {
+public final class SimpleFixedFluidInvExtractable implements FluidExtractable {
 
-    private final IFixedFluidInv inv;
+    private final FixedFluidInv inv;
 
     /** Null means that this can extract from any of the tanks. */
     private final int[] tanks;
 
-    public SimpleFixedFluidInvExtractable(IFixedFluidInv inv, int[] tanks) {
+    public SimpleFixedFluidInvExtractable(FixedFluidInv inv, int[] tanks) {
         this.inv = inv;
         this.tanks = tanks;
     }
 
     @Override
-    public FluidVolume attemptExtraction(IFluidFilter filter, int maxAmount, Simulation simulation) {
+    public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
         if (maxAmount < 0) {
             throw new IllegalArgumentException("maxAmount cannot be negative! (was " + maxAmount + ")");
         }

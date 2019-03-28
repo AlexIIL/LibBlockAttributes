@@ -5,7 +5,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 @FunctionalInterface
-public interface IAttributeCombiner<T> {
+public interface AttributeCombiner<T> {
     @Nonnull
     T combine(List<? extends T> attributes);
 }

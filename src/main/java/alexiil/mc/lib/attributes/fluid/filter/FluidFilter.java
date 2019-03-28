@@ -6,27 +6,27 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 
 /** A general {@link Predicate} interface for {@link FluidKey}s. */
 @FunctionalInterface
-public interface IFluidFilter {
+public interface FluidFilter {
 
     /** Checks to see if the given filter matches the given fluid key.
      * 
      * @throws IllegalArgumentException if the given {@link FluidKey} is {@link FluidKey#isEmpty() empty}. */
     boolean matches(FluidKey fluidKey);
 
-    default IFluidFilter negate() {
+    default FluidFilter negate() {
         return stack -> !this.matches(stack);
     }
 
-    default IFluidFilter and(IFluidFilter other) {
+    default FluidFilter and(FluidFilter other) {
         return AggregateFluidFilter.and(this, other);
     }
 
-    default IFluidFilter or(IFluidFilter other) {
+    default FluidFilter or(FluidFilter other) {
         return AggregateFluidFilter.or(this, other);
     }
 
     default Predicate<FluidKey> asPredicate() {
-        final IFluidFilter filter = this;
+        final FluidFilter filter = this;
         return new Predicate<FluidKey>() {
             @Override
             public boolean test(FluidKey stack) {
@@ -45,9 +45,9 @@ public interface IFluidFilter {
 
             @Override
             public Predicate<FluidKey> and(Predicate<? super FluidKey> other) {
-                if (other instanceof IFluidFilter) {
+                if (other instanceof FluidFilter) {
                     // Because the real filter might have optimisations in and()
-                    return filter.and((IFluidFilter) other).asPredicate();
+                    return filter.and((FluidFilter) other).asPredicate();
                 } else {
                     return Predicate.super.and(other);
                 }
@@ -55,9 +55,9 @@ public interface IFluidFilter {
 
             @Override
             public Predicate<FluidKey> or(Predicate<? super FluidKey> other) {
-                if (other instanceof IFluidFilter) {
+                if (other instanceof FluidFilter) {
                     // Because the real filter might have optimisations in or()
-                    return filter.or((IFluidFilter) other).asPredicate();
+                    return filter.or((FluidFilter) other).asPredicate();
                 } else {
                     return Predicate.super.and(other);
                 }

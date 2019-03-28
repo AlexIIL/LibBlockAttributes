@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.block.Block;
 import net.minecraft.fluid.BaseFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
@@ -38,10 +39,7 @@ public class FluidKeys {
             MISSING_SPRITE, //
             new StringTextComponent("!EMPTY FLUID!")//
         ).build();
-        LAVA = new NormalFluidKeyBuilder(Fluids.LAVA, //
-            new Identifier("minecraft", "block/lava_still"), //
-            new TranslatableTextComponent("block.minecraft.lava")//
-        ).build();
+        LAVA = createImplicitVanillaFluid(Fluids.LAVA);
         WATER = WaterFluidKey.INSTANCE;
 
         put(Fluids.EMPTY, EMPTY);
@@ -79,14 +77,24 @@ public class FluidKeys {
             return null;
         }
         FluidKey fluidKey = FLUIDS.get(fluid);
-        if (fluidKey == null && fluid instanceof BaseFluid) {
-            BaseFluid base = (BaseFluid) fluid;
-            TextComponent name = new StringTextComponent("!IMPLICIT UNSUPPORTED FLUID!");
-            NormalFluidKeyBuilder builder = NormalFluidKey.builder(base.getStill(), MISSING_SPRITE, name);
-            fluidKey = new ImplicitVanillaFluidKey(builder);
+        if (fluidKey == null) {
+            if (fluid instanceof BaseFluid) {
+                BaseFluid base = (BaseFluid) fluid;
+                fluid = base.getStill();
+                if (fluid == null) {
+                    throw new IllegalStateException("fluid.getStill() returned a null fluid! (from " + fluid + ")");
+                }
+            }
+            fluidKey = createImplicitVanillaFluid(fluid);
             put(fluid, fluidKey);
         }
         return fluidKey;
+    }
+
+    private static ImplicitVanillaFluidKey createImplicitVanillaFluid(Fluid fluid) {
+        Block block = fluid.getDefaultState().getBlockState().getBlock();
+        TextComponent name = new TranslatableTextComponent(block.getTranslationKey());
+        return new ImplicitVanillaFluidKey(NormalFluidKey.builder(fluid, MISSING_SPRITE, name));
     }
 
     public static FluidKey get(Potion potion) {

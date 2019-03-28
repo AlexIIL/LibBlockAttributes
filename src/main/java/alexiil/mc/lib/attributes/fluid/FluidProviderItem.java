@@ -7,7 +7,7 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.misc.Ref;
 
 /** An interface for {@link Item}'s to implement if they can be filled and drained like a bucket. */
-public interface IFluidItem {
+public interface FluidProviderItem {
     /* NOTE: As I haven't attempted to make attributes for items yet this is all that there is. */
 
     /** Attempts to drain some fluid from the given stack.

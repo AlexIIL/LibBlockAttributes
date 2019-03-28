@@ -4,18 +4,18 @@ import java.util.Set;
 
 import net.minecraft.item.ItemStack;
 
-import alexiil.mc.lib.attributes.item.filter.IItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 import it.unimi.dsi.fastutil.Hash.Strategy;
 
 /** Provides general statistics for any permanent inventory. The inventory in question doesn't have to be an
- * {@link IFixedItemInvView}. */
-public interface IItemInvStats {
+ * {@link FixedItemInvView}. */
+public interface ItemInvStats {
 
-    ItemInvStatistic getStatistics(IItemFilter filter);
+    ItemInvStatistic getStatistics(ItemFilter filter);
 
     /** @return A count of all the {@link ItemStack}'s that match the given filter. */
-    default int getAmount(IItemFilter filter) {
+    default int getAmount(ItemFilter filter) {
         return getStatistics(filter).amount;
     }
 
@@ -24,10 +24,10 @@ public interface IItemInvStats {
      *         won't work correctly! */
     Set<ItemStack> getStoredStacks();
 
-    /** Statistics associated with a single {@link IItemFilter} in a given inventory. */
+    /** Statistics associated with a single {@link ItemFilter} in a given inventory. */
     public static final class ItemInvStatistic {
 
-        public final IItemFilter filter;
+        public final ItemFilter filter;
 
         /** The total amount of the given filter. */
         public final int amount;
@@ -40,7 +40,7 @@ public interface IItemInvStats {
          * isn't specific enough to properly calculate this value. */
         public final int spaceTotal;
 
-        public ItemInvStatistic(IItemFilter filter, int amount, int spaceAddable, int spaceTotal) {
+        public ItemInvStatistic(ItemFilter filter, int amount, int spaceAddable, int spaceTotal) {
             this.filter = filter;
             this.amount = amount;
             this.spaceAddable = spaceAddable;

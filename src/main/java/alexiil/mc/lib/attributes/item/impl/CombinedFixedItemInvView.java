@@ -4,15 +4,15 @@ import java.util.List;
 
 import net.minecraft.item.ItemStack;
 
-import alexiil.mc.lib.attributes.IListenerRemovalToken;
-import alexiil.mc.lib.attributes.IListenerToken;
-import alexiil.mc.lib.attributes.item.IFixedItemInvView;
-import alexiil.mc.lib.attributes.item.IItemInvSlotChangeListener;
-import alexiil.mc.lib.attributes.item.filter.IItemFilter;
+import alexiil.mc.lib.attributes.ListenerRemovalToken;
+import alexiil.mc.lib.attributes.ListenerToken;
+import alexiil.mc.lib.attributes.item.FixedItemInvView;
+import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
+import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 import alexiil.mc.lib.attributes.misc.BoolRef;
 
-/** An {@link IFixedItemInvView} that delegates to a list of them instead of storing items directly. */
-public class CombinedFixedItemInvView<InvType extends IFixedItemInvView> implements IFixedItemInvView {
+/** An {@link FixedItemInvView} that delegates to a list of them instead of storing items directly. */
+public class CombinedFixedItemInvView<InvType extends FixedItemInvView> implements FixedItemInvView {
 
     public final List<? extends InvType> views;
     private final int[] subSlotStartIndex;
@@ -24,7 +24,7 @@ public class CombinedFixedItemInvView<InvType extends IFixedItemInvView> impleme
         int size = 0;
         for (int i = 0; i < views.size(); i++) {
             subSlotStartIndex[i] = size;
-            IFixedItemInvView view = views.get(i);
+            FixedItemInvView view = views.get(i);
             int s = view.getSlotCount();
             size += s;
         }
@@ -88,7 +88,7 @@ public class CombinedFixedItemInvView<InvType extends IFixedItemInvView> impleme
     }
 
     @Override
-    public IItemFilter getFilterForSlot(int slot) {
+    public ItemFilter getFilterForSlot(int slot) {
         return getInv(slot).getFilterForSlot(getSubSlot(slot));
     }
 
@@ -98,11 +98,11 @@ public class CombinedFixedItemInvView<InvType extends IFixedItemInvView> impleme
     }
 
     @Override
-    public IListenerToken addListener(IItemInvSlotChangeListener listener, IListenerRemovalToken removalToken) {
-        final IListenerToken[] tokens = new IListenerToken[views.size()];
+    public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken) {
+        final ListenerToken[] tokens = new ListenerToken[views.size()];
         final BoolRef hasAlreadyRemoved = new BoolRef(false);
-        final IListenerRemovalToken ourRemToken = () -> {
-            for (IListenerToken token : tokens) {
+        final ListenerRemovalToken ourRemToken = () -> {
+            for (ListenerToken token : tokens) {
                 if (token == null) {
                     // This means we have only half-initialised
                     // (and all of the next tokens must also be null)
@@ -129,7 +129,7 @@ public class CombinedFixedItemInvView<InvType extends IFixedItemInvView> impleme
             }
         }
         return () -> {
-            for (IListenerToken token : tokens) {
+            for (ListenerToken token : tokens) {
                 token.removeListener();
             }
         };

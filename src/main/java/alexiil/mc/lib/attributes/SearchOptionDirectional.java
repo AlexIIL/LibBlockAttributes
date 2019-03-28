@@ -1,26 +1,34 @@
 package alexiil.mc.lib.attributes;
 
+import java.util.EnumMap;
+import java.util.function.Predicate;
+
 import net.minecraft.util.math.Direction;
 
-public class SearchParamDirectional extends SearchParameter {
+public class SearchOptionDirectional<T> extends SearchOption<T> {
 
-    private static final SearchParamDirectional[] SIDES;
+    private static final EnumMap<Direction, SearchOptionDirectional<Object>> SIDES;
 
     /** The direction that this search is going in. */
     public final Direction direction;
 
-    SearchParamDirectional(Direction direction) {
+    SearchOptionDirectional(Direction direction) {
         this.direction = direction;
     }
 
-    public static SearchParamDirectional of(Direction dir) {
-        return SIDES[dir.ordinal()];
+    public SearchOptionDirectional(Direction direction, Predicate<T> searchMatcher) {
+        super(searchMatcher);
+        this.direction = direction;
+    }
+
+    public static SearchOptionDirectional<Object> of(Direction dir) {
+        return SIDES.get(dir);
     }
 
     static {
-        SIDES = new SearchParamDirectional[6];
+        SIDES = new EnumMap<>(Direction.class);
         for (Direction dir : Direction.values()) {
-            SIDES[dir.ordinal()] = new SearchParamDirectional(dir);
+            SIDES.put(dir, new SearchOptionDirectional<>(dir));
         }
     }
 }

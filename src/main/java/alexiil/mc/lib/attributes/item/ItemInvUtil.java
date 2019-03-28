@@ -8,10 +8,10 @@ import net.minecraft.item.ItemStack;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
-import alexiil.mc.lib.attributes.item.filter.IItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
-/** Various hooks and methods for dealing with pairs of {@link IFixedItemInv}, {@link IFixedItemInvView},
- * {@link IItemInsertable}, {@link IItemExtractable}, and {@link IItemInvStats} instances. */
+/** Various hooks and methods for dealing with pairs of {@link FixedItemInv}, {@link FixedItemInvView},
+ * {@link ItemInsertable}, {@link ItemExtractable}, and {@link ItemInvStats} instances. */
 public enum ItemInvUtil {
     ;
 
@@ -30,21 +30,21 @@ public enum ItemInvUtil {
         player.dropItem(stack, /* PreventPlayerQuickPickup = */ false);
     }
 
-    /** Attempts to move up to the given maximum number of items from the {@link IItemExtractable} to the
-     * {@link IItemInsertable}.
+    /** Attempts to move up to the given maximum number of items from the {@link ItemExtractable} to the
+     * {@link ItemInsertable}.
      * 
      * @return The number of items moved.
-     * @see #move(IItemExtractable, IItemInsertable, IItemFilter, int) */
-    public static int move(IItemExtractable from, IItemInsertable to, int maximum) {
+     * @see #move(ItemExtractable, ItemInsertable, ItemFilter, int) */
+    public static int move(ItemExtractable from, ItemInsertable to, int maximum) {
         return move(from, to, null, maximum);
     }
 
-    /** Attempts to move up to the given maximum number of items from the {@link IItemExtractable} to the
-     * {@link IItemInsertable}, provided they match the given {@link IItemFilter}.
+    /** Attempts to move up to the given maximum number of items from the {@link ItemExtractable} to the
+     * {@link ItemInsertable}, provided they match the given {@link ItemFilter}.
      * 
      * @return The number of items moved. */
-    public static int move(IItemExtractable from, IItemInsertable to, IItemFilter filter, int maximum) {
-        IItemFilter insertionFilter = to.getInsertionFilter();
+    public static int move(ItemExtractable from, ItemInsertable to, ItemFilter filter, int maximum) {
+        ItemFilter insertionFilter = to.getInsertionFilter();
         if (filter != null && filter != ConstantItemFilter.ANYTHING) {
             insertionFilter = AggregateItemFilter.and(insertionFilter, filter);
         }

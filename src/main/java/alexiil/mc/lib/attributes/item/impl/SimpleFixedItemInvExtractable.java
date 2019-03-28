@@ -3,25 +3,25 @@ package alexiil.mc.lib.attributes.item.impl;
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.item.IFixedItemInv;
-import alexiil.mc.lib.attributes.item.IItemExtractable;
+import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.item.ItemExtractable;
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
-import alexiil.mc.lib.attributes.item.filter.IItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
-public final class SimpleFixedItemInvExtractable implements IItemExtractable {
+public final class SimpleFixedItemInvExtractable implements ItemExtractable {
 
-    private final IFixedItemInv inv;
+    private final FixedItemInv inv;
 
     /** Null means that this can extract from any of the slots. */
     private final int[] slots;
 
-    public SimpleFixedItemInvExtractable(IFixedItemInv inv, int[] slots) {
+    public SimpleFixedItemInvExtractable(FixedItemInv inv, int[] slots) {
         this.inv = inv;
         this.slots = slots;
     }
 
     @Override
-    public ItemStack attemptExtraction(IItemFilter filter, int maxCount, Simulation simulation) {
+    public ItemStack attemptExtraction(ItemFilter filter, int maxCount, Simulation simulation) {
 
         if (maxCount < 0) {
             throw new IllegalArgumentException("maxAmount cannot be negative! (was " + maxCount + ")");

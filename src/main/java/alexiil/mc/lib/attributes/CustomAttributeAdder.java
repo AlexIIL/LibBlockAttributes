@@ -5,7 +5,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 @FunctionalInterface
-public interface IAttributeCustomAdder<T> {
+public interface CustomAttributeAdder<T> {
     /* Note that we do have the type parameter (unlike IAttributeBlock) because instances are registered to a specific
      * Attribute so it's actually useful for implementors. */
 

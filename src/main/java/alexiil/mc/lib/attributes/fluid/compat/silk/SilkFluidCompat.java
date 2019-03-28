@@ -10,8 +10,8 @@ import net.minecraft.util.math.Direction;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.FluidAttributes;
-import alexiil.mc.lib.attributes.fluid.IFluidExtractable;
-import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.FluidExtractable;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
@@ -50,9 +50,9 @@ public class SilkFluidCompat {
                 FluidContainerProvider provider = (FluidContainerProvider) state.getBlock();
                 FluidContainer container = provider.getContainer(state, world, pos);
                 if (container != null) {
-                    list.add(new IFluidExtractable() {
+                    list.add(new FluidExtractable() {
                         @Override
-                        public FluidVolume attemptExtraction(IFluidFilter filter, int maxAmount,
+                        public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount,
                             Simulation simulation) {
                             Direction dir = list.getSearchDirection();
                             if (dir != null) {

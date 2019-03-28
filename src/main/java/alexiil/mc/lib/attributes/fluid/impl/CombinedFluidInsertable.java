@@ -4,19 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.IFluidInsertable;
+import alexiil.mc.lib.attributes.fluid.FluidInsertable;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
-import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
-public final class CombinedFluidInsertable implements IFluidInsertable {
+public final class CombinedFluidInsertable implements FluidInsertable {
 
-    private final List<? extends IFluidInsertable> insertables;
-    private final IFluidFilter filter;
+    private final List<? extends FluidInsertable> insertables;
+    private final FluidFilter filter;
 
-    public CombinedFluidInsertable(List<? extends IFluidInsertable> list) {
-        List<IFluidFilter> filters = new ArrayList<>(list.size());
+    public CombinedFluidInsertable(List<? extends FluidInsertable> list) {
+        List<FluidFilter> filters = new ArrayList<>(list.size());
         for (int i = 0; i < list.size(); i++) {
             filters.add(list.get(i).getInsertionFilter());
         }
@@ -26,7 +26,7 @@ public final class CombinedFluidInsertable implements IFluidInsertable {
 
     @Override
     public FluidVolume attemptInsertion(FluidVolume stack, Simulation simulation) {
-        for (IFluidInsertable insertable : insertables) {
+        for (FluidInsertable insertable : insertables) {
             stack = insertable.attemptInsertion(stack, simulation);
             if (stack.isEmpty()) {
                 return FluidKeys.EMPTY.withAmount(0);
@@ -36,7 +36,7 @@ public final class CombinedFluidInsertable implements IFluidInsertable {
     }
 
     @Override
-    public IFluidFilter getInsertionFilter() {
+    public FluidFilter getInsertionFilter() {
         return filter;
     }
 }

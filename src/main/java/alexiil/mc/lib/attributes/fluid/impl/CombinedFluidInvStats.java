@@ -4,24 +4,24 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import alexiil.mc.lib.attributes.fluid.IFluidInvStats;
-import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.FluidInvStats;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 
-public class CombinedFluidInvStats implements IFluidInvStats {
+public class CombinedFluidInvStats implements FluidInvStats {
 
-    private final List<? extends IFluidInvStats> statistics;
+    private final List<? extends FluidInvStats> statistics;
 
-    public CombinedFluidInvStats(List<? extends IFluidInvStats> statistics) {
+    public CombinedFluidInvStats(List<? extends FluidInvStats> statistics) {
         this.statistics = statistics;
     }
 
     @Override
-    public FluidInvStatistic getStatistics(IFluidFilter filter) {
+    public FluidInvStatistic getStatistics(FluidFilter filter) {
         int amount = 0;
         int spaceAddable = 0;
         int spaceTotal = 0;
-        for (IFluidInvStats stats : statistics) {
+        for (FluidInvStats stats : statistics) {
             FluidInvStatistic stat = stats.getStatistics(filter);
             amount += stat.amount;
             spaceAddable += stat.spaceAddable;
@@ -33,7 +33,7 @@ public class CombinedFluidInvStats implements IFluidInvStats {
     @Override
     public Set<FluidKey> getStoredFluids() {
         Set<FluidKey> set = new HashSet<>();
-        for (IFluidInvStats stats : statistics) {
+        for (FluidInvStats stats : statistics) {
             set.addAll(stats.getStoredFluids());
         }
         return set;

@@ -9,20 +9,20 @@ import net.minecraft.util.DefaultedList;
 import net.minecraft.util.SystemUtil;
 
 import alexiil.mc.lib.attributes.AttributeUtil;
-import alexiil.mc.lib.attributes.IListenerRemovalToken;
-import alexiil.mc.lib.attributes.IListenerToken;
+import alexiil.mc.lib.attributes.ListenerRemovalToken;
+import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.IFixedFluidInv;
-import alexiil.mc.lib.attributes.fluid.IFluidInvTankChangeListener;
+import alexiil.mc.lib.attributes.fluid.FixedFluidInv;
+import alexiil.mc.lib.attributes.fluid.FluidInvTankChangeListener;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
-import alexiil.mc.lib.attributes.fluid.filter.IFluidFilter;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
 
-/** A simple, extendible, fixed size item inventory that supports all of the features that {@link IFixedFluidInv}
+/** A simple, extendible, fixed size item inventory that supports all of the features that {@link FixedFluidInv}
  * exposes.
  * <p>
  * Extending classes should take care to override {@link #getFilterForTank(int)} if they also override
@@ -30,21 +30,21 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
  * <p>
  * Note: Generally it is better to extend {@link JumboFixedFluidInv} for inventories with a large number of similar
  * tanks (like a chest). */
-public class SimpleFixedFluidInv implements IFixedFluidInv {
+public class SimpleFixedFluidInv implements FixedFluidInv {
 
-    private static final IFluidInvTankChangeListener[] NO_LISTENERS = new IFluidInvTankChangeListener[0];
+    private static final FluidInvTankChangeListener[] NO_LISTENERS = new FluidInvTankChangeListener[0];
 
     /** Sentinel value used during {@link #invalidateListeners()}. */
-    private static final IFluidInvTankChangeListener[] INVALIDATING_LISTENERS = new IFluidInvTankChangeListener[0];
+    private static final FluidInvTankChangeListener[] INVALIDATING_LISTENERS = new FluidInvTankChangeListener[0];
 
     public final int tankCapacity;
     protected final DefaultedList<FluidVolume> tanks;
 
-    private final Map<IFluidInvTankChangeListener, IListenerRemovalToken> listeners =
+    private final Map<FluidInvTankChangeListener, ListenerRemovalToken> listeners =
         new Object2ObjectLinkedOpenCustomHashMap<>(SystemUtil.identityHashStrategy());
 
     // Should this use WeakReference instead of storing them directly?
-    private IFluidInvTankChangeListener[] bakedListeners = NO_LISTENERS;
+    private FluidInvTankChangeListener[] bakedListeners = NO_LISTENERS;
 
     public SimpleFixedFluidInv(int invSize, int tankCapacity) {
         tanks = DefaultedList.create(invSize, FluidKeys.EMPTY.withAmount(0));
@@ -74,7 +74,7 @@ public class SimpleFixedFluidInv implements IFixedFluidInv {
     }
 
     @Override
-    public IFluidFilter getFilterForTank(int tank) {
+    public FluidFilter getFilterForTank(int tank) {
         if (AttributeUtil.EXPENSIVE_DEBUG_CHECKS) {
             Class<?> cls = getClass();
             if (cls != SimpleFixedFluidInv.class) {
@@ -111,19 +111,19 @@ public class SimpleFixedFluidInv implements IFixedFluidInv {
     // Others
 
     @Override
-    public IListenerToken addListener(IFluidInvTankChangeListener listener, IListenerRemovalToken removalToken) {
+    public ListenerToken addListener(FluidInvTankChangeListener listener, ListenerRemovalToken removalToken) {
         if (bakedListeners == INVALIDATING_LISTENERS) {
             // It doesn't really make sense to add listeners while we are invalidating them
             return null;
         }
-        IListenerRemovalToken previous = listeners.put(listener, removalToken);
+        ListenerRemovalToken previous = listeners.put(listener, removalToken);
         if (previous == null) {
             bakeListeners();
         } else {
             assert previous == removalToken : "The same listener object must be registered with the same removal token";
         }
         return () -> {
-            IListenerRemovalToken token = listeners.remove(listener);
+            ListenerRemovalToken token = listeners.remove(listener);
             if (token != null) {
                 assert token == removalToken;
                 bakeListeners();
@@ -133,14 +133,14 @@ public class SimpleFixedFluidInv implements IFixedFluidInv {
     }
 
     private void bakeListeners() {
-        bakedListeners = listeners.keySet().toArray(new IFluidInvTankChangeListener[0]);
+        bakedListeners = listeners.keySet().toArray(new FluidInvTankChangeListener[0]);
     }
 
     public void invalidateListeners() {
         bakedListeners = INVALIDATING_LISTENERS;
-        IListenerRemovalToken[] removalTokens = listeners.values().toArray(new IListenerRemovalToken[0]);
+        ListenerRemovalToken[] removalTokens = listeners.values().toArray(new ListenerRemovalToken[0]);
         listeners.clear();
-        for (IListenerRemovalToken token : removalTokens) {
+        for (ListenerRemovalToken token : removalTokens) {
             token.onListenerRemoved();
         }
         bakedListeners = NO_LISTENERS;
@@ -148,8 +148,8 @@ public class SimpleFixedFluidInv implements IFixedFluidInv {
 
     protected final void fireTankChange(int tank, FluidVolume previous, FluidVolume current) {
         // Iterate over the previous array in case the listeners array is changed while we are iterating
-        final IFluidInvTankChangeListener[] baked = bakedListeners;
-        for (IFluidInvTankChangeListener listener : baked) {
+        final FluidInvTankChangeListener[] baked = bakedListeners;
+        for (FluidInvTankChangeListener listener : baked) {
             listener.onChange(this, tank, previous, current);
         }
     }

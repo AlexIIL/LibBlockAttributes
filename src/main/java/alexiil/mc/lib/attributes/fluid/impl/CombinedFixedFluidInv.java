@@ -3,12 +3,12 @@ package alexiil.mc.lib.attributes.fluid.impl;
 import java.util.List;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.IFixedFluidInv;
+import alexiil.mc.lib.attributes.fluid.FixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
-/** An {@link IFixedFluidInv} that delegates to a list of them instead of storing items directly. */
-public class CombinedFixedFluidInv<InvType extends IFixedFluidInv> extends CombinedFixedFluidInvView<InvType>
-    implements IFixedFluidInv {
+/** An {@link FixedFluidInv} that delegates to a list of them instead of storing items directly. */
+public class CombinedFixedFluidInv<InvType extends FixedFluidInv> extends CombinedFixedFluidInvView<InvType>
+    implements FixedFluidInv {
 
     public CombinedFixedFluidInv(List<? extends InvType> views) {
         super(views);

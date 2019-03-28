@@ -1,0 +1,16 @@
+Breaking Changes:
+
+* Renamed a LOT of classes to be more inline with fabric's naming convention.
+    * Removed the "I" prefix from every interface that had it.
+    * SearchParameter -> SearchOption
+    * SearchParamDirectional -> SearchOptionDirectional
+    * SearchParamInVoxel -> SearchOptionInVoxel
+    * SearchParamDirectionalVoxel -> SearchOptionDirectionalVoxel
+    * AttributeDefaulted -> DefaultedAttribute 
+    * AttributeCombinable -> CombinableAttribute
+    * IFluidItem -> FluidProviderItem
+
+Changes:
+
+* Added much better support for ordinary fluid classes - now lava is defined through the implicit fluids system without any problems.
+* Added a static utility class "SearchOptions" which contains factories for creating all of the different types of SearchOption.

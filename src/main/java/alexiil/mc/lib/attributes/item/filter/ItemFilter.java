@@ -6,7 +6,7 @@ import net.minecraft.item.ItemStack;
 
 /** A general {@link Predicate} interface for {@link ItemStack}s. */
 @FunctionalInterface
-public interface IItemFilter {
+public interface ItemFilter {
 
     /** Checks to see if the given filter matches the given stack. Note that this must not care about
      * {@link ItemStack#getAmount()}.
@@ -14,20 +14,20 @@ public interface IItemFilter {
      * @throws IllegalArgumentException if the given {@link ItemStack} is {@link ItemStack#isEmpty() empty}. */
     boolean matches(ItemStack stack);
 
-    default IItemFilter negate() {
+    default ItemFilter negate() {
         return stack -> !this.matches(stack);
     }
 
-    default IItemFilter and(IItemFilter other) {
+    default ItemFilter and(ItemFilter other) {
         return AggregateItemFilter.and(this, other);
     }
 
-    default IItemFilter or(IItemFilter other) {
+    default ItemFilter or(ItemFilter other) {
         return AggregateItemFilter.or(this, other);
     }
 
     default Predicate<ItemStack> asPredicate() {
-        final IItemFilter filter = this;
+        final ItemFilter filter = this;
         return new Predicate<ItemStack>() {
             @Override
             public boolean test(ItemStack stack) {
@@ -46,9 +46,9 @@ public interface IItemFilter {
 
             @Override
             public Predicate<ItemStack> and(Predicate<? super ItemStack> other) {
-                if (other instanceof IItemFilter) {
+                if (other instanceof ItemFilter) {
                     // Because the real filter might have optimisations in and()
-                    return filter.and((IItemFilter) other).asPredicate();
+                    return filter.and((ItemFilter) other).asPredicate();
                 } else {
                     return Predicate.super.and(other);
                 }
@@ -56,9 +56,9 @@ public interface IItemFilter {
 
             @Override
             public Predicate<ItemStack> or(Predicate<? super ItemStack> other) {
-                if (other instanceof IItemFilter) {
+                if (other instanceof ItemFilter) {
                     // Because the real filter might have optimisations in or()
-                    return filter.or((IItemFilter) other).asPredicate();
+                    return filter.or((ItemFilter) other).asPredicate();
                 } else {
                     return Predicate.super.and(other);
                 }

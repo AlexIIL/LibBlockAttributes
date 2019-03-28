@@ -10,13 +10,13 @@ import com.google.common.collect.Iterators;
 import alexiil.mc.lib.attributes.AggregateFilterType;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 
-/** An {@link IFluidFilter} over a predefined array of {@link IFluidFilter}'s. You can either iterate over this object
+/** An {@link FluidFilter} over a predefined array of {@link FluidFilter}'s. You can either iterate over this object
  * directly or use {@link #getFilterCount()} and {@link #getFilter(int)} to read every filter individually. */
-public class AggregateFluidFilter implements IReadableFluidFilter, Iterable<IFluidFilter> {
+public class AggregateFluidFilter implements ReadableFluidFilter, Iterable<FluidFilter> {
     public final AggregateFilterType type;
-    private final IFluidFilter[] filters;
+    private final FluidFilter[] filters;
 
-    public AggregateFluidFilter(AggregateFilterType type, IFluidFilter... filters) {
+    public AggregateFluidFilter(AggregateFilterType type, FluidFilter... filters) {
         if (filters.length < 2) {
             throw new IllegalArgumentException("There's no reason to construct an aggregate stack filter that matches "
                 + filters.length + " filters!");
@@ -27,17 +27,17 @@ public class AggregateFluidFilter implements IReadableFluidFilter, Iterable<IFlu
 
     /** @return An {@link AggregateFluidFilter} that contains both of the given filters. This might not return a new
      *         object if either of the filters contains the other. */
-    public static IFluidFilter and(IFluidFilter filterA, IFluidFilter filterB) {
+    public static FluidFilter and(FluidFilter filterA, FluidFilter filterB) {
         return combine(AggregateFilterType.ALL, filterA, filterB);
     }
 
     /** @return An {@link AggregateFluidFilter} that contains both of the given filters. This might not return a new
      *         object if either of the filters contains the other. */
-    public static IFluidFilter or(IFluidFilter filterA, IFluidFilter filterB) {
+    public static FluidFilter or(FluidFilter filterA, FluidFilter filterB) {
         return combine(AggregateFilterType.ANY, filterA, filterB);
     }
 
-    public static IFluidFilter combine(AggregateFilterType type, IFluidFilter filterA, IFluidFilter filterB) {
+    public static FluidFilter combine(AggregateFilterType type, FluidFilter filterA, FluidFilter filterB) {
         final boolean all = type == AggregateFilterType.ALL;
         if (filterA == filterB) {
             return filterA;
@@ -56,22 +56,22 @@ public class AggregateFluidFilter implements IReadableFluidFilter, Iterable<IFlu
         }
         if (filterA instanceof AggregateFluidFilter && ((AggregateFluidFilter) filterA).type == type) {
             if (filterB instanceof AggregateFluidFilter && ((AggregateFluidFilter) filterB).type == type) {
-                IFluidFilter[] filtersA = ((AggregateFluidFilter) filterA).filters;
-                IFluidFilter[] filtersB = ((AggregateFluidFilter) filterB).filters;
-                IFluidFilter[] filters = new IFluidFilter[filtersA.length + filtersB.length];
+                FluidFilter[] filtersA = ((AggregateFluidFilter) filterA).filters;
+                FluidFilter[] filtersB = ((AggregateFluidFilter) filterB).filters;
+                FluidFilter[] filters = new FluidFilter[filtersA.length + filtersB.length];
                 System.arraycopy(filtersA, 0, filters, 0, filtersA.length);
                 System.arraycopy(filtersB, 0, filters, filtersA.length, filtersB.length);
                 return new AggregateFluidFilter(type, filters);
             }
-            IFluidFilter[] from = ((AggregateFluidFilter) filterA).filters;
-            IFluidFilter[] filters = new IFluidFilter[from.length + 1];
+            FluidFilter[] from = ((AggregateFluidFilter) filterA).filters;
+            FluidFilter[] filters = new FluidFilter[from.length + 1];
             System.arraycopy(from, 0, filters, 0, from.length);
             filters[from.length] = filterB;
             return new AggregateFluidFilter(type, filters);
         }
         if (filterB instanceof AggregateFluidFilter && ((AggregateFluidFilter) filterB).type == type) {
-            IFluidFilter[] from = ((AggregateFluidFilter) filterB).filters;
-            IFluidFilter[] filters = new IFluidFilter[from.length + 1];
+            FluidFilter[] from = ((AggregateFluidFilter) filterB).filters;
+            FluidFilter[] filters = new FluidFilter[from.length + 1];
             System.arraycopy(from, 0, filters, 0, from.length);
             filters[from.length] = filterA;
             return new AggregateFluidFilter(type, filters);
@@ -97,29 +97,29 @@ public class AggregateFluidFilter implements IReadableFluidFilter, Iterable<IFlu
         return new AggregateFluidFilter(type, filterA, filterB);
     }
 
-    public static IFluidFilter allOf(IFluidFilter... filters) {
+    public static FluidFilter allOf(FluidFilter... filters) {
         return combine(AggregateFilterType.ALL, filters);
     }
 
-    public static IFluidFilter anyOf(IFluidFilter... filters) {
+    public static FluidFilter anyOf(FluidFilter... filters) {
         return combine(AggregateFilterType.ANY, filters);
     }
 
-    public static IFluidFilter combine(AggregateFilterType type, IFluidFilter... filters) {
+    public static FluidFilter combine(AggregateFilterType type, FluidFilter... filters) {
         return combine(type, Arrays.asList(filters));
     }
 
-    public static IFluidFilter allOf(List<IFluidFilter> filters) {
+    public static FluidFilter allOf(List<FluidFilter> filters) {
         return combine(AggregateFilterType.ALL, filters);
     }
 
-    public static IFluidFilter anyOf(List<IFluidFilter> filters) {
+    public static FluidFilter anyOf(List<FluidFilter> filters) {
         return combine(AggregateFilterType.ANY, filters);
     }
 
-    public static IFluidFilter combine(AggregateFilterType type, List<IFluidFilter> filters) {
+    public static FluidFilter combine(AggregateFilterType type, List<FluidFilter> filters) {
         if (!(filters instanceof RandomAccess)) {
-            filters = Arrays.asList(filters.toArray(new IFluidFilter[0]));
+            filters = Arrays.asList(filters.toArray(new FluidFilter[0]));
         }
         switch (filters.size()) {
             case 0:
@@ -130,7 +130,7 @@ public class AggregateFluidFilter implements IReadableFluidFilter, Iterable<IFlu
                 // I'm assuming this might be faster than putting everything into a list?
                 return combine(type, filters.get(0), filters.get(1));
             default: {
-                IFluidFilter filter = filters.get(0);
+                FluidFilter filter = filters.get(0);
                 for (int i = 1; i < filters.size(); i++) {
                     filter = combine(type, filter, filters.get(i));
                 }
@@ -142,14 +142,14 @@ public class AggregateFluidFilter implements IReadableFluidFilter, Iterable<IFlu
     @Override
     public boolean matches(FluidKey fluid) {
         if (type == AggregateFilterType.ALL) {
-            for (IFluidFilter filter : filters) {
+            for (FluidFilter filter : filters) {
                 if (!filter.matches(fluid)) {
                     return false;
                 }
             }
             return true;
         } else {
-            for (IFluidFilter filter : filters) {
+            for (FluidFilter filter : filters) {
                 if (filter.matches(fluid)) {
                     return true;
                 }
@@ -162,12 +162,12 @@ public class AggregateFluidFilter implements IReadableFluidFilter, Iterable<IFlu
         return filters.length;
     }
 
-    public IFluidFilter getFilter(int index) {
+    public FluidFilter getFilter(int index) {
         return filters[index];
     }
 
     @Override
-    public Iterator<IFluidFilter> iterator() {
+    public Iterator<FluidFilter> iterator() {
         return Iterators.forArray(filters);
     }
 }

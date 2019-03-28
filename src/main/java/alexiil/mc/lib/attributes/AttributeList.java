@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 import net.minecraft.util.BooleanBiFunction;
 import net.minecraft.util.DefaultedList;
+import net.minecraft.util.math.BoundingBox;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Direction.AxisDirection;
 import net.minecraft.util.shape.VoxelShape;
@@ -18,7 +19,7 @@ import it.unimi.dsi.fastutil.ints.IntComparator;
 
 public class AttributeList<T> {
     public final Attribute<T> attribute;
-    public final SearchParameter searchParam;
+    public final SearchOption<? super T> searchParam;
 
     @Nonnull
     final VoxelShape defaultShape;
@@ -33,26 +34,39 @@ public class AttributeList<T> {
     /** Only used if we need to sort the resulting list by the shapes. */
     final List<VoxelShape> combinedShapeList;
 
+    /** Only used if the {@link #getSearchDirection()} is a non-null value (as otherwise it's impossible to know which
+     * direction should be blocked from). */
+    VoxelShape obstructingShape;
+
     private AttributeListMode mode = AttributeListMode.ADDING;
 
-    AttributeList(Attribute<T> attribute, SearchParameter searchParam, VoxelShape defaultShape) {
+    AttributeList(Attribute<T> attribute, @Nullable SearchOption<? super T> searchOption, VoxelShape defaultShape) {
         if (defaultShape == null) {
             throw new NullPointerException("defaultShape");
         }
+        if (searchOption == null) {
+            searchOption = SearchOptions.ALL;
+        }
         this.attribute = attribute;
-        this.searchParam = searchParam;
+        this.searchParam = searchOption;
         this.defaultShape = defaultShape;
-        if (searchParam instanceof SearchParamDirectionalVoxel && ((SearchParamDirectionalVoxel) searchParam).ordered) {
+        if (searchOption instanceof SearchOptionDirectionalVoxel
+            && ((SearchOptionDirectionalVoxel<?>) searchOption).ordered) {
             this.combinedShapeList = new ArrayList<>();
         } else {
             this.combinedShapeList = null;
+        }
+        if (getSearchDirection() != null) {
+            this.obstructingShape = VoxelShapes.empty();
+        } else {
+            this.obstructingShape = null;
         }
     }
 
     @Nullable
     public Direction getSearchDirection() {
-        if (searchParam instanceof SearchParamDirectional) {
-            return ((SearchParamDirectional) searchParam).direction;
+        if (searchParam instanceof SearchOptionDirectional) {
+            return ((SearchOptionDirectional<?>) searchParam).direction;
         } else {
             return null;
         }
@@ -80,12 +94,16 @@ public class AttributeList<T> {
         if (shape == null) {
             shape = defaultShape;
         }
-        if (searchParam instanceof SearchParamInVoxel) {
-            if (!VoxelShapes.compareShapes(shape, ((SearchParamInVoxel) searchParam).shape, BooleanBiFunction.AND)) {
+        if (!searchParam.matches(obj)) {
+            return;
+        }
+        if (searchParam instanceof SearchOptionInVoxel) {
+            if (!VoxelShapes.compareShapes(shape, ((SearchOptionInVoxel<?>) searchParam).shape,
+                BooleanBiFunction.AND)) {
                 return;
             }
-        } else if (searchParam instanceof SearchParamDirectionalVoxel) {
-            SearchParamDirectionalVoxel voxelSearch = (SearchParamDirectionalVoxel) searchParam;
+        } else if (searchParam instanceof SearchOptionDirectionalVoxel) {
+            SearchOptionDirectionalVoxel<?> voxelSearch = (SearchOptionDirectionalVoxel<?>) searchParam;
             if (voxelSearch.ordered) {
                 VoxelShape combined = VoxelShapes.union(shape, voxelSearch.shape);
                 if (combined.isEmpty()) {
@@ -121,6 +139,48 @@ public class AttributeList<T> {
         if (attribute.isInstance(object)) {
             add(attribute.cast(object), cacheInfo, shape);
         }
+    }
+
+    /** Adds an obstruction to the current search. For example a buildcraft pipe plug would add a small
+     * {@link VoxelShape} to prevent the neighbouring pipe connecting through it.
+     * <p>
+     * This only has an effect on the current search if {@link #getSearchDirection()} returns a non-null value. (as
+     * otherwise it won't obstruct anything). */
+    public void obstruct(VoxelShape shape) {
+        if (obstructingShape != null) {
+            obstructingShape = VoxelShapes.union(obstructingShape, extendShape(shape, getSearchDirection()));
+        }
+    }
+
+    /** @return A new voxel shape that has been extended to infinity(?) in the given direction. */
+    private static VoxelShape extendShape(VoxelShape shape, Direction direction) {
+        if (direction == null) {
+            return shape;
+        }
+        // TODO: Improve this algorithm!
+        VoxelShape combined = VoxelShapes.empty();
+        for (BoundingBox box : shape.getBoundingBoxList()) {
+            double minX = box.minX;
+            double minY = box.minY;
+            double minZ = box.minZ;
+            double maxX = box.maxX;
+            double maxY = box.maxY;
+            double maxZ = box.maxZ;
+            switch (direction) {
+                // @formatter:off
+                case DOWN: minY = 0; break;
+                case UP: maxY = 1; break;
+                case NORTH: minZ = 0; break;
+                case SOUTH: maxZ = 1; break;
+                case WEST: minX = 0; break;
+                case EAST: maxX = 1; break;
+                // @formatter:on
+                default:
+                    throw new IllegalStateException("Unknown Direction " + direction);
+            }
+            combined = VoxelShapes.union(combined, VoxelShapes.cube(minX, minY, minZ, maxX, maxY, maxZ));
+        }
+        return combined;
     }
 
     // Accessors (used by attribute lookup functions)
@@ -166,12 +226,10 @@ public class AttributeList<T> {
     }
 
     void finishAdding() {
-        if (mode != AttributeListMode.ADDING) {
-            throw new IllegalStateException("Already finished adding!");
-        }
+        assertAdding();
         mode = AttributeListMode.USING;
-        if (searchParam instanceof SearchParamDirectionalVoxel) {
-            SearchParamDirectionalVoxel param = (SearchParamDirectionalVoxel) searchParam;
+        if (searchParam instanceof SearchOptionDirectionalVoxel) {
+            SearchOptionDirectionalVoxel<?> param = (SearchOptionDirectionalVoxel<?>) searchParam;
             if (param.ordered) {
                 if (list.size() > 1) {
                     Swapper swapper = (a, b) -> {
@@ -195,6 +253,21 @@ public class AttributeList<T> {
                     };
                     // Dammit fastutil why do you have to use the same name as java :(
                     it.unimi.dsi.fastutil.Arrays.quickSort(0, list.size(), comparator, swapper);
+                }
+            }
+        }
+        if (obstructingShape != null) {
+            for (int i = list.size() - 1; i >= 0; i--) {
+                VoxelShape attributeShape = (combinedShapeList != null ? combinedShapeList : shapeList).get(i);
+                // Just in case right?
+                attributeShape = VoxelShapes.union(attributeShape, VoxelShapes.fullCube());
+                if (VoxelShapes.combine(obstructingShape, attributeShape, BooleanBiFunction.ONLY_SECOND).isEmpty()) {
+                    list.remove(i);
+                    cacheList.remove(i);
+                    shapeList.remove(i);
+                    if (combinedShapeList != null) {
+                        combinedShapeList.remove(i);
+                    }
                 }
             }
         }

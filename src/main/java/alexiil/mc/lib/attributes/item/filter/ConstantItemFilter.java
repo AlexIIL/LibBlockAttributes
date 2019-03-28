@@ -2,7 +2,7 @@ package alexiil.mc.lib.attributes.item.filter;
 
 import net.minecraft.item.ItemStack;
 
-public enum ConstantItemFilter implements IReadableItemFilter {
+public enum ConstantItemFilter implements ReadableItemFilter {
     ANYTHING(true),
     NOTHING(false);
 
@@ -25,12 +25,12 @@ public enum ConstantItemFilter implements IReadableItemFilter {
     }
 
     @Override
-    public IItemFilter negate() {
+    public ItemFilter negate() {
         return of(!result);
     }
 
     @Override
-    public IItemFilter and(IItemFilter other) {
+    public ItemFilter and(ItemFilter other) {
         if (result) {
             return other;
         } else {
@@ -39,7 +39,7 @@ public enum ConstantItemFilter implements IReadableItemFilter {
     }
 
     @Override
-    public IItemFilter or(IItemFilter other) {
+    public ItemFilter or(ItemFilter other) {
         if (result) {
             return ANYTHING;
         } else {

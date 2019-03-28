@@ -11,7 +11,7 @@ import alexiil.mc.lib.attributes.item.impl.SimpleFixedItemInvExtractable;
 import alexiil.mc.lib.attributes.item.impl.SimpleFixedItemInvInsertable;
 import alexiil.mc.lib.attributes.item.impl.SubFixedItemInv;
 
-/** A changeable {@link IFixedItemInvView} that can have it's contents changed. Note that this does not imply that the
+/** A changeable {@link FixedItemInvView} that can have it's contents changed. Note that this does not imply that the
  * contents can be changed to anything the caller wishes them to be.
  * <p>
  * The attribute is stored in {@link ItemAttributes#FIXED_INV}.
@@ -24,38 +24,38 @@ import alexiil.mc.lib.attributes.item.impl.SubFixedItemInv;
  * <li>A partial view of a single inventory is {@link SubFixedItemInv}</li>
  * </ul>
  */
-public interface IFixedItemInv extends IFixedItemInvView {
+public interface FixedItemInv extends FixedItemInvView {
 
     /** Sets the stack in the given slot to the given stack.
      * 
      * @return True if the modification was allowed, false otherwise. (For example if the given stack doesn't pass the
-     *         {@link IFixedItemInvView#isItemValidForSlot(int, ItemStack)} test). */
+     *         {@link FixedItemInvView#isItemValidForSlot(int, ItemStack)} test). */
     boolean setInvStack(int slot, ItemStack to, Simulation simulation);
 
-    /** @return An {@link IItemInsertable} for this inventory that will attempt to insert into any of the slots in this
+    /** @return An {@link ItemInsertable} for this inventory that will attempt to insert into any of the slots in this
      *         inventory. */
-    default IItemInsertable getInsertable() {
+    default ItemInsertable getInsertable() {
         return new SimpleFixedItemInvInsertable(this, null);
     }
 
-    /** @return An {@link IItemInsertable} for this inventory that will attempt to insert into only the given array of
+    /** @return An {@link ItemInsertable} for this inventory that will attempt to insert into only the given array of
      *         slots. */
-    default IItemInsertable getInsertable(int[] slots) {
+    default ItemInsertable getInsertable(int[] slots) {
         if (slots.length == 0) {
             return RejectingItemInsertable.NULL;
         }
         return new SimpleFixedItemInvInsertable(this, slots);
     }
 
-    /** @return An {@link IItemExtractable} for this inventory that will attempt to extract from any of the slots in
+    /** @return An {@link ItemExtractable} for this inventory that will attempt to extract from any of the slots in
      *         this inventory. */
-    default IItemExtractable getExtractable() {
+    default ItemExtractable getExtractable() {
         return new SimpleFixedItemInvExtractable(this, null);
     }
 
-    /** @return An {@link IItemExtractable} for this inventory that will attempt to extract from only the given array of
+    /** @return An {@link ItemExtractable} for this inventory that will attempt to extract from only the given array of
      *         slots. */
-    default IItemExtractable getExtractable(int[] slots) {
+    default ItemExtractable getExtractable(int[] slots) {
         if (slots.length == 0) {
             return EmptyItemExtractable.NULL;
         }
@@ -63,7 +63,7 @@ public interface IFixedItemInv extends IFixedItemInvView {
     }
 
     @Override
-    default IFixedItemInv getSubInv(int fromIndex, int toIndex) {
+    default FixedItemInv getSubInv(int fromIndex, int toIndex) {
         if (fromIndex == toIndex) {
             return EmptyFixedItemInv.INSTANCE;
         }

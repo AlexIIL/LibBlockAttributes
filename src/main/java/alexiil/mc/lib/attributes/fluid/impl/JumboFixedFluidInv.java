@@ -1,11 +1,11 @@
 package alexiil.mc.lib.attributes.fluid.impl;
 
-import alexiil.mc.lib.attributes.fluid.IFluidExtractable;
-import alexiil.mc.lib.attributes.fluid.IFluidInsertable;
-import alexiil.mc.lib.attributes.fluid.IFluidInvStats;
+import alexiil.mc.lib.attributes.fluid.FluidExtractable;
+import alexiil.mc.lib.attributes.fluid.FluidInsertable;
+import alexiil.mc.lib.attributes.fluid.FluidInvStats;
 
-/** A {@link SimpleFixedFluidInv} with a few optimisations to make the {@link IFluidInsertable},
- * {@link IFluidExtractable}, and {@link IFluidInvStats} implementations much faster than a simple inventory search for
+/** A {@link SimpleFixedFluidInv} with a few optimisations to make the {@link FluidInsertable},
+ * {@link FluidExtractable}, and {@link FluidInvStats} implementations much faster than a simple inventory search for
  * larger inventories. */
 public class JumboFixedFluidInv extends SimpleFixedFluidInv {
 

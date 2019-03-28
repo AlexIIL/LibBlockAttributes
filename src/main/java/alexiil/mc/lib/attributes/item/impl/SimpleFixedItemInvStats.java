@@ -4,23 +4,23 @@ import java.util.Set;
 
 import net.minecraft.item.ItemStack;
 
-import alexiil.mc.lib.attributes.item.IFixedItemInvView;
-import alexiil.mc.lib.attributes.item.IItemInvStats;
+import alexiil.mc.lib.attributes.item.FixedItemInvView;
+import alexiil.mc.lib.attributes.item.ItemInvStats;
 import alexiil.mc.lib.attributes.item.ItemStackCollections;
 import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
-import alexiil.mc.lib.attributes.item.filter.IItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemStackFilterUtil;
 
-public final class SimpleFixedItemInvStats implements IItemInvStats {
+public final class SimpleFixedItemInvStats implements ItemInvStats {
 
-    private final IFixedItemInvView inv;
+    private final FixedItemInvView inv;
 
-    public SimpleFixedItemInvStats(IFixedItemInvView inv) {
+    public SimpleFixedItemInvStats(FixedItemInvView inv) {
         this.inv = inv;
     }
 
     @Override
-    public ItemInvStatistic getStatistics(IItemFilter filter) {
+    public ItemInvStatistic getStatistics(ItemFilter filter) {
         int amount = 0;
         int space = 0;
         int totalSpace = 0;
@@ -35,7 +35,7 @@ public final class SimpleFixedItemInvStats implements IItemInvStats {
                 }
                 continue;
             }
-            IItemFilter realFilter = AggregateItemFilter.and(filter, inv.getFilterForSlot(s));
+            ItemFilter realFilter = AggregateItemFilter.and(filter, inv.getFilterForSlot(s));
             // FIXME: I think this next bit might be a bit broken?
             int max = ItemStackFilterUtil.findMaximumStackAmount(realFilter);
             max = Math.min(max, inv.getMaxAmount(s, stack));

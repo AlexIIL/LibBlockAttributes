@@ -1,14 +1,14 @@
 package alexiil.mc.lib.attributes.fluid.filter;
 
-/** Marker interface for {@link IFluidFilter} that indicates that object obtaining instances of this might be able to
+/** Marker interface for {@link FluidFilter} that indicates that object obtaining instances of this might be able to
  * read the real contents.
  * <p>
  * NOTE: This can only be implemented by classes <strong>included in LibBlockAttributes!</strong>. (As many
  * implementations must implement direct support for subclasses of this). */
-public interface IReadableFluidFilter extends IFluidFilter {
+public interface ReadableFluidFilter extends FluidFilter {
 
-    public static void checkValidity(IReadableFluidFilter filter) {
-        String clsName = IReadableFluidFilter.class.getName();
+    public static void checkValidity(ReadableFluidFilter filter) {
+        String clsName = ReadableFluidFilter.class.getName();
         String expectedPackage = clsName.substring(0, clsName.lastIndexOf('.'));
         if (!filter.getClass().getName().startsWith(expectedPackage)) {
             throw new IllegalStateException(

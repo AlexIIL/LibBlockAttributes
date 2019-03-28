@@ -2,7 +2,7 @@ package alexiil.mc.lib.attributes.fluid.filter;
 
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 
-public enum ConstantFluidFilter implements IReadableFluidFilter {
+public enum ConstantFluidFilter implements ReadableFluidFilter {
     ANYTHING(true),
     NOTHING(false);
 
@@ -25,12 +25,12 @@ public enum ConstantFluidFilter implements IReadableFluidFilter {
     }
 
     @Override
-    public IFluidFilter negate() {
+    public FluidFilter negate() {
         return of(!result);
     }
 
     @Override
-    public IFluidFilter and(IFluidFilter other) {
+    public FluidFilter and(FluidFilter other) {
         if (result) {
             return other;
         } else {
@@ -39,7 +39,7 @@ public enum ConstantFluidFilter implements IReadableFluidFilter {
     }
 
     @Override
-    public IFluidFilter or(IFluidFilter other) {
+    public FluidFilter or(FluidFilter other) {
         if (result) {
             return ANYTHING;
         } else {

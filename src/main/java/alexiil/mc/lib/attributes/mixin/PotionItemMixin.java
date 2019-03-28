@@ -10,14 +10,14 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 
-import alexiil.mc.lib.attributes.fluid.IFluidItem;
+import alexiil.mc.lib.attributes.fluid.FluidProviderItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.misc.Ref;
 
 @Mixin(PotionItem.class)
-public class PotionItemMixin extends Item implements IFluidItem {
+public class PotionItemMixin extends Item implements FluidProviderItem {
 
     public PotionItemMixin(Item.Settings settings) {
         super(settings);

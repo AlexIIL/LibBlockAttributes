@@ -6,7 +6,7 @@ public enum ItemStackFilterUtil {
     ;
 
     /** Attempts to find the maximum stack amount from all of the stacks in the filter. */
-    public static int findMaximumStackAmount(IItemFilter filter) {
+    public static int findMaximumStackAmount(ItemFilter filter) {
         if (filter == ConstantItemFilter.ANYTHING) {
             return 64;
         }
@@ -20,13 +20,13 @@ public enum ItemStackFilterUtil {
 
         if (filter instanceof AggregateItemFilter) {
             int max = 1;
-            for (IItemFilter inner : (AggregateItemFilter) filter) {
+            for (ItemFilter inner : (AggregateItemFilter) filter) {
                 max = Math.max(max, findMaximumStackAmount(inner));
             }
             return max;
         }
 
-        if (filter instanceof IReadableItemFilter) {
+        if (filter instanceof ReadableItemFilter) {
             LibBlockAttributes.LOGGER.warn("Encountered an unknown readable filter " + filter.getClass()
                 + " - ItemStackFilterUtil.findMaximumStackAmount should probably have support for it!");
         }
