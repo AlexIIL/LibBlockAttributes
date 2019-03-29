@@ -178,7 +178,7 @@ public class AttributeList<T> {
                 default:
                     throw new IllegalStateException("Unknown Direction " + direction);
             }
-            combined = VoxelShapes.union(combined, VoxelShapes.cube(minX, minY, minZ, maxX, maxY, maxZ));
+            combined = VoxelShapes.union(combined, VoxelShapes.cuboid(minX, minY, minZ, maxX, maxY, maxZ));
         }
         return combined;
     }

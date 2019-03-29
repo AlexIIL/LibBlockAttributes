@@ -52,8 +52,7 @@ public enum ItemAttributes {
                         // Special case chests here, rather than through a mixin because it just simplifies
                         // everything
 
-                        // method_17458: something like "get chest inventory"
-                        Inventory chestInv = ChestBlock.method_17458(state, world, pos,
+                        Inventory chestInv = ChestBlock.getInventory(state, world, pos,
                             /* Check if the top is blocked by a solid block or a cat */false);
                         if (chestInv != null) {
                             list.add(FixedInventoryViewVanillaWrapper.wrapInventory(chestInv));
@@ -81,8 +80,7 @@ public enum ItemAttributes {
                         // Special case chests here, rather than through a mixin because it just simplifies
                         // everything
 
-                        // method_17458: something like "get chest inventory"
-                        Inventory chestInv = ChestBlock.method_17458(state, world, pos,
+                        Inventory chestInv = ChestBlock.getInventory(state, world, pos,
                             /* Check if the top is blocked by a solid block or a cat */false);
                         if (chestInv != null) {
                             list.add(new FixedInventoryVanillaWrapper(chestInv));
@@ -113,8 +111,7 @@ public enum ItemAttributes {
                         // Special case chests here, rather than through a mixin because it just simplifies
                         // everything
 
-                        // method_17458: something like "get chest inventory"
-                        Inventory chestInv = ChestBlock.method_17458(state, world, pos,
+                        Inventory chestInv = ChestBlock.getInventory(state, world, pos,
                             /* Check if the top is blocked by a solid block or a cat */false);
                         if (chestInv != null) {
                             list.add(new FixedInventoryVanillaWrapper(chestInv).getStatistics());
@@ -154,8 +151,7 @@ public enum ItemAttributes {
                         // Special case chests here, rather than through a mixin because it just simplifies
                         // everything
 
-                        // method_17458: something like "get chest inventory"
-                        Inventory chestInv = ChestBlock.method_17458(state, world, pos,
+                        Inventory chestInv = ChestBlock.getInventory(state, world, pos,
                             /* Check if the top is blocked by a solid block or a cat */false);
                         if (chestInv != null) {
                             list.add(new FixedInventoryVanillaWrapper(chestInv).getInsertable());
@@ -202,8 +198,7 @@ public enum ItemAttributes {
                         // Special case chests here, rather than through a mixin because it just simplifies
                         // everything
 
-                        // method_17458: something like "get chest inventory"
-                        Inventory chestInv = ChestBlock.method_17458(state, world, pos,
+                        Inventory chestInv = ChestBlock.getInventory(state, world, pos,
                             /* Check if the top is blocked by a solid block or a cat */false);
                         if (chestInv != null) {
                             list.add(new FixedInventoryVanillaWrapper(chestInv).getExtractable());
