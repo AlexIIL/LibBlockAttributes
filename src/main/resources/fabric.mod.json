@@ -14,9 +14,10 @@
     "fabricloader": ">=0.4.0",
     "fabric": "*"
   },
-  "mixins": {
-    "client": "libblockattributes.client.json",
-    "common": "libblockattributes.common.json"
-  },
-  "icon": "assets/libblockattributes/icon.png"
+  "mixins": [
+    "libblockattributes.client.json",
+    "libblockattributes.common.json"
+  ],
+  "icon": "assets/libblockattributes/icon.png",
+  "authors": [ "AlexIIL" ]
 }
