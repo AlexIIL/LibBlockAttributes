@@ -1,17 +1,22 @@
 {
+  "schemaVersion": 1,
   "id": "libblockattributes",
   "name": "LibBlockAttributes",
   "description": "Various definitions for item inventory access for blocks.",
   "version": "$version",
-  "side": "universal",
-  "initializers": [
-    "alexiil.mc.lib.attributes.fluid.volume.ClientInit"
-  ],
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "alexiil.mc.lib.attributes.fluid.volume.ClientInit"
+    ]
+  },
   "requires": {
+    "fabricloader": ">=0.4.0",
     "fabric": "*"
   },
   "mixins": {
     "client": "libblockattributes.client.json",
     "common": "libblockattributes.common.json"
-  }
+  },
+  "icon": "assets/libblockattributes/icon.png"
 }

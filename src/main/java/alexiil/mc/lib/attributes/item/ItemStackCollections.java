@@ -55,7 +55,7 @@ public enum ItemStackCollections {
     };
 
     /** A hash {@link Strategy} to use for {@link Map Map's} and {@link Set Set's} of {@link ItemStack}'s where the
-     * {@link ItemStack#getAmount()} is important. */
+     * {@link ItemStack#getAmount()} is ignored. */
     public static final Strategy<ItemStack> STRATEGY_IGNORE_AMOUNT = new Strategy<ItemStack>() {
         @Override
         public int hashCode(ItemStack o) {
