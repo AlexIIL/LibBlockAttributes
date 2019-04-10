@@ -1,5 +1,8 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import javax.annotation.Nullable;
+
+import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.TextComponent;
 import net.minecraft.util.Identifier;
@@ -93,6 +96,11 @@ public abstract class FluidKey {
         }
         registryEntry.toTag(tag);
         return tag;
+    }
+
+    @Nullable
+    public Fluid getRawFluid() {
+        return null;
     }
 
     @Override

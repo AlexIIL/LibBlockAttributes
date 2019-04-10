@@ -71,8 +71,8 @@ public class FluidKeys {
         FLUIDS.remove(fluid);
     }
 
-    @Nullable
-    public static FluidKey get(@Nullable Fluid fluid) {
+    /** @return Null if the passed fluid is null, or a non-null {@link FluidKey}. */
+    public static FluidKey get(Fluid fluid) {
         if (fluid == null) {
             return null;
         }
@@ -117,8 +117,6 @@ public class FluidKeys {
             return get(potion);
         }
         // custom, simple, modded fluids are also created "on demand"
-        // However unlike normal fluids we can't support them very well.
-        // (as there's no way to get it's name or sprite location or render tint from vanilla)
         if (fluidKey == null && entry.backingRegistry == Registry.FLUID) {
             Fluid fluid = (Fluid) entry.backingObject;
             return get(fluid);

@@ -1,5 +1,7 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import javax.annotation.Nonnull;
+
 import net.minecraft.fluid.BaseFluid;
 import net.minecraft.fluid.EmptyFluid;
 import net.minecraft.fluid.Fluid;
@@ -32,6 +34,8 @@ public class NormalFluidVolume extends FluidVolume {
         }
     }
 
+    @Override
+    @Nonnull
     public final Fluid getRawFluid() {
         return getFluidKey().fluid;
     }

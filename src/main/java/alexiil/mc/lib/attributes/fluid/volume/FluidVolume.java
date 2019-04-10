@@ -10,7 +10,9 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 import net.minecraft.client.item.TooltipContext;
+import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.potion.Potion;
 import net.minecraft.text.StringTextComponent;
 import net.minecraft.text.TextComponent;
 import net.minecraft.text.TextFormat;
@@ -83,6 +85,22 @@ public abstract class FluidVolume {
         return tag;
     }
 
+    /** Creates a new {@link FluidVolume} from the given fluid, with the given amount stored. This just delegates
+     * internally to {@link FluidKey#withAmount(int)}. */
+    public static FluidVolume create(FluidKey fluid, int amount) {
+        return fluid.withAmount(amount);
+    }
+
+    /** Creates a new {@link FluidVolume} from the given fluid, with the given amount stored. */
+    public static FluidVolume create(Fluid fluid, int amount) {
+        return FluidKeys.get(fluid).withAmount(amount);
+    }
+
+    /** Creates a new {@link FluidVolume} from the given potion, with the given amount stored. */
+    public static FluidVolume create(Potion potion, int amount) {
+        return FluidKeys.get(potion).withAmount(amount);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) return true;
@@ -135,6 +153,13 @@ public abstract class FluidVolume {
 
     public FluidKey getFluidKey() {
         return fluidKey;
+    }
+
+    /** @return The minecraft {@link Fluid} instance that this contains, or null if this is based on something else
+     *         (like {@link Potion}'s). */
+    @Nullable
+    public Fluid getRawFluid() {
+        return getFluidKey().getRawFluid();
     }
 
     public final FluidVolume copy() {

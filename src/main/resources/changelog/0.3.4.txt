@@ -1,0 +1,10 @@
+Changes:
+
+* [#4] Added several methods to make working with FluidVolume's a bit easier:
+    * FluidKey.getRawFluid(): Returns the backing fluid object, or null if the fluid key isn't based on a minecraft `Fluid`.
+    * FluidVolume.getRawFluid(): Delegate to FluidKey.getRawFluid().
+    * FluidVolume.create(Fluid fluid, int amount): Helper for creating a new fluid volume from a minecraft fluid.
+    * FluidVolume.create(FluidKey key, int amount): Delegates to `key.withAmount(amount)`
+    * FluidVolume.create(Potion potion, int amount): Helper for creating a new FluidKey from a given potion.
+* Added "SlotFixedItemInv" for using FixedItemInv in gui container Slots.
+* Vastly improved the behaviour of PartialInventoryFixedWrapper to correctly track modifications made to an ItemStack returned by Inventory.getInvStack.

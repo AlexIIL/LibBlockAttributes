@@ -62,6 +62,11 @@ public class NormalFluidKey extends FluidKey {
     }
 
     @Override
+    public Fluid getRawFluid() {
+        return fluid;
+    }
+
+    @Override
     public NormalFluidVolume withAmount(int amount) {
         return new NormalFluidVolume(this, amount);
     }
