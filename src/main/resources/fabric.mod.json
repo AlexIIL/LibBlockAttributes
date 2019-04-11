@@ -7,7 +7,7 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "alexiil.mc.lib.attributes.fluid.volume.ClientInit"
+      "alexiil.mc.lib.attributes.misc.ClientInit"
     ]
   },
   "requires": {

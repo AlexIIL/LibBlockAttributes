@@ -20,8 +20,7 @@ import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
 
-/** A simple, extendible, fixed size item inventory that supports all of the features that {@link FixedItemInv}
- * exposes.
+/** A simple, extendible, fixed size item inventory that supports all of the features that {@link FixedItemInv} exposes.
  * <p>
  * Extending classes should take care to override {@link #getFilterForSlot(int)} if they also override
  * {@link #isItemValidForSlot(int, ItemStack)}.
@@ -54,7 +53,9 @@ public class SimpleFixedItemInv implements FixedItemInv {
 
     @Override
     public ItemStack getInvStack(int slot) {
-        return slots.get(slot);
+        ItemStack stack = slots.get(slot);
+        ItemInvModificationTracker.trackNeverChanging(stack);
+        return stack;
     }
 
     @Override
@@ -133,8 +134,12 @@ public class SimpleFixedItemInv implements FixedItemInv {
         if (isItemValidForSlot(slot, to) && to.getAmount() <= getMaxAmount(slot, to)) {
             if (simulation == Simulation.ACTION) {
                 ItemStack before = slots.get(slot);
+                ItemInvModificationTracker.trackNeverChanging(before);
+                ItemInvModificationTracker.trackNeverChanging(to);
                 slots.set(slot, to);
                 fireSlotChange(slot, before, to);
+                ItemInvModificationTracker.trackNeverChanging(before);
+                ItemInvModificationTracker.trackNeverChanging(to);
             }
             return true;
         }
@@ -150,6 +155,7 @@ public class SimpleFixedItemInv implements FixedItemInv {
     public CompoundTag toTag(CompoundTag tag) {
         ListTag tanksTag = new ListTag();
         for (ItemStack stack : slots) {
+            ItemInvModificationTracker.trackNeverChanging(stack);
             tanksTag.add(stack.toTag(new CompoundTag()));
         }
         tag.put("slots", tanksTag);

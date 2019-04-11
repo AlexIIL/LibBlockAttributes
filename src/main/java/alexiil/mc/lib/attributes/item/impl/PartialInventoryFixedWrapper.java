@@ -119,9 +119,11 @@ public abstract class PartialInventoryFixedWrapper implements Inventory {
 
         void validate(PartialInventoryFixedWrapper inv, int slot) {
             ItemStack current = inv.inv.getInvStack(slot);
-            if (!ItemStack.areEqual(originalCopy, current)) {
-                throw new IllegalStateException("The inventory has been modifed in two places at once! (current = "
-                    + current + ", original = " + originalCopy + ", new = " + returned + ")");
+            if (!ItemStack.areEqual(originalCopy, current) && !ItemStack.areEqual(originalCopy, returned)) {
+                throw new IllegalStateException("The inventory has been modifed in two places at once! (\n\tcurrent = "
+                    + ItemInvModificationTracker.stackToFullString(current) + ", \n\toriginal = "
+                    + ItemInvModificationTracker.stackToFullString(originalCopy) + ", \n\tnew = "
+                    + ItemInvModificationTracker.stackToFullString(returned) + ")");
             }
         }
 

@@ -1,0 +1,4 @@
+Changes:
+
+* Fixed several issues with the implementation of PartialInventoryFixedWrapper where exceptions were thrown randomly.
+* Added proper checking to FixedItemInv.getInvStack so that it will *always* throw an exception if the returned stack is modified.
