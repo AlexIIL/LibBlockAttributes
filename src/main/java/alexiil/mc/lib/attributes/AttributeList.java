@@ -11,6 +11,7 @@ import net.minecraft.util.DefaultedList;
 import net.minecraft.util.math.BoundingBox;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Direction.AxisDirection;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 
@@ -97,24 +98,26 @@ public class AttributeList<T> {
         if (!searchParam.matches(obj)) {
             return;
         }
-        if (searchParam instanceof SearchOptionInVoxel) {
-            if (!VoxelShapes.matchesAnywhere(shape, ((SearchOptionInVoxel<?>) searchParam).shape,
-                BooleanBiFunction.AND)) {
-                return;
-            }
-        } else if (searchParam instanceof SearchOptionDirectionalVoxel) {
+        VoxelShape searchShape = searchParam.getShape();
+        if (searchParam instanceof SearchOptionDirectionalVoxel) {
             SearchOptionDirectionalVoxel<?> voxelSearch = (SearchOptionDirectionalVoxel<?>) searchParam;
             if (voxelSearch.ordered) {
-                VoxelShape combined = VoxelShapes.union(shape, voxelSearch.shape);
+                VoxelShape combined = VoxelShapes.union(shape, searchShape);
                 if (combined.isEmpty()) {
                     return;
                 }
                 combinedShapeList.add(combined);
-            } else {
-                if (!VoxelShapes.matchesAnywhere(shape, voxelSearch.shape, BooleanBiFunction.AND)) {
-                    return;
-                }
             }
+        }
+        if (/* Optimisation - most searches are going to be on a full cube, so there's no need to check them (as they
+             * should always be in the cube) */
+        searchShape != VoxelShapes.fullCube()
+            /* Another optimisation - the above check (for SearchOptionDirectionalVoxel) will also check that they
+             * intersect via the "VoxelShapes.union" call. */
+            && combinedShapeList == null
+            /* Finally, the real check! */
+            && !VoxelShapes.matchesAnywhere(shape, searchShape, BooleanBiFunction.AND)) {
+            return;
         }
         list.add(obj);
         cacheList.add(cacheInfo);
@@ -152,7 +155,8 @@ public class AttributeList<T> {
         }
     }
 
-    /** @return A new voxel shape that has been extended to infinity(?) in the given direction. */
+    /** @return A new voxel shape that has been extended to infinity(?) in the given direction, and also moved forwards
+     *         by half a voxel. */
     private static VoxelShape extendShape(VoxelShape shape, Direction direction) {
         if (direction == null) {
             return shape;
@@ -160,6 +164,8 @@ public class AttributeList<T> {
         // TODO: Improve this algorithm!
         VoxelShape combined = VoxelShapes.empty();
         for (BoundingBox box : shape.getBoundingBoxes()) {
+            // Offset it a tiny bit to allow an obstacle to return attributes (as otherwise it would block itself)
+            box = box.offset(new Vec3d(direction.getVector()).multiply(1 / 32.0));
             double minX = box.minX;
             double minY = box.minY;
             double minZ = box.minZ;
@@ -206,6 +212,59 @@ public class AttributeList<T> {
     public VoxelShape getVoxelShape(int index) {
         assertUsing();
         return shapeList.get(index);
+    }
+
+    /** @return True if the {@link #obstruct(VoxelShape) obstructions} completely block the search shape at the
+     *         <i>end</i> of the search.
+     * @throws IllegalStateException if {@link #getSearchDirection()} is null. */
+    public boolean doesSearchReachEnd() {
+        assertUsing();
+        Direction dir = getSearchDirection();
+        if (dir == null) {
+            throw new IllegalStateException("Didn't have a search shape!");
+        }
+        assert obstructingShape != null;
+        VoxelShape searchShape = searchParam.getShape();
+
+        VoxelShape leftover = VoxelShapes.combine(searchShape, obstructingShape, BooleanBiFunction.ONLY_FIRST);
+        if (dir.getDirection() == AxisDirection.POSITIVE) {
+            return searchShape.getMaximum(dir.getAxis()) == leftover.getMaximum(dir.getAxis());
+        } else {
+            return searchShape.getMinimum(dir.getAxis()) == leftover.getMinimum(dir.getAxis());
+        }
+    }
+
+    @Nullable
+    public T getFirstOrNull() {
+        assertUsing();
+        if (list.isEmpty()) {
+            return null;
+        }
+        return list.get(0);
+    }
+
+    @Nonnull
+    public T getFirst(DefaultedAttribute<T> attribute) {
+        assertUsing();
+        if (list.isEmpty()) {
+            return attribute.defaultValue;
+        }
+        return list.get(0);
+    }
+
+    /** @return A combined version of this list, or the attribute's default value if this list is empty. */
+    @Nonnull
+    public T combine(CombinableAttribute<T> combinable) {
+        assertUsing();
+        return combinable.combine(list);
+    }
+
+    /** @return A combined version of this list and then the second given list, or the attribute's default value if both
+     *         lists are empty. */
+    @Nonnull
+    public T combine(AttributeList<T> after, CombinableAttribute<T> combinable) {
+        assertUsing();
+        return combinable.combine(list, after.list);
     }
 
     // Internal

@@ -118,8 +118,8 @@ public class CombinedFixedItemInvView<InvType extends FixedItemInvView> implemen
         };
         for (int i = 0; i < tokens.length; i++) {
             final int index = i;
-            tokens[i] = views.get(i).addListener((inv, subTank, previous, current) -> {
-                listener.onChange(this, subSlotStartIndex[index] + subTank, previous, current);
+            tokens[i] = views.get(i).addListener((inv, subSlot, previous, current) -> {
+                listener.onChange(this, subSlotStartIndex[index] + subSlot, previous, current);
             }, ourRemToken);
             if (tokens[i] == null) {
                 for (int j = 0; j < i; j++) {

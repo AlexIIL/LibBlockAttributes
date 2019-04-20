@@ -16,12 +16,12 @@ public class SearchOptionDirectional<T> extends SearchOption<T> {
         this.direction = direction;
     }
 
-    public SearchOptionDirectional(Direction direction, Predicate<T> searchMatcher) {
+    SearchOptionDirectional(Direction direction, Predicate<T> searchMatcher) {
         super(searchMatcher);
         this.direction = direction;
     }
 
-    public static SearchOptionDirectional<Object> of(Direction dir) {
+    static SearchOptionDirectional<Object> of(Direction dir) {
         return SIDES.get(dir);
     }
 

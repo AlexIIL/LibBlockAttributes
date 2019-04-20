@@ -16,7 +16,7 @@ public final class SearchOptions {
     /** A {@link SearchOption} that has no constraints, and will get every attribute instance that is obtainable without
      * a direction. Note that you should never need to use this directly as every attribute getter method (like
      * {@link Attribute#getAll(World, BlockPos, SearchOption)}) will use this if null is passed. */
-    public static final SearchOption<Object> ALL = new SearchOption<>();
+    public static final SearchOption<Object> ALL = SearchOption.ALL;
 
     /** @return A {@link SearchOption} that will only match attribute instances that pass the given {@link Predicate}
      *         {@link Predicate#test(Object) test}. */

@@ -7,10 +7,10 @@ import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
 import alexiil.mc.lib.attributes.item.FixedItemInvView;
+import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.ItemExtractable;
 import alexiil.mc.lib.attributes.item.ItemInsertable;
 import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
-import alexiil.mc.lib.attributes.item.ItemInvStats;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 /** An {@link FixedItemInv} with no slots. Because this inventory is unmodifiable this also doubles as the empty
@@ -48,8 +48,8 @@ public enum EmptyFixedItemInv implements FixedItemInv {
     }
 
     @Override
-    public ItemInvStats getStatistics() {
-        return EmptyItemInvStats.INSTANCE;
+    public GroupedItemInv getGroupedInv() {
+        return EmptyGroupedItemInv.INSTANCE;
     }
 
     @Override
@@ -77,23 +77,7 @@ public enum EmptyFixedItemInv implements FixedItemInv {
     }
 
     @Override
-    public ItemInsertable getInsertable(int[] slots) {
-        if (slots.length == 0) {
-            return RejectingItemInsertable.NULL;
-        }
-        throw throwInvalidSlotException();
-    }
-
-    @Override
     public ItemExtractable getExtractable() {
         return EmptyItemExtractable.NULL;
-    }
-
-    @Override
-    public ItemExtractable getExtractable(int[] slots) {
-        if (slots.length == 0) {
-            return EmptyItemExtractable.NULL;
-        }
-        throw throwInvalidSlotException();
     }
 }

@@ -36,6 +36,8 @@ public class SimpleFixedItemInv implements FixedItemInv {
 
     protected final DefaultedList<ItemStack> slots;
 
+    private ItemInvSlotChangeListener ownerListener;
+
     private final Map<ItemInvSlotChangeListener, ListenerRemovalToken> listeners =
         new Object2ObjectLinkedOpenCustomHashMap<>(SystemUtil.identityHashStrategy());
 
@@ -107,6 +109,12 @@ public class SimpleFixedItemInv implements FixedItemInv {
         };
     }
 
+    /** Sets the owner listener callback, which is never removed from the listener list when
+     * {@link #invalidateListeners()} is called. */
+    public void setOwnerListener(ItemInvSlotChangeListener ownerListener) {
+        this.ownerListener = ownerListener;
+    }
+
     private void bakeListeners() {
         bakedListeners = listeners.keySet().toArray(new ItemInvSlotChangeListener[0]);
     }
@@ -122,6 +130,9 @@ public class SimpleFixedItemInv implements FixedItemInv {
     }
 
     protected final void fireSlotChange(int slot, ItemStack previous, ItemStack current) {
+        if (ownerListener != null) {
+            ownerListener.onChange(this, slot, previous, current);
+        }
         // Iterate over the previous array in case the listeners array is changed while we are iterating
         final ItemInvSlotChangeListener[] baked = bakedListeners;
         for (ItemInvSlotChangeListener listener : baked) {

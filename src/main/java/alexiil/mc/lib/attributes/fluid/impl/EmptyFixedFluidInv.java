@@ -7,8 +7,8 @@ import alexiil.mc.lib.attributes.fluid.FixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.FixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.FluidExtractable;
 import alexiil.mc.lib.attributes.fluid.FluidInsertable;
-import alexiil.mc.lib.attributes.fluid.FluidInvStats;
 import alexiil.mc.lib.attributes.fluid.FluidInvTankChangeListener;
+import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
@@ -48,8 +48,8 @@ public enum EmptyFixedFluidInv implements FixedFluidInv {
     }
 
     @Override
-    public FluidInvStats getStatistics() {
-        return EmptyFluidInvStats.INSTANCE;
+    public GroupedFluidInv getGroupedInv() {
+        return EmptyGroupedFluidInv.INSTANCE;
     }
 
     @Override
@@ -77,23 +77,7 @@ public enum EmptyFixedFluidInv implements FixedFluidInv {
     }
 
     @Override
-    public FluidInsertable getInsertable(int[] tanks) {
-        if (tanks.length == 0) {
-            return RejectingFluidInsertable.NULL;
-        }
-        throw throwInvalidTankException();
-    }
-
-    @Override
     public FluidExtractable getExtractable() {
         return EmptyFluidExtractable.NULL;
-    }
-
-    @Override
-    public FluidExtractable getExtractable(int[] tanks) {
-        if (tanks.length == 0) {
-            return EmptyFluidExtractable.NULL;
-        }
-        throw throwInvalidTankException();
     }
 }

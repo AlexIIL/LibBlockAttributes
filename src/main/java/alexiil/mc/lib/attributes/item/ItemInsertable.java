@@ -6,6 +6,7 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 /** Defines an object that can have items inserted into it. */
+@FunctionalInterface
 public interface ItemInsertable {
 
     /** Inserts the given stack into this insertable, and returns the excess.
@@ -26,7 +27,7 @@ public interface ItemInsertable {
     default ItemFilter getInsertionFilter() {
         return stack -> {
             if (stack.isEmpty()) {
-                throw new IllegalArgumentException("You should never test an IItemFilter with an empty stack!");
+                throw new IllegalArgumentException("You should never test an ItemFilter with an empty stack!");
             }
             ItemStack leftover = attemptInsertion(stack, Simulation.SIMULATE);
             return leftover.isEmpty() || leftover.getAmount() < stack.getAmount();

@@ -5,6 +5,7 @@ import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** Defines an object that can have fluids inserted into it. */
+@FunctionalInterface
 public interface FluidInsertable {
 
     /** Inserts the given stack into this insertable, and returns the excess.
@@ -14,6 +15,13 @@ public interface FluidInsertable {
      * @return the excess {@link FluidVolume} that wasn't accepted. This will be independent of this insertable, however
      *         it might be the given stack instead of a completely new object. */
     FluidVolume attemptInsertion(FluidVolume fluid, Simulation simulation);
+
+    /** @return The minimum amount of fluid that {@link #attemptInsertion(FluidVolume, Simulation)} will actually
+     *         accept. Note that this only provides a guarantee that {@link FluidVolume fluid volumes} with an
+     *         {@link FluidVolume#getAmount() amount} less than this will never be accepted. */
+    default int getMinimumAcceptedAmount() {
+        return 1;
+    }
 
     /** Returns an {@link FluidFilter} to determine if {@link #attemptInsertion(FluidVolume, Simulation)} will accept a
      * stack. The default implementation is a call to {@link #attemptInsertion(FluidVolume, Simulation)

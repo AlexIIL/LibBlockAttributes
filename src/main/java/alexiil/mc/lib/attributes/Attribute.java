@@ -6,7 +6,9 @@ import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
 
@@ -82,6 +84,17 @@ public class Attribute<T> {
         return list;
     }
 
+    /** Shorter method call for the common case of:</br>
+     * BlockEntity be = ...;</br>
+     * Direction dir = ...;</br>
+     * Attribute&lt;T&gt; attr = ...;</br>
+     * AttributeList&lt;T&gt; list = attr.{@link #getAll(World, BlockPos, SearchOption) getAll}(be.getWorld(),
+     * be.getPos().offset(dir), {@link SearchOptions#inDirection(Direction) SearchOptions.inDirection}(dir)); </br>
+     */
+    public final AttributeList<T> getAllFromNeighbour(BlockEntity be, Direction dir) {
+        return getAll(be.getWorld(), be.getPos().offset(dir), SearchOptions.inDirection(dir));
+    }
+
     /** @return The first attribute instance (as obtained by {@link #getAll(World, BlockPos)}), or null if this didn't
      *         find any instances. */
     @Nullable
@@ -96,11 +109,18 @@ public class Attribute<T> {
      *         the search didn't find any attribute instances at the specified position. */
     @Nullable
     public final T getFirstOrNull(World world, BlockPos pos, @Nullable SearchOption<? super T> searchParam) {
-        AttributeList<T> list = getAll(world, pos, searchParam);
-        if (list.list.isEmpty()) {
-            return null;
-        } else {
-            return list.get(0);
-        }
+        return getAll(world, pos, searchParam).getFirstOrNull();
+    }
+
+    /** Shorter method call for the common case of:</br>
+     * BlockEntity be = ...;</br>
+     * Direction dir = ...;</br>
+     * Attribute&lt;T&gt; attr = ...;</br>
+     * AttributeList&lt;T&gt; list = attr.{@link #getFirstOrNull(World, BlockPos, SearchOption) getAll}(be.getWorld(),
+     * be.getPos().offset(dir), {@link SearchOptions#inDirection(Direction) SearchOptions.inDirection}(dir)); </br>
+     */
+    @Nullable
+    public final T getFirstOrNullFromNeighbour(BlockEntity be, Direction dir) {
+        return getFirstOrNull(be.getWorld(), be.getPos().offset(dir), SearchOptions.inDirection(dir));
     }
 }

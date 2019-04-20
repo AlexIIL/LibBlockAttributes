@@ -8,10 +8,11 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 
-/** {@link ItemStack} equivalent for {@link Fluid fluids}. */
+/** {@link ItemStack} equivalent for {@link Fluid fluids}. Instances must be constructed via
+ * {@link FluidKeys#get(Fluid)}.{@link FluidKey#withAmount(int) withAmount(int)}. */
 public class NormalFluidVolume extends FluidVolume {
 
-    public NormalFluidVolume(NormalFluidKey fluid, int amount) {
+    NormalFluidVolume(NormalFluidKey fluid, int amount) {
         super(fluid, amount);
         if (fluid.fluid instanceof EmptyFluid && fluid != FluidKeys.EMPTY) {
             throw new IllegalArgumentException("Different empty fluid!");
@@ -21,7 +22,7 @@ public class NormalFluidVolume extends FluidVolume {
         }
     }
 
-    public NormalFluidVolume(NormalFluidKey fluid, CompoundTag tag) {
+    NormalFluidVolume(NormalFluidKey fluid, CompoundTag tag) {
         super(fluid, tag);
         if (fluid == null) {
             throw new NullPointerException("fluid");

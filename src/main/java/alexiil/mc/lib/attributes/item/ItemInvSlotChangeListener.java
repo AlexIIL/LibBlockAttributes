@@ -2,6 +2,7 @@ package alexiil.mc.lib.attributes.item;
 
 import net.minecraft.item.ItemStack;
 
+@FunctionalInterface
 public interface ItemInvSlotChangeListener {
 
     /** @param inv The inventory that changed

@@ -15,7 +15,8 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInvView;
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv;
-import alexiil.mc.lib.attributes.item.impl.SimpleFixedItemInvStats;
+import alexiil.mc.lib.attributes.item.impl.GroupedItemInvViewFixedWrapper;
+import alexiil.mc.lib.attributes.item.impl.MappedFixedItemInvView;
 import alexiil.mc.lib.attributes.item.impl.SubFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.SubFixedItemInvView;
 
@@ -51,7 +52,8 @@ public interface FixedItemInvView {
 
     /** @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
-     * @param stack The stack to check for. May be an {@link ItemStack#isEmpty() empty} stack.
+     * @param stack The stack to check for. May be an {@link ItemStack#isEmpty() empty} stack to get the maximum amount
+     *            that this can hold of any stack.
      * @return The maximum amount that the given slot can hold of the given stack. This method will ignore the current
      *         stack in {@link #getInvStack(int)}. The default implementation just delegates to
      *         {@link ItemStack#getMaxAmount()}. Note that any setters that this object implements (like
@@ -82,9 +84,14 @@ public interface FixedItemInvView {
         return stack -> isItemValidForSlot(slot, stack);
     }
 
-    /** @return A statistical view of this inventory. */
-    default ItemInvStats getStatistics() {
-        return new SimpleFixedItemInvStats(this);
+    /** @return A view of a single slot in this inventory. */
+    default SingleItemSlotView getSlot(int slot) {
+        return new SingleItemSlotView(this, slot);
+    }
+
+    /** @return A {@link GroupedItemInvView} of this inventory. */
+    default GroupedItemInvView getGroupedInv() {
+        return new GroupedItemInvViewFixedWrapper(this);
     }
 
     /** Adds the given listener to this inventory, such that the
@@ -107,16 +114,26 @@ public interface FixedItemInvView {
         if (fromIndex == toIndex) {
             return EmptyFixedItemInv.INSTANCE;
         }
-        return new SubFixedItemInvView<>(this, fromIndex, toIndex);
+        return new SubFixedItemInvView(this, fromIndex, toIndex);
     }
 
-    /** Offers this object and {@link #getStatistics()} to the attribute list.
-     * <p>
-     * Sub classes (such as {@link FixedItemInv}) are encouraged to override this to also offer their
-     * {@link FixedItemInv#getInsertable()} and {@link FixedItemInv#getExtractable()}. */
-    default void offerSelfAsAttribute(AttributeList<?> list, @Nullable CacheInfo cacheInfo, @Nullable VoxelShape shape) {
+    /** @param slots The slots to expose.
+     * @return a view of this inventory that only exposes the given number of slots.
+     * @throws RuntimeException if any of the given slots weren't valid. */
+    default FixedItemInvView getMappedInv(int... slots) {
+        if (slots.length == 0) {
+            return EmptyFixedItemInv.INSTANCE;
+        }
+        return new MappedFixedItemInvView(this, slots);
+    }
+
+    /** Offers this object and {@link #getGroupedInv()} to the attribute list. (Which, in turn, adds
+     * {@link FixedItemInv#getInsertable()}, {@link FixedItemInv#getExtractable()}, and
+     * {@link FixedItemInv#getTransferable()} to the list as well). */
+    default void offerSelfAsAttribute(AttributeList<?> list, @Nullable CacheInfo cacheInfo,
+        @Nullable VoxelShape shape) {
         list.offer(this, cacheInfo, shape);
-        list.offer(getStatistics(), cacheInfo, shape);
+        list.offer(getGroupedInv(), cacheInfo, shape);
     }
 
     /** @return An object that only implements {@link FixedItemInvView}, and does not expose the modification methods
@@ -151,8 +168,8 @@ public interface FixedItemInvView {
             }
 
             @Override
-            public ItemInvStats getStatistics() {
-                return new SimpleFixedItemInvStats(this);
+            public GroupedItemInvView getGroupedInv() {
+                return new GroupedItemInvViewFixedWrapper(this);
             }
 
             @Override

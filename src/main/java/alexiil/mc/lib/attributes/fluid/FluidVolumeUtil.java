@@ -156,7 +156,7 @@ public enum FluidVolumeUtil {
                 soundEvent = result.intoTank ? SoundEvents.ITEM_BUCKET_EMPTY : SoundEvents.ITEM_BUCKET_FILL;
             }
         }
-        player.playSound(soundEvent, SoundCategory.BLOCK, 1.0f, 1.0f);
+        player.playSound(soundEvent, SoundCategory.BLOCKS, 1.0f, 1.0f);
         return true;
     }
 

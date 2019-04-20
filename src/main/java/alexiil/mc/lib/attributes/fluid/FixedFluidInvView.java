@@ -14,7 +14,8 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.impl.CombinedFixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.impl.EmptyFixedFluidInv;
-import alexiil.mc.lib.attributes.fluid.impl.SimpleFixedFluidInvStats;
+import alexiil.mc.lib.attributes.fluid.impl.GroupedFluidInvViewFixedWrapper;
+import alexiil.mc.lib.attributes.fluid.impl.MappedFixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.impl.SubFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.impl.SubFixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
@@ -77,9 +78,13 @@ public interface FixedFluidInvView {
         return stack -> isFluidValidForTank(tank, stack);
     }
 
+    default SingleFluidTankView getTank(int tank) {
+        return new SingleFluidTankView(this, tank);
+    }
+
     /** @return A statistical view of this inventory. */
-    default FluidInvStats getStatistics() {
-        return new SimpleFixedFluidInvStats(this);
+    default GroupedFluidInvView getGroupedInv() {
+        return new GroupedFluidInvViewFixedWrapper(this);
     }
 
     /** Adds the given listener to this inventory, such that the
@@ -102,17 +107,26 @@ public interface FixedFluidInvView {
         if (fromIndex == toIndex) {
             return EmptyFixedFluidInv.INSTANCE;
         }
-        return new SubFixedFluidInvView<>(this, fromIndex, toIndex);
+        return new SubFixedFluidInvView(this, fromIndex, toIndex);
     }
 
-    /** Offers this object and {@link #getStatistics()} to the attribute list.
-     * <p>
-     * Sub classes (such as {@link FixedFluidInv}) are encouraged to override this to also offer their
-     * {@link FixedFluidInv#getInsertable()} and {@link FixedFluidInv#getExtractable()}. */
+    /** @param tanks The tanks to expose.
+     * @return a view of this inventory that only exposes the given number of tanks.
+     * @throws RuntimeException if any of the given tanks weren't valid */
+    default FixedFluidInvView getMappedInv(int... tanks) {
+        if (tanks.length == 0) {
+            return EmptyFixedFluidInv.INSTANCE;
+        }
+        return new MappedFixedFluidInvView(this, tanks);
+    }
+
+    /** Offers this object and {@link #getGroupedInv()} to the attribute list. (Which, in turn, adds
+     * {@link FixedFluidInv#getInsertable()}, {@link FixedFluidInv#getExtractable()}, and
+     * {@link FixedFluidInv#getTransferable()} to the list as well). */
     default void offerSelfAsAttribute(AttributeList<?> list, @Nullable CacheInfo cacheInfo,
         @Nullable VoxelShape shape) {
         list.offer(this, cacheInfo, shape);
-        list.offer(getStatistics(), cacheInfo, shape);
+        list.offer(getGroupedInv(), cacheInfo, shape);
     }
 
     /** @return An object that only implements {@link FixedFluidInvView}, and does not expose the modification methods
@@ -147,8 +161,8 @@ public interface FixedFluidInvView {
             }
 
             @Override
-            public FluidInvStats getStatistics() {
-                return new SimpleFixedFluidInvStats(this);
+            public GroupedFluidInvView getGroupedInv() {
+                return new GroupedFluidInvViewFixedWrapper(this);
             }
 
             @Override

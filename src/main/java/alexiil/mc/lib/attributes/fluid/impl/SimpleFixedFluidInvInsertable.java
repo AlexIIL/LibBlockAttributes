@@ -5,7 +5,6 @@ import java.util.List;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.FixedFluidInv;
-import alexiil.mc.lib.attributes.fluid.FixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.FluidInsertable;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
@@ -13,10 +12,8 @@ import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
-/** An {@link FluidInsertable} wrapper over an {@link FixedFluidInv}. This implementation is the naive implementation
- * where every insertion operation will look at every tank in the target inventory in order to insert into the most
- * appropriate tank first. As such the use of this class is discouraged whenever a more efficient version can be made
- * (unless the target inventory has a very small {@link FixedFluidInvView#getTankCount() size}. */
+/** @deprecated Use {@link GroupedFluidInvFixedWrapper} instead of this! */
+@Deprecated
 public final class SimpleFixedFluidInvInsertable implements FluidInsertable {
 
     private final FixedFluidInv inv;

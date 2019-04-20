@@ -13,7 +13,7 @@ import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
 public class FixedInventoryViewVanillaWrapper implements FixedItemInvView {
     final Inventory inv;
 
-    FixedInventoryViewVanillaWrapper(Inventory inv) {
+    public FixedInventoryViewVanillaWrapper(Inventory inv) {
         this.inv = inv;
     }
 

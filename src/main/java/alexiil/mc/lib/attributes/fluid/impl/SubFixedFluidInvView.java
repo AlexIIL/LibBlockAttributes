@@ -4,30 +4,25 @@ import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.fluid.FixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.FluidInvTankChangeListener;
-import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
-import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
-import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** A sub-view of an existing {@link FixedFluidInvView}. */
-public class SubFixedFluidInvView<InvType extends FixedFluidInvView> implements FixedFluidInvView {
-
-    /** The inventory that is wrapped. */
-    protected final InvType inv;
+public class SubFixedFluidInvView extends AbstractPartialFixedFluidInvView {
 
     /** The tanks that we use. */
     private final int fromIndex, toIndex;
 
-    public SubFixedFluidInvView(InvType inv, int fromIndex, int toIndex) {
+    public SubFixedFluidInvView(FixedFluidInvView inv, int fromIndex, int toIndex) {
+        super(inv);
         if (fromIndex > toIndex) {
             throw new IllegalArgumentException(
                 "fromIndex was greater than toIndex! (" + fromIndex + " > " + toIndex + ")");
         }
-        this.inv = inv;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
     }
 
     /** @return The tank that the internal {@link #inv} should use. */
+    @Override
     protected int getInternalTank(int tank) {
         tank += fromIndex;
         if (tank >= toIndex) {
@@ -43,31 +38,11 @@ public class SubFixedFluidInvView<InvType extends FixedFluidInvView> implements 
     }
 
     @Override
-    public FluidVolume getInvFluid(int tank) {
-        return inv.getInvFluid(getInternalTank(tank));
-    }
-
-    @Override
-    public boolean isFluidValidForTank(int tank, FluidKey fluid) {
-        return inv.isFluidValidForTank(getInternalTank(tank), fluid);
-    }
-
-    @Override
-    public FluidFilter getFilterForTank(int tank) {
-        return inv.getFilterForTank(getInternalTank(tank));
-    }
-
-    @Override
-    public int getMaxAmount(int tank) {
-        return inv.getMaxAmount(getInternalTank(tank));
-    }
-
-    @Override
     public FixedFluidInvView getView() {
         if (getClass() == SubFixedFluidInvView.class) {
             return this;
         }
-        return FixedFluidInvView.super.getView();
+        return super.getView();
     }
 
     @Override

@@ -1,17 +1,15 @@
 package alexiil.mc.lib.attributes.item;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.shape.VoxelShape;
+import java.util.function.Function;
 
-import alexiil.mc.lib.attributes.AttributeList;
-import alexiil.mc.lib.attributes.CacheInfo;
+import net.minecraft.item.ItemStack;
+
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv;
-import alexiil.mc.lib.attributes.item.impl.EmptyItemExtractable;
-import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
-import alexiil.mc.lib.attributes.item.impl.SimpleFixedItemInvExtractable;
-import alexiil.mc.lib.attributes.item.impl.SimpleFixedItemInvInsertable;
+import alexiil.mc.lib.attributes.item.impl.GroupedItemInvFixedWrapper;
+import alexiil.mc.lib.attributes.item.impl.ItemInvModificationTracker;
+import alexiil.mc.lib.attributes.item.impl.MappedFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.SubFixedItemInv;
 
 /** A changeable {@link FixedItemInvView} that can have it's contents changed. Note that this does not imply that the
@@ -24,7 +22,6 @@ import alexiil.mc.lib.attributes.item.impl.SubFixedItemInv;
  * <ul>
  * <li>The null instance is {@link EmptyFixedItemInv}</li>
  * <li>A combined view of several sub-inventories is {@link CombinedFixedItemInv}.</li>
- * <li>A partial view of a single inventory is {@link SubFixedItemInv}</li>
  * </ul>
  */
 public interface FixedItemInv extends FixedItemInvView {
@@ -35,34 +32,49 @@ public interface FixedItemInv extends FixedItemInvView {
      *         {@link FixedItemInvView#isItemValidForSlot(int, ItemStack)} test). */
     boolean setInvStack(int slot, ItemStack to, Simulation simulation);
 
-    /** @return An {@link ItemInsertable} for this inventory that will attempt to insert into any of the slots in this
-     *         inventory. */
-    default ItemInsertable getInsertable() {
-        return new SimpleFixedItemInvInsertable(this, null);
+    /** Sets the stack in the given slot to the given stack, or throws an exception if it was not permitted. */
+    default void forceSetInvStack(int slot, ItemStack to) {
+        if (!setInvStack(slot, to, Simulation.ACTION)) {
+            throw new IllegalStateException("Unable to force-set the slot " + slot + " to "
+                + ItemInvModificationTracker.stackToFullString(to) + "!");
+        }
     }
 
-    /** @return An {@link ItemInsertable} for this inventory that will attempt to insert into only the given array of
-     *         slots. */
-    default ItemInsertable getInsertable(int[] slots) {
-        if (slots.length == 0) {
-            return RejectingItemInsertable.NULL;
-        }
-        return new SimpleFixedItemInvInsertable(this, slots);
+    /** Applies the given function to the stack held in the slot, and uses {@link #forceSetInvStack(int, ItemStack)} on
+     * the result (Which will throw an exception if the returned stack is not valid for this inventory). */
+    default void modifySlot(int slot, Function<ItemStack, ItemStack> function) {
+        forceSetInvStack(slot, function.apply(getInvStack(slot)));
+    }
+
+    @Override
+    default SingleItemSlot getSlot(int slot) {
+        return new SingleItemSlot(this, slot);
+    }
+
+    /* Although getGroupedItemInv() makes get{Insertable,Extractable,Transferable} all redundant, it's quite helpful to
+     * be able to call the method name that matches what you want to do with it. */
+
+    /** @return An {@link ItemInsertable} for this inventory that will attempt to insert into any of the slots in this
+     *         inventory. The default implementation delegates to {@link #getGroupedInv()}. */
+    default ItemInsertable getInsertable() {
+        return getGroupedInv();
     }
 
     /** @return An {@link ItemExtractable} for this inventory that will attempt to extract from any of the slots in this
-     *         inventory. */
+     *         inventory. The default implementation delegates to {@link #getGroupedInv()}. */
     default ItemExtractable getExtractable() {
-        return new SimpleFixedItemInvExtractable(this, null);
+        return getGroupedInv();
     }
 
-    /** @return An {@link ItemExtractable} for this inventory that will attempt to extract from only the given array of
-     *         slots. */
-    default ItemExtractable getExtractable(int[] slots) {
-        if (slots.length == 0) {
-            return EmptyItemExtractable.NULL;
-        }
-        return new SimpleFixedItemInvExtractable(this, slots);
+    /** @return An {@link ItemTransferable} for this inventory. The default implementation delegates to
+     *         {@link #getGroupedInv()}. */
+    default ItemTransferable getTransferable() {
+        return getGroupedInv();
+    }
+
+    @Override
+    default GroupedItemInv getGroupedInv() {
+        return new GroupedItemInvFixedWrapper(this);
     }
 
     @Override
@@ -70,13 +82,14 @@ public interface FixedItemInv extends FixedItemInvView {
         if (fromIndex == toIndex) {
             return EmptyFixedItemInv.INSTANCE;
         }
-        return new SubFixedItemInv<>(this, fromIndex, toIndex);
+        return new SubFixedItemInv(this, fromIndex, toIndex);
     }
 
     @Override
-    default void offerSelfAsAttribute(AttributeList<?> list, CacheInfo cacheInfo, VoxelShape shape) {
-        FixedItemInvView.super.offerSelfAsAttribute(list, cacheInfo, shape);
-        list.offer(getInsertable(), cacheInfo, shape);
-        list.offer(getExtractable(), cacheInfo, shape);
+    default FixedItemInv getMappedInv(int... slots) {
+        if (slots.length == 0) {
+            return EmptyFixedItemInv.INSTANCE;
+        }
+        return new MappedFixedItemInv(this, slots);
     }
 }

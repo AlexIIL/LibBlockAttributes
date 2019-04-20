@@ -11,7 +11,7 @@ import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 /** Various hooks and methods for dealing with pairs of {@link FixedItemInv}, {@link FixedItemInvView},
- * {@link ItemInsertable}, {@link ItemExtractable}, and {@link ItemInvStats} instances. */
+ * {@link ItemInsertable}, {@link ItemExtractable}, and {@link GroupedItemInvView} instances. */
 public enum ItemInvUtil {
     ;
 

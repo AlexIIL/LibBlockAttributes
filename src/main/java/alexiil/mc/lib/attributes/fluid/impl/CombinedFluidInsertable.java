@@ -13,14 +13,8 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 public final class CombinedFluidInsertable implements FluidInsertable {
 
     private final List<? extends FluidInsertable> insertables;
-    private final FluidFilter filter;
 
     public CombinedFluidInsertable(List<? extends FluidInsertable> list) {
-        List<FluidFilter> filters = new ArrayList<>(list.size());
-        for (int i = 0; i < list.size(); i++) {
-            filters.add(list.get(i).getInsertionFilter());
-        }
-        this.filter = AggregateFluidFilter.allOf(filters);
         this.insertables = list;
     }
 
@@ -37,6 +31,10 @@ public final class CombinedFluidInsertable implements FluidInsertable {
 
     @Override
     public FluidFilter getInsertionFilter() {
-        return filter;
+        List<FluidFilter> filters = new ArrayList<>(insertables.size());
+        for (int i = 0; i < insertables.size(); i++) {
+            filters.add(insertables.get(i).getInsertionFilter());
+        }
+        return AggregateFluidFilter.allOf(filters);
     }
 }

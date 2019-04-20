@@ -17,61 +17,38 @@ import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 /** An {@link ItemInsertable} wrapper over an {@link FixedItemInv}. This implementation is the naive implementation
  * where every insertion operation will look at every slot in the target inventory in order to insert into the most
  * appropriate slot first. As such the use of this class is discouraged whenever a more efficient version can be made
- * (unless the target inventory has a very small {@link FixedItemInvView#getSlotCount() size}. */
+ * (unless the target inventory has a very small {@link FixedItemInvView#getSlotCount() size}.
+ * 
+ * @deprecated Use {@link GroupedItemInvFixedWrapper} instead. */
+@Deprecated
 public final class SimpleFixedItemInvInsertable implements ItemInsertable {
 
     private final FixedItemInv inv;
 
-    /** Null means that this can insert into any of the slots. */
-    private final int[] slots;
-
-    public SimpleFixedItemInvInsertable(FixedItemInv inv, int[] slots) {
+    public SimpleFixedItemInvInsertable(FixedItemInv inv) {
         this.inv = inv;
-        this.slots = slots;
     }
 
     @Override
     public ItemFilter getInsertionFilter() {
-        if (slots == null) {
-            int invSize = inv.getSlotCount();
-            switch (invSize) {
-                case 0: {
-                    // What?
-                    return ConstantItemFilter.NOTHING;
-                }
-                case 1: {
-                    return inv.getFilterForSlot(0);
-                }
-                case 2: {
-                    return inv.getFilterForSlot(0).and(inv.getFilterForSlot(1));
-                }
-                default: {
-                    List<ItemFilter> filters = new ArrayList<>(invSize);
-                    for (int i = 0; i < invSize; i++) {
-                        filters.add(inv.getFilterForSlot(i));
-                    }
-                    return AggregateItemFilter.anyOf(filters);
-                }
+        int invSize = inv.getSlotCount();
+        switch (invSize) {
+            case 0: {
+                // What?
+                return ConstantItemFilter.NOTHING;
             }
-        } else {
-            switch (slots.length) {
-                case 0: {
-                    // What?
-                    return ConstantItemFilter.NOTHING;
+            case 1: {
+                return inv.getFilterForSlot(0);
+            }
+            case 2: {
+                return inv.getFilterForSlot(0).and(inv.getFilterForSlot(1));
+            }
+            default: {
+                List<ItemFilter> filters = new ArrayList<>(invSize);
+                for (int i = 0; i < invSize; i++) {
+                    filters.add(inv.getFilterForSlot(i));
                 }
-                case 1: {
-                    return inv.getFilterForSlot(slots[0]);
-                }
-                case 2: {
-                    return inv.getFilterForSlot(slots[0]).and(inv.getFilterForSlot(slots[1]));
-                }
-                default: {
-                    List<ItemFilter> filters = new ArrayList<>(slots.length);
-                    for (int s : slots) {
-                        filters.add(inv.getFilterForSlot(s));
-                    }
-                    return AggregateItemFilter.anyOf(filters);
-                }
+                return AggregateItemFilter.anyOf(filters);
             }
         }
     }
@@ -99,55 +76,27 @@ public final class SimpleFixedItemInvInsertable implements ItemInsertable {
 
     private ItemStack simpleDumbBadInsertionToBeRemoved(ItemStack stack, Simulation simulation) {
         stack = stack.copy();
-        if (slots == null) {
-            for (int s = 0; s < inv.getSlotCount(); s++) {
-                ItemStack inSlot = inv.getInvStack(s);
-                int current = inSlot.isEmpty() ? 0 : inSlot.getAmount();
-                int max = Math.min(current + stack.getAmount(), inv.getMaxAmount(s, stack));
-                int addable = max - current;
-                if (addable <= 0) {
-                    continue;
-                }
-                if (current > 0 && !ItemStackUtil.areEqualIgnoreAmounts(stack, inSlot)) {
-                    continue;
-                }
-                if (inSlot.isEmpty()) {
-                    inSlot = stack.copy();
-                    inSlot.setAmount(addable);
-                } else {
-                    inSlot.addAmount(addable);
-                }
-                if (inv.setInvStack(s, inSlot, simulation)) {
-                    stack.subtractAmount(addable);
-                    if (stack.isEmpty()) {
-                        return ItemStack.EMPTY;
-                    }
-                }
+        for (int s = 0; s < inv.getSlotCount(); s++) {
+            ItemStack inSlot = inv.getInvStack(s);
+            int current = inSlot.isEmpty() ? 0 : inSlot.getAmount();
+            int max = Math.min(current + stack.getAmount(), inv.getMaxAmount(s, stack));
+            int addable = max - current;
+            if (addable <= 0) {
+                continue;
             }
-        } else {
-            for (int s : slots) {
-                // Copy of above
-                ItemStack inSlot = inv.getInvStack(s);
-                int current = inSlot.isEmpty() ? 0 : inSlot.getAmount();
-                int max = Math.min(current + stack.getAmount(), inv.getMaxAmount(s, inSlot));
-                int addable = max - current;
-                if (addable <= 0) {
-                    continue;
-                }
-                if (current > 0 && !ItemStackUtil.areEqualIgnoreAmounts(stack, inSlot)) {
-                    continue;
-                }
-                if (inSlot.isEmpty()) {
-                    inSlot = stack.copy();
-                    inSlot.setAmount(addable);
-                } else {
-                    inSlot.addAmount(addable);
-                }
-                if (inv.setInvStack(s, inSlot, simulation)) {
-                    stack.subtractAmount(addable);
-                    if (stack.isEmpty()) {
-                        return ItemStack.EMPTY;
-                    }
+            if (current > 0 && !ItemStackUtil.areEqualIgnoreAmounts(stack, inSlot)) {
+                continue;
+            }
+            if (inSlot.isEmpty()) {
+                inSlot = stack.copy();
+                inSlot.setAmount(addable);
+            } else {
+                inSlot.addAmount(addable);
+            }
+            if (inv.setInvStack(s, inSlot, simulation)) {
+                stack.subtractAmount(addable);
+                if (stack.isEmpty()) {
+                    return ItemStack.EMPTY;
                 }
             }
         }

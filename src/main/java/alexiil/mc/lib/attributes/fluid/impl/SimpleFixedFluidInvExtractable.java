@@ -7,6 +7,8 @@ import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
+/** @deprecated Use {@link GroupedFluidInvFixedWrapper} instead of this! */
+@Deprecated
 public final class SimpleFixedFluidInvExtractable implements FluidExtractable {
 
     private final FixedFluidInv inv;

@@ -2,7 +2,9 @@ package alexiil.mc.lib.attributes;
 
 import javax.annotation.Nonnull;
 
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
 public class DefaultedAttribute<T> extends Attribute<T> {
@@ -34,11 +36,18 @@ public class DefaultedAttribute<T> extends Attribute<T> {
      *         {@link #defaultValue} if the search didn't find any attribute instances at the specified position. */
     @Nonnull
     public final T getFirst(World world, BlockPos pos, SearchOption<? super T> searchParam) {
-        AttributeList<T> list = getAll(world, pos, searchParam);
-        if (list.list.isEmpty()) {
-            return defaultValue;
-        } else {
-            return list.get(0);
-        }
+        return getAll(world, pos, searchParam).getFirst(this);
+    }
+
+    /** Shorter method call for the common case of:</br>
+     * BlockEntity be = ...;</br>
+     * Direction dir = ...;</br>
+     * Attribute&lt;T&gt; attr = ...;</br>
+     * AttributeList&lt;T&gt; list = attr.{@link #getFirst(World, BlockPos, SearchOption) getAll}(be.getWorld(),
+     * be.getPos().offset(dir), {@link SearchOptions#inDirection(Direction) SearchOptions.inDirection}(dir)); </br>
+     */
+    @Nonnull
+    public final T getFirstFromNeighbour(BlockEntity be, Direction dir) {
+        return getFirst(be.getWorld(), be.getPos().offset(dir), SearchOptions.inDirection(dir));
     }
 }

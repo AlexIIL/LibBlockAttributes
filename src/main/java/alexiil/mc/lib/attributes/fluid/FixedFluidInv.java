@@ -1,19 +1,21 @@
 package alexiil.mc.lib.attributes.fluid;
 
-import net.minecraft.util.shape.VoxelShape;
+import java.util.function.Function;
 
-import alexiil.mc.lib.attributes.AttributeList;
-import alexiil.mc.lib.attributes.CacheInfo;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.impl.EmptyFixedFluidInv;
-import alexiil.mc.lib.attributes.fluid.impl.EmptyFluidExtractable;
-import alexiil.mc.lib.attributes.fluid.impl.RejectingFluidInsertable;
-import alexiil.mc.lib.attributes.fluid.impl.SimpleFixedFluidInvExtractable;
-import alexiil.mc.lib.attributes.fluid.impl.SimpleFixedFluidInvInsertable;
+import alexiil.mc.lib.attributes.fluid.impl.GroupedFluidInvFixedWrapper;
+import alexiil.mc.lib.attributes.fluid.impl.MappedFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.impl.SubFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
+/** A changeable {@link FixedFluidInvView} that can have it's contents changed. Note that this does not imply that the
+ * contents can be changed to anything the caller wishes them to be.
+ * <p>
+ * The attribute is stored in {@link FluidAttributes#FIXED_INV}.
+ * <p>
+ */
 public interface FixedFluidInv extends FixedFluidInvView {
 
     /** Sets the fluid in the given tank to the given fluid.
@@ -22,34 +24,45 @@ public interface FixedFluidInv extends FixedFluidInvView {
      *         {@link FixedFluidInvView#isFluidValidForTank(int, FluidKey)} test). */
     boolean setInvFluid(int tank, FluidVolume to, Simulation simulation);
 
+    /** Sets the stack in the given slot to the given stack, or throws an exception if it was not permitted. */
+    default void forceSetInvFluid(int slot, FluidVolume to) {
+        if (!setInvFluid(slot, to, Simulation.ACTION)) {
+            throw new IllegalStateException("Unable to force-set the tank " + slot + " to " + to + "!");
+        }
+    }
+
+    /** Applies the given function to the stack held in the slot, and uses {@link #forceSetInvFluid(int, FluidVolume)}
+     * on the result (Which will throw an exception if the returned stack is not valid for this inventory). */
+    default void modifyTank(int tank, Function<FluidVolume, FluidVolume> function) {
+        forceSetInvFluid(tank, function.apply(getInvFluid(tank)));
+    }
+
+    @Override
+    default SingleFluidTank getTank(int tank) {
+        return new SingleFluidTank(this, tank);
+    }
+
     /** @return An {@link FluidInsertable} for this inventory that will attempt to insert into any of the tanks in this
      *         inventory. */
     default FluidInsertable getInsertable() {
-        return new SimpleFixedFluidInvInsertable(this, null);
-    }
-
-    /** @return An {@link FluidInsertable} for this inventory that will attempt to insert into only the given array of
-     *         tanks. */
-    default FluidInsertable getInsertable(int[] tanks) {
-        if (tanks.length == 0) {
-            return RejectingFluidInsertable.NULL;
-        }
-        return new SimpleFixedFluidInvInsertable(this, tanks);
+        return getGroupedInv();
     }
 
     /** @return An {@link FluidExtractable} for this inventory that will attempt to extract from any of the tanks in
      *         this inventory. */
     default FluidExtractable getExtractable() {
-        return new SimpleFixedFluidInvExtractable(this, null);
+        return getGroupedInv();
     }
 
-    /** @return An {@link FluidExtractable} for this inventory that will attempt to extract from only the given array of
-     *         tanks. */
-    default FluidExtractable getExtractable(int[] tanks) {
-        if (tanks.length == 0) {
-            return EmptyFluidExtractable.NULL;
-        }
-        return new SimpleFixedFluidInvExtractable(this, tanks);
+    /** @return An {@link FluidTransferable} for this inventory that will attempt to extract from any of the tanks in
+     *         this inventory. */
+    default FluidTransferable getTransferable() {
+        return getGroupedInv();
+    }
+
+    @Override
+    default GroupedFluidInv getGroupedInv() {
+        return new GroupedFluidInvFixedWrapper(this);
     }
 
     @Override
@@ -57,13 +70,14 @@ public interface FixedFluidInv extends FixedFluidInvView {
         if (fromIndex == toIndex) {
             return EmptyFixedFluidInv.INSTANCE;
         }
-        return new SubFixedFluidInv<>(this, fromIndex, toIndex);
+        return new SubFixedFluidInv(this, fromIndex, toIndex);
     }
 
     @Override
-    default void offerSelfAsAttribute(AttributeList<?> list, CacheInfo cacheInfo, VoxelShape shape) {
-        FixedFluidInvView.super.offerSelfAsAttribute(list, cacheInfo, shape);
-        list.offer(getInsertable(), cacheInfo, shape);
-        list.offer(getExtractable(), cacheInfo, shape);
+    default FixedFluidInv getMappedInv(int... slots) {
+        if (slots.length == 0) {
+            return EmptyFixedFluidInv.INSTANCE;
+        }
+        return new MappedFixedFluidInv(this, slots);
     }
 }

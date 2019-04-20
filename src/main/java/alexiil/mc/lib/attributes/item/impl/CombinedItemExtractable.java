@@ -41,7 +41,7 @@ public final class CombinedItemExtractable implements ItemExtractable {
                     continue;
                 }
                 if (!ItemStackUtil.areEqualIgnoreAmounts(additional, extracted)) {
-                    throw new IllegalStateException("bad IItemExtractable " + extractable.getClass().getName());
+                    throw new IllegalStateException("bad ItemExtractable " + extractable.getClass().getName());
                 }
                 extracted.addAmount(additional.getAmount());
                 if (extracted.getAmount() >= maxAmount) {

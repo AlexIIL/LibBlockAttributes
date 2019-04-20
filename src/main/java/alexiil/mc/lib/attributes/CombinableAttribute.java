@@ -1,8 +1,13 @@
 package alexiil.mc.lib.attributes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.Nonnull;
 
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
 public final class CombinableAttribute<T> extends DefaultedAttribute<T> {
@@ -34,8 +39,24 @@ public final class CombinableAttribute<T> extends DefaultedAttribute<T> {
      *         {@link #combiner combined} instance depending on how many attribute instances could be found. */
     @Nonnull
     public final T get(World world, BlockPos pos, SearchOption<? super T> searchParam) {
-        AttributeList<T> list = getAll(world, pos, searchParam);
-        switch (list.list.size()) {
+        return getAll(world, pos, searchParam).combine(this);
+    }
+
+    /** Shorter method call for the common case of:</br>
+     * BlockEntity be = ...;</br>
+     * Direction dir = ...;</br>
+     * Attribute&lt;T&gt; attr = ...;</br>
+     * AttributeList&lt;T&gt; list = attr.{@link #get(World, BlockPos, SearchOption) getAll}(be.getWorld(),
+     * be.getPos().offset(dir), {@link SearchOptions#inDirection(Direction) SearchOptions.inDirection}(dir)); </br>
+     */
+    @Nonnull
+    public final T getFromNeighbour(BlockEntity be, Direction dir) {
+        return get(be.getWorld(), be.getPos().offset(dir), SearchOptions.inDirection(dir));
+    }
+
+    @Nonnull
+    public T combine(List<T> list) {
+        switch (list.size()) {
             case 0: {
                 return defaultValue;
             }
@@ -43,7 +64,35 @@ public final class CombinableAttribute<T> extends DefaultedAttribute<T> {
                 return list.get(0);
             }
             default: {
-                return combiner.combine(list.list);
+                return combiner.combine(list);
+            }
+        }
+    }
+
+    @Nonnull
+    public T combine(List<T> firstList, List<T> secondList) {
+        switch (firstList.size() + secondList.size()) {
+            case 0: {
+                return defaultValue;
+            }
+            case 1: {
+                if (secondList.isEmpty()) {
+                    return firstList.get(0);
+                } else {
+                    return firstList.get(0);
+                }
+            }
+            default: {
+                if (firstList.isEmpty()) {
+                    return combiner.combine(secondList);
+                } else if (secondList.isEmpty()) {
+                    return combiner.combine(firstList);
+                } else {
+                    List<T> combined = new ArrayList<>();
+                    combined.add(firstList.get(0));
+                    combined.addAll(secondList);
+                    return combiner.combine(combined);
+                }
             }
         }
     }

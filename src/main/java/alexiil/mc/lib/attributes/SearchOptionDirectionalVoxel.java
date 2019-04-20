@@ -22,4 +22,9 @@ public final class SearchOptionDirectionalVoxel<T> extends SearchOptionDirection
         this.ordered = ordered;
         this.shape = shape;
     }
+
+    @Override
+    public VoxelShape getShape() {
+        return shape;
+    }
 }

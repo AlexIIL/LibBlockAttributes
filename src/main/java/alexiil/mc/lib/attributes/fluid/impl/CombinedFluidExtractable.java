@@ -41,7 +41,7 @@ public final class CombinedFluidExtractable implements FluidExtractable {
                 }
                 extracted = FluidVolume.merge(extracted, additional);
                 if (extracted == null) {
-                    throw new IllegalStateException("bad IFluidExtractable " + extractable.getClass().getName());
+                    throw new IllegalStateException("bad FluidExtractable " + extractable.getClass().getName());
                 }
                 if (extracted.getAmount() >= maxAmount) {
                     return extracted;

@@ -7,6 +7,7 @@ import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 /** Defines an object that can have items extracted from it. */
+@FunctionalInterface
 public interface ItemExtractable {
 
     /** Attempt to extract *any* {@link ItemStack} from this that {@link ItemFilter#matches(ItemStack) matches} the
@@ -19,8 +20,8 @@ public interface ItemExtractable {
      * @return A new, independent {@link ItemStack} that was extracted. */
     ItemStack attemptExtraction(ItemFilter filter, int maxAmount, Simulation simulation);
 
-    /** Calls {@link #attemptExtraction(ItemFilter, int, Simulation) attemptExtraction()} with an {@link ItemFilter}
-     * of {@link ConstantItemFilter#ANYTHING}. */
+    /** Calls {@link #attemptExtraction(ItemFilter, int, Simulation) attemptExtraction()} with an {@link ItemFilter} of
+     * {@link ConstantItemFilter#ANYTHING}. */
     default ItemStack attemptAnyExtraction(int maxAmount, Simulation simulation) {
         return attemptExtraction(ConstantItemFilter.ANYTHING, maxAmount, simulation);
     }

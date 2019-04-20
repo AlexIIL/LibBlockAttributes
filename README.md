@@ -78,13 +78,15 @@ The core API's are:
 
 - FixedItemInv* (A version of minecraft's Inventory class that only deals with indexed item slot accessors and modification).
 - FixedItemInvView* (A read-only version of FixedItemInv).
-- ItemInvStats* (containing statistics for any inventory).
+- GroupedItemInv* (A version of FixedItemInv that operates like a Map<ItemStack, int amount> rather than a List<ItemStack>).
+- GroupedItemInvView* (A read-only version of FixedItemInv).
 - ItemInsertable* (containing item insertion)
 - ItemExtractable* (containing item extraction)
+- ItemTransferable (containing item insertion and extraction, which extends ItemInsertable and ItemExtractable).
 - ItemFilter (a Predicate for ItemStacks)
 - ItemInvSlotChangeListener (for listening to changes in a FixedItemInvView - although not all implementations will support this).
 
-(*Is an attribute by default)
+(*Is an attribute in ItemAttributes)
 
 In addition there are various utility classes:
 
@@ -108,13 +110,15 @@ The core API's are:
 
 - FixedFluidInv*.
 - FixedFluidInvView* (A read-only version of FixedFluidInv).
-- FluidInvStats* (containing statistics for any fluid inventory).
+- GroupedFluidInv* (A version of FixedFluidInv that operates like a Map<FluidKey, int amount> rather than a List<FluidVolume>).
+- GroupedFluidInvView* (A read-only version of GroupedFluidInv).
 - FluidInsertable* (containing fluid insertion)
 - FluidExtractable* (containing fluid extraction)
+- FluidTransferable (containing fluid insertion and extraction, which extends FluidInsertable and FluidExtractable).
 - FluidFilter (a Predicate for FluidKey's)
 - FluidInvTankChangeListener (for listening to changes in a FixedItemInvView - although not all implementations will support this).
 
-(*Is an attribute by default)
+(*Is an attribute in FluidAttributes)
 
 In addition there are two utility classes:
 

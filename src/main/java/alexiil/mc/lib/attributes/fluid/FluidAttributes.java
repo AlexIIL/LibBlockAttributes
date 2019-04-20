@@ -7,19 +7,21 @@ import alexiil.mc.lib.attributes.fluid.impl.CombinedFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.impl.CombinedFixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.impl.CombinedFluidExtractable;
 import alexiil.mc.lib.attributes.fluid.impl.CombinedFluidInsertable;
-import alexiil.mc.lib.attributes.fluid.impl.CombinedFluidInvStats;
+import alexiil.mc.lib.attributes.fluid.impl.CombinedGroupedFluidInv;
+import alexiil.mc.lib.attributes.fluid.impl.CombinedGroupedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.impl.EmptyFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.impl.EmptyFluidExtractable;
-import alexiil.mc.lib.attributes.fluid.impl.EmptyFluidInvStats;
+import alexiil.mc.lib.attributes.fluid.impl.EmptyGroupedFluidInv;
 import alexiil.mc.lib.attributes.fluid.impl.RejectingFluidInsertable;
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
 
-public enum FluidAttributes {
-    ;
+public final class FluidAttributes {
+    private FluidAttributes() {}
 
     public static final CombinableAttribute<FixedFluidInvView> FIXED_INV_VIEW;
     public static final CombinableAttribute<FixedFluidInv> FIXED_INV;
-    public static final CombinableAttribute<FluidInvStats> INV_STATS;
+    public static final CombinableAttribute<GroupedFluidInvView> GROUPED_INV_VIEW;
+    public static final CombinableAttribute<GroupedFluidInv> GROUPED_INV;
     public static final CombinableAttribute<FluidInsertable> INSERTABLE;
     public static final CombinableAttribute<FluidExtractable> EXTRACTABLE;
 
@@ -28,12 +30,10 @@ public enum FluidAttributes {
             CombinedFixedFluidInvView::new);
         FIXED_INV =
             Attributes.createCombinable(FixedFluidInv.class, EmptyFixedFluidInv.INSTANCE, CombinedFixedFluidInv::new);
-
-        // For some reason the java compiler can't work out what <T> should be for these three
-        // So instead we create a lambda, which somehow gives it enough space to work out what it is.
-        // (and yet eclipse had no problems with it :/ )
-        INV_STATS = Attributes.createCombinable(FluidInvStats.class, EmptyFluidInvStats.INSTANCE,
-            list -> new CombinedFluidInvStats(list));
+        GROUPED_INV_VIEW = Attributes.createCombinable(GroupedFluidInvView.class, EmptyGroupedFluidInv.INSTANCE,
+            list -> new CombinedGroupedFluidInvView(list));
+        GROUPED_INV = Attributes.createCombinable(GroupedFluidInv.class, EmptyGroupedFluidInv.INSTANCE,
+            list -> new CombinedGroupedFluidInv(list));
         INSERTABLE = Attributes.createCombinable(FluidInsertable.class, RejectingFluidInsertable.NULL,
             list -> new CombinedFluidInsertable(list));
         EXTRACTABLE = Attributes.createCombinable(FluidExtractable.class, EmptyFluidExtractable.NULL,

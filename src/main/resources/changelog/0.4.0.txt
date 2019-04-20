@@ -1,0 +1,48 @@
+Breaking changes:
+
+* Made all of the constructors to the "SearchOption" classes package-private: instead they should be constructed via "SearchOptions".
+* Removed "FixedItemInv.getInsertable(int[] slots)" and "FixedFluidInv.getInsertable(int[] tanks)": instead you can use:
+    * "FixedItemInv.getMappedInv(int[] slots).getInsertable()".
+    * (And the same goes for "getExtractable")
+* Renamed "ItemInvStats" to "GroupedItemInvView" (and "FluidInvStats" to "GroupedFluidInvView")
+* Renamed "FixedItemInvView.getStatistics()" to "FixedItemInvView.getStatistics()" (and "FixedFluidInvView.getStatistics()" to "FixedFluidInvView.getStatistics()")
+* Made the constructors for "NormalFluidVolume" package-private as instances should be constructed via their FluidKey.
+
+Attribute Changes:
+
+* Updated to minecraft 1.14 Pre-Release 5
+* Added several methods to "AttributeList":
+    * "AttributeList.getFirstOrNull()": returns the first attribute instance that matches, or returns null if no instances were found
+    * "AttributeList.getFirst(DefaultedAttribute)": returns the first attribute instance that matches, or returns the default value if no instances were found.
+    * "AttributeList.combine(CombinableAttribute)": returns a combined version of the attribute instances that were found.
+    * "AttributeList.combine(AttributeList after, CombinableAttribute)": Returns a combined version of two attribute lists.
+* Added "CombinableAttribute<T>.combine(List<T>)": returns a combined version of a given java List<T> of the attribute.
+* Added "CombinableAttribute<T>.combine(List<T> first, List<T> second)": returns a combined version of two given java List<T>'s of the attribute.
+* Added "Attribute.getAllFromNeighbour(BlockEntity be, Direction dir)" for the common case of getting an attribute list from a neighbour of a block entity.
+    * Also added several similar variants:
+        * "Attribute.getFirstOrNullFromNeighbour"
+        * "DefaultedAttribute.getFirstFromNeighbour"
+        * "CombinableAttribute.getFromNeighbour"
+
+Inventory changes (which affect both item and fluid inventories):
+
+* Added "FixedItemInv.forceSetInvStack" and "FixedFluidInv.forceSetInvFluid": Both of which take the slot/tank index and the new ItemStack/FluidVolume to set.
+    * This method calls "FixedItemInv.setInvStack" internally, and throws an exception if it returns false.
+    * As such you should only use this for your own inventories (where you know the filter).
+* Added "FixedItemInv.modify()" and "FixedFluidInv.modify()": 
+    * Both of which take the slot/tank index and a "Function<ItemStack, ItemStack" (or Function<FluidVolume, FluidVolume>)
+      and call the function on the currently held stack/fluid, then put the result back into the slot with "forceSetInvStack/forceSetInvFluid".
+    * As "forceSet" throws an exception if the resultant stack/fluid is invalid you should only use this for your own inventories (where you know the filter).
+* Added a new class: "SingleItemSlot" and "SingleFluidTank", which is a single-slot/tank version of a FixedItemInv/FixedFluidInv
+    * (And view versions: "SingleItemSlotView" and "SingleFluidTankView", which wrap FixedItemInvView and FixedFluidView).
+* Added "FixedItemInvView.getSlot(int slot)" and "FixedFluidInvView.getTank(int tank)", both of which return the "SingleItemSlot" and "SingleFluidTank" classes.
+* Added "FixedItemInvView.getMappedInv" and "FixedFluidInvView.getMappedInv" which take an array of the slots to map to a delegating inventory.
+* Added "GroupedItemInvView" and "GroupedItemInv" which are slotless versions of "FixedItemInvView" and "FixedItemInv".
+* Added the listener classes "ItemInvAmountChangeListener" and "FluidInvAmountChangeListener" for listening to grouped inventories.
+* Added SimpleFixedItemInv.setOwnerListener" which sets a listener for the inventory owner to use which wuill never be removed from the inventory.
+* Added "ItemTransferable" which extends "ItemInsertable" and "ItemExtractable". This is *NOT* available as an attribute.
+* Deprecated "SimpleFixedItemInvInsertable" because "GroupedItemInvFixedWrapper" does the same thing.
+
+Fluid Changes:
+
+* Added "FluidInsertable.getMinimumAcceptedAmount": which is a hint for insertors that a given insertable will refuse fluid insertions with less than the returned amount.
