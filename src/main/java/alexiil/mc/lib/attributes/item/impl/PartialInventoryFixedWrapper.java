@@ -79,7 +79,9 @@ public abstract class PartialInventoryFixedWrapper implements Inventory {
         if (status != null) {
             status.validate(this, slot);
         }
-        setInvStackInternal(slot, to);
+        status = new SlotStatus(to.copy(), to);
+        slotStatus.put(slot, status);
+        setInvStackInternal(slot, status.originalCopy);
     }
 
     void setInvStackInternal(int slot, ItemStack to) {
@@ -113,8 +115,12 @@ public abstract class PartialInventoryFixedWrapper implements Inventory {
         final ItemStack returned;
 
         public SlotStatus(ItemStack current) {
-            this.originalCopy = current.copy();
-            this.returned = current.copy();
+            this(current.copy(), current.copy());
+        }
+
+        public SlotStatus(ItemStack originalCopy, ItemStack returned) {
+            this.originalCopy = originalCopy;
+            this.returned = returned;
         }
 
         void validate(PartialInventoryFixedWrapper inv, int slot) {
