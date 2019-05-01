@@ -1,4 +1,4 @@
-package alexiil.mc.lib.attributes.item.impl;
+package alexiil.mc.lib.attributes.item.compat;
 
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;

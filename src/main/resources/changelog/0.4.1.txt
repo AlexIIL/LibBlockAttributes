@@ -1,0 +1,16 @@
+Breaking changes:
+
+* Moved several classes from "alexiil.mc.lib.attributes.item.impl" to "alexiil.mc.lib.attributes.item.compat":
+    * FixedInventoryVanillaWrapper
+    * FixedInventoryViewVanillaWrapper
+    * PartialInventoryFixedWrapper (and renamed it to InventoryFixedWrapper)
+
+Additions:
+    * Added a new class: SidedInventoryFixedWrapper, which:
+        * Extends InventoryFixedWrapper
+        * Implements vanilla minecraft's SidedInventory interface.
+
+Bug Fixes:
+
+* Fixed a crash when exposing a InventoryFixedWrapper to a hopper.
+* Fixed SlotFixedItemInv not working properly if the current stack is not valid for 

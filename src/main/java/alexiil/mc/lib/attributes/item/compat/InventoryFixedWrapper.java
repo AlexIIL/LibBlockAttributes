@@ -1,4 +1,4 @@
-package alexiil.mc.lib.attributes.item.impl;
+package alexiil.mc.lib.attributes.item.compat;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
@@ -6,6 +6,7 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.item.impl.ItemInvModificationTracker;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -14,12 +15,12 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
  * <p>
  * One of the {@link Inventory} methods must be overridden by subclasses however:
  * {@link Inventory#canPlayerUseInv(PlayerEntity)}. */
-public abstract class PartialInventoryFixedWrapper implements Inventory {
+public abstract class InventoryFixedWrapper implements Inventory {
 
-    private final FixedItemInv inv;
+    final FixedItemInv inv;
     private final Int2ObjectMap<SlotStatus> slotStatus = new Int2ObjectOpenHashMap<>();
 
-    public PartialInventoryFixedWrapper(FixedItemInv inv) {
+    public InventoryFixedWrapper(FixedItemInv inv) {
         this.inv = inv;
     }
 
@@ -84,6 +85,19 @@ public abstract class PartialInventoryFixedWrapper implements Inventory {
         setInvStackInternal(slot, status.originalCopy);
     }
 
+    public boolean softSetInvStack(int slot, ItemStack to) {
+        SlotStatus status = slotStatus.remove(slot);
+        if (status != null) {
+            status.validate(this, slot);
+        }
+        status = new SlotStatus(to.copy(), to);
+        if (inv.setInvStack(slot, status.originalCopy, Simulation.ACTION)) {
+            slotStatus.put(slot, status);
+            return true;
+        }
+        return false;
+    }
+
     void setInvStackInternal(int slot, ItemStack to) {
         if (!inv.setInvStack(slot, to, Simulation.ACTION)) {
             throw new IllegalStateException("The FixedItemInv " + inv.getClass() + " didn't accept the stack " + to
@@ -111,7 +125,7 @@ public abstract class PartialInventoryFixedWrapper implements Inventory {
         /** A copy of the itemstack that was originally seen in the backing {@link FixedItemInv}. */
         final ItemStack originalCopy;
 
-        /** The itemstack that was returned from {@link PartialInventoryFixedWrapper#getInvStack(int)}. */
+        /** The itemstack that was returned from {@link InventoryFixedWrapper#getInvStack(int)}. */
         final ItemStack returned;
 
         public SlotStatus(ItemStack current) {
@@ -123,7 +137,7 @@ public abstract class PartialInventoryFixedWrapper implements Inventory {
             this.returned = returned;
         }
 
-        void validate(PartialInventoryFixedWrapper inv, int slot) {
+        void validate(InventoryFixedWrapper inv, int slot) {
             ItemStack current = inv.inv.getInvStack(slot);
             if (!ItemStack.areEqual(originalCopy, current) && !ItemStack.areEqual(originalCopy, returned)) {
                 throw new IllegalStateException("The inventory has been modifed in two places at once! (\n\tcurrent = "
@@ -133,7 +147,7 @@ public abstract class PartialInventoryFixedWrapper implements Inventory {
             }
         }
 
-        void process(PartialInventoryFixedWrapper inv, int slot) {
+        void process(InventoryFixedWrapper inv, int slot) {
             validate(inv, slot);
             if (ItemStack.areEqual(returned, originalCopy)) {
                 // Nothing changed

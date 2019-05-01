@@ -18,6 +18,7 @@ import alexiil.mc.lib.attributes.Attributes;
 import alexiil.mc.lib.attributes.CombinableAttribute;
 import alexiil.mc.lib.attributes.CustomAttributeAdder;
 import alexiil.mc.lib.attributes.DefaultedAttribute;
+import alexiil.mc.lib.attributes.item.compat.FixedInventoryVanillaWrapper;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInvView;
 import alexiil.mc.lib.attributes.item.impl.CombinedGroupedItemInv;
@@ -27,7 +28,6 @@ import alexiil.mc.lib.attributes.item.impl.CombinedItemInsertable;
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.EmptyGroupedItemInv;
 import alexiil.mc.lib.attributes.item.impl.EmptyItemExtractable;
-import alexiil.mc.lib.attributes.item.impl.FixedInventoryVanillaWrapper;
 import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
 
 public final class ItemAttributes {

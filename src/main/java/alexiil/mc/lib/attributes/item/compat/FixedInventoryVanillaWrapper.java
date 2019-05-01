@@ -1,4 +1,4 @@
-package alexiil.mc.lib.attributes.item.impl;
+package alexiil.mc.lib.attributes.item.compat;
 
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
@@ -7,7 +7,7 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
 
 /** An {@link FixedItemInv} that wraps a vanilla {@link Inventory}. */
-public final class FixedInventoryVanillaWrapper extends FixedInventoryViewVanillaWrapper implements FixedItemInv {
+public class FixedInventoryVanillaWrapper extends FixedInventoryViewVanillaWrapper implements FixedItemInv {
 
     public FixedInventoryVanillaWrapper(Inventory inv) {
         super(inv);

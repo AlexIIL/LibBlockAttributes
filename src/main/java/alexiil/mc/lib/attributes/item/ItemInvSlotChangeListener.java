@@ -2,6 +2,9 @@ package alexiil.mc.lib.attributes.item;
 
 import net.minecraft.item.ItemStack;
 
+/** Listener {@link FunctionalInterface} for {@link FixedItemInvView}.
+ * <p>
+ * Note that the listener system is not fully fleshed out yet so this <em>will</em> change in the future! */
 @FunctionalInterface
 public interface ItemInvSlotChangeListener {
 
