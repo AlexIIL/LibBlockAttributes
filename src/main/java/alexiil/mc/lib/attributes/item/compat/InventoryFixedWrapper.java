@@ -6,6 +6,7 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.item.compat.InventoryFixedWrapper.SlotStatus;
 import alexiil.mc.lib.attributes.item.impl.ItemInvModificationTracker;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;

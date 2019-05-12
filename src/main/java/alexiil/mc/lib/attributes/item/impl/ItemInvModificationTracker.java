@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.AttributeUtil;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.item.impl.ItemInvModificationTracker.TrackedItemStackState;
 
 /** A tracker object that tries to ensure that the "no modification" rule that methods like
  * {@link FixedItemInv#getInvStack(int)} use is followed. */

@@ -31,8 +31,6 @@ public class AttributeList<T> {
     /** May contain null elements if the caller didn't provide one (and so the actual shape should be taken from the
      * block). */
     final List<VoxelShape> shapeList = new ArrayList<>();
-
-    /** Only used if we need to sort the resulting list by the shapes. */
     final List<VoxelShape> combinedShapeList;
 
     /** Only used if the {@link #getSearchDirection()} is a non-null value (as otherwise it's impossible to know which
@@ -51,16 +49,15 @@ public class AttributeList<T> {
         this.attribute = attribute;
         this.searchParam = searchOption;
         this.defaultShape = defaultShape;
-        if (searchOption instanceof SearchOptionDirectionalVoxel
-            && ((SearchOptionDirectionalVoxel<?>) searchOption).ordered) {
-            this.combinedShapeList = new ArrayList<>();
-        } else {
-            this.combinedShapeList = null;
-        }
         if (getSearchDirection() != null) {
             this.obstructingShape = VoxelShapes.empty();
         } else {
             this.obstructingShape = null;
+        }
+        if (this.searchParam.getShape() != VoxelShapes.fullCube() || obstructingShape != null) {
+            this.combinedShapeList = new ArrayList<>();
+        } else {
+            this.combinedShapeList = null;
         }
     }
 
@@ -99,25 +96,12 @@ public class AttributeList<T> {
             return;
         }
         VoxelShape searchShape = searchParam.getShape();
-        if (searchParam instanceof SearchOptionDirectionalVoxel) {
-            SearchOptionDirectionalVoxel<?> voxelSearch = (SearchOptionDirectionalVoxel<?>) searchParam;
-            if (voxelSearch.ordered) {
-                VoxelShape combined = VoxelShapes.union(shape, searchShape);
-                if (combined.isEmpty()) {
-                    return;
-                }
-                combinedShapeList.add(combined);
+        if (combinedShapeList != null) {
+            VoxelShape combined = VoxelShapes.combine(shape, searchShape, BooleanBiFunction.AND);
+            if (combined.isEmpty()) {
+                return;
             }
-        }
-        if (/* Optimisation - most searches are going to be on a full cube, so there's no need to check them (as they
-             * should always be in the cube) */
-        searchShape != VoxelShapes.fullCube()
-            /* Another optimisation - the above check (for SearchOptionDirectionalVoxel) will also check that they
-             * intersect via the "VoxelShapes.union" call. */
-            && combinedShapeList == null
-            /* Finally, the real check! */
-            && !VoxelShapes.matchesAnywhere(shape, searchShape, BooleanBiFunction.AND)) {
-            return;
+            combinedShapeList.add(combined);
         }
         list.add(obj);
         cacheList.add(cacheInfo);
@@ -151,7 +135,10 @@ public class AttributeList<T> {
      * otherwise it won't obstruct anything). */
     public void obstruct(VoxelShape shape) {
         if (obstructingShape != null) {
-            obstructingShape = VoxelShapes.union(obstructingShape, extendShape(shape, getSearchDirection()));
+            shape = VoxelShapes.combine(shape, searchParam.getShape(), BooleanBiFunction.AND);
+            if (!shape.isEmpty()) {
+                obstructingShape = VoxelShapes.union(obstructingShape, extendShape(shape, getSearchDirection()));
+            }
         }
     }
 
@@ -317,9 +304,7 @@ public class AttributeList<T> {
         }
         if (obstructingShape != null) {
             for (int i = list.size() - 1; i >= 0; i--) {
-                VoxelShape attributeShape = (combinedShapeList != null ? combinedShapeList : shapeList).get(i);
-                // Just in case right?
-                attributeShape = VoxelShapes.union(attributeShape, VoxelShapes.fullCube());
+                VoxelShape attributeShape = combinedShapeList.get(i);
                 if (VoxelShapes.combine(obstructingShape, attributeShape, BooleanBiFunction.ONLY_SECOND).isEmpty()) {
                     list.remove(i);
                     cacheList.remove(i);

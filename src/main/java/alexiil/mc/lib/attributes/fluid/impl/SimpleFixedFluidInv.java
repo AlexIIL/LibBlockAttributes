@@ -14,6 +14,8 @@ import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.FixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.FluidInvTankChangeListener;
+import alexiil.mc.lib.attributes.fluid.FluidTransferable;
+import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
@@ -30,7 +32,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
  * <p>
  * Note: Generally it is better to extend {@link JumboFixedFluidInv} for inventories with a large number of similar
  * tanks (like a chest). */
-public class SimpleFixedFluidInv implements FixedFluidInv {
+public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable {
 
     private static final FluidInvTankChangeListener[] NO_LISTENERS = new FluidInvTankChangeListener[0];
 
@@ -40,8 +42,11 @@ public class SimpleFixedFluidInv implements FixedFluidInv {
     public final int tankCapacity;
     protected final DefaultedList<FluidVolume> tanks;
 
-    private final Map<FluidInvTankChangeListener, ListenerRemovalToken> listeners =
-        new Object2ObjectLinkedOpenCustomHashMap<>(SystemUtil.identityHashStrategy());
+    // TODO: Optimise this to cache more information!
+    private final GroupedFluidInv groupedVersion = new GroupedFluidInvFixedWrapper(this);
+
+    private final Map<FluidInvTankChangeListener, ListenerRemovalToken> listeners
+        = new Object2ObjectLinkedOpenCustomHashMap<>(SystemUtil.identityHashStrategy());
 
     // Should this use WeakReference instead of storing them directly?
     private FluidInvTankChangeListener[] bakedListeners = NO_LISTENERS;
@@ -54,9 +59,7 @@ public class SimpleFixedFluidInv implements FixedFluidInv {
     // IFixedFluidInv
 
     @Override
-    public final int getTankCount() {
-        return tanks.size();
-    }
+    public final int getTankCount() { return tanks.size(); }
 
     @Override
     public int getMaxAmount(int tank) {
@@ -82,13 +85,17 @@ public class SimpleFixedFluidInv implements FixedFluidInv {
                     Method method = cls.getMethod("isFluidValidForTank", int.class, FluidKey.class);
                     if (method.getDeclaringClass() != SimpleFixedFluidInv.class) {
                         // it's been overriden, but we haven't
-                        throw new IllegalStateException("The subclass " + method.getDeclaringClass()
-                            + " has overriden isFluidValidForTank() but hasn't overriden getFilterForTank()");
+                        throw new IllegalStateException(
+                            "The subclass "
+                            + method.getDeclaringClass()
+                            + " has overriden isFluidValidForTank() but hasn't overriden getFilterForTank()"
+                        );
                     }
                 } catch (ReflectiveOperationException roe) {
                     throw new Error(
                         "Failed to get the isFluidValidForTank method! I'm not sure what to do now, as this shouldn't happen normally :(",
-                        roe);
+                        roe
+                    );
                 }
             }
         }
@@ -109,6 +116,11 @@ public class SimpleFixedFluidInv implements FixedFluidInv {
     }
 
     // Others
+
+    @Override
+    public GroupedFluidInv getGroupedInv() {
+        return this.groupedVersion;
+    }
 
     @Override
     public ListenerToken addListener(FluidInvTankChangeListener listener, ListenerRemovalToken removalToken) {
@@ -177,5 +189,34 @@ public class SimpleFixedFluidInv implements FixedFluidInv {
         for (int i = tanksTag.size(); i < tanks.size(); i++) {
             tanks.set(i, FluidKeys.EMPTY.withAmount(0));
         }
+    }
+
+    // FluidInsertable
+
+    @Override
+    public FluidVolume attemptInsertion(FluidVolume fluid, Simulation simulation) {
+        return groupedVersion.attemptInsertion(fluid, simulation);
+    }
+
+    @Override
+    public int getMinimumAcceptedAmount() {
+        return groupedVersion.getMinimumAcceptedAmount();
+    }
+
+    @Override
+    public FluidFilter getInsertionFilter() {
+        return groupedVersion.getInsertionFilter();
+    }
+
+    // FluidExtractable
+
+    @Override
+    public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
+        return groupedVersion.attemptExtraction(filter, maxAmount, simulation);
+    }
+
+    @Override
+    public FluidVolume attemptAnyExtraction(int maxAmount, Simulation simulation) {
+        return groupedVersion.attemptAnyExtraction(maxAmount, simulation);
     }
 }

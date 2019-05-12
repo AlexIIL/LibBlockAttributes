@@ -33,4 +33,21 @@ public interface ItemInsertable {
             return leftover.isEmpty() || leftover.getAmount() < stack.getAmount();
         };
     }
+
+    /** @return An object that only implements {@link ItemInsertable}, and does not expose any of the other modification
+     *         methods that sibling or subclasses offer (like {@link ItemExtractable} or {@link GroupedItemInv}. */
+    default ItemInsertable getPureInsertable() {
+        final ItemInsertable delegate = this;
+        return new ItemInsertable() {
+            @Override
+            public ItemStack attemptInsertion(ItemStack stack, Simulation simulation) {
+                return delegate.attemptInsertion(stack, simulation);
+            }
+
+            @Override
+            public ItemFilter getInsertionFilter() {
+                return delegate.getInsertionFilter();
+            }
+        };
+    }
 }

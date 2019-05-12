@@ -1,13 +1,12 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
 import java.util.List;
-
+import net.minecraft.ChatFormat;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.text.StringTextComponent;
-import net.minecraft.text.TextComponent;
-import net.minecraft.text.TextFormat;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
@@ -244,13 +243,13 @@ public class BiomeSourcedFluidVolume extends NormalFluidVolume {
     }
 
     @Override
-    public List<TextComponent> getTooltipText(TooltipContext ctx) {
-        List<TextComponent> list = super.getTooltipText(ctx);
+    public List<Component> getTooltipText(TooltipContext ctx) {
+        List<Component> list = super.getTooltipText(ctx);
         if (ctx.isAdvanced()) {
             for (Biome biome : biomeSources.keySet()) {
                 int amount = biomeSources.getInt(biome);
-                TextComponent text = new StringTextComponent(amount + " / " + BUCKET + " of ");
-                list.add(text.append(biome.getTextComponent()).applyFormat(TextFormat.GRAY));
+                Component text = new TextComponent(amount + " / " + BUCKET + " of ");
+                list.add(text.append(biome.getTextComponent()).applyFormat(ChatFormat.GRAY));
             }
         }
         return list;

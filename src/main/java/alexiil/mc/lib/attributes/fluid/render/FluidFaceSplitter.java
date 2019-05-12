@@ -369,7 +369,8 @@ import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer.ComponentRende
                 return v1;
             }
             double interpValue = (newTextureCoord - t0) / (t1 - t0);
-            return new Vertex(//
+            return new Vertex(
+                //
                 interp(v0.x, v1.x, interpValue), //
                 interp(v0.y, v1.y, interpValue), //
                 interp(v0.z, v1.z, interpValue), //
@@ -408,7 +409,7 @@ import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer.ComponentRende
             double _v2 = round(!u, min, v2.vR) * 16;
             double _v3 = round(!u, min, v3.vR) * 16;
 
-            return new FluidRenderFace(//
+            return new FluidRenderFace(
                 v0.x, v0.y, v0.z, _u0, _v0, //
                 v1.x, v1.y, v1.z, _u1, _v1, //
                 v2.x, v2.y, v2.z, _u2, _v2, //
@@ -417,7 +418,7 @@ import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer.ComponentRende
         }
 
         FluidRenderFace toFace() {
-            return new FluidRenderFace(//
+            return new FluidRenderFace(
                 v0.x, v0.y, v0.z, v0.uN * 16, v0.vN * 16, //
                 v1.x, v1.y, v1.z, v1.uN * 16, v1.vN * 16, //
                 v2.x, v2.y, v2.z, v2.uN * 16, v2.vN * 16, //
@@ -435,13 +436,7 @@ import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer.ComponentRende
 
         @Override
         public String toString() {
-            return "Quad {"//
-                + "\n  " + v0//
-                + "\n  " + v1//
-                + "\n  " + v2//
-                + "\n  " + v3//
-                + "\n}"//
-            ;
+            return "Quad {\n  " + v0 + "\n  " + v1 + "\n  " + v2 + "\n  " + v3 + "\n}";
         }
     }
 }

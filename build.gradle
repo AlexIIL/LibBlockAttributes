@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.2.0-SNAPSHOT'
+    id 'fabric-loom' version '0.2.2-SNAPSHOT'
 }
 
 apply plugin: 'maven-publish' // for uploading to a maven repo
@@ -8,18 +8,18 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 archivesBaseName = "LibBlockAttributes"
-version = "0.4.1"
+version = "0.4.2"
 
 minecraft {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:1.14 Pre-Release 5"
-    mappings "net.fabricmc:yarn:1.14 Pre-Release 5+build.2"
-    modCompile "net.fabricmc:fabric-loader:0.4.1+build.127"
+    minecraft "com.mojang:minecraft:1.14.1 Pre-Release 2"
+    mappings "net.fabricmc:yarn:1.14.1 Pre-Release 2+build.2"
+    modCompile "net.fabricmc:fabric-loader:0.4.7+build.146"
 
     //Fabric api
-    modCompile "net.fabricmc:fabric:0.2.7+build.125"
+    modCompile "net.fabricmc:fabric:0.2.7+build.127"
 
     // Silk API
     modCompile "io.github.prospector.silk:SilkAPI:1.2.3-38"

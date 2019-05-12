@@ -14,7 +14,9 @@ import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
+import alexiil.mc.lib.attributes.item.ItemTransferable;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
@@ -23,11 +25,8 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
 /** A simple, extendible, fixed size item inventory that supports all of the features that {@link FixedItemInv} exposes.
  * <p>
  * Extending classes should take care to override {@link #getFilterForSlot(int)} if they also override
- * {@link #isItemValidForSlot(int, ItemStack)}.
- * <p>
- * Note: Generally it is better to extend/use {@link JumboFixedItemInv} for inventories with a large number of similar
- * slots (like a chest). */
-public class SimpleFixedItemInv implements FixedItemInv {
+ * {@link #isItemValidForSlot(int, ItemStack)}. */
+public class SimpleFixedItemInv implements FixedItemInv, ItemTransferable {
 
     private static final ItemInvSlotChangeListener[] NO_LISTENERS = new ItemInvSlotChangeListener[0];
 
@@ -36,10 +35,13 @@ public class SimpleFixedItemInv implements FixedItemInv {
 
     protected final DefaultedList<ItemStack> slots;
 
+    // TODO: Optimise this to cache more information!
+    private final GroupedItemInv groupedVersion = new GroupedItemInvFixedWrapper(this);
+
     private ItemInvSlotChangeListener ownerListener;
 
-    private final Map<ItemInvSlotChangeListener, ListenerRemovalToken> listeners =
-        new Object2ObjectLinkedOpenCustomHashMap<>(SystemUtil.identityHashStrategy());
+    private final Map<ItemInvSlotChangeListener, ListenerRemovalToken> listeners
+        = new Object2ObjectLinkedOpenCustomHashMap<>(SystemUtil.identityHashStrategy());
 
     // Should this use WeakReference instead of storing them directly?
     private ItemInvSlotChangeListener[] bakedListeners = NO_LISTENERS;
@@ -49,9 +51,7 @@ public class SimpleFixedItemInv implements FixedItemInv {
     }
 
     @Override
-    public final int getSlotCount() {
-        return slots.size();
-    }
+    public final int getSlotCount() { return slots.size(); }
 
     @Override
     public ItemStack getInvStack(int slot) {
@@ -74,17 +74,26 @@ public class SimpleFixedItemInv implements FixedItemInv {
                     Method method = cls.getMethod("isItemValidForSlot", int.class, ItemStack.class);
                     if (method.getDeclaringClass() != SimpleFixedItemInv.class) {
                         // it's been overriden, but we haven't
-                        throw new IllegalStateException("The subclass " + method.getDeclaringClass()
-                            + " has overriden isItemValidForSlot() but hasn't overriden getFilterForSlot()");
+                        throw new IllegalStateException(
+                            "The subclass "
+                            + method.getDeclaringClass()
+                            + " has overriden isItemValidForSlot() but hasn't overriden getFilterForSlot()"
+                        );
                     }
                 } catch (ReflectiveOperationException roe) {
                     throw new Error(
-                        "Failed to get the isItemValidForSlot method! I'm not sure what to do now, as this shouldn't happen normally :(",
-                        roe);
+                        "Failed to get the isItemValidForSlot method! I'm not sure what"
+                        + " to do now, as this shouldn't happen normally :(", roe
+                    );
                 }
             }
         }
         return ConstantItemFilter.ANYTHING;
+    }
+
+    @Override
+    public GroupedItemInv getGroupedInv() {
+        return this.groupedVersion;
     }
 
     @Override
@@ -181,5 +190,27 @@ public class SimpleFixedItemInv implements FixedItemInv {
         for (int i = slotsTag.size(); i < slots.size(); i++) {
             slots.set(i, ItemStack.EMPTY);
         }
+    }
+
+    // ItemInsertable
+
+    @Override
+    public ItemStack attemptInsertion(ItemStack stack, Simulation simulation) {
+        return groupedVersion.attemptInsertion(stack, simulation);
+    }
+
+    @Override
+    public ItemFilter getInsertionFilter() { return groupedVersion.getInsertionFilter(); }
+
+    // ItemExtractable
+
+    @Override
+    public ItemStack attemptExtraction(ItemFilter filter, int maxAmount, Simulation simulation) {
+        return groupedVersion.attemptExtraction(filter, maxAmount, simulation);
+    }
+
+    @Override
+    public ItemStack attemptAnyExtraction(int maxAmount, Simulation simulation) {
+        return groupedVersion.attemptAnyExtraction(maxAmount, simulation);
     }
 }

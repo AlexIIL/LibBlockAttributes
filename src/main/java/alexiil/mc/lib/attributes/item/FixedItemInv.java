@@ -13,7 +13,8 @@ import alexiil.mc.lib.attributes.item.impl.MappedFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.SubFixedItemInv;
 
 /** A changeable {@link FixedItemInvView} that can have it's contents changed. Note that this does not imply that the
- * contents can be changed to anything the caller wishes them to be.
+ * contents can be changed to anything the caller wishes them to be, as implementations can limit the valid
+ * {@link ItemStack}s allowed.
  * <p>
  * The attribute is stored in {@link ItemAttributes#FIXED_INV}.
  * <p>

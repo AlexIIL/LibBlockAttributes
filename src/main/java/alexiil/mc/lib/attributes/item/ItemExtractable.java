@@ -25,4 +25,22 @@ public interface ItemExtractable {
     default ItemStack attemptAnyExtraction(int maxAmount, Simulation simulation) {
         return attemptExtraction(ConstantItemFilter.ANYTHING, maxAmount, simulation);
     }
+
+    /** @return An object that only implements {@link ItemExtractable}, and does not expose any of the other
+     *         modification methods that sibling or subclasses offer (like {@link ItemInsertable} or
+     *         {@link GroupedItemInv}. */
+    default ItemExtractable getPureExtractable() {
+        ItemExtractable delegate = this;
+        return new ItemExtractable() {
+            @Override
+            public ItemStack attemptExtraction(ItemFilter filter, int maxAmount, Simulation simulation) {
+                return delegate.attemptExtraction(filter, maxAmount, simulation);
+            }
+
+            @Override
+            public ItemStack attemptAnyExtraction(int maxAmount, Simulation simulation) {
+                return delegate.attemptAnyExtraction(maxAmount, simulation);
+            }
+        };
+    }
 }

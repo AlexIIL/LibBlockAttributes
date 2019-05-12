@@ -8,14 +8,13 @@ import javax.annotation.Nullable;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-
+import net.minecraft.ChatFormat;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.potion.Potion;
-import net.minecraft.text.StringTextComponent;
-import net.minecraft.text.TextComponent;
-import net.minecraft.text.TextFormat;
 import net.minecraft.util.Identifier;
 
 import alexiil.mc.lib.attributes.Simulation;
@@ -268,20 +267,20 @@ public abstract class FluidVolume {
         return getFluidKey().renderColor;
     }
 
-    public TextComponent getName() {
+    public Component getName() {
         return getFluidKey().name;
     }
 
     @Environment(EnvType.CLIENT)
-    public List<TextComponent> getTooltipText(TooltipContext ctx) {
-        List<TextComponent> list = new ArrayList<>();
+    public List<Component> getTooltipText(TooltipContext ctx) {
+        List<Component> list = new ArrayList<>();
         list.add(getName());
         if (ctx.isAdvanced()) {
-            list.add(new StringTextComponent(
+            list.add(new TextComponent(
                 FluidRegistryEntry.getName(getFluidKey().registryEntry.backingRegistry).toString())
-                    .applyFormat(TextFormat.DARK_GRAY));
-            list.add(new StringTextComponent(getFluidKey().registryEntry.getId().toString())
-                .applyFormat(TextFormat.DARK_GRAY));
+                    .applyFormat(ChatFormat.DARK_GRAY));
+            list.add(new TextComponent(getFluidKey().registryEntry.getId().toString())
+                .applyFormat(ChatFormat.DARK_GRAY));
         }
         return list;
     }

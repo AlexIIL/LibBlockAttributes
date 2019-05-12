@@ -9,10 +9,9 @@ import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
-import net.minecraft.text.TextComponent;
-
 import alexiil.mc.lib.attributes.fluid.render.DefaultFluidVolumeRenderer;
 import alexiil.mc.lib.attributes.fluid.render.EnchantmentGlintFluidRenderer;
 import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer;
@@ -38,8 +37,8 @@ public final class PotionFluidVolume extends FluidVolume {
 
     @Override
     @Environment(EnvType.CLIENT)
-    public List<TextComponent> getTooltipText(TooltipContext ctx) {
-        List<TextComponent> list = super.getTooltipText(ctx);
+    public List<Component> getTooltipText(TooltipContext ctx) {
+        List<Component> list = super.getTooltipText(ctx);
         PotionUtil.buildTooltip(PotionUtil.setPotion(new ItemStack(Items.POTION), getPotion()), list, 1.0F);
         return list;
     }

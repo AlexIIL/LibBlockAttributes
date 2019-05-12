@@ -1,0 +1,17 @@
+Breaking Changes:
+
+* Removed JumboFixedItemInv, as all of the optimisations that would have bee added to it will instead be added to SimpleFixedItemInv.
+
+Changes:
+
+* Updated to minecraft 1.14.1 Pre-Release 2
+* Added ItemInsertable.getPureInsertable(), which returns an object that *only* implements ItemInsertable
+* Added ItemExtractable.getPureExtractable(), which returns an object that *only* implements ItemInsertable
+* Added ItemEntityAttributeUtil.getSpecialExtractable(Entity) which can return an IntemExtractable from item entities.
+* Added ExactItemFilter, which is similar to an ExactItemStackFilter but only filters on Item's rather than the whole ItemStack.
+* Made SimpleFixed{Item/Fluid}Inv implement {Item/Fluid}Transferable.
+
+Bug Fixes:
+
+* Fixed voxel-bounded attribute searches not respecting the bounds of contained attributes.
+* Fixed the collections returned by ItemStackCollections sometimes not working properly. (And by sometimes I think it was "whenever you used them")

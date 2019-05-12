@@ -77,6 +77,7 @@ public class GroupedItemInvFixedWrapper extends GroupedItemInvViewFixedWrapper i
                 inSlot = stack.copy();
                 inSlot.setAmount(addable);
             } else {
+                inSlot = inSlot.copy();
                 inSlot.addAmount(addable);
             }
             if (inv().setInvStack(s, inSlot, simulation)) {

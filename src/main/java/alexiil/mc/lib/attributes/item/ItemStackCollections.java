@@ -41,7 +41,7 @@ public enum ItemStackCollections {
     public static final Strategy<ItemStack> STRATEGY_EXACT = new Strategy<ItemStack>() {
         @Override
         public int hashCode(ItemStack o) {
-            if (o.isEmpty()) {
+            if (o == null || o.isEmpty()) {
                 return 0;
             }
             return Arrays.hashCode(
@@ -50,6 +50,9 @@ public enum ItemStackCollections {
 
         @Override
         public boolean equals(ItemStack a, ItemStack b) {
+            if (a == null || b == null) {
+                return a == b;
+            }
             return ItemStack.areEqual(a, b);
         }
     };
@@ -59,7 +62,7 @@ public enum ItemStackCollections {
     public static final Strategy<ItemStack> STRATEGY_IGNORE_AMOUNT = new Strategy<ItemStack>() {
         @Override
         public int hashCode(ItemStack o) {
-            if (o.isEmpty()) {
+            if (o == null || o.isEmpty()) {
                 return 0;
             }
             return Arrays.hashCode(new int[] { System.identityHashCode(o.getItem()), Objects.hashCode(o.getTag()) });
@@ -67,6 +70,9 @@ public enum ItemStackCollections {
 
         @Override
         public boolean equals(ItemStack a, ItemStack b) {
+            if (a == null || b == null) {
+                return a == b;
+            }
             return ItemStackUtil.areEqualIgnoreAmounts(a, b);
         }
     };
@@ -81,6 +87,8 @@ public enum ItemStackCollections {
         ItemStackCollections::compareItemStacksIgnoreAmounts;
 
     private static int compareItemStacksExact(ItemStack a, ItemStack b) {
+        if (a == null) a = ItemStack.EMPTY;
+        if (b == null) b = ItemStack.EMPTY;
         int comp = compareItemStacksIgnoreAmounts(a, b);
         if (comp != 0) {
             return comp;
@@ -89,6 +97,8 @@ public enum ItemStackCollections {
     }
 
     private static int compareItemStacksIgnoreAmounts(ItemStack a, ItemStack b) {
+        if (a == null) a = ItemStack.EMPTY;
+        if (b == null) b = ItemStack.EMPTY;
         if (a.isEmpty()) {
             return b.isEmpty() ? 0 : 1;
         }
