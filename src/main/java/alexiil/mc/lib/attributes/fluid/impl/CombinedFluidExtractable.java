@@ -50,4 +50,16 @@ public final class CombinedFluidExtractable implements FluidExtractable {
         }
         return extracted;
     }
+
+    @Override
+    public String toString() {
+        if (list.isEmpty()) {
+            return "CombinedFluidExtractable{}";
+        }
+        String inner = "\n";
+        for (FluidExtractable extractable : list) {
+            inner += "  " + extractable + "\n";
+        }
+        return "CombinedFluidExtractable{" + inner + "}";
+    }
 }

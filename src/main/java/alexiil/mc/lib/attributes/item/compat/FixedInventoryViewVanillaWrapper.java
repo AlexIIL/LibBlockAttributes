@@ -28,7 +28,10 @@ public class FixedInventoryViewVanillaWrapper implements FixedItemInvView {
 
     @Override
     public ItemStack getInvStack(int slot) {
-        return inv.getInvStack(slot);
+        ItemStack stack = inv.getInvStack(slot);
+        // FixedItemInv mandates that the returned stack is never modified.
+        // However Inventory definitely doesn't, so we have to copy.
+        return stack.isEmpty() ? ItemStack.EMPTY : stack.copy();
     }
 
     @Override

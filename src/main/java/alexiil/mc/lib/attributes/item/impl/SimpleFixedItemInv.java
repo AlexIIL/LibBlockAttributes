@@ -16,6 +16,7 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
 import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
+import alexiil.mc.lib.attributes.item.ItemStackUtil;
 import alexiil.mc.lib.attributes.item.ItemTransferable;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
@@ -48,10 +49,37 @@ public class SimpleFixedItemInv implements FixedItemInv, ItemTransferable {
 
     public SimpleFixedItemInv(int invSize) {
         slots = DefaultedList.create(invSize, ItemStack.EMPTY);
+
+        if (AttributeUtil.EXPENSIVE_DEBUG_CHECKS) {
+            Class<?> cls = getClass();
+            if (cls != SimpleFixedItemInv.class) {
+                try {
+                    Method method1 = cls.getMethod("isItemValidForSlot", int.class, ItemStack.class);
+                    Method method2 = cls.getMethod("getFilterForSlot", int.class);
+                    boolean overriden1 = method1.getDeclaringClass() != SimpleFixedItemInv.class;
+                    boolean overriden2 = method2.getDeclaringClass() != SimpleFixedItemInv.class;
+                    if (overriden1 != overriden2) {
+                        // only one has been overridden, which probably isn't going to go well.
+                        throw new IllegalStateException(
+                            "The subclass "
+                            + method2.getDeclaringClass()
+                            + " has overriden isItemValidForSlot() or getFilterForSlot() without overriding the other!"
+                        );
+                    }
+                } catch (ReflectiveOperationException roe) {
+                    throw new Error(
+                        "Failed to get the isItemValidForSlot method! I'm not sure what"
+                        + " to do now, as this shouldn't happen normally :(", roe
+                    );
+                }
+            }
+        }
     }
 
     @Override
-    public final int getSlotCount() { return slots.size(); }
+    public final int getSlotCount() {
+        return slots.size();
+    }
 
     @Override
     public ItemStack getInvStack(int slot) {
@@ -67,27 +95,6 @@ public class SimpleFixedItemInv implements FixedItemInv, ItemTransferable {
 
     @Override
     public ItemFilter getFilterForSlot(int slot) {
-        if (AttributeUtil.EXPENSIVE_DEBUG_CHECKS) {
-            Class<?> cls = getClass();
-            if (cls != SimpleFixedItemInv.class) {
-                try {
-                    Method method = cls.getMethod("isItemValidForSlot", int.class, ItemStack.class);
-                    if (method.getDeclaringClass() != SimpleFixedItemInv.class) {
-                        // it's been overriden, but we haven't
-                        throw new IllegalStateException(
-                            "The subclass "
-                            + method.getDeclaringClass()
-                            + " has overriden isItemValidForSlot() but hasn't overriden getFilterForSlot()"
-                        );
-                    }
-                } catch (ReflectiveOperationException roe) {
-                    throw new Error(
-                        "Failed to get the isItemValidForSlot method! I'm not sure what"
-                        + " to do now, as this shouldn't happen normally :(", roe
-                    );
-                }
-            }
-        }
         return ConstantItemFilter.ANYTHING;
     }
 
@@ -151,7 +158,21 @@ public class SimpleFixedItemInv implements FixedItemInv, ItemTransferable {
 
     @Override
     public boolean setInvStack(int slot, ItemStack to, Simulation simulation) {
-        if (isItemValidForSlot(slot, to) && to.getAmount() <= getMaxAmount(slot, to)) {
+        boolean allowed = false;
+        if (to.isEmpty()) {
+            allowed = true;
+        } else {
+            ItemStack current = getInvStack(slot);
+            if (
+                !current.isEmpty()
+                && current.getAmount() > to.getAmount() && ItemStackUtil.areEqualIgnoreAmounts(to, current)
+            ) {
+                allowed = true;
+            } else if (isItemValidForSlot(slot, to) && to.getAmount() <= getMaxAmount(slot, to)) {
+                allowed = true;
+            }
+        }
+        if (allowed) {
             if (simulation == Simulation.ACTION) {
                 ItemStack before = slots.get(slot);
                 ItemInvModificationTracker.trackNeverChanging(before);
@@ -200,7 +221,9 @@ public class SimpleFixedItemInv implements FixedItemInv, ItemTransferable {
     }
 
     @Override
-    public ItemFilter getInsertionFilter() { return groupedVersion.getInsertionFilter(); }
+    public ItemFilter getInsertionFilter() {
+        return groupedVersion.getInsertionFilter();
+    }
 
     // ItemExtractable
 

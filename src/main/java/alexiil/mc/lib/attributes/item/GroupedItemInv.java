@@ -1,7 +1,14 @@
 package alexiil.mc.lib.attributes.item;
 
+import alexiil.mc.lib.attributes.item.impl.SimpleLimitedGroupedItemInv;
+
 /** A modifiable version of {@link GroupedItemInvView}, except that all modification methods are provided by
  * {@link ItemExtractable} and {@link ItemInsertable}. */
 public interface GroupedItemInv extends GroupedItemInvView, ItemTransferable {
-    // Nothing to declare here as all of the relevant modification methods are already declared in ItemTransferable
+
+    /** @return A new {@link LimitedGroupedItemInv} that provides a more controllable version of this
+     *         {@link GroupedItemInv}. */
+    default LimitedGroupedItemInv createLimitedInv() {
+        return new SimpleLimitedGroupedItemInv(this);
+    }
 }

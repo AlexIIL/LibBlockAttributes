@@ -1,0 +1,17 @@
+Breaking Changes:
+
+* FixedItemInvView.isItemValidForSlot no longer accepts an empty itemstack.
+* FixedItemInv.getGroupedInv() now mandates that the return value must always be valid so long as the FixedItemInv that returned it is still valid.
+
+Changes:
+
+* Updated to Minecraft 1.14.2 and fabric API 0.3.0
+* Added LimitedFixedItemInv, which allows exposing a FixedItemInv with more control over the insertion and extraction possibilities.
+* Added DelegatingFixedItemInv, which is an abstract base class for implementing a wrapper around FixedItemInv. (Which LimitedFixedItemInv extends)
+* Added ItemInvUtil.insertSingle and extractSingle as backed helpers for implementations of various methods that use FixedItemInv.
+* Made SingleItemSlot implement ItemTransferable.
+* Moved the check for correct overrides of SimpleFixedItemInv.isItemValidForSlot and getFilterForSlot from the implementation of getFilterForSlot to the constructor. 
+
+Bug Fixes:
+
+* Made SimpleFixedItemInv.setInvStack allow extracting items that aren't valid. In addition made it always allow extracting the entire stack (via setInvStack(ItemStack.EMPTY))

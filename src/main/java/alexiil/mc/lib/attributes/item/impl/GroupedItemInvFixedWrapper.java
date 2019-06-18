@@ -9,7 +9,7 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
 import alexiil.mc.lib.attributes.item.FixedItemInvView;
 import alexiil.mc.lib.attributes.item.GroupedItemInv;
-import alexiil.mc.lib.attributes.item.ItemStackUtil;
+import alexiil.mc.lib.attributes.item.ItemInvUtil;
 import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
@@ -63,28 +63,9 @@ public class GroupedItemInvFixedWrapper extends GroupedItemInvViewFixedWrapper i
     private ItemStack simpleDumbBadInsertionToBeRemoved(ItemStack stack, Simulation simulation) {
         stack = stack.copy();
         for (int s = 0; s < inv.getSlotCount(); s++) {
-            ItemStack inSlot = inv.getInvStack(s);
-            int current = inSlot.isEmpty() ? 0 : inSlot.getAmount();
-            int max = Math.min(current + stack.getAmount(), inv.getMaxAmount(s, stack));
-            int addable = max - current;
-            if (addable <= 0) {
-                continue;
-            }
-            if (current > 0 && !ItemStackUtil.areEqualIgnoreAmounts(stack, inSlot)) {
-                continue;
-            }
-            if (inSlot.isEmpty()) {
-                inSlot = stack.copy();
-                inSlot.setAmount(addable);
-            } else {
-                inSlot = inSlot.copy();
-                inSlot.addAmount(addable);
-            }
-            if (inv().setInvStack(s, inSlot, simulation)) {
-                stack.subtractAmount(addable);
-                if (stack.isEmpty()) {
-                    return ItemStack.EMPTY;
-                }
+            stack = ItemInvUtil.insertSingle(inv(), s, stack, simulation);
+            if (stack.isEmpty()) {
+                return ItemStack.EMPTY;
             }
         }
         return stack;
@@ -92,7 +73,6 @@ public class GroupedItemInvFixedWrapper extends GroupedItemInvViewFixedWrapper i
 
     @Override
     public ItemStack attemptExtraction(ItemFilter filter, int maxCount, Simulation simulation) {
-
         if (maxCount < 0) {
             throw new IllegalArgumentException("maxAmount cannot be negative! (was " + maxCount + ")");
         }
@@ -100,35 +80,12 @@ public class GroupedItemInvFixedWrapper extends GroupedItemInvViewFixedWrapper i
         if (maxCount == 0) {
             return stack;
         }
-
         for (int s = 0; s < inv.getSlotCount(); s++) {
-            ItemStack invStack = inv.getInvStack(s);
-            if (invStack.isEmpty() || !filter.matches(invStack)) {
-                continue;
-            }
-            if (!stack.isEmpty()) {
-                if (!ItemStackUtil.areEqualIgnoreAmounts(stack, invStack)) {
-                    continue;
-                }
-            }
-            invStack = invStack.copy();
-
-            ItemStack addable = invStack.split(maxCount);
-            if (inv().setInvStack(s, invStack, simulation)) {
-
-                if (stack.isEmpty()) {
-                    stack = addable;
-                } else {
-                    stack.addAmount(addable.getAmount());
-                }
-                maxCount -= addable.getAmount();
-                assert maxCount >= 0;
-                if (maxCount <= 0) {
-                    return stack;
-                }
+            stack = ItemInvUtil.extractSingle(inv(), s, filter, stack, maxCount - stack.getAmount(), simulation);
+            if (stack.getAmount() >= maxCount) {
+                return stack;
             }
         }
-
         return stack;
     }
 }

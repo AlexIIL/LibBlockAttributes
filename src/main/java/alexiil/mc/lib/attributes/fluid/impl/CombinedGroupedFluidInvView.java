@@ -10,7 +10,6 @@ import alexiil.mc.lib.attributes.fluid.FluidInvAmountChangeListener;
 import alexiil.mc.lib.attributes.fluid.GroupedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
-import alexiil.mc.lib.attributes.misc.BoolRef;
 
 public class CombinedGroupedFluidInvView implements GroupedFluidInvView {
 
@@ -55,21 +54,25 @@ public class CombinedGroupedFluidInvView implements GroupedFluidInvView {
     @Override
     public ListenerToken addListener(FluidInvAmountChangeListener listener, ListenerRemovalToken removalToken) {
         final ListenerToken[] tokens = new ListenerToken[inventories.size()];
-        final BoolRef hasAlreadyRemoved = new BoolRef(false);
-        final ListenerRemovalToken ourRemToken = () -> {
-            for (ListenerToken token : tokens) {
-                if (token == null) {
-                    // This means we have only half-initialised
-                    // (and all of the next tokens must also be null)
-                    return;
-                }
-                token.removeListener();
-            }
-            if (!hasAlreadyRemoved.value) {
-                hasAlreadyRemoved.value = true;
-                removalToken.onListenerRemoved();
-            }
+        final ListenerRemovalToken ourRemToken = new ListenerRemovalToken() {
 
+            boolean hasAlreadyRemoved = false;
+
+            @Override
+            public void onListenerRemoved() {
+                for (ListenerToken token : tokens) {
+                    if (token == null) {
+                        // This means we have only half-initialised
+                        // (and all of the next tokens must also be null)
+                        return;
+                    }
+                    token.removeListener();
+                }
+                if (!hasAlreadyRemoved) {
+                    hasAlreadyRemoved = true;
+                    removalToken.onListenerRemoved();
+                }
+            }
         };
         for (int i = 0; i < tokens.length; i++) {
             tokens[i] = inventories.get(i).addListener((inv, fluidKey, previous, current) -> {

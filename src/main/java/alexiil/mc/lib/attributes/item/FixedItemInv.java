@@ -10,6 +10,7 @@ import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.GroupedItemInvFixedWrapper;
 import alexiil.mc.lib.attributes.item.impl.ItemInvModificationTracker;
 import alexiil.mc.lib.attributes.item.impl.MappedFixedItemInv;
+import alexiil.mc.lib.attributes.item.impl.SimpleLimitedFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.SubFixedItemInv;
 
 /** A changeable {@link FixedItemInvView} that can have it's contents changed. Note that this does not imply that the
@@ -36,8 +37,9 @@ public interface FixedItemInv extends FixedItemInvView {
     /** Sets the stack in the given slot to the given stack, or throws an exception if it was not permitted. */
     default void forceSetInvStack(int slot, ItemStack to) {
         if (!setInvStack(slot, to, Simulation.ACTION)) {
-            throw new IllegalStateException("Unable to force-set the slot " + slot + " to "
-                + ItemInvModificationTracker.stackToFullString(to) + "!");
+            throw new IllegalStateException(
+                "Unable to force-set the slot " + slot + " to " + ItemInvModificationTracker.stackToFullString(to) + "!"
+            );
         }
     }
 
@@ -50,6 +52,12 @@ public interface FixedItemInv extends FixedItemInvView {
     @Override
     default SingleItemSlot getSlot(int slot) {
         return new SingleItemSlot(this, slot);
+    }
+
+    /** @return A new {@link LimitedFixedItemInv} that provides a more controllable version of this
+     *         {@link FixedItemInv}. */
+    default LimitedFixedItemInv createLimitedInv() {
+        return new SimpleLimitedFixedItemInv(this);
     }
 
     /* Although getGroupedItemInv() makes get{Insertable,Extractable,Transferable} all redundant, it's quite helpful to
@@ -73,6 +81,9 @@ public interface FixedItemInv extends FixedItemInvView {
         return getGroupedInv();
     }
 
+    /** @return A {@link GroupedItemInv} for this inventory. The returned value must always be valid for the lifetime of
+     *         this {@link FixedItemInv} object. (In other words it must always be valid to cache this returned value
+     *         and use it alongside a cached instance of this object). */
     @Override
     default GroupedItemInv getGroupedInv() {
         return new GroupedItemInvFixedWrapper(this);

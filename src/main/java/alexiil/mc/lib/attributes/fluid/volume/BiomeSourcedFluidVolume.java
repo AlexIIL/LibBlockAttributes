@@ -40,7 +40,7 @@ public class BiomeSourcedFluidVolume extends NormalFluidVolume {
         ListTag biomes = tag.getList("biomes", new CompoundTag().getType());
         for (int i = 0; i < biomes.size(); i++) {
             CompoundTag biomeTag = biomes.getCompoundTag(i);
-            Biome biome = Registry.BIOME.get(Identifier.create(biomeTag.getString("Name")));
+            Biome biome = Registry.BIOME.get(Identifier.ofNullable(biomeTag.getString("Name")));
             int amount = biomeTag.getInt("Amount");
             if (amount < 1) {
                 amount = 1;

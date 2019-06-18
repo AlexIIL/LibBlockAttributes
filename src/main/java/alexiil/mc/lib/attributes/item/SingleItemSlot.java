@@ -5,9 +5,10 @@ import java.util.function.Function;
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 /** A delegating accessor of a single slot in a {@link FixedItemInv}. */
-public final class SingleItemSlot extends SingleItemSlotView {
+public final class SingleItemSlot extends SingleItemSlotView implements ItemTransferable {
 
     SingleItemSlot(FixedItemInv backingView, int slot) {
         super(backingView, slot);
@@ -35,5 +36,20 @@ public final class SingleItemSlot extends SingleItemSlotView {
      * (Which will throw an exception if the returned stack is not valid for this inventory). */
     public final void modify(Function<ItemStack, ItemStack> function) {
         getBackingInv().modifySlot(slot, function);
+    }
+
+    @Override
+    public final ItemStack attemptExtraction(ItemFilter filter, int maxAmount, Simulation simulation) {
+        return ItemInvUtil.extractSingle(getBackingInv(), maxAmount, filter, ItemStack.EMPTY, maxAmount, simulation);
+    }
+
+    @Override
+    public final ItemStack attemptInsertion(ItemStack stack, Simulation simulation) {
+        return ItemInvUtil.insertSingle(getBackingInv(), slot, stack, simulation);
+    }
+
+    @Override
+    public final ItemFilter getInsertionFilter() {
+        return getBackingInv().getFilterForSlot(slot);
     }
 }

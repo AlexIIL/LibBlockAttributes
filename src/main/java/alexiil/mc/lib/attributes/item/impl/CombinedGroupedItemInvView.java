@@ -11,7 +11,6 @@ import alexiil.mc.lib.attributes.item.GroupedItemInvView;
 import alexiil.mc.lib.attributes.item.ItemInvAmountChangeListener;
 import alexiil.mc.lib.attributes.item.ItemStackCollections;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
-import alexiil.mc.lib.attributes.misc.BoolRef;
 
 /** A combined version of multiple {@link GroupedItemInvView}'s. */
 public class CombinedGroupedItemInvView implements GroupedItemInvView {
@@ -93,21 +92,25 @@ public class CombinedGroupedItemInvView implements GroupedItemInvView {
     @Override
     public ListenerToken addListener(ItemInvAmountChangeListener listener, ListenerRemovalToken removalToken) {
         final ListenerToken[] tokens = new ListenerToken[inventories.size()];
-        final BoolRef hasAlreadyRemoved = new BoolRef(false);
-        final ListenerRemovalToken ourRemToken = () -> {
-            for (ListenerToken token : tokens) {
-                if (token == null) {
-                    // This means we have only half-initialised
-                    // (and all of the next tokens must also be null)
-                    return;
-                }
-                token.removeListener();
-            }
-            if (!hasAlreadyRemoved.value) {
-                hasAlreadyRemoved.value = true;
-                removalToken.onListenerRemoved();
-            }
+        final ListenerRemovalToken ourRemToken = new ListenerRemovalToken() {
 
+            boolean hasAlreadyRemoved = false;
+
+            @Override
+            public void onListenerRemoved() {
+                for (ListenerToken token : tokens) {
+                    if (token == null) {
+                        // This means we have only half-initialised
+                        // (and all of the next tokens must also be null)
+                        return;
+                    }
+                    token.removeListener();
+                }
+                if (!hasAlreadyRemoved) {
+                    hasAlreadyRemoved = true;
+                    removalToken.onListenerRemoved();
+                }
+            }
         };
         for (int i = 0; i < tokens.length; i++) {
             tokens[i] = inventories.get(i).addListener((inv, stack, previous, current) -> {

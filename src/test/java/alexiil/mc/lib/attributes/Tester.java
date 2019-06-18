@@ -8,5 +8,6 @@ public class Tester implements ModInitializer {
     @Override
     public void onInitialize() {
         WaterVolumeTester.runTests();
+        // TODO: Write tests for SimpleLimitedFixedItemInv and SimpleGroupedItemInv!
     }
 }

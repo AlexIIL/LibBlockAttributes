@@ -71,6 +71,8 @@ public interface FixedItemInvView {
      * 
      * @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
+     * @param stack The {@link ItemStack} to check. Like {@link ItemFilter#matches(ItemStack)} this cannot be an empty
+     *            stack.
      * @throws RuntimeException if the given slot wasn't a valid index. */
     boolean isItemValidForSlot(int slot, ItemStack stack);
 
@@ -175,12 +177,14 @@ public interface FixedItemInvView {
             @Override
             public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken) {
                 final FixedItemInvView view = this;
-                return real.addListener((inv, slot, prev, curr) -> {
-                    // Defend against giving the listener the real (possibly changeable) inventory.
-                    // In addition the listener would probably cache *this view* rather than the backing inventory
-                    // so they most likely need it to be this inventory.
-                    listener.onChange(view, slot, prev, curr);
-                }, removalToken);
+                return real.addListener(
+                    (inv, slot, prev, curr) -> {
+                        // Defend against giving the listener the real (possibly changeable) inventory.
+                        // In addition the listener would probably cache *this view* rather than the backing inventory
+                        // so they most likely need it to be this inventory.
+                        listener.onChange(view, slot, prev, curr);
+                    }, removalToken
+                );
             }
         };
     }

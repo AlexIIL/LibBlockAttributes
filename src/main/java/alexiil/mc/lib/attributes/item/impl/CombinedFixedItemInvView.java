@@ -9,7 +9,6 @@ import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.item.FixedItemInvView;
 import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
-import alexiil.mc.lib.attributes.misc.BoolRef;
 
 /** An {@link FixedItemInvView} that delegates to a list of them instead of storing items directly. */
 public class CombinedFixedItemInvView<InvType extends FixedItemInvView> implements FixedItemInvView {
@@ -52,7 +51,8 @@ public class CombinedFixedItemInvView<InvType extends FixedItemInvView> implemen
         }
 
         throw new IllegalArgumentException(
-            "Slot must be less than getInvSize() (was " + slot + ", maximum slot is " + (invSize - 1) + ")");
+            "Slot must be less than getInvSize() (was " + slot + ", maximum slot is " + (invSize - 1) + ")"
+        );
     }
 
     protected int getSubSlot(int slot) {
@@ -74,7 +74,8 @@ public class CombinedFixedItemInvView<InvType extends FixedItemInvView> implemen
         }
 
         throw new IllegalArgumentException(
-            "Slot must be less than getInvSize() (was " + slot + ", maximum slot is " + (invSize - 1) + ")");
+            "Slot must be less than getInvSize() (was " + slot + ", maximum slot is " + (invSize - 1) + ")"
+        );
     }
 
     @Override
@@ -100,21 +101,25 @@ public class CombinedFixedItemInvView<InvType extends FixedItemInvView> implemen
     @Override
     public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken) {
         final ListenerToken[] tokens = new ListenerToken[views.size()];
-        final BoolRef hasAlreadyRemoved = new BoolRef(false);
-        final ListenerRemovalToken ourRemToken = () -> {
-            for (ListenerToken token : tokens) {
-                if (token == null) {
-                    // This means we have only half-initialised
-                    // (and all of the next tokens must also be null)
-                    return;
-                }
-                token.removeListener();
-            }
-            if (!hasAlreadyRemoved.value) {
-                hasAlreadyRemoved.value = true;
-                removalToken.onListenerRemoved();
-            }
+        final ListenerRemovalToken ourRemToken = new ListenerRemovalToken() {
 
+            boolean hasAlreadyRemoved = false;
+
+            @Override
+            public void onListenerRemoved() {
+                for (ListenerToken token : tokens) {
+                    if (token == null) {
+                        // This means we have only half-initialised
+                        // (and all of the next tokens must also be null)
+                        return;
+                    }
+                    token.removeListener();
+                }
+                if (!hasAlreadyRemoved) {
+                    hasAlreadyRemoved = true;
+                    removalToken.onListenerRemoved();
+                }
+            }
         };
         for (int i = 0; i < tokens.length; i++) {
             final int index = i;

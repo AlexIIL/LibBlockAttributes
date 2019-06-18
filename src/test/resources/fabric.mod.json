@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "libblockattributes_tests",
+  "name": "LibBlockAttributes Tests",
+  "description": "Various unit(ish) tests for LibBlockAttributes",
+  "version": "$version",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "alexiil.mc.lib.attributes.Tester"
+    ]
+  },
+  "requires": {
+    "fabricloader": ">=0.4.0",
+    "fabric": "*",
+    "libblockattributes": "*"
+  },
+  "mixins": [],
+  "icon": "assets/libblockattributes/icon.png",
+  "authors": [ "AlexIIL" ]
+}

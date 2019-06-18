@@ -2,6 +2,8 @@ package alexiil.mc.lib.attributes.item;
 
 import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 
@@ -58,19 +60,110 @@ public enum ItemInvUtil {
         ItemStack reallyExtracted = from.attemptExtraction(insertionFilter, insertedAmount, Simulation.ACTION);
 
         if (reallyExtracted.isEmpty()) {
-            throw throwBadImplException("Tried to extract the filter (C) from A but it returned an empty item stack "
+            throw throwBadImplException(
+                "Tried to extract the filter (C) from A but it returned an empty item stack "
                 + "after we have already inserted the expected stack into B!\nThe inventory is now in an invalid (duped) state!",
-                new String[] { "from A", "to B", "filter C" }, new Object[] { from, to, filter });
+                new String[] { "from A", "to B", "filter C" }, new Object[] { from, to, filter }
+            );
         }
         if (reallyExtracted.getAmount() != insertedAmount) {
             throw throwBadImplException(
-                "Tried to extract " + insertedAmount + " but we actually extracted " + reallyExtracted.getAmount()
-                    + "!\nThe inventory is now in an invalid (duped) state!",
+                "Tried to extract "
+                + insertedAmount
+                + " but we actually extracted "
+                + reallyExtracted.getAmount()
+                + "!\nThe inventory is now in an invalid (duped) state!",
                 new String[] { "from A", "to B", "filter C", "originally extracted", "really extracted" },
-                new Object[] { from, to, insertionFilter, extracted, reallyExtracted });
+                new Object[] { from, to, insertionFilter, extracted, reallyExtracted }
+            );
         }
         return insertedAmount;
     }
+
+    // #######################
+    // Implementation helpers
+    // #######################
+
+    /** Inserts a single ItemStack into a {@link FixedItemInv}, using only
+     * {@link FixedItemInv#setInvStack(int, ItemStack, Simulation)}. As such this is useful for implementations of
+     * {@link ItemInsertable} (or others) for the base implementation.
+     * 
+     * @param toInsert The stack to insert. Note that this passed stack <strong>will be modified</strong>!
+     * @return The excess {@link ItemStack} that wasn't inserted. */
+    public static ItemStack insertSingle(FixedItemInv inv, int slot, ItemStack toInsert, Simulation simulation) {
+        if (toInsert.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+        ItemStack inSlot = inv.getInvStack(slot);
+        int current = inSlot.isEmpty() ? 0 : inSlot.getAmount();
+        int max = Math.min(current + toInsert.getAmount(), inv.getMaxAmount(slot, toInsert));
+        int addable = max - current;
+        if (addable <= 0) {
+            return toInsert;
+        }
+        if (current > 0 && !ItemStackUtil.areEqualIgnoreAmounts(toInsert, inSlot)) {
+            return toInsert;
+        }
+        if (inSlot.isEmpty()) {
+            inSlot = toInsert.copy();
+            inSlot.setAmount(addable);
+        } else {
+            inSlot = inSlot.copy();
+            inSlot.addAmount(addable);
+        }
+        if (inv.setInvStack(slot, inSlot, simulation)) {
+            toInsert.subtractAmount(addable);
+            if (toInsert.isEmpty()) {
+                return ItemStack.EMPTY;
+            }
+        }
+        return toInsert;
+    }
+
+    /** Inserts a single ItemStack into a {@link FixedItemInv}, using only
+     * {@link FixedItemInv#setInvStack(int, ItemStack, Simulation)}. As such this is useful for implementations of
+     * {@link ItemInsertable} (or others) for the base implementation.
+     * 
+     * @param filter The filter to match on. If this is null then it will match any {@link ItemStack}.
+     * @param toAddWith An optional {@link ItemStack} that the extracted item will be added to.
+     * @param maxAmount The maximum number of items to extract. Note that the returned {@link ItemStack} may have a
+     *            higher amount than this if the given {@link ItemStack} isn't empty.
+     * @return The extracted ItemStack, plus the parameter "toAddWith". */
+    public static ItemStack extractSingle(FixedItemInv inv, int slot, @Nullable ItemFilter filter, ItemStack toAddWith,
+        int maxAmount, Simulation simulation) {
+        ItemStack inSlot = inv.getInvStack(slot);
+        if (inSlot.isEmpty()) {
+            return toAddWith;
+        }
+        if (inSlot.isEmpty() || (filter != null && !filter.matches(inSlot))) {
+            return toAddWith;
+        }
+        if (!toAddWith.isEmpty()) {
+            if (!ItemStackUtil.areEqualIgnoreAmounts(toAddWith, inSlot)) {
+                return toAddWith;
+            }
+            maxAmount = Math.min(maxAmount, toAddWith.getMaxAmount() - toAddWith.getAmount());
+            if (maxAmount >= 0) {
+                return toAddWith;
+            }
+        }
+        inSlot = inSlot.copy();
+
+        ItemStack addable = inSlot.split(maxAmount);
+        if (inv.setInvStack(slot, inSlot, simulation)) {
+            if (toAddWith.isEmpty()) {
+                toAddWith = addable;
+            } else {
+                toAddWith.addAmount(addable.getAmount());
+            }
+            maxAmount -= addable.getAmount();
+        }
+        return toAddWith;
+    }
+
+    // #######################
+    // Private Util
+    // #######################
 
     private static IllegalStateException throwBadImplException(String reason, String[] names, Object[] objs) {
         String detail = "\n";
