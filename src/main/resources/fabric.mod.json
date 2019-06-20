@@ -7,7 +7,7 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "alexiil.mc.lib.attributes.misc.ClientInit"
+      "alexiil.mc.lib.attributes.fluid.init.ClientFluidInit"
     ]
   },
   "requires": {
@@ -43,7 +43,6 @@
       "+id": "libblockattributes_fluids",
       "+name": "LibBlockAttributes (Fluids)",
       "+description": "Various utility classes for fluid inventories and transfer",
-      "-entrypoints": {},
       "~requires": {
         "+libblockattributes_core": ">=$version"
       },
