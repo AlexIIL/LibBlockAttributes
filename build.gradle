@@ -8,7 +8,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 archivesBaseName = "LibBlockAttributes"
-version = "0.4.3"
+version = "0.4.3+build.2"
 
 minecraft {
 }
@@ -64,6 +64,158 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
+ext.unzippedSourceJar = new File("$projectDir/build/processing/tasks/unzipped_src_jar/unzip")
+task unzipSourcesJar(type: Copy, dependsOn: sourcesJar) {
+    from (zipTree(sourcesJar.archivePath)) {
+        include "**"
+    }
+    into unzippedSourceJar
+}
+
+// #####################
+//
+// Extra jar section
+//
+// #####################
+
+// Obfuscated Jar location?
+ext.jarFile = zipTree(jar.archivePath)
+
+ext.modulesDir = new File(System.getenv("LIBS_DIR") ?: "$projectDir/build/libs/", version)
+
+def getFabricModJsonFile(String key) {
+    return new File("$projectDir/build/processing/fabric_jsons/" + key + "/fabric.mod.json");
+}
+
+def getNestedJarFile(String key) {
+    return new File("$projectDir/build/processing/nested_jars/" + key + "/" + project.name + "-" + project.version + "-" + key + ".jar");
+}
+
+def transformJson(json, diff) {
+    for (entry in diff.entrySet()) {
+        String jKey = entry.getKey();
+        def diffValue = entry.getValue();
+        char first = jKey.charAt(0);
+        String realKey = jKey.substring(1)
+        if (first == '-') {
+            json.remove(realKey);
+            continue;
+        } else if (first == '+') {
+            json.put(realKey, diffValue);
+        } else if (first == '~') {
+            def old = json.get(realKey);
+            transformJson(old, diffValue);
+        } else {
+            throw new Error("Must be either -+~, but got " + first + "!");
+        }
+    }
+}
+
+def writeFabricModJsonFile(String key) {
+    File temp = getFabricModJsonFile(key);
+    def source = new groovy.json.JsonSlurper().parse(file("src/main/resources/fabric.mod.json"));
+    temp.parentFile.mkdirs();
+    if (temp.exists()) {
+        temp.delete();
+    }
+    temp.createNewFile();
+    def elements = new HashMap<>();
+    def diff = source.remove("__lba_buildscript_diff")[key];
+    transformJson(source, diff);
+
+    String prettyPrinted = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(source));
+    prettyPrinted = prettyPrinted.replace("\$version", project.version);
+    temp.write(prettyPrinted);
+
+    return temp;
+}
+
+ext.taken = new HashSet<>();
+ext.generatedJars = new HashMap<String, List<String>>();
+
+def generateJar(
+    String key, Collection<String> _includes,
+    Collection<String> _excludes, boolean hasMixins,
+    List<String> nestedJars = []
+) {
+    generatedJars.put(key, nestedJars);
+
+    task("submod_" + key + "Jar", type: Jar) {
+        classifier = key;
+        destinationDir = modulesDir;
+        from(writeFabricModJsonFile(key).parentFile);
+        for (nKey in nestedJars) {
+            from(getNestedJarFile(nKey).parentFile);
+        }
+        from(project.ext.jarFile) {
+            excludes.add("fabric.mod.json");
+            includes.addAll(_includes);
+            excludes.addAll(_excludes);
+            if (hasMixins) {
+                includes.add(project.name + "-refmap.json");
+            } else {
+                excludes.add(project.name + "-refmap.json");
+            }
+        }
+        doFirst {
+            writeFabricModJsonFile(key);
+        }
+    }
+
+    task("submod_" + key + "SourcesJar", type: Jar, dependsOn: unzipSourcesJar) {
+        classifier = key + "-sources";
+        destinationDir = modulesDir;
+        from(writeFabricModJsonFile(key).parentFile);
+        for (nKey in nestedJars) {
+            from(getNestedJarFile(nKey + "-sources").parentFile);
+        }
+        from (unzippedSourceJar) {
+            excludes.add("fabric.mod.json");
+            includes.addAll(_includes);
+            excludes.addAll(_excludes);
+        }
+        doFirst {
+            writeFabricModJsonFile(key);
+        }
+    }
+
+    for (nKey in nestedJars) {
+        tasks["submod_" + key + "Jar"].dependsOn(tasks["copySubModJar_" + nKey])
+        tasks["submod_" + key + "SourcesJar"].dependsOn(tasks["copySubModSourcesJar_" + nKey])
+    }
+
+    task("copySubModJar_" + key, type: Copy, dependsOn: tasks["submod_" + key + "Jar"]) {
+        from "" + modulesDir + "/" + project.name + "-" + project.version + "-" + key + ".jar";
+        into getNestedJarFile(key).parentFile;
+    }
+
+    task("copySubModSourcesJar_" + key, type: Copy, dependsOn: tasks["submod_" + key + "SourcesJar"]) {
+        from "" + modulesDir + "/" + project.name + "-" + project.version + "-" + key + "-sources.jar";
+        into getNestedJarFile(key + "-sources").parentFile;
+    }
+
+    taken.addAll(_includes);
+    build.dependsOn("submod_" + key + "Jar");
+    build.dependsOn("submod_" + key + "SourcesJar");
+}
+
+generateJar("items",
+    [
+        "alexiil/mc/lib/attributes/item/**"
+    ],
+    [], false
+);
+generateJar("fluids",
+    [
+        "alexiil/mc/lib/attributes/fluid/**",
+        "assets/libblockattributes/textures/fluid/**",
+        "libblockattributes_fluid.common.json"
+    ],
+    [], true
+);
+generateJar("core", ["**"], new HashSet<>(taken), false);
+generateJar("all", [], ["**"], false, ["core", "items", "fluids"]);
+
 publishing {
     repositories {
         maven {
@@ -71,23 +223,30 @@ publishing {
         }
     }
     publications {
-       publishRemapJar(MavenPublication) {
-            groupId "alexiil.mc.lib"
-            artifactId "libblockattributes"
-            version project.version
+        for (key in generatedJars.keySet()) {
+            create("publishJars_" + key, MavenPublication) {
+                groupId "alexiil.mc.lib"
+                artifactId "libblockattributes-" + key
+                version project.version
 
-            artifact (jar) {
-                builtBy remapJar
-            }
-        }
-        publishRemapSrcJar(MavenPublication) {
-            groupId "alexiil.mc.lib"
-            artifactId "libblockattributes"
-            version project.version
+                artifact tasks["submod_" + key + "Jar"]
+                artifact tasks["submod_" + key + "SourcesJar"]
 
-            artifact (sourcesJar) {
-                classifier "sources"
-                builtBy remapSourcesJar
+                pom {
+                    developers {
+                        developer {
+                            id = "AlexIIL"
+                        }
+                    }
+                    dependencies {
+                        // This prevents unwanted fabric+silk deps from leaking down to other mods
+                        clear();
+
+                        // TODO: Add the other jars as dependencies!
+                        // (Gradle doesn't seem to support this)
+                        // apilol("alexiil.mc.lib:libblockattributes-" + key + ":" + project.version);
+                    }
+                }
             }
         }
     }

@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "alexiil.mc.lib.attributes.mixin",
+  "package": "alexiil.mc.lib.attributes.fluid.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "BucketItemMixin",

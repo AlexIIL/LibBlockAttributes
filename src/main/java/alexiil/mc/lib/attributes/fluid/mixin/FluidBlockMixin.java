@@ -1,4 +1,4 @@
-package alexiil.mc.lib.attributes.mixin;
+package alexiil.mc.lib.attributes.fluid.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

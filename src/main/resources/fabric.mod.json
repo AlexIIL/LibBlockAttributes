@@ -15,9 +15,46 @@
     "fabric": "*"
   },
   "mixins": [
-    "libblockattributes.client.json",
-    "libblockattributes.common.json"
+    "libblockattributes_fluid.common.json"
   ],
   "icon": "assets/libblockattributes/icon.png",
-  "authors": [ "AlexIIL" ]
+  "authors": [ "AlexIIL" ],
+
+  "__lba_buildscript_diff": {
+    "core": {
+      "+id": "libblockattributes_core",
+      "+name": "LibBlockAttributes (Core)",
+      "+description": "Attribute definitions and getter functions and utilities",
+      "-entrypoints": {},
+      "-mixins": []
+    },
+    "items": {
+      "+id": "libblockattributes_items",
+      "+name": "LibBlockAttributes (Items)",
+      "+description": "Various utility classes for item inventories and transfer",
+      "-entrypoints": {},
+      "~requires": {
+        "+libblockattributes_core": ">=$version"
+      },
+      "-mixins": [],
+      "+icon": "assets/libblockattributes/icon_items.png"
+    },
+    "fluids": {
+      "+id": "libblockattributes_fluids",
+      "+name": "LibBlockAttributes (Fluids)",
+      "+description": "Various utility classes for fluid inventories and transfer",
+      "-entrypoints": {},
+      "~requires": {
+        "+libblockattributes_core": ">=$version"
+      },
+      "+icon": "assets/libblockattributes/icon_fluids.png"
+    },
+    "all": {
+      "+jars": [
+        { "file": "LibBlockAttributes-$version-core.jar" },
+        { "file": "LibBlockAttributes-$version-items.jar" },
+        { "file": "LibBlockAttributes-$version-fluids.jar" }
+      ]
+    }
+  }
 }
