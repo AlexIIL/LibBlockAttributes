@@ -6,6 +6,7 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.impl.EmptyFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.impl.GroupedFluidInvFixedWrapper;
 import alexiil.mc.lib.attributes.fluid.impl.MappedFixedFluidInv;
+import alexiil.mc.lib.attributes.fluid.impl.SimpleLimitedFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.impl.SubFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
@@ -40,6 +41,12 @@ public interface FixedFluidInv extends FixedFluidInvView {
     @Override
     default SingleFluidTank getTank(int tank) {
         return new SingleFluidTank(this, tank);
+    }
+
+    /** @return A new {@link LimitedFixedFluidInv} that provides a more controllable version of this
+     *         {@link FixedFluidInv}. */
+    default LimitedFixedFluidInv createLimitedInv() {
+        return new SimpleLimitedFixedFluidInv(this);
     }
 
     /** @return An {@link FluidInsertable} for this inventory that will attempt to insert into any of the tanks in this

@@ -6,6 +6,7 @@ import java.util.List;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.FixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.FixedFluidInvView;
+import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
@@ -92,20 +93,9 @@ public class GroupedFluidInvFixedWrapper extends GroupedFluidInvViewFixedWrapper
             return fluid;
         }
         for (int t = 0; t < inv().getTankCount(); t++) {
-            FluidVolume invFluid = inv().getInvFluid(t);
-            if (invFluid.isEmpty() || !filter.matches(invFluid.fluidKey)) {
-                continue;
-            }
-            invFluid = invFluid.copy();
-            FluidVolume addable = invFluid.split(maxAmount);
-            FluidVolume merged = FluidVolume.merge(fluid, addable);
-            if (merged != null && inv().setInvFluid(t, invFluid, simulation)) {
-                maxAmount -= addable.getAmount();
-                fluid = merged;
-                assert maxAmount >= 0;
-                if (maxAmount <= 0) {
-                    return fluid;
-                }
+            fluid = FluidVolumeUtil.extractSingle(inv(), t, filter, fluid, maxAmount - fluid.getAmount(), simulation);
+            if (fluid.getAmount() >= maxAmount) {
+                return fluid;
             }
         }
         return fluid;

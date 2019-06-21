@@ -56,7 +56,7 @@ public interface FixedItemInv extends FixedItemInvView {
 
     /** @return A new {@link LimitedFixedItemInv} that provides a more controllable version of this
      *         {@link FixedItemInv}. */
-    default LimitedFixedItemInv createLimitedInv() {
+    default LimitedFixedItemInv createLimitedFixedInv() {
         return new SimpleLimitedFixedItemInv(this);
     }
 

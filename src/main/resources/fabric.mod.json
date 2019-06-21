@@ -33,10 +33,10 @@
       "+name": "LibBlockAttributes (Items)",
       "+description": "Various utility classes for item inventories and transfer",
       "-entrypoints": {},
+      "-mixins": [],
       "~requires": {
         "+libblockattributes_core": ">=$version"
       },
-      "-mixins": [],
       "+icon": "assets/libblockattributes/icon_items.png"
     },
     "fluids": {
@@ -49,6 +49,13 @@
       "+icon": "assets/libblockattributes/icon_fluids.png"
     },
     "all": {
+      "-entrypoints": {},
+      "-mixins": [],
+      "~requires": {
+        "+libblockattributes_core": ">=$version",
+        "+libblockattributes_items": ">=$version",
+        "+libblockattributes_fluids": ">=$version"
+      },
       "+jars": [
         { "file": "LibBlockAttributes-$version-core.jar" },
         { "file": "LibBlockAttributes-$version-items.jar" },

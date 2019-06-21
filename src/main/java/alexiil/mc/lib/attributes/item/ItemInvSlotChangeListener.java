@@ -2,6 +2,8 @@ package alexiil.mc.lib.attributes.item;
 
 import net.minecraft.item.ItemStack;
 
+import alexiil.mc.lib.attributes.item.impl.DirectFixedItemInv;
+
 /** Listener {@link FunctionalInterface} for {@link FixedItemInvView}.
  * <p>
  * Note that the listener system is not fully fleshed out yet so this <em>will</em> change in the future! */
@@ -13,4 +15,18 @@ public interface ItemInvSlotChangeListener {
      * @param previous The previous {@link ItemStack}.
      * @param current The new {@link ItemStack} */
     void onChange(FixedItemInvView inv, int slot, ItemStack previous, ItemStack current);
+
+    /** A specialised type of listener that won't receive the previous {@link ItemStack} that occupied the given slot.
+     * Used for optimisation purposes in {@link DirectFixedItemInv}. */
+    @FunctionalInterface
+    public interface ItemInvSlotListener extends ItemInvSlotChangeListener {
+
+        /** NOTE: This might not be called if the inventory calls {@link #onChange(FixedItemInvView, int)} directly! */
+        @Override
+        default void onChange(FixedItemInvView inv, int slot, ItemStack previous, ItemStack current) {
+            onChange(inv, slot);
+        }
+
+        void onChange(FixedItemInvView inv, int slot);
+    }
 }

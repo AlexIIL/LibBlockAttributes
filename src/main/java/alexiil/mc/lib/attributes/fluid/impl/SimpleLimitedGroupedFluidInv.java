@@ -1,32 +1,30 @@
-package alexiil.mc.lib.attributes.item.impl;
+package alexiil.mc.lib.attributes.fluid.impl;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.item.ItemStack;
-
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.item.GroupedItemInv;
-import alexiil.mc.lib.attributes.item.LimitedGroupedItemInv;
-import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
-import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
+import alexiil.mc.lib.attributes.fluid.LimitedGroupedFluidInv;
+import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
-public class SimpleLimitedGroupedItemInv extends DelegatingGroupedItemInv implements LimitedGroupedItemInv {
+public class SimpleLimitedGroupedFluidInv extends DelegatingGroupedFluidInv implements LimitedGroupedFluidInv {
 
     private boolean isImmutable = false;
 
-    // private final Map<Item, ExactRule> exactItemRules = new HashMap<>();
-    // private final Map<ItemStack, ExactRule> exactStackRules = ItemStackCollections.map();
+    // private final Map<FluidKey, ExactRule> exactRules = new HashMap<>();
 
     private final List<InsertionRule> insertionRules = new ArrayList<>();
     private final List<ExtractionRule> extractionRules = new ArrayList<>();
 
-    public SimpleLimitedGroupedItemInv(GroupedItemInv delegate) {
+    public SimpleLimitedGroupedFluidInv(GroupedFluidInv delegate) {
         super(delegate);
     }
 
     @Override
-    public LimitedGroupedItemInv markFinal() {
+    public LimitedGroupedFluidInv markFinal() {
         isImmutable = true;
         return this;
     }
@@ -40,8 +38,8 @@ public class SimpleLimitedGroupedItemInv extends DelegatingGroupedItemInv implem
     }
 
     @Override
-    public LimitedGroupedItemInv copy() {
-        SimpleLimitedGroupedItemInv copy = new SimpleLimitedGroupedItemInv(delegate);
+    public LimitedGroupedFluidInv copy() {
+        SimpleLimitedGroupedFluidInv copy = new SimpleLimitedGroupedFluidInv(delegate);
         copy.extractionRules.addAll(this.extractionRules);
         copy.insertionRules.addAll(this.insertionRules);
         return copy;
@@ -50,50 +48,45 @@ public class SimpleLimitedGroupedItemInv extends DelegatingGroupedItemInv implem
     // Overrides
 
     @Override
-    public ItemStack attemptExtraction(ItemFilter filter, int maxAmount, Simulation simulation) {
+    public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
         // TODO Auto-generated method stub
         throw new AbstractMethodError("// TODO: Implement this!");
     }
 
     @Override
-    public ItemStack attemptInsertion(ItemStack stack, Simulation simulation) {
+    public FluidVolume attemptInsertion(FluidVolume fluid, Simulation simulation) {
         // TODO Auto-generated method stub
         throw new AbstractMethodError("// TODO: Implement this!");
     }
 
     @Override
-    public ItemFilter getInsertionFilter() {
-        // TODO: return a more useful filter!
-        return stack -> {
-            if (stack.isEmpty()) {
-                throw new IllegalArgumentException("You should never test an ItemFilter with an empty stack!");
-            }
-            ItemStack leftover = attemptInsertion(stack, Simulation.SIMULATE);
-            return leftover.isEmpty() || leftover.getAmount() < stack.getAmount();
-        };
+    public FluidFilter getInsertionFilter() {
+        // TODO Auto-generated method stub
+        throw new AbstractMethodError("// TODO: Implement this!");
     }
 
     // Rules
 
     @Override
-    public ItemLimitRule getRule(ItemFilter filter) {
-        if (filter == ConstantItemFilter.NOTHING) {
-            return new ItemLimitRule() {
+    public FluidLimitRule getRule(FluidFilter filter) {
+        if (filter == ConstantFluidFilter.NOTHING) {
+            return new FluidLimitRule() {
                 // This filter affects nothing (why was it even called?)
                 @Override
-                public ItemLimitRule setMinimum(int min) {
+                public FluidLimitRule setMinimum(int min) {
                     return this;
                 }
 
                 @Override
-                public ItemLimitRule limitInsertionCount(int max) {
+                public FluidLimitRule limitInsertionCount(int max) {
                     return this;
                 }
             };
-        } else if (filter == ConstantItemFilter.ANYTHING) {
-            return new ItemLimitRule() {
+        } else if (filter == ConstantFluidFilter.ANYTHING) {
+            return new FluidLimitRule() {
+
                 @Override
-                public ItemLimitRule setMinimum(int min) {
+                public FluidLimitRule setMinimum(int min) {
                     extractionRules.clear();
                     if (min > 0) {
                         extractionRules.add(new ExtractionRule(filter, min));
@@ -102,7 +95,7 @@ public class SimpleLimitedGroupedItemInv extends DelegatingGroupedItemInv implem
                 }
 
                 @Override
-                public ItemLimitRule limitInsertionCount(int max) {
+                public FluidLimitRule limitInsertionCount(int max) {
                     insertionRules.clear();
                     if (max >= 0) {
                         insertionRules.add(new InsertionRule(filter, max));
@@ -111,16 +104,16 @@ public class SimpleLimitedGroupedItemInv extends DelegatingGroupedItemInv implem
                 }
             };
         }
-        // TODO: (Maybe?) Add filter decomposition for items and stacks
-        return new ItemLimitRule() {
+        // TODO: (Maybe?) Add filter decomposition for fluids
+        return new FluidLimitRule() {
             @Override
-            public ItemLimitRule setMinimum(int min) {
+            public FluidLimitRule setMinimum(int min) {
                 extractionRules.add(new ExtractionRule(filter, min));
                 return this;
             }
 
             @Override
-            public ItemLimitRule limitInsertionCount(int max) {
+            public FluidLimitRule limitInsertionCount(int max) {
                 insertionRules.add(new InsertionRule(filter, max));
                 return this;
             }
@@ -138,20 +131,20 @@ public class SimpleLimitedGroupedItemInv extends DelegatingGroupedItemInv implem
     // }
 
     static final class InsertionRule {
-        final ItemFilter filter;
+        final FluidFilter filter;
         final int maximumInsertion;
 
-        public InsertionRule(ItemFilter filter, int maximumInsertion) {
+        public InsertionRule(FluidFilter filter, int maximumInsertion) {
             this.filter = filter;
             this.maximumInsertion = maximumInsertion;
         }
     }
 
     static final class ExtractionRule {
-        final ItemFilter filter;
+        final FluidFilter filter;
         final int minimumAmount;
 
-        public ExtractionRule(ItemFilter filter, int minimumAmount) {
+        public ExtractionRule(FluidFilter filter, int minimumAmount) {
             this.filter = filter;
             this.minimumAmount = minimumAmount;
         }

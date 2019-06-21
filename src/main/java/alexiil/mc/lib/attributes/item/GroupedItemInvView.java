@@ -78,11 +78,11 @@ public interface GroupedItemInvView {
     ListenerToken addListener(ItemInvAmountChangeListener listener, ListenerRemovalToken removalToken);
 
     /** @return A completely unmodifiable view of this {@link GroupedItemInvView}. */
-    default GroupedItemInvView getView() {
+    default GroupedItemInvView getGroupedView() {
         GroupedItemInvView real = this;
         return new GroupedItemInvView() {
             @Override
-            public GroupedItemInvView getView() {
+            public GroupedItemInvView getGroupedView() {
                 return this;
             }
 
@@ -126,12 +126,14 @@ public interface GroupedItemInvView {
             @Override
             public ListenerToken addListener(ItemInvAmountChangeListener listener, ListenerRemovalToken removalToken) {
                 final GroupedItemInvView view = this;
-                return real.addListener((inv, stack, prev, curr) -> {
-                    // Defend against giving the listener the real (possibly changeable) inventory.
-                    // In addition the listener would probably cache *this view* rather than the backing inventory
-                    // so they most likely need it to be this inventory.
-                    listener.onChange(view, stack, prev, curr);
-                }, removalToken);
+                return real.addListener(
+                    (inv, stack, prev, curr) -> {
+                        // Defend against giving the listener the real (possibly changeable) inventory.
+                        // In addition the listener would probably cache *this view* rather than the backing inventory
+                        // so they most likely need it to be this inventory.
+                        listener.onChange(view, stack, prev, curr);
+                    }, removalToken
+                );
             }
         };
     }

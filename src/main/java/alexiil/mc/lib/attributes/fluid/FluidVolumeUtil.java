@@ -2,6 +2,8 @@ package alexiil.mc.lib.attributes.fluid;
 
 import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.GlassBottleItem;
 import net.minecraft.item.ItemStack;
@@ -64,24 +66,27 @@ public enum FluidVolumeUtil {
         FluidVolume reallyExtracted = from.attemptExtraction(exactFilter, insertedAmount, Simulation.ACTION);
 
         if (reallyExtracted.isEmpty()) {
-            throw throwBadImplException("Tried to extract the filter (C) from A but it returned an empty item stack "
-                + "after we have already inserted the expected stack into B!\nThe inventory is now in an invalid (duped) state!",
-                new String[] { "from A", "to B", "filter C" }, new Object[] { from, to, filter });
+            throw throwBadImplException(
+                "Tried to extract the filter (C) from A but it returned an empty item stack "
+                    + "after we have already inserted the expected stack into B!\nThe inventory is now in an invalid (duped) state!",
+                new String[] { "from A", "to B", "filter C" }, new Object[] { from, to, filter }
+            );
         }
         if (reallyExtracted.getAmount() != insertedAmount) {
             throw throwBadImplException(
                 "Tried to extract " + insertedAmount + " but we actually extracted " + reallyExtracted.getAmount()
-                    + "!\nThe inventory is now in an invalid (duped) state!",
-                new String[] { "from A", "to B", "filter C", "originally extracted", "really extracted" },
-                new Object[] { from, to, insertionFilter, extracted, reallyExtracted });
+                    + "!\nThe inventory is now in an invalid (duped) state!", new String[] { "from A", "to B",
+                        "filter C", "originally extracted", "really extracted" }, new Object[] { from, to,
+                            insertionFilter, extracted, reallyExtracted }
+            );
         }
         return extracted;
     }
 
     /** @return An {@link FluidInsertable} that will insert fluids into the given stack (overflowing into the given
      *         {@link Consumer}) */
-    public static FluidInsertable createItemInventoryInsertable(Ref<ItemStack> stackRef,
-        Consumer<ItemStack> excessStacks) {
+    public static FluidInsertable createItemInventoryInsertable(Ref<ItemStack> stackRef, Consumer<
+        ItemStack> excessStacks) {
         return (FluidVolume fluid, Simulation simulate) -> {
             ItemStack stack = stackRef.obj;
             if (!(stack.getItem() instanceof FluidProviderItem)) {
@@ -107,8 +112,8 @@ public enum FluidVolumeUtil {
         };
     }
 
-    public static FluidExtractable createItemInventoryExtractable(Ref<ItemStack> stackRef,
-        Consumer<ItemStack> excessStacks) {
+    public static FluidExtractable createItemInventoryExtractable(Ref<ItemStack> stackRef, Consumer<
+        ItemStack> excessStacks) {
         return (FluidFilter filter, int maxAmount, Simulation simulate) -> {
 
             final ItemStack stack = stackRef.obj.copy();
@@ -163,8 +168,8 @@ public enum FluidVolumeUtil {
     /** @param inv The fluid inventory to interact with
      * @param stack The held {@link ItemStack} to interact with.
      * @param excessStacks A {@link Consumer} to take the excess itemstack. */
-    public static FluidTankInteraction interactWithTank(FixedFluidInv inv, Ref<ItemStack> stack,
-        Consumer<ItemStack> excessStacks) {
+    public static FluidTankInteraction interactWithTank(FixedFluidInv inv, Ref<ItemStack> stack, Consumer<
+        ItemStack> excessStacks) {
         if (stack.obj.isEmpty() || !(stack.obj.getItem() instanceof FluidProviderItem)) {
             return FluidTankInteraction.NONE;
         }
@@ -203,6 +208,76 @@ public enum FluidVolumeUtil {
             return fluidMoved.getAmount();
         }
     }
+
+    // #######################
+    // Implementation helpers
+    // #######################
+
+    /** Inserts a single {@link FluidVolume} into a {@link FixedFluidInv}, using only
+     * {@link FixedFluidInv#setInvFluid(int, FluidVolume, Simulation)}. As such this is useful for implementations of
+     * {@link FluidInsertable} (or others) for their base implementation.
+     * 
+     * @param toInsert The volume to insert. This will not be modified.
+     * @return The excess {@link FluidVolume} that wasn't inserted. */
+    public static FluidVolume insertSingle(FixedFluidInv inv, int tank, FluidVolume toInsert, Simulation simulation) {
+        if (toInsert.isEmpty()) {
+            return EMPTY;
+        }
+        FluidVolume inTank = inv.getInvFluid(tank);
+        int current = inTank.getAmount();
+        int max = Math.min(current + toInsert.getAmount(), inv.getMaxAmount(tank));
+        int addable = max - current;
+        if (addable <= 0) {
+            return toInsert;
+        }
+        if (current > 0 && !inTank.canMerge(toInsert)) {
+            return toInsert;
+        }
+        inTank = inTank.copy();
+        FluidVolume insertCopy = toInsert.copy();
+        FluidVolume merged = FluidVolume.merge(inTank, insertCopy.split(addable));
+        if (merged == null) {
+            return toInsert;
+        }
+        if (inv.setInvFluid(tank, merged, simulation)) {
+            return insertCopy.isEmpty() ? EMPTY : insertCopy;
+        }
+        return toInsert;
+    }
+
+    /** Extracts a single {@link FluidVolume} from a {@link FixedFluidInv}, using only
+     * {@link FixedFluidInv#setInvFluid(int, FluidVolume, Simulation)}. As such this is useful for implementations of
+     * {@link FluidExtractable} (or others) for their base implementations.
+     * 
+     * @param filter The filter to match on. If this is null then it matches on anything.
+     * @param toAddWith An optional {@link FluidVolume} that the extracted fluid will be added to. Null is equivalent to
+     *            {@link FluidVolume#isEmpty() empty}.
+     * @param maxAmount The maximum amount of fluid to extract. Note that the returned {@link FluidVolume} may have an
+     *            amount up to this given amount plus the amount in "toAddWith".
+     * @return The extracted {@link FluidVolume}, merged with "toAddWith". */
+    public static FluidVolume extractSingle(FixedFluidInv inv, int tank, @Nullable FluidFilter filter,
+        FluidVolume toAddWith, int maxAmount, Simulation simulation) {
+
+        if (toAddWith == null) {
+            toAddWith = EMPTY;
+        }
+
+        FluidVolume inTank = inv.getInvFluid(tank);
+        if (inTank.isEmpty() || (filter != null && !filter.matches(inTank.fluidKey))) {
+            return toAddWith;
+        }
+        inTank = inTank.copy();
+        FluidVolume addable = inTank.split(maxAmount);
+        FluidVolume merged = FluidVolume.merge(inTank, addable);
+        if (inv.setInvFluid(tank, inTank, simulation)) {
+            toAddWith = merged;
+        }
+        return toAddWith;
+    }
+
+    // #######################
+    // Private Util
+    // #######################
 
     private static IllegalStateException throwBadImplException(String reason, String[] names, Object[] objs) {
         String detail = "\n";

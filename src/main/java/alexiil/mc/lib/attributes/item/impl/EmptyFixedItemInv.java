@@ -67,7 +67,7 @@ public enum EmptyFixedItemInv implements FixedItemInv {
     }
 
     @Override
-    public FixedItemInvView getView() {
+    public FixedItemInvView getFixedView() {
         return this;
     }
 

@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+
 import net.minecraft.ChatFormat;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.fluid.Fluid;
@@ -208,7 +209,12 @@ public abstract class FluidVolume {
         return null;
     }
 
+    /** Checks to see if the given {@link FluidVolume} can merge into this one. Returns false if either this fluid or
+     * the given fluid are {@link #isEmpty() empty}. */
     public final boolean canMerge(FluidVolume with) {
+        if (isEmpty() || with.isEmpty()) {
+            return false;
+        }
         return merge(with, Simulation.SIMULATE);
     }
 
@@ -276,11 +282,13 @@ public abstract class FluidVolume {
         List<Component> list = new ArrayList<>();
         list.add(getName());
         if (ctx.isAdvanced()) {
-            list.add(new TextComponent(
-                FluidRegistryEntry.getName(getFluidKey().registryEntry.backingRegistry).toString())
-                    .applyFormat(ChatFormat.DARK_GRAY));
-            list.add(new TextComponent(getFluidKey().registryEntry.getId().toString())
-                .applyFormat(ChatFormat.DARK_GRAY));
+            list.add(
+                new TextComponent(FluidRegistryEntry.getName(getFluidKey().registryEntry.backingRegistry).toString())
+                    .applyFormat(ChatFormat.DARK_GRAY)
+            );
+            list.add(
+                new TextComponent(getFluidKey().registryEntry.getId().toString()).applyFormat(ChatFormat.DARK_GRAY)
+            );
         }
         return list;
     }

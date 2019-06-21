@@ -62,19 +62,16 @@ public enum ItemInvUtil {
         if (reallyExtracted.isEmpty()) {
             throw throwBadImplException(
                 "Tried to extract the filter (C) from A but it returned an empty item stack "
-                + "after we have already inserted the expected stack into B!\nThe inventory is now in an invalid (duped) state!",
+                    + "after we have already inserted the expected stack into B!\nThe inventory is now in an invalid (duped) state!",
                 new String[] { "from A", "to B", "filter C" }, new Object[] { from, to, filter }
             );
         }
         if (reallyExtracted.getAmount() != insertedAmount) {
             throw throwBadImplException(
-                "Tried to extract "
-                + insertedAmount
-                + " but we actually extracted "
-                + reallyExtracted.getAmount()
-                + "!\nThe inventory is now in an invalid (duped) state!",
-                new String[] { "from A", "to B", "filter C", "originally extracted", "really extracted" },
-                new Object[] { from, to, insertionFilter, extracted, reallyExtracted }
+                "Tried to extract " + insertedAmount + " but we actually extracted " + reallyExtracted.getAmount()
+                    + "!\nThe inventory is now in an invalid (duped) state!", new String[] { "from A", "to B",
+                        "filter C", "originally extracted", "really extracted" }, new Object[] { from, to,
+                            insertionFilter, extracted, reallyExtracted }
             );
         }
         return insertedAmount;
@@ -120,7 +117,7 @@ public enum ItemInvUtil {
         return toInsert;
     }
 
-    /** Inserts a single ItemStack into a {@link FixedItemInv}, using only
+    /** Extracts a single ItemStack from a {@link FixedItemInv}, using only
      * {@link FixedItemInv#setInvStack(int, ItemStack, Simulation)}. As such this is useful for implementations of
      * {@link ItemInsertable} (or others) for the base implementation.
      * 
@@ -132,9 +129,6 @@ public enum ItemInvUtil {
     public static ItemStack extractSingle(FixedItemInv inv, int slot, @Nullable ItemFilter filter, ItemStack toAddWith,
         int maxAmount, Simulation simulation) {
         ItemStack inSlot = inv.getInvStack(slot);
-        if (inSlot.isEmpty()) {
-            return toAddWith;
-        }
         if (inSlot.isEmpty() || (filter != null && !filter.matches(inSlot))) {
             return toAddWith;
         }
@@ -156,7 +150,6 @@ public enum ItemInvUtil {
             } else {
                 toAddWith.addAmount(addable.getAmount());
             }
-            maxAmount -= addable.getAmount();
         }
         return toAddWith;
     }

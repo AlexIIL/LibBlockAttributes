@@ -1,0 +1,210 @@
+package alexiil.mc.lib.attributes.fluid.impl;
+
+import java.util.Arrays;
+
+import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.fluid.FixedFluidInv;
+import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
+import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
+import alexiil.mc.lib.attributes.fluid.LimitedFixedFluidInv;
+import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
+import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+
+public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implements LimitedFixedFluidInv {
+
+    private final GroupedFluidInv groupedInv;
+    private boolean isImmutable = false;
+
+    protected final FluidFilter[] insertionFilters;
+    protected final int[] maxInsertionAmounts;
+    protected final int[] minimumAmounts;
+
+    public SimpleLimitedFixedFluidInv(FixedFluidInv delegate) {
+        super(delegate);
+
+        insertionFilters = new FluidFilter[getTankCount()];
+        maxInsertionAmounts = new int[getTankCount()];
+        minimumAmounts = new int[getTankCount()];
+        Arrays.fill(maxInsertionAmounts, Integer.MAX_VALUE);
+        groupedInv = new DelegatingGroupedFluidInv(delegate.getGroupedInv()) {
+            @Override
+            public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
+                if (maxAmount < 0) {
+                    throw new IllegalArgumentException("maxAmount cannot be negative! (was " + maxAmount + ")");
+                }
+                FluidVolume volume = FluidKeys.EMPTY.withAmount(0);
+                if (maxAmount == 0) {
+                    return volume;
+                }
+                FixedFluidInv inv = SimpleLimitedFixedFluidInv.this.delegate;
+                for (int t = 0; t < getTankCount(); t++) {
+                    FluidVolume tankVolume = inv.getInvFluid(t);
+                    int minimum = minimumAmounts[t];
+                    int available = tankVolume.getAmount() - minimum;
+                    if (tankVolume.isEmpty() || available <= 0) {
+                        continue;
+                    }
+                    int tankMax = Math.min(maxAmount - volume.getAmount(), available);
+                    volume = FluidVolumeUtil.extractSingle(inv, t, filter, volume, tankMax, simulation);
+                    if (volume.getAmount() >= maxAmount) {
+                        return volume;
+                    }
+                }
+                return volume;
+            }
+            // No need to override attemptInsertion because:
+            // - The maximum insertion amount is already available via FixedFluidInv.getMaxAmount
+            // - The fluid filter will already be followed via setInvFluid.
+        };
+    }
+
+    @Override
+    public LimitedFixedFluidInv markFinal() {
+        isImmutable = true;
+        return this;
+    }
+
+    protected void assertMutable() {
+        if (isImmutable) {
+            throw new IllegalStateException(
+                "This object has already been marked as immutable, so no further changes are permitted!"
+            );
+        }
+    }
+
+    @Override
+    public LimitedFixedFluidInv copy() {
+        SimpleLimitedFixedFluidInv copy = new SimpleLimitedFixedFluidInv(delegate);
+        System.arraycopy(insertionFilters, 0, copy.insertionFilters, 0, getTankCount());
+        System.arraycopy(maxInsertionAmounts, 0, copy.maxInsertionAmounts, 0, getTankCount());
+        System.arraycopy(minimumAmounts, 0, copy.minimumAmounts, 0, getTankCount());
+        return copy;
+    }
+
+    // Overrides
+
+    @Override
+    public GroupedFluidInv getGroupedInv() {
+        return groupedInv;
+    }
+
+    @Override
+    public boolean isFluidValidForTank(int tank, FluidKey fluid) {
+        return getFilterForTank(tank).matches(fluid);
+    }
+
+    @Override
+    public FluidFilter getFilterForTank(int tank) {
+        FluidFilter filter = insertionFilters[tank];
+        if (filter != null) {
+            return super.getFilterForTank(tank).and(filter);
+        }
+        return super.getFilterForTank(tank);
+    }
+
+    @Override
+    public boolean setInvFluid(int tank, FluidVolume to, Simulation simulation) {
+        FluidVolume current = getInvFluid(tank);
+        boolean same = current.getFluidKey().equals(to.fluidKey);
+        boolean isExtracting = !same || to.getAmount() < current.getAmount();
+        boolean isInserting = !same || to.getAmount() > current.getAmount();
+
+        if (isExtracting) {
+            if (same) {
+                if (to.getAmount() < minimumAmounts[tank]) {
+                    return false;
+                }
+            } else {
+                if (minimumAmounts[tank] > 0) {
+                    return false;
+                }
+            }
+        }
+
+        if (isInserting) {
+            if (!isFluidValidForTank(tank, to.getFluidKey())) {
+                return false;
+            }
+            if (to.getAmount() > maxInsertionAmounts[tank]) {
+                return false;
+            }
+        }
+        return super.setInvFluid(tank, to, simulation);
+    }
+
+    @Override
+    public int getMaxAmount(int tank) {
+        return Math.min(super.getMaxAmount(tank), maxInsertionAmounts[tank]);
+    }
+
+    // Rules
+
+    @Override
+    public FluidTankLimitRule getRule(int tank) {
+        return new FluidTankLimitRule() {
+
+            @Override
+            public FluidTankLimitRule setMinimum(int min) {
+                if (min < 0) {
+                    min = 0;
+                }
+                minimumAmounts[tank] = min;
+                return this;
+            }
+
+            @Override
+            public FluidTankLimitRule limitInsertionCount(int max) {
+                if (max < 0) {
+                    max = Integer.MAX_VALUE;
+                }
+                maxInsertionAmounts[max] = max;
+                return this;
+            }
+
+            @Override
+            public FluidTankLimitRule filterInserts(FluidFilter filter) {
+                if (filter == ConstantFluidFilter.ANYTHING) {
+                    filter = null;
+                }
+                insertionFilters[tank] = filter;
+                return this;
+            }
+        };
+    }
+
+    @Override
+    public FluidTankLimitRule getSubRule(int from, int to) {
+        return new FluidTankLimitRule() {
+
+            @Override
+            public FluidTankLimitRule setMinimum(int min) {
+                if (min < 0) {
+                    min = 0;
+                }
+                Arrays.fill(minimumAmounts, min);
+                return this;
+            }
+
+            @Override
+            public FluidTankLimitRule limitInsertionCount(int max) {
+                if (max < 0) {
+                    max = Integer.MAX_VALUE;
+                }
+                Arrays.fill(maxInsertionAmounts, max);
+                return this;
+            }
+
+            @Override
+            public FluidTankLimitRule filterInserts(FluidFilter filter) {
+                if (filter == ConstantFluidFilter.ANYTHING) {
+                    filter = null;
+                }
+                Arrays.fill(insertionFilters, filter);
+                return this;
+            }
+        };
+    }
+}

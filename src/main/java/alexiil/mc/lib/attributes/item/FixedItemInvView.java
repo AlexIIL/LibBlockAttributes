@@ -141,7 +141,7 @@ public interface FixedItemInvView {
     /** @return An object that only implements {@link FixedItemInvView}, and does not expose the modification methods
      *         that {@link FixedItemInv} does. Implementations that don't expose any modification methods themselves
      *         should override this method to just return themselves. */
-    default FixedItemInvView getView() {
+    default FixedItemInvView getFixedView() {
         final FixedItemInvView real = this;
         return new FixedItemInvView() {
             @Override

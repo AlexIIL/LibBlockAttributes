@@ -8,7 +8,7 @@ public interface GroupedItemInv extends GroupedItemInvView, ItemTransferable {
 
     /** @return A new {@link LimitedGroupedItemInv} that provides a more controllable version of this
      *         {@link GroupedItemInv}. */
-    default LimitedGroupedItemInv createLimitedInv() {
+    default LimitedGroupedItemInv createLimitedGroupedInv() {
         return new SimpleLimitedGroupedItemInv(this);
     }
 }

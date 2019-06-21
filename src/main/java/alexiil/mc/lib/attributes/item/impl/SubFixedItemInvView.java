@@ -38,11 +38,11 @@ public class SubFixedItemInvView extends AbstractPartialFixedItemInvView {
     }
 
     @Override
-    public FixedItemInvView getView() {
+    public FixedItemInvView getFixedView() {
         if (getClass() == SubFixedItemInvView.class) {
             return this;
         }
-        return super.getView();
+        return super.getFixedView();
     }
 
     @Override

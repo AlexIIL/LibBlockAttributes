@@ -50,7 +50,7 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
                     if (slotStack.isEmpty() || available <= 0) {
                         continue;
                     }
-                    int slotMax = maxAmount - available;
+                    int slotMax = Math.min(maxAmount - stack.getAmount(), available);
                     stack = ItemInvUtil.extractSingle(inv, s, filter, stack, slotMax, simulation);
                     if (stack.getAmount() >= maxAmount) {
                         return stack;
@@ -127,7 +127,6 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
                     return false;
                 }
             }
-            return false;
         }
         if (isInserting) {
             if (!isItemValidForSlot(slot, to)) {

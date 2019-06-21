@@ -21,6 +21,14 @@ public interface LimitedFixedItemInv extends FixedItemInv {
     /** Creates a copy of this {@link LimitedFixedItemInv} (with the same backing inventory and the same rules). */
     LimitedFixedItemInv copy();
 
+    /** Completely clears all rules currently imposed.
+     * 
+     * @return This. */
+    default LimitedFixedItemInv reset() {
+        getAllRule().reset();
+        return this;
+    }
+
     /** @return A new {@link FixedItemInv} with the current rules of this, but that cannot be modified. */
     default FixedItemInv asUnmodifiable() {
         return new DelegatingFixedItemInv(this);
@@ -41,6 +49,11 @@ public interface LimitedFixedItemInv extends FixedItemInv {
 
     /** A rule for a set of slots. */
     public interface ItemSlotLimitRule {
+
+        /** Clears all limitations for this current rule. */
+        default ItemSlotLimitRule reset() {
+            return allowExtraction().noInsertionLimits().setMinimum(0).limitInsertionCount(-1);
+        }
 
         /** Completely disallows extraction of items.
          * 
@@ -77,6 +90,7 @@ public interface LimitedFixedItemInv extends FixedItemInv {
          * below the given value. (This of course has no effect on the underlying inventory, so it is always possible
          * for the underlying inventory to be modified to contain less than the given amount).
          * 
+         * @param min The minimum. Values less than or equal to zero clear this limitation.
          * @return this. */
         ItemSlotLimitRule setMinimum(int min);
     }
