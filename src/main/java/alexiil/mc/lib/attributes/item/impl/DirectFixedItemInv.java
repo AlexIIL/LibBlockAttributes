@@ -18,7 +18,6 @@ import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.ItemInvAmountChangeListener;
 import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener.ItemInvSlotListener;
-import alexiil.mc.lib.attributes.item.filter.ExactItemStackFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
@@ -316,7 +315,7 @@ public class DirectFixedItemInv implements FixedItemInv, GroupedItemInv {
 
     // #############################################
     //
-    // Smaller methods for insertion and extraction
+    // Smaller methods for slot-specific insertion and extraction
     //
     // #############################################
 
@@ -328,33 +327,11 @@ public class DirectFixedItemInv implements FixedItemInv, GroupedItemInv {
         return split;
     }
 
-    /** Tries to extract <i>something</i> from this inventory, not caring what it is or where it came from. */
-    public ItemStack extract(int max) {
-        return attemptAnyExtraction(max, Simulation.ACTION);
-    }
-
-    /** Tries to extract as much items as possible that are equal to the given {@link ItemStack} filter. */
-    public ItemStack extract(ItemStack filter, int max) {
-        return attemptExtraction(new ExactItemStackFilter(filter), max, Simulation.ACTION);
-    }
-
-    /** Tries to extract as much items as possible that are equal to the given {@link ItemStack} filter. */
-    public ItemStack extract(ItemFilter filter, int max) {
-        return attemptExtraction(filter, max, Simulation.ACTION);
-    }
-
     /** Tries to insert the given stack into the given slot.
      * 
      * @return The leftover that couldn't be inserted. */
     public ItemStack insert(int slot, ItemStack stack) {
         // TODO: Optimise this!
         return getSubInv(slot, slot).getGroupedInv().attemptInsertion(stack, Simulation.ACTION);
-    }
-
-    /** Attempts to insert a single {@link ItemStack} into this inventory, returning the leftover.
-     * <p>
-     * This just calls {@link #attemptInsertion(ItemStack, Simulation)} with a {@link Simulation#ACTION} */
-    public ItemStack insert(ItemStack stack) {
-        return attemptInsertion(stack, Simulation.ACTION);
     }
 }

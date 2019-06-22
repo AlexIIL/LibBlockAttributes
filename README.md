@@ -131,7 +131,7 @@ The "impl" subpackage is also for public use, and it contains a lot of concrete 
 
 Currently you can use this by adding this to your build.gradle:
 
-```
+```groovy
 repositories {
     maven {
         name = "BuildCraft"
@@ -140,6 +140,27 @@ repositories {
 }
 
 dependencies {
-    modCompile "alexiil.mc.lib:libblockattributes:0.4.2"
+    modCompile "alexiil.mc.lib:libblockattributes-all:0.4.3"
 }
 ```
+And depending on "libblockattributes" in your fabric.mod.json. Note that this won't quite work correctly if all 3 of the modules are present, but the encompassing "all" is not. As such it's better to depend on both "libblockattributes\_items" and "libblockattributes\_fluids" if you need all 3. (You don't need to explicitly depend on "core" because both "items" and "fluids" depend on it).
+
+However you can also depend on smaller parts of this if you don't need to use everything that this offers:
+
+```groovy
+repositories {
+    maven {
+        name = "BuildCraft"
+        url = "https://mod-buildcraft.com/maven"
+    }
+}
+
+dependencies {
+    // Uncomment out items and fluids to depend on either of them.
+    // (Both items and fluids depend on core) 
+    modCompile "alexiil.mc.lib:libblockattributes-core:0.4.3"
+    // modCompile "alexiil.mc.lib:libblockattributes-items:0.4.3"
+    // modCompile "alexiil.mc.lib:libblockattributes-fluids:0.4.3"
+}
+```
+And depend on "libblockattributes\_core", "libblockattributes\_items", and "libblockattributes\_fluids" in your fabric.mod.json.

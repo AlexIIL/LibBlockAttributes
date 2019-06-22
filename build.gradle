@@ -34,7 +34,8 @@ processResources {
 
     from(sourceSets.main.resources.srcDirs) {
         include "fabric.mod.json"
-        expand "version": project.version
+        // We can't use expand because "$version.jar" doesn't expand correctly
+        filter({str -> str.replace("$version", project.version)});
     }
 
     from(sourceSets.main.resources.srcDirs) {
@@ -88,7 +89,11 @@ def getFabricModJsonFile(String key) {
 }
 
 def getNestedJarFile(String key) {
-    return new File("$projectDir/build/processing/nested_jars/" + key + "/" + project.name + "-" + project.version + "-" + key + ".jar");
+    return new File("$projectDir/build/processing/nested_jars/" + key + "/libblockattributes-" + key + "-" + project.version + ".jar");
+}
+
+def getNestedSourceJarFile(String key) {
+    return new File("$projectDir/build/processing/nested_jars/" + key + "-sources/libblockattributes-" + key + "-" + project.version + "-sources.jar");
 }
 
 def transformJson(json, diff) {
@@ -104,6 +109,10 @@ def transformJson(json, diff) {
             json.put(realKey, diffValue);
         } else if (first == '~') {
             def old = json.get(realKey);
+            if (old == null) {
+                old = new LinkedHashMap<>();
+                json.put(realKey, old);
+            }
             transformJson(old, diffValue);
         } else {
             throw new Error("Must be either -+~, but got " + first + "!");
@@ -120,7 +129,7 @@ def writeFabricModJsonFile(String key) {
     }
     temp.createNewFile();
     def elements = new HashMap<>();
-    def diff = source.remove("__lba_buildscript_diff")[key];
+    def diff = source.remove("__buildscript_diff")[key];
     transformJson(source, diff);
 
     String prettyPrinted = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(source));
@@ -168,7 +177,7 @@ def generateJar(
         destinationDir = modulesDir;
         from(writeFabricModJsonFile(key).parentFile);
         for (nKey in nestedJars) {
-            from(getNestedJarFile(nKey + "-sources").parentFile);
+            from(getNestedSourceJarFile(nKey).parentFile);
         }
         from (unzippedSourceJar) {
             excludes.add("fabric.mod.json");
@@ -186,13 +195,13 @@ def generateJar(
     }
 
     task("copySubModJar_" + key, type: Copy, dependsOn: tasks["submod_" + key + "Jar"]) {
-        from "" + modulesDir + "/" + project.name + "-" + project.version + "-" + key + ".jar";
+        from "" + modulesDir + "/libblockattributes-" + key + "-" + project.version + ".jar";
         into getNestedJarFile(key).parentFile;
     }
 
     task("copySubModSourcesJar_" + key, type: Copy, dependsOn: tasks["submod_" + key + "SourcesJar"]) {
-        from "" + modulesDir + "/" + project.name + "-" + project.version + "-" + key + "-sources.jar";
-        into getNestedJarFile(key + "-sources").parentFile;
+        from "" + modulesDir + "/libblockattributes-" + key + "-" + project.version + "-sources.jar";
+        into getNestedSourceJarFile(key).parentFile;
     }
 
     taken.addAll(_includes);
@@ -202,7 +211,8 @@ def generateJar(
 
 generateJar("items",
     [
-        "alexiil/mc/lib/attributes/item/**"
+        "alexiil/mc/lib/attributes/item/**",
+        "assets/libblockattributes/icon_items.png"
     ],
     [], false
 );
@@ -210,12 +220,21 @@ generateJar("fluids",
     [
         "alexiil/mc/lib/attributes/fluid/**",
         "assets/libblockattributes/textures/fluid/**",
+        "assets/libblockattributes/icon_fluids.png",
         "libblockattributes_fluid.common.json"
     ],
     [], true
 );
-generateJar("core", ["**"], new HashSet<>(taken), false);
-generateJar("all", [], ["**"], false, ["core", "items", "fluids"]);
+generateJar("core",
+    ["**"],
+    new HashSet<>(taken), false
+);
+generateJar("all",
+    [
+        "assets/libblockattributes/icon_all.png"
+    ],
+    [], false, ["core", "items", "fluids"]
+);
 
 publishing {
     repositories {

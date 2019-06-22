@@ -17,6 +17,18 @@ public interface ItemInsertable {
      *         it might be the given stack instead of a completely new object. */
     ItemStack attemptInsertion(ItemStack stack, Simulation simulation);
 
+    /** Inserts the given stack into this insertable, and returns the excess.
+     * <p>
+     * This is equivalent to calling {@link #attemptInsertion(ItemStack, Simulation)} with a {@link Simulation}
+     * parameter of {@link Simulation#ACTION ACTION}.
+     * 
+     * @param stack The incoming stack. Must not be modified by this call.
+     * @return the excess {@link ItemStack} that wasn't accepted. This will be independent of this insertable, however
+     *         it might be the given stack instead of a completely new object. */
+    default ItemStack insert(ItemStack stack) {
+        return attemptInsertion(stack, Simulation.ACTION);
+    }
+
     /** Returns an {@link ItemFilter} to determine if {@link #attemptInsertion(ItemStack, Simulation)} will accept a
      * stack. The default implementation is a call to {@link #attemptInsertion(ItemStack, Simulation)
      * attemptInsertion}(stack, {@link Simulation#SIMULATE}), and it is only useful to override this if the resulting

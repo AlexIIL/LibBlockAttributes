@@ -3,10 +3,11 @@ package alexiil.mc.lib.attributes.fluid;
 import java.util.function.Function;
 
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** A delegating accessor of a single slot in a {@link FixedFluidInv}. */
-public final class SingleFluidTank extends SingleFluidTankView {
+public final class SingleFluidTank extends SingleFluidTankView implements FluidTransferable {
 
     SingleFluidTank(FixedFluidInv backingView, int tank) {
         super(backingView, tank);
@@ -26,9 +27,24 @@ public final class SingleFluidTank extends SingleFluidTankView {
         getBackingInv().forceSetInvFluid(tank, to);
     }
 
-    /** Applies the given function to the stack held in the slot, and uses {@link #forceSet(FluidVolume)} on the
-     * result (Which will throw an exception if the returned stack is not valid for this inventory). */
+    /** Applies the given function to the stack held in the slot, and uses {@link #forceSet(FluidVolume)} on the result
+     * (Which will throw an exception if the returned stack is not valid for this inventory). */
     public final void modify(Function<FluidVolume, FluidVolume> function) {
         getBackingInv().modifyTank(tank, function);
+    }
+
+    @Override
+    public FluidVolume attemptInsertion(FluidVolume fluid, Simulation simulation) {
+        return FluidVolumeUtil.insertSingle(getBackingInv(), tank, fluid, simulation);
+    }
+
+    @Override
+    public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
+        return FluidVolumeUtil.extractSingle(getBackingInv(), tank, filter, null, maxAmount, simulation);
+    }
+
+    @Override
+    public FluidFilter getInsertionFilter() {
+        return getBackingInv().getFilterForTank(tank);
     }
 }

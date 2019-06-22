@@ -4,6 +4,7 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ExactItemStackFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 /** Defines an object that can have items extracted from it. */
@@ -13,7 +14,6 @@ public interface ItemExtractable {
     /** Attempt to extract *any* {@link ItemStack} from this that {@link ItemFilter#matches(ItemStack) matches} the
      * given {@link ItemFilter}.
      * 
-     * @param filter
      * @param maxAmount The maximum number of items that can be extracted. Negative numbers throw an exception.
      * @param simulation If {@link Simulation#SIMULATE} then this should return the same result that a call with
      *            {@link Simulation#ACTION} would do, but without modifying anything else.
@@ -24,6 +24,42 @@ public interface ItemExtractable {
      * {@link ConstantItemFilter#ANYTHING}. */
     default ItemStack attemptAnyExtraction(int maxAmount, Simulation simulation) {
         return attemptExtraction(ConstantItemFilter.ANYTHING, maxAmount, simulation);
+    }
+
+    /** Attempt to extract *any* {@link ItemStack} from this that {@link ItemFilter#matches(ItemStack) matches} the
+     * given {@link ItemFilter}.
+     * <p>
+     * This is equivalent to calling {@link #attemptExtraction(ItemFilter, int, Simulation)} with a {@link Simulation}
+     * parameter of {@link Simulation#ACTION ACTION}.
+     * 
+     * @param maxAmount The maximum number of items that can be extracted. Negative numbers throw an exception.
+     * @return A new, independent {@link ItemStack} that was extracted. */
+    default ItemStack extract(ItemFilter filter, int maxAmount) {
+        return attemptExtraction(filter, maxAmount, Simulation.ACTION);
+    }
+
+    /** Attempt to extract *any* {@link ItemStack} from this that is
+     * {@link ItemStackUtil#areEqualIgnoreAmounts(ItemStack, ItemStack) equal}to the given {@link ItemStack}.
+     * <p>
+     * This is equivalent to calling {@link #attemptExtraction(ItemFilter, int, Simulation)} with an {@link ItemFilter}
+     * parameter of {@link ExactItemStackFilter} and a {@link Simulation} parameter of {@link Simulation#ACTION ACTION}.
+     * 
+     * @param maxAmount The maximum number of items that can be extracted. Negative numbers throw an exception.
+     * @return A new, independent {@link ItemStack} that was extracted. */
+    default ItemStack extract(ItemStack filter, int maxAmount) {
+        return attemptExtraction(new ExactItemStackFilter(filter), maxAmount, Simulation.ACTION);
+    }
+
+    /** Attempt to extract *any* {@link ItemStack} from this.
+     * <p>
+     * This is equivalent to calling {@link #attemptExtraction(ItemFilter, int, Simulation)} with an {@link ItemFilter}
+     * parameter of {@link ConstantItemFilter#ANYTHING} and a {@link Simulation} parameter of {@link Simulation#ACTION
+     * ACTION}.
+     * 
+     * @param maxAmount The maximum number of items that can be extracted. Negative numbers throw an exception.
+     * @return A new, independent {@link ItemStack} that was extracted. */
+    default ItemStack extract(int maxAmount) {
+        return attemptExtraction(ConstantItemFilter.ANYTHING, maxAmount, Simulation.ACTION);
     }
 
     /** @return An object that only implements {@link ItemExtractable}, and does not expose any of the other

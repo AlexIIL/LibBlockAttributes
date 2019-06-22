@@ -19,14 +19,21 @@
   ],
   "icon": "assets/libblockattributes/icon.png",
   "authors": [ "AlexIIL" ],
+  "contact": {
+    "issues": "https://github.com/AlexIIL/LibBlockAttributes/issues",
+    "homepage": "https://github.com/AlexIIL/LibBlockAttributes",
+    "sources": "https://github.com/AlexIIL/LibBlockAttributes",
+    "license": "MIT"
+  },
 
-  "__lba_buildscript_diff": {
+  "__buildscript_diff": {
     "core": {
       "+id": "libblockattributes_core",
       "+name": "LibBlockAttributes (Core)",
       "+description": "Attribute definitions and getter functions and utilities",
       "-entrypoints": {},
-      "-mixins": []
+      "-mixins": [],
+      "~custom": { "+modmenu:parent": "libblockattributes" }
     },
     "items": {
       "+id": "libblockattributes_items",
@@ -37,7 +44,8 @@
       "~requires": {
         "+libblockattributes_core": ">=$version"
       },
-      "+icon": "assets/libblockattributes/icon_items.png"
+      "+icon": "assets/libblockattributes/icon_items.png",
+      "~custom": { "+modmenu:parent": "libblockattributes" }
     },
     "fluids": {
       "+id": "libblockattributes_fluids",
@@ -46,7 +54,8 @@
       "~requires": {
         "+libblockattributes_core": ">=$version"
       },
-      "+icon": "assets/libblockattributes/icon_fluids.png"
+      "+icon": "assets/libblockattributes/icon_fluids.png",
+      "~custom": { "+modmenu:parent": "libblockattributes" }
     },
     "all": {
       "-entrypoints": {},
@@ -56,10 +65,11 @@
         "+libblockattributes_items": ">=$version",
         "+libblockattributes_fluids": ">=$version"
       },
+      "+icon": "assets/libblockattributes/icon_all.png",
       "+jars": [
-        { "file": "LibBlockAttributes-$version-core.jar" },
-        { "file": "LibBlockAttributes-$version-items.jar" },
-        { "file": "LibBlockAttributes-$version-fluids.jar" }
+        { "file": "libblockattributes-core-$version.jar" },
+        { "file": "libblockattributes-items-$version.jar" },
+        { "file": "libblockattributes-fluids-$version.jar" }
       ]
     }
   }
