@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.2.2-SNAPSHOT'
+    id 'fabric-loom' version '0.2.4-SNAPSHOT'
 }
 
 apply plugin: 'maven-publish' // for uploading to a maven repo
@@ -8,7 +8,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 archivesBaseName = "LibBlockAttributes"
-version = "0.4.3+build.2"
+version = "0.4.3"
 
 minecraft {
 }
@@ -141,7 +141,7 @@ def generateJar(
     generatedJars.put(key, nestedJars);
 
     task("submod_" + key + "Jar", type: Jar) {
-        classifier = key;
+        baseName = "libblockattributes-" + key;
         destinationDir = modulesDir;
         from(writeFabricModJsonFile(key).parentFile);
         for (nKey in nestedJars) {
@@ -163,7 +163,8 @@ def generateJar(
     }
 
     task("submod_" + key + "SourcesJar", type: Jar, dependsOn: unzipSourcesJar) {
-        classifier = key + "-sources";
+        baseName = "libblockattributes-" + key;
+        classifier = "sources";
         destinationDir = modulesDir;
         from(writeFabricModJsonFile(key).parentFile);
         for (nKey in nestedJars) {
@@ -239,12 +240,25 @@ publishing {
                         }
                     }
                     dependencies {
-                        // This prevents unwanted fabric+silk deps from leaking down to other mods
                         clear();
+                    }
+                }
 
-                        // TODO: Add the other jars as dependencies!
-                        // (Gradle doesn't seem to support this)
-                        // apilol("alexiil.mc.lib:libblockattributes-" + key + ":" + project.version);
+                // Otherwise the value of key is lost?
+                def k = key;
+                pom.withXml {
+                    def root = asNode();
+                    def nested = generatedJars.get(k);
+                    if (!nested.isEmpty()) {
+                        Node deps = root.appendNode('dependencies');
+
+                        for (dep in nested) {
+                            Node depNode = deps.appendNode('dependency');
+                            depNode.appendNode('groupId', 'alexiil.mc.lib');
+                            depNode.appendNode('artifactId', 'libblockattributes-' + dep);
+                            depNode.appendNode('version', project.version);
+                            depNode.appendNode('scope', 'compile');
+                        }
                     }
                 }
             }
