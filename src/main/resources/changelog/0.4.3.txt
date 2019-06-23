@@ -7,6 +7,7 @@ Breaking Changes:
     * Plus one more (fake?) module: "all", which just nests the other 3 modules.
 * FixedItemInvView.isItemValidForSlot no longer accepts an empty itemstack.
 * FixedItemInv.getGroupedInv() now mandates that the return value must always be valid so long as the FixedItemInv that returned it is still valid.
+* FixedItemInv.getSubInv() and getMappedInv() now allow returning the same object if the sub or mapped inventory has the same slots that the original inventory had.
 
 Changes:
 
@@ -21,7 +22,6 @@ Changes:
     * Unlike items, there is not an alternative for fluids at the moment.
 * Added a few shorthand method variants for ItemInsertable.insert and ItemExtractable.extract.
     * All of these have an implied Simulation.ACTION argument appended to the actual invocation.
-
 * Added several methods to the fluid side of LBA that the items module already had:
     * FluidInsertable.getPureInsertable()
     * FluidExtractable.getPureExtractable()
@@ -30,3 +30,4 @@ Bug Fixes:
 
 * Made SimpleFixedItemInv.setInvStack allow extracting items that aren't valid for the current filter.
     * In addition it now always allows extracting the entire stack (via setInvStack(ItemStack.EMPTY))
+* Fixed the CustomAttributeAdder for all ItemAttributes not correctly respecting SidedInventory.canInsertInvStack() and canExtractInvStack()

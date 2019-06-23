@@ -110,21 +110,38 @@ public interface FixedItemInvView {
      * 
      * @param fromIndex The first slot to expose
      * @param toIndex The slot after the last slot to expose.
-     * @return a view of this inventory that only exposes the given number of slots.
+     * @return a view of this inventory that only exposes the given number of slots. Might return "this" if fromIndex is
+     *         0 and toIndex is equal to {@link #getSlotCount()}.
      * @throws RuntimeException if any of the given slots weren't valid. */
     default FixedItemInvView getSubInv(int fromIndex, int toIndex) {
         if (fromIndex == toIndex) {
             return EmptyFixedItemInv.INSTANCE;
         }
+        if (fromIndex == 0 && toIndex == getSlotCount()) {
+            return this;
+        }
         return new SubFixedItemInvView(this, fromIndex, toIndex);
     }
 
     /** @param slots The slots to expose.
-     * @return a view of this inventory that only exposes the given number of slots.
+     * @return a view of this inventory that only exposes the given slots. Might return "this" if the slot array is just
+     *         [0,1, ... {@link #getSlotCount()}-1]
      * @throws RuntimeException if any of the given slots weren't valid. */
     default FixedItemInvView getMappedInv(int... slots) {
         if (slots.length == 0) {
             return EmptyFixedItemInv.INSTANCE;
+        }
+        if (slots.length == getSlotCount()) {
+            boolean isThis = true;
+            for (int i = 0; i < slots.length; i++) {
+                if (slots[i] != i) {
+                    isThis = false;
+                    break;
+                }
+            }
+            if (isThis) {
+                return this;
+            }
         }
         return new MappedFixedItemInvView(this, slots);
     }

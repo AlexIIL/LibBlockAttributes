@@ -101,21 +101,38 @@ public interface FixedFluidInvView {
      * 
      * @param fromIndex The first tank to expose
      * @param toIndex The tank after the last tank to expose.
-     * @return a view of this inventory that only exposes the given number of tanks.
+     * @return a view of this inventory that only exposes the given number of tanks. Might return "this" if fromIndex is
+     *         0 and toIndex is equal to {@link #getTankCount()}.
      * @throws RuntimeException if any of the given tanks weren't valid. */
     default FixedFluidInvView getSubInv(int fromIndex, int toIndex) {
         if (fromIndex == toIndex) {
             return EmptyFixedFluidInv.INSTANCE;
         }
+        if (fromIndex == 0 && toIndex == getTankCount()) {
+            return this;
+        }
         return new SubFixedFluidInvView(this, fromIndex, toIndex);
     }
 
     /** @param tanks The tanks to expose.
-     * @return a view of this inventory that only exposes the given number of tanks.
+     * @return a view of this inventory that only exposes the given number of tanks. Might return "this" if the tank
+     *         array is just [0,1, ... {@link #getTankCount()}-1]
      * @throws RuntimeException if any of the given tanks weren't valid */
     default FixedFluidInvView getMappedInv(int... tanks) {
         if (tanks.length == 0) {
             return EmptyFixedFluidInv.INSTANCE;
+        }
+        if (tanks.length == getTankCount()) {
+            boolean isThis = true;
+            for (int i = 0; i < tanks.length; i++) {
+                if (tanks[i] != i) {
+                    isThis = false;
+                    break;
+                }
+            }
+            if (isThis) {
+                return this;
+            }
         }
         return new MappedFixedFluidInvView(this, tanks);
     }
@@ -168,12 +185,14 @@ public interface FixedFluidInvView {
             @Override
             public ListenerToken addListener(FluidInvTankChangeListener listener, ListenerRemovalToken removalToken) {
                 final FixedFluidInvView view = this;
-                return real.addListener((inv, tank, prev, curr) -> {
-                    // Defend against giving the listener the real (possibly changeable) inventory.
-                    // In addition the listener would probably cache *this view* rather than the backing inventory
-                    // so they most likely need it to be this inventory.
-                    listener.onChange(view, tank, prev, curr);
-                }, removalToken);
+                return real.addListener(
+                    (inv, tank, prev, curr) -> {
+                        // Defend against giving the listener the real (possibly changeable) inventory.
+                        // In addition the listener would probably cache *this view* rather than the backing inventory
+                        // so they most likely need it to be this inventory.
+                        listener.onChange(view, tank, prev, curr);
+                    }, removalToken
+                );
             }
         };
     }

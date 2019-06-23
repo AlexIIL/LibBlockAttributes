@@ -94,6 +94,9 @@ public interface FixedItemInv extends FixedItemInvView {
         if (fromIndex == toIndex) {
             return EmptyFixedItemInv.INSTANCE;
         }
+        if (fromIndex == 0 && toIndex == getSlotCount()) {
+            return this;
+        }
         return new SubFixedItemInv(this, fromIndex, toIndex);
     }
 
@@ -101,6 +104,18 @@ public interface FixedItemInv extends FixedItemInvView {
     default FixedItemInv getMappedInv(int... slots) {
         if (slots.length == 0) {
             return EmptyFixedItemInv.INSTANCE;
+        }
+        if (slots.length == getSlotCount()) {
+            boolean isThis = true;
+            for (int i = 0; i < slots.length; i++) {
+                if (slots[i] != i) {
+                    isThis = false;
+                    break;
+                }
+            }
+            if (isThis) {
+                return this;
+            }
         }
         return new MappedFixedItemInv(this, slots);
     }

@@ -77,14 +77,29 @@ public interface FixedFluidInv extends FixedFluidInvView {
         if (fromIndex == toIndex) {
             return EmptyFixedFluidInv.INSTANCE;
         }
+        if (fromIndex == 0 && toIndex == getTankCount()) {
+            return this;
+        }
         return new SubFixedFluidInv(this, fromIndex, toIndex);
     }
 
     @Override
-    default FixedFluidInv getMappedInv(int... slots) {
-        if (slots.length == 0) {
+    default FixedFluidInv getMappedInv(int... tanks) {
+        if (tanks.length == 0) {
             return EmptyFixedFluidInv.INSTANCE;
         }
-        return new MappedFixedFluidInv(this, slots);
+        if (tanks.length == getTankCount()) {
+            boolean isThis = true;
+            for (int i = 0; i < tanks.length; i++) {
+                if (tanks[i] != i) {
+                    isThis = false;
+                    break;
+                }
+            }
+            if (isThis) {
+                return this;
+            }
+        }
+        return new MappedFixedFluidInv(this, tanks);
     }
 }

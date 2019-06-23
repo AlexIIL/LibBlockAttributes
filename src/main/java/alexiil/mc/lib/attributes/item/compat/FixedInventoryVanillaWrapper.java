@@ -1,7 +1,6 @@
 package alexiil.mc.lib.attributes.item.compat;
 
 import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
@@ -18,24 +17,20 @@ public class FixedInventoryVanillaWrapper extends FixedInventoryViewVanillaWrapp
     @Override
     public boolean setInvStack(int slot, ItemStack to, Simulation simulation) {
         boolean allowed = false;
+        ItemStack current = getInvStack(slot);
         if (to.isEmpty()) {
-            if (inv instanceof SidedInventory) {
-                SidedInventory sided = (SidedInventory) inv;
-                // TODO: pass the direction into a new subclass for SidedInventory.
-                // allowed = sided.canExtractInvStack(slot, var2, var3);
-            } else {
-                allowed = true;
-            }
+            allowed = canExtract(slot, current);
         } else {
-            ItemStack current = getInvStack(slot);
-            if (
-                !current.isEmpty()
-                && current.getAmount() > to.getAmount()
-                && ItemStackUtil.areEqualIgnoreAmounts(to, current)
-            ) {
-                allowed = true;
-            } else if (isItemValidForSlot(slot, to) && to.getAmount() <= getMaxAmount(slot, to)) {
-                allowed = true;
+            if (current.isEmpty()) {
+                allowed = canInsert(slot, to);
+            } else if (ItemStackUtil.areEqualIgnoreAmounts(to, current)) {
+                if (to.getAmount() < current.getAmount()) {
+                    allowed = canExtract(slot, current);
+                } else {
+                    allowed = canInsert(slot, to);
+                }
+            } else {
+                allowed = canInsert(slot, to) && canExtract(slot, current);
             }
         }
         if (allowed) {
@@ -45,5 +40,13 @@ public class FixedInventoryVanillaWrapper extends FixedInventoryViewVanillaWrapp
             return true;
         }
         return false;
+    }
+
+    protected boolean canExtract(int slot, ItemStack extractedStack) {
+        return true;
+    }
+
+    protected boolean canInsert(int slot, ItemStack newStack) {
+        return isItemValidForSlot(slot, newStack);
     }
 }

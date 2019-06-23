@@ -19,6 +19,7 @@ import alexiil.mc.lib.attributes.CombinableAttribute;
 import alexiil.mc.lib.attributes.CustomAttributeAdder;
 import alexiil.mc.lib.attributes.DefaultedAttribute;
 import alexiil.mc.lib.attributes.item.compat.FixedInventoryVanillaWrapper;
+import alexiil.mc.lib.attributes.item.compat.FixedSidedInventoryVanillaWrapper;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInvView;
 import alexiil.mc.lib.attributes.item.impl.CombinedGroupedItemInv;
@@ -41,37 +42,43 @@ public final class ItemAttributes {
     public static final CombinableAttribute<ItemExtractable> EXTRACTABLE;
 
     static {
-        FIXED_INV_VIEW = Attributes.createCombinable(//
+        FIXED_INV_VIEW = Attributes.createCombinable(
+            //
             FixedItemInvView.class, //
             EmptyFixedItemInv.INSTANCE, //
             list -> new CombinedFixedItemInvView<>(list), //
             createFixedInvAdder(false, null, inv -> inv)//
         );
-        FIXED_INV = Attributes.createCombinable(//
+        FIXED_INV = Attributes.createCombinable(
+            //
             FixedItemInv.class, //
             EmptyFixedItemInv.INSTANCE, //
             list -> new CombinedFixedItemInv<>(list), //
             createFixedInvAdder(false, null, Function.identity())//
         );
-        GROUPED_INV_VIEW = Attributes.createCombinable(//
+        GROUPED_INV_VIEW = Attributes.createCombinable(
+            //
             GroupedItemInvView.class, //
             EmptyGroupedItemInv.INSTANCE, //
             list -> new CombinedGroupedItemInvView(list), //
             createFixedInvAdder(false, null, FixedItemInv::getGroupedInv)//
         );
-        GROUPED_INV = Attributes.createCombinable(//
+        GROUPED_INV = Attributes.createCombinable(
+            //
             GroupedItemInv.class, //
             EmptyGroupedItemInv.INSTANCE, //
             list -> new CombinedGroupedItemInv(list), //
             createFixedInvAdder(false, null, FixedItemInv::getGroupedInv)//
         );
-        INSERTABLE = Attributes.createCombinable(//
+        INSERTABLE = Attributes.createCombinable(
+            //
             ItemInsertable.class, //
             RejectingItemInsertable.NULL, //
             list -> new CombinedItemInsertable(list), //
             createFixedInvAdder(true, null, FixedItemInv::getInsertable)//
         );
-        EXTRACTABLE = Attributes.createCombinable(//
+        EXTRACTABLE = Attributes.createCombinable(
+            //
             ItemExtractable.class, //
             EmptyItemExtractable.NULL, //
             list -> new CombinedItemExtractable(list), //
@@ -95,13 +102,13 @@ public final class ItemAttributes {
                 SidedInventory inventory = provider.getInventory(state, world, pos);
                 if (inventory != null) {
                     if (inventory.getInvSize() > 0) {
-                        FixedInventoryVanillaWrapper wrapper = new FixedInventoryVanillaWrapper(inventory);
+                        final FixedItemInv wrapper;
                         if (direction != null) {
-                            list.add(getter
-                                .apply(wrapper.getMappedInv(inventory.getInvAvailableSlots(direction.getOpposite()))));
+                            wrapper = FixedSidedInventoryVanillaWrapper.create(inventory, direction.getOpposite());
                         } else {
-                            list.add(getter.apply(wrapper));
+                            wrapper = new FixedInventoryVanillaWrapper(inventory);
                         }
+                        list.add(getter.apply(wrapper));
                     } else {
                         list.add(((DefaultedAttribute<T>) list.attribute).defaultValue);
                     }
@@ -112,20 +119,20 @@ public final class ItemAttributes {
                     // Special case chests here, rather than through a mixin because it just simplifies
                     // everything
 
-                    Inventory chestInv = ChestBlock.getInventory(state, world, pos,
-                        /* Check if the top is blocked by a solid block or a cat */false);
+                    Inventory chestInv = ChestBlock.getInventory(state, world, pos, /* Check if the top is blocked by a
+                                                                                     * solid block or a cat */false);
                     if (chestInv != null) {
                         list.add(getter.apply(new FixedInventoryVanillaWrapper(chestInv)));
                     }
                 } else if (be instanceof SidedInventory) {
                     SidedInventory sidedInv = (SidedInventory) be;
-                    FixedInventoryVanillaWrapper fixedInv = new FixedInventoryVanillaWrapper(sidedInv);
+                    final FixedItemInv wrapper;
                     if (direction != null) {
-                        int[] slots = sidedInv.getInvAvailableSlots(direction.getOpposite());
-                        list.add(getter.apply(fixedInv.getMappedInv(slots)));
+                        wrapper = FixedSidedInventoryVanillaWrapper.create(sidedInv, direction.getOpposite());
                     } else {
-                        list.add(getter.apply(fixedInv));
+                        wrapper = new FixedInventoryVanillaWrapper(sidedInv);
                     }
+                    list.add(getter.apply(wrapper));
                 } else if (be instanceof Inventory) {
                     list.add(getter.apply(new FixedInventoryVanillaWrapper((Inventory) be)));
                 }
