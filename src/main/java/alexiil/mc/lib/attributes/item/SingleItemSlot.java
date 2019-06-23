@@ -40,7 +40,7 @@ public final class SingleItemSlot extends SingleItemSlotView implements ItemTran
 
     @Override
     public final ItemStack attemptExtraction(ItemFilter filter, int maxAmount, Simulation simulation) {
-        return ItemInvUtil.extractSingle(getBackingInv(), maxAmount, filter, ItemStack.EMPTY, maxAmount, simulation);
+        return ItemInvUtil.extractSingle(getBackingInv(), slot, filter, ItemStack.EMPTY, maxAmount, simulation);
     }
 
     @Override

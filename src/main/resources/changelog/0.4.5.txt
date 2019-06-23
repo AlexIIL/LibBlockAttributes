@@ -1,0 +1,3 @@
+Bug Fixes:
+
+* Fixed SingleItemSlot.attemptExtraction using "maxAmount" for the slot rather than the stored slot index.
