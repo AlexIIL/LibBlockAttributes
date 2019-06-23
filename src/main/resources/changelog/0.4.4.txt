@@ -1,0 +1,3 @@
+Bug Fixes:
+
+* Fixed an issue with the buildscript which produced maven data for "items" and "fluids" that didn't depend on "core".

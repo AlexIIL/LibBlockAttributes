@@ -8,7 +8,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 archivesBaseName = "LibBlockAttributes"
-version = "0.4.3"
+version = "0.4.4"
 
 minecraft {
 }
@@ -140,14 +140,20 @@ def writeFabricModJsonFile(String key) {
 }
 
 ext.taken = new HashSet<>();
-ext.generatedJars = new HashMap<String, List<String>>();
+ext.requiredJars = new HashMap<String, List<String>>();
 
 def generateJar(
     String key, Collection<String> _includes,
     Collection<String> _excludes, boolean hasMixins,
-    List<String> nestedJars = []
+    List<String> nestedJars = [], List<String> required = []
 ) {
-    generatedJars.put(key, nestedJars);
+    def allRequired = new LinkedHashSet<>();
+    allRequired.addAll(required);
+    allRequired.addAll(nestedJars);
+    for (req in required) {
+        allRequired.addAll(requiredJars.get(req));
+    }
+    requiredJars.put(key, allRequired);
 
     task("submod_" + key + "Jar", type: Jar) {
         baseName = "libblockattributes-" + key;
@@ -209,26 +215,23 @@ def generateJar(
     build.dependsOn("submod_" + key + "SourcesJar");
 }
 
-generateJar("items",
-    [
-        "alexiil/mc/lib/attributes/item/**",
-        "assets/libblockattributes/icon_items.png"
-    ],
-    [], false
-);
-generateJar("fluids",
-    [
-        "alexiil/mc/lib/attributes/fluid/**",
-        "assets/libblockattributes/textures/fluid/**",
-        "assets/libblockattributes/icon_fluids.png",
-        "libblockattributes_fluid.common.json"
-    ],
-    [], true
-);
-generateJar("core",
-    ["**"],
-    new HashSet<>(taken), false
-);
+def itemsReq = [
+    "alexiil/mc/lib/attributes/item/**",
+    "assets/libblockattributes/icon_items.png"
+];
+def fluidsReq = [
+    "alexiil/mc/lib/attributes/fluid/**",
+    "assets/libblockattributes/textures/fluid/**",
+    "assets/libblockattributes/icon_fluids.png",
+    "libblockattributes_fluid.common.json"
+];
+def coreExclude = new HashSet<>();
+coreExclude.addAll(itemsReq);
+coreExclude.addAll(fluidsReq);
+
+generateJar("core", ["**"], coreExclude, false);
+generateJar("items", itemsReq, [], false, [], ["core"]);
+generateJar("fluids", fluidsReq, [], true, [], ["core"]);
 generateJar("all",
     [
         "assets/libblockattributes/icon_all.png"
@@ -243,7 +246,7 @@ publishing {
         }
     }
     publications {
-        for (key in generatedJars.keySet()) {
+        for (key in requiredJars.keySet()) {
             create("publishJars_" + key, MavenPublication) {
                 groupId "alexiil.mc.lib"
                 artifactId "libblockattributes-" + key
@@ -267,11 +270,11 @@ publishing {
                 def k = key;
                 pom.withXml {
                     def root = asNode();
-                    def nested = generatedJars.get(k);
-                    if (!nested.isEmpty()) {
+                    def required = requiredJars.get(k);
+                    if (!required.isEmpty()) {
                         Node deps = root.appendNode('dependencies');
 
-                        for (dep in nested) {
+                        for (dep in required) {
                             Node depNode = deps.appendNode('dependency');
                             depNode.appendNode('groupId', 'alexiil.mc.lib');
                             depNode.appendNode('artifactId', 'libblockattributes-' + dep);
