@@ -140,7 +140,7 @@ repositories {
 }
 
 dependencies {
-    modCompile "alexiil.mc.lib:libblockattributes-all:0.4.3"
+    modCompile "alexiil.mc.lib:libblockattributes-all:0.4.4"
 }
 ```
 And depending on "libblockattributes" in your fabric.mod.json. Note that this won't quite work correctly if all 3 of the modules are present, but the encompassing "all" is not. As such it's better to depend on both "libblockattributes\_items" and "libblockattributes\_fluids" if you need all 3. (You don't need to explicitly depend on "core" because both "items" and "fluids" depend on it).
@@ -158,9 +158,9 @@ repositories {
 dependencies {
     // Uncomment out items and fluids to depend on either of them.
     // (Both items and fluids depend on core) 
-    modCompile "alexiil.mc.lib:libblockattributes-core:0.4.3"
-    // modCompile "alexiil.mc.lib:libblockattributes-items:0.4.3"
-    // modCompile "alexiil.mc.lib:libblockattributes-fluids:0.4.3"
+    modCompile "alexiil.mc.lib:libblockattributes-core:0.4.4"
+    // modCompile "alexiil.mc.lib:libblockattributes-items:0.4.4"
+    // modCompile "alexiil.mc.lib:libblockattributes-fluids:0.4.4"
 }
 ```
 And depend on "libblockattributes\_core", "libblockattributes\_items", and "libblockattributes\_fluids" in your fabric.mod.json.
