@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2019 AlexIIL
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
 package alexiil.mc.lib.attributes.item;
 
 import java.util.function.Consumer;
@@ -85,7 +92,7 @@ public enum ItemInvUtil {
      * {@link FixedItemInv#setInvStack(int, ItemStack, Simulation)}. As such this is useful for implementations of
      * {@link ItemInsertable} (or others) for the base implementation.
      * 
-     * @param toInsert The stack to insert. Note that this passed stack <strong>will be modified</strong>!
+     * @param toInsert The stack to insert. This won't be modified.
      * @return The excess {@link ItemStack} that wasn't inserted. */
     public static ItemStack insertSingle(FixedItemInv inv, int slot, ItemStack toInsert, Simulation simulation) {
         if (toInsert.isEmpty()) {
@@ -109,6 +116,7 @@ public enum ItemInvUtil {
             inSlot.addAmount(addable);
         }
         if (inv.setInvStack(slot, inSlot, simulation)) {
+            toInsert = toInsert.copy();
             toInsert.subtractAmount(addable);
             if (toInsert.isEmpty()) {
                 return ItemStack.EMPTY;

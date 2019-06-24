@@ -1,5 +1,6 @@
 plugins {
     id 'fabric-loom' version '0.2.4-SNAPSHOT'
+    id 'net.minecrell.licenser' version '0.4.1'
 }
 
 apply plugin: 'maven-publish' // for uploading to a maven repo
@@ -8,7 +9,12 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 archivesBaseName = "LibBlockAttributes"
-version = "0.4.5+build.1"
+version = "0.4.5+build.2"
+
+license {
+    header = project.file('misc/LICENSE_HEADER.txt');
+    newLine = false;
+}
 
 minecraft {
 }
