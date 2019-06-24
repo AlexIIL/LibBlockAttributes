@@ -1,3 +1,9 @@
+Changes:
+
+* Relicense from MIT to the Mozilla Public License Version 2.0
+    * (Mostly to match BuildCraft's license, of which many parts of it were used in LBA).
+
 Bug Fixes:
 
 * Fixed SingleItemSlot.attemptExtraction using "maxAmount" for the slot rather than the stored slot index.
+* Fixed ItemInvUtil.insertSingle modifying the stack given to it, unlike *everything else* in LBA.
