@@ -152,11 +152,15 @@ public enum FluidVolumeUtil {
             return false;
         }
         Ref<ItemStack> stack = new Ref<>(inHand);
-        FluidTankInteraction result = interactWithTank(inv, stack, ItemInvUtil.createPlayerInsertable(player));
+        boolean isSurvival = !player.abilities.creativeMode;
+        Consumer<ItemStack> stackConsumer = isSurvival ? ItemInvUtil.createPlayerInsertable(player) : s -> {};
+        FluidTankInteraction result = interactWithTank(inv, stack, stackConsumer);
         if (!result.didMoveAny()) {
             return false;
         }
-        player.setStackInHand(hand, stack.obj);
+        if (isSurvival) {
+            player.setStackInHand(hand, stack.obj);
+        }
         final SoundEvent soundEvent;
         if (result.fluidMoved.fluidKey == FluidKeys.LAVA) {
             soundEvent = result.intoTank ? SoundEvents.ITEM_BUCKET_EMPTY_LAVA : SoundEvents.ITEM_BUCKET_FILL_LAVA;
@@ -174,7 +178,7 @@ public enum FluidVolumeUtil {
 
     /** @param inv The fluid inventory to interact with
      * @param stack The held {@link ItemStack} to interact with.
-     * @param excessStacks A {@link Consumer} to take the excess itemstack. */
+     * @param excessStacks A {@link Consumer} to take the excess {@link ItemStack}'s. */
     public static FluidTankInteraction interactWithTank(FixedFluidInv inv, Ref<ItemStack> stack, Consumer<
         ItemStack> excessStacks) {
         if (stack.obj.isEmpty() || !(stack.obj.getItem() instanceof FluidProviderItem)) {
@@ -275,8 +279,8 @@ public enum FluidVolumeUtil {
         }
         inTank = inTank.copy();
         FluidVolume addable = inTank.split(maxAmount);
-        FluidVolume merged = FluidVolume.merge(inTank, addable);
-        if (inv.setInvFluid(tank, inTank, simulation)) {
+        FluidVolume merged = FluidVolume.merge(toAddWith, addable);
+        if (merged != null && inv.setInvFluid(tank, inTank, simulation)) {
             toAddWith = merged;
         }
         return toAddWith;

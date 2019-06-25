@@ -1,0 +1,4 @@
+Bug Fixes:
+
+* Fixed FluidVolumeUtil.extractSingle() not working correctly.
+* Fixed FluidVolumeUtil.interactWithTank modifying a creative player's inventory.
