@@ -69,6 +69,9 @@ public enum FluidVolumeUtil {
         }
         FluidVolume leftover = to.attemptInsertion(extracted, Simulation.ACTION);
         int insertedAmount = extracted.getAmount() - leftover.getAmount();
+        if (insertedAmount <= 0) {
+            return EMPTY;
+        }
         ExactFluidFilter exactFilter = new ExactFluidFilter(extracted.fluidKey);
         FluidVolume reallyExtracted = from.attemptExtraction(exactFilter, insertedAmount, Simulation.ACTION);
 

@@ -1,0 +1,3 @@
+Bug Fixes:
+
+* Fixed FluidVolumeUtil.move() crashing when no fluid could be inserted into the destination.
