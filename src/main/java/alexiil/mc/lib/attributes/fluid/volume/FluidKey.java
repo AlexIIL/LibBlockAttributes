@@ -16,6 +16,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.ViewableWorld;
 
+/** A factory for {@link FluidVolume} instances. Identifying whether two {@link FluidKey}'s are equal is always done via
+ * the object identity comparison (== rather than {@link #equals(Object)} - although {@link FluidKey} final-overrides
+ * equals and hashCode to perform identity comparison anyway). */
 public abstract class FluidKey {
 
     /* package-private */ final FluidRegistryEntry<?> registryEntry;
@@ -126,5 +129,15 @@ public abstract class FluidKey {
     /** Called when this is pumped out from the world. */
     public FluidVolume fromWorld(ViewableWorld world, BlockPos pos) {
         return withAmount(FluidVolume.BUCKET);
+    }
+
+    @Override
+    public final boolean equals(Object obj) {
+        return this == obj;
+    }
+
+    @Override
+    public final int hashCode() {
+        return System.identityHashCode(this);
     }
 }

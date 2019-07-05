@@ -28,7 +28,6 @@ import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.item.ItemInvUtil;
-import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 import alexiil.mc.lib.attributes.misc.Ref;
 
 public enum FluidVolumeUtil {
@@ -54,7 +53,7 @@ public enum FluidVolumeUtil {
     }
 
     /** Attempts to move up to the given maximum amount of fluids from the {@link FluidExtractable} to the
-     * {@link FluidInsertable}, provided they match the given {@link ItemFilter}.
+     * {@link FluidInsertable}, provided they match the given {@link FluidFilter}.
      * 
      * @return A copy of the fluid moved. */
     public static FluidVolume move(FluidExtractable from, FluidInsertable to, FluidFilter filter, int maximum) {
@@ -63,34 +62,59 @@ public enum FluidVolumeUtil {
             insertionFilter = AggregateFluidFilter.and(insertionFilter, filter);
         }
 
+        // 5 steps:
+        // 1: (Simulate) Try to extract as much as possible, to find out the maximum amount of fluid available
+        // 2: (Simulate) Try to insert as much of the extracted as possible
+        // 3: (Simulate) Try to extract the exact amount that was actually inserted
+        /* We don't need to simulate inserting the exact amount because it should always be safe to insert the amount
+         * minus the leftover. */
+        // If all of the above steps provide an exact amount > 0:
+        // 4: Extract the exact amount
+        // 5: Insert the exact fluid.
+        // and assert that there is no leftover.
+
+        // Step 1:
         FluidVolume extracted = from.attemptExtraction(insertionFilter, maximum, Simulation.SIMULATE);
         if (extracted.isEmpty()) {
             return EMPTY;
         }
-        FluidVolume leftover = to.attemptInsertion(extracted, Simulation.ACTION);
-        int insertedAmount = extracted.getAmount() - leftover.getAmount();
-        if (insertedAmount <= 0) {
+
+        // Step 2:
+        FluidVolume firstLeftover = to.attemptInsertion(extracted, Simulation.SIMULATE);
+        int firstInserted = extracted.getAmount() - firstLeftover.getAmount();
+        if (firstInserted <= 0) {
             return EMPTY;
         }
-        ExactFluidFilter exactFilter = new ExactFluidFilter(extracted.fluidKey);
-        FluidVolume reallyExtracted = from.attemptExtraction(exactFilter, insertedAmount, Simulation.ACTION);
 
-        if (reallyExtracted.isEmpty()) {
+        // Step 3:
+        FluidVolume exactExtracted = from.attemptExtraction(
+            new ExactFluidFilter(extracted.fluidKey), firstInserted, Simulation.SIMULATE
+        );
+        if (exactExtracted.getAmount() != firstInserted) {
+            return EMPTY;
+        }
+
+        // Step 4:
+        FluidVolume reallyExtracted = from.extract(exactExtracted.fluidKey, firstInserted);
+        if (!reallyExtracted.equals(exactExtracted)) {
             throw throwBadImplException(
-                "Tried to extract the filter (C) from A but it returned an empty item stack "
-                    + "after we have already inserted the expected stack into B!\nThe inventory is now in an invalid (duped) state!",
-                new String[] { "from A", "to B", "filter C" }, new Object[] { from, to, filter }
+                "A simulated extraction (returning A) didn't match the real extraction (returning B) from the fluid extractable C!",
+                new String[] { "fluid A", "fluid B", "from C", "filter D" }, new Object[] { exactExtracted,
+                    reallyExtracted, from, insertionFilter }
             );
         }
-        if (reallyExtracted.getAmount() != insertedAmount) {
-            throw throwBadImplException(
-                "Tried to extract " + insertedAmount + " but we actually extracted " + reallyExtracted.getAmount()
-                    + "!\nThe inventory is now in an invalid (duped) state!", new String[] { "from A", "to B",
-                        "filter C", "originally extracted", "really extracted" }, new Object[] { from, to,
-                            insertionFilter, extracted, reallyExtracted }
-            );
+
+        // Step 5:
+        FluidVolume leftover = to.insert(reallyExtracted);
+        if (leftover.isEmpty()) {
+            return reallyExtracted;
         }
-        return extracted;
+
+        throw throwBadImplException(
+            "A simulated insertion (of A returning B) didn't match the real insertion (of C returning D) into the fluid insertable E!",
+            new String[] { "inserted A", "leftover B", "inserted C", "leftover D", "insertable E" }, new Object[] {
+                extracted, firstLeftover, reallyExtracted, leftover, to }
+        );
     }
 
     /** @return An {@link FluidInsertable} that will insert fluids into the given stack (overflowing into the given

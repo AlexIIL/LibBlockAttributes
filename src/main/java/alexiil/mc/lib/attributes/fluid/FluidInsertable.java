@@ -20,7 +20,7 @@ public interface FluidInsertable {
      * @param fluid The incoming fluid. Must not be modified by this call.
      * @param simulation If {@link Simulation#SIMULATE} then this shouldn't modify anything.
      * @return the excess {@link FluidVolume} that wasn't accepted. This will be independent of this insertable, however
-     *         it might be the given stack instead of a completely new object. */
+     *         it might be the given object instead of a completely new object. */
     FluidVolume attemptInsertion(FluidVolume fluid, Simulation simulation);
 
     /** Inserts the given stack into this insertable, and returns the excess.

@@ -21,8 +21,8 @@ import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 /** Various hooks and methods for dealing with pairs of {@link FixedItemInv}, {@link FixedItemInvView},
  * {@link ItemInsertable}, {@link ItemExtractable}, and {@link GroupedItemInvView} instances. */
-public enum ItemInvUtil {
-    ;
+public final class ItemInvUtil {
+    private ItemInvUtil() {}
 
     // #######################
     // Direct utility methods
@@ -145,7 +145,7 @@ public enum ItemInvUtil {
                 return toAddWith;
             }
             maxAmount = Math.min(maxAmount, toAddWith.getMaxAmount() - toAddWith.getAmount());
-            if (maxAmount >= 0) {
+            if (maxAmount <= 0) {
                 return toAddWith;
             }
         }

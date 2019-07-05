@@ -1,0 +1,16 @@
+Breaking changes:
+
+* Added a new requirement to FluidExtractable.attemptExtraction:
+    * Now it should always be valid to simulate an extraction with any filter the first time,
+      and then simulate or action the second time with an exact fluid filter with the fluid
+      that was extracted the first time. (This is required for the bugfix below).
+
+* FluidKey now final-overrides equals and hashCode to perform identity equality.
+    * This implies that every fluid must only have one fluid key, that must be cached
+      somewhere at all times.
+
+Bug Fixes:
+
+* Fixed FluidVolumeUtil.move() crashing when the source or the destination had a minimum transfer amount.
+* Fixed ItemInvUtil.extractSingle() never merging an item with the item passed in.
+* Fixed fabric.mod.json using "requires" instead of "depends" for mod dependencies.

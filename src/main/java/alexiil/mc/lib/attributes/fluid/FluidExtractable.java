@@ -25,8 +25,26 @@ public interface FluidExtractable {
      * 
      * @param filter
      * @param maxAmount The maximum amount of fluid that can be extracted. Negative numbers throw an exception.
-     * @param simulation If {@link Simulation#SIMULATE} then this should return the same result that a call with
-     *            {@link Simulation#ACTION} would do, but without modifying anything else.
+     * @param simulation If {@link Simulation#SIMULATE} then this should return the same result that the exact same call
+     *            with {@link Simulation#ACTION} would do, except that the filter can be made more specific between
+     *            calls if the previously simulated extracted fluid is used as a filter.
+     *            <p>
+     *            For example the following code snippet should never throw an exception:
+     *            <p>
+     *            {@link FluidExtractable} from = // Some extractable <br>
+     *            {@link FluidVolume} attempted = from.{@link FluidExtractable#attemptAnyExtraction
+     *            attemptAnyExtraction}({@link Integer#MAX_VALUE Integer.MAX_VALUE}, {@link Simulation#SIMULATE
+     *            Simulation.SIMULATE}); <br>
+     *            if (attempted.{@link FluidVolume#isEmpty() isEmpty()}) return;<br>
+     *            {@link FluidVolume} extracted = from.{@link FluidExtractable#extract(FluidKey, int)
+     *            extract}(attempted.{@link FluidVolume#getFluidKey() getFluidKey()},
+     *            attempted.{@link FluidVolume#getAmount() getAmount()}); <br>
+     *            assert !extracted.{@link FluidVolume#isEmpty() isEmpty};<br>
+     *            assert attempted.{@link FluidVolume#getAmount() getAmount()} ==
+     *            extracted.{@link FluidVolume#getAmount() getAmount()}; <br>
+     *            assert attempted.{@link FluidVolume#getFluidKey() getFluidKet()} ==
+     *            extracted.{@link FluidVolume#getFluidKey() getFluidKet()}; <br>
+     *            assert attempted.{@link Object#equals(Object) equals}(extracted);<br>
      * @return A new, independent {@link FluidVolume} that was extracted. */
     FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation);
 

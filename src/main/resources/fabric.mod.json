@@ -10,7 +10,7 @@
       "alexiil.mc.lib.attributes.fluid.init.ClientFluidInit"
     ]
   },
-  "requires": {
+  "depends": {
     "fabricloader": ">=0.4.0",
     "fabric": "*"
   },
@@ -23,7 +23,7 @@
     "issues": "https://github.com/AlexIIL/LibBlockAttributes/issues",
     "homepage": "https://github.com/AlexIIL/LibBlockAttributes",
     "sources": "https://github.com/AlexIIL/LibBlockAttributes",
-    "license": "MIT"
+    "license": "MPLv2"
   },
 
   "__buildscript_diff": {
@@ -41,7 +41,7 @@
       "+description": "Various utility classes for item inventories and transfer",
       "-entrypoints": {},
       "-mixins": [],
-      "~requires": {
+      "~depends": {
         "+libblockattributes_core": ">=$version"
       },
       "+icon": "assets/libblockattributes/icon_items.png",
@@ -51,7 +51,7 @@
       "+id": "libblockattributes_fluids",
       "+name": "LibBlockAttributes (Fluids)",
       "+description": "Various utility classes for fluid inventories and transfer",
-      "~requires": {
+      "~depends": {
         "+libblockattributes_core": ">=$version"
       },
       "+icon": "assets/libblockattributes/icon_fluids.png",
@@ -60,7 +60,7 @@
     "all": {
       "-entrypoints": {},
       "-mixins": [],
-      "~requires": {
+      "~depends": {
         "+libblockattributes_core": ">=$version",
         "+libblockattributes_items": ">=$version",
         "+libblockattributes_fluids": ">=$version"

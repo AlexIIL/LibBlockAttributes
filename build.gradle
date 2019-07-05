@@ -8,8 +8,8 @@ apply plugin: 'maven-publish' // for uploading to a maven repo
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-archivesBaseName = "LibBlockAttributes"
-version = "0.4.7"
+archivesBaseName = "libblockatttributes"
+version = "0.4.8"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -85,21 +85,24 @@ task unzipSourcesJar(type: Copy, dependsOn: sourcesJar) {
 //
 // #####################
 
-// Obfuscated Jar location?
-ext.jarFile = zipTree(jar.archivePath)
+// Variables (that should be changed)
+ext.mainName = "libblockattributes"
+ext.mavenGroupId = "alexiil.mc.lib";
 
+// Internals
+ext.jarFile = zipTree(jar.archivePath)
 ext.modulesDir = new File(System.getenv("LIBS_DIR") ?: "$projectDir/build/libs/", version)
 
 def getFabricModJsonFile(String key) {
-    return new File("$projectDir/build/processing/fabric_jsons/" + key + "/fabric.mod.json");
+    return new File("$projectDir/build/processing/fabric_jsons/$key/fabric.mod.json");
 }
 
 def getNestedJarFile(String key) {
-    return new File("$projectDir/build/processing/nested_jars/" + key + "/libblockattributes-" + key + "-" + project.version + ".jar");
+    return new File("$projectDir/build/processing/nested_jars/$key/$mainName-$key-${project.version}.jar");
 }
 
 def getNestedSourceJarFile(String key) {
-    return new File("$projectDir/build/processing/nested_jars/" + key + "-sources/libblockattributes-" + key + "-" + project.version + "-sources.jar");
+    return new File("$projectDir/build/processing/nested_jars/$key-sources/$mainName-$key-$project.version-sources.jar");
 }
 
 def transformJson(json, diff) {
@@ -148,6 +151,13 @@ def writeFabricModJsonFile(String key) {
 ext.taken = new HashSet<>();
 ext.requiredJars = new HashMap<String, List<String>>();
 
+// Arguments:
+//   key: The name for this jar-module
+//   _includes: Everything that should be included in the module
+//   _excludes: Everything that should not be included in this module
+//   hasMixins: If true then the refmap will be included
+//   nestedJars: A list of every module (that is also defined here) to nest in this module
+//   required: A list of every external jar file (that must be defined with "nest") to include in this module (TODO)
 def generateJar(
     String key, Collection<String> _includes,
     Collection<String> _excludes, boolean hasMixins,
@@ -162,7 +172,7 @@ def generateJar(
     requiredJars.put(key, allRequired);
 
     task("submod_" + key + "Jar", type: Jar) {
-        baseName = "libblockattributes-" + key;
+        baseName = "$mainName-$key";
         destinationDir = modulesDir;
         from(writeFabricModJsonFile(key).parentFile);
         for (nKey in nestedJars) {
@@ -184,7 +194,7 @@ def generateJar(
     }
 
     task("submod_" + key + "SourcesJar", type: Jar, dependsOn: unzipSourcesJar) {
-        baseName = "libblockattributes-" + key;
+        baseName = "$mainName-$key";
         classifier = "sources";
         destinationDir = modulesDir;
         from(writeFabricModJsonFile(key).parentFile);
@@ -207,12 +217,12 @@ def generateJar(
     }
 
     task("copySubModJar_" + key, type: Copy, dependsOn: tasks["submod_" + key + "Jar"]) {
-        from "" + modulesDir + "/libblockattributes-" + key + "-" + project.version + ".jar";
+        from "" + modulesDir + "/$mainName-$key-${project.version}.jar";
         into getNestedJarFile(key).parentFile;
     }
 
     task("copySubModSourcesJar_" + key, type: Copy, dependsOn: tasks["submod_" + key + "SourcesJar"]) {
-        from "" + modulesDir + "/libblockattributes-" + key + "-" + project.version + "-sources.jar";
+        from "" + modulesDir + "/$mainName-$key-$project.version-sources.jar";
         into getNestedSourceJarFile(key).parentFile;
     }
 
@@ -221,6 +231,7 @@ def generateJar(
     build.dependsOn("submod_" + key + "SourcesJar");
 }
 
+// Custom modules
 def itemsReq = [
     "alexiil/mc/lib/attributes/item/**",
     "assets/libblockattributes/icon_items.png"
@@ -254,8 +265,8 @@ publishing {
     publications {
         for (key in requiredJars.keySet()) {
             create("publishJars_" + key, MavenPublication) {
-                groupId "alexiil.mc.lib"
-                artifactId "libblockattributes-" + key
+                groupId "$mavenGroupId"
+                artifactId "$mainName-$key";
                 version project.version
 
                 artifact tasks["submod_" + key + "Jar"]
@@ -282,8 +293,8 @@ publishing {
 
                         for (dep in required) {
                             Node depNode = deps.appendNode('dependency');
-                            depNode.appendNode('groupId', 'alexiil.mc.lib');
-                            depNode.appendNode('artifactId', 'libblockattributes-' + dep);
+                            depNode.appendNode('groupId', "$mavenGroupId");
+                            depNode.appendNode('artifactId', "$mainName-" + dep);
                             depNode.appendNode('version', project.version);
                             depNode.appendNode('scope', 'compile');
                         }

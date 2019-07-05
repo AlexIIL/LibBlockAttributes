@@ -23,23 +23,6 @@ public class BiomeSourcedFluidKey extends NormalFluidKey {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (obj == null || obj.getClass() != getClass()) {
-            return false;
-        }
-        BiomeSourcedFluidKey other = (BiomeSourcedFluidKey) obj;
-        return fluid == other.fluid;
-    }
-
-    @Override
-    public int hashCode() {
-        return System.identityHashCode(fluid);
-    }
-
-    @Override
     public BiomeSourcedFluidVolume withAmount(int amount) {
         return new BiomeSourcedFluidVolume(this, amount);
     }
