@@ -15,6 +15,7 @@ import net.minecraft.util.shape.VoxelShape;
 
 import alexiil.mc.lib.attributes.AttributeList;
 import alexiil.mc.lib.attributes.CacheInfo;
+import alexiil.mc.lib.attributes.Convertible;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
@@ -45,7 +46,7 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
  * <li>A partial view of a single inventory is {@link SubFixedFluidInv}</li>
  * </ul>
  */
-public interface FixedFluidInvView {
+public interface FixedFluidInvView extends Convertible {
 
     /** @return The number of tanks in this inventory. */
     int getTankCount();
@@ -146,11 +147,19 @@ public interface FixedFluidInvView {
 
     /** Offers this object and {@link #getGroupedInv()} to the attribute list. (Which, in turn, adds
      * {@link FixedFluidInv#getInsertable()}, {@link FixedFluidInv#getExtractable()}, and
-     * {@link FixedFluidInv#getTransferable()} to the list as well). */
+     * {@link FixedFluidInv#getTransferable()} to the list as well).
+     * 
+     * @deprecated Because this functionality has been fully replaced by {@link Convertible} and it's usage in
+     *             {@link AttributeList}. */
+    @Deprecated
     default void offerSelfAsAttribute(AttributeList<?> list, @Nullable CacheInfo cacheInfo,
         @Nullable VoxelShape shape) {
         list.offer(this, cacheInfo, shape);
-        list.offer(getGroupedInv(), cacheInfo, shape);
+    }
+
+    @Override
+    default <T> T convertTo(Class<T> otherType) {
+        return Convertible.offer(otherType, getGroupedInv());
     }
 
     /** @return An object that only implements {@link FixedFluidInvView}, and does not expose the modification methods

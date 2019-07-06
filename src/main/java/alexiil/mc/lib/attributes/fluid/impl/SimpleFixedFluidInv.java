@@ -66,7 +66,9 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable {
     // IFixedFluidInv
 
     @Override
-    public final int getTankCount() { return tanks.size(); }
+    public final int getTankCount() {
+        return tanks.size();
+    }
 
     @Override
     public int getMaxAmount(int tank) {
@@ -93,9 +95,8 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable {
                     if (method.getDeclaringClass() != SimpleFixedFluidInv.class) {
                         // it's been overriden, but we haven't
                         throw new IllegalStateException(
-                            "The subclass "
-                            + method.getDeclaringClass()
-                            + " has overriden isFluidValidForTank() but hasn't overriden getFilterForTank()"
+                            "The subclass " + method.getDeclaringClass()
+                                + " has overriden isFluidValidForTank() but hasn't overriden getFilterForTank()"
                         );
                     }
                 } catch (ReflectiveOperationException roe) {

@@ -1,0 +1,12 @@
+Changes:
+
+* Added a new interface "Convertible", with a single method "<T> T convertTo(Class<T> clazz)"
+    * AttributeList.offer() now uses this to attempt to convert the given object into the desired one.
+    * This is primarily used to fix the bug below.
+* Deprecated FixedItemInvView.offerSelfAsAttribute and FixedFluidInvView.offerSelfAsAttribute because
+  they now implement the convertible interface. 
+
+Bug Fixes:
+
+* Fixed SimpleFixedItemInvView.offerSelfAsAttribute adding two instances of ItemTransferable
+  rather than just one.

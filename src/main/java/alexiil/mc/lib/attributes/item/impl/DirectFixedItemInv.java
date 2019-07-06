@@ -25,6 +25,7 @@ import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.ItemInvAmountChangeListener;
 import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener.ItemInvSlotListener;
+import alexiil.mc.lib.attributes.item.ItemInvUtil;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
@@ -339,6 +340,6 @@ public class DirectFixedItemInv implements FixedItemInv, GroupedItemInv {
      * @return The leftover that couldn't be inserted. */
     public ItemStack insert(int slot, ItemStack stack) {
         // TODO: Optimise this!
-        return getSubInv(slot, slot).getGroupedInv().attemptInsertion(stack, Simulation.ACTION);
+        return ItemInvUtil.insertSingle(this, slot, stack, Simulation.ACTION);
     }
 }

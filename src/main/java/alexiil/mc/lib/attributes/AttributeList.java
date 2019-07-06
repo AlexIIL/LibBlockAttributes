@@ -79,19 +79,39 @@ public class AttributeList<T> {
 
     // Adders (used by attribute providers)
 
-    public void add(T obj) {
-        add(obj, null, null);
+    /** Directly adds the given object to this list.
+     * 
+     * @param object The object to add. */
+    public void add(T object) {
+        add(object, null, null);
     }
 
-    public void add(T obj, @Nullable CacheInfo cacheInfo) {
-        add(obj, cacheInfo, null);
+    /** Directly adds the given object to this list.
+     * 
+     * @param object The object to add.
+     * @param cacheInfo The caching information associated with the given object. (As caching hasn't been implemented
+     *            yet this can always be null). */
+    public void add(T object, @Nullable CacheInfo cacheInfo) {
+        add(object, cacheInfo, null);
     }
 
-    public void add(T obj, @Nullable VoxelShape shape) {
-        add(obj, null, shape);
+    /** Directly adds the given object to this list.
+     * 
+     * @param object The object to add.
+     * @param shape The shape of the given object. If null (or empty) then this will default to the shape of the block
+     *            that is being checked. */
+    public void add(T object, @Nullable VoxelShape shape) {
+        add(object, null, shape);
     }
 
-    public void add(T obj, @Nullable CacheInfo cacheInfo, @Nullable VoxelShape shape) {
+    /** Directly adds the given object to this list.
+     * 
+     * @param object The object to add.
+     * @param cacheInfo The caching information associated with the given object. (As caching hasn't been implemented
+     *            yet this can always be null).
+     * @param shape The shape of the given object. If null (or empty) then this will default to the shape of the block
+     *            that is being checked. */
+    public void add(T object, @Nullable CacheInfo cacheInfo, @Nullable VoxelShape shape) {
         assertAdding();
         if (cacheInfo == null) {
             cacheInfo = CacheInfo.NOT_CACHABLE;
@@ -99,7 +119,7 @@ public class AttributeList<T> {
         if (shape == null) {
             shape = defaultShape;
         }
-        if (!searchParam.matches(obj)) {
+        if (!searchParam.matches(object)) {
             return;
         }
         VoxelShape searchShape = searchParam.getShape();
@@ -110,28 +130,62 @@ public class AttributeList<T> {
             }
             combinedShapeList.add(combined);
         }
-        list.add(obj);
+        list.add(object);
         cacheList.add(cacheInfo);
         shapeList.add(shape);
     }
 
+    /** Offers the given object to this list. If the given object is not an instance of the current {@link #attribute}
+     * (and it cannot be {@link Convertible#convertTo(Class) converted} into it) then this will not affect this list.
+     * 
+     * @param object The object to offer, which may implement {@link Convertible} if it can be converted into many
+     *            different forms. */
     public void offer(Object object) {
         offer(object, null, null);
     }
 
+    /** Offers the given object to this list. If the given object is not an instance of the current {@link #attribute}
+     * (and it cannot be {@link Convertible#convertTo(Class) converted} into it) then this will not affect this list.
+     * 
+     * @param object The object to offer, which may implement {@link Convertible} if it can be converted into many
+     *            different forms.
+     * @param cacheInfo The caching information associated with the given object. (As caching hasn't been implemented
+     *            yet this can always be null). */
     public void offer(Object object, @Nullable CacheInfo cacheInfo) {
         offer(object, cacheInfo, null);
     }
 
+    /** Offers the given object to this list. If the given object is not an instance of the current {@link #attribute}
+     * (and it cannot be {@link Convertible#convertTo(Class) converted} into it) then this will not affect this list.
+     * 
+     * @param object The object to offer, which may implement {@link Convertible} if it can be converted into many
+     *            different forms.
+     * @param shape The shape of the given object. If null (or empty) then this will default to the shape of the block
+     *            that is being checked. */
     public void offer(Object object, @Nullable VoxelShape shape) {
         offer(object, null, shape);
     }
 
+    /** Offers the given object to this list. If the given object is not an instance of the current {@link #attribute}
+     * (and it cannot be {@link Convertible#convertTo(Class) converted} into it) then this will not affect this list.
+     * 
+     * @param object The object to offer, which may implement {@link Convertible} if it can be converted into many
+     *            different forms.
+     * @param cacheInfo The caching information associated with the given object. (As caching hasn't been implemented
+     *            yet this can always be null).
+     * @param shape The shape of the given object. If null (or empty) then this will default to the shape of the block
+     *            that is being checked. */
     public void offer(Object object, @Nullable CacheInfo cacheInfo, @Nullable VoxelShape shape) {
         // Always check before to throw the error as early as possible
         assertAdding();
         if (attribute.isInstance(object)) {
             add(attribute.cast(object), cacheInfo, shape);
+        } else if (object instanceof Convertible) {
+            T converted = ((Convertible) object).convertTo(attribute.clazz);
+            if (converted == null) {
+                return;
+            }
+            add(converted, cacheInfo, shape);
         }
     }
 
@@ -238,10 +292,10 @@ public class AttributeList<T> {
     }
 
     @Nonnull
-    public T getFirst(DefaultedAttribute<T> attribute) {
+    public T getFirst(DefaultedAttribute<T> defaulted) {
         assertUsing();
         if (list.isEmpty()) {
-            return attribute.defaultValue;
+            return defaulted.defaultValue;
         }
         return list.get(0);
     }
