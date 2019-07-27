@@ -1,0 +1,3 @@
+Bug Fixes:
+
+* Fixed SidedInventoryFixedWrapper.canInsertInvStack only calling inv.isValidForSlot rather than simulating a full insertion. 

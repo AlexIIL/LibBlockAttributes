@@ -17,6 +17,7 @@ import net.minecraft.util.math.Direction;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.item.ItemInvUtil;
 
 /** A {@link SidedInventory} that wraps an {@link FixedItemInv}.
  * <p>
@@ -101,7 +102,7 @@ public abstract class SidedInventoryFixedWrapper extends InventoryFixedWrapper i
         int[] slots = getSlotsInternal(dir);
         for (int s : slots) {
             if (s == slot) {
-                return inv.isItemValidForSlot(slot, stack);
+                return ItemInvUtil.insertSingle(inv, s, stack, Simulation.SIMULATE).isEmpty();
             }
         }
         return false;

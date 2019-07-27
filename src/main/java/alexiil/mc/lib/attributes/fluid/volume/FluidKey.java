@@ -108,6 +108,15 @@ public abstract class FluidKey {
         return tag;
     }
 
+    // TODO: (Somehow) add compatibility with lib network stack
+    // to optionally use it's caching mechanism to send network updates
+
+    // It might be possible to just have two "write" + "read" methods, and
+    // then just test to make sure it's possible to load that method even if
+    // LNS isn't loaded.
+
+    // Basically, it just has to work without crashing on load if LNS isn't found
+
     @Nullable
     public Fluid getRawFluid() {
         return null;
