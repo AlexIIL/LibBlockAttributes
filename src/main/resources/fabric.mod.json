@@ -25,6 +25,9 @@
     "sources": "https://github.com/AlexIIL/LibBlockAttributes",
     "license": "MPLv2"
   },
+  "custom": {
+    "modmenu:api": true
+  },
 
   "__buildscript_diff": {
     "core": {

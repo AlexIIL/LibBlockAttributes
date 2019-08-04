@@ -52,6 +52,8 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable {
     // TODO: Optimise this to cache more information!
     private final GroupedFluidInv groupedVersion = new GroupedFluidInvFixedWrapper(this);
 
+    private FluidInvTankChangeListener ownerListener;
+
     private final Map<FluidInvTankChangeListener, ListenerRemovalToken> listeners
         = new Object2ObjectLinkedOpenCustomHashMap<>(SystemUtil.identityHashStrategy());
 
@@ -152,6 +154,12 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable {
         };
     }
 
+    /** Sets the owner listener callback, which is never removed from the listener list when
+     * {@link #invalidateListeners()} is called. */
+    public void setOwnerListener(FluidInvTankChangeListener ownerListener) {
+        this.ownerListener = ownerListener;
+    }
+
     private void bakeListeners() {
         bakedListeners = listeners.keySet().toArray(new FluidInvTankChangeListener[0]);
     }
@@ -167,6 +175,9 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable {
     }
 
     protected final void fireTankChange(int tank, FluidVolume previous, FluidVolume current) {
+        if (ownerListener != null) {
+            ownerListener.onChange(this, tank, previous, current);
+        }
         // Iterate over the previous array in case the listeners array is changed while we are iterating
         final FluidInvTankChangeListener[] baked = bakedListeners;
         for (FluidInvTankChangeListener listener : baked) {

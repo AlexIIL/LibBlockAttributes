@@ -1,0 +1,4 @@
+Changes:
+
+* Added the missing "setOwnerListener" to SimpleFixedFluidInv.
+* Added missing "modmenu:api": true tag to fabric.mod.json
