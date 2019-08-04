@@ -2,15 +2,6 @@ language: java
 jdk:
   - openjdk8
 
-jobs:
-  include:
-    - stage: build
-      install: echo "skipping default ./gradlew assemble"
-      script: ./gradlew build publishToMavenLocal
-    - stage: test
-      install: ./gradlew build
-      script: ./gradlew test
-
 install: ./gradlew build publishToMavenLocal
 script: ./gradlew test
 
