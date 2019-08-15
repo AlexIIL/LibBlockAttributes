@@ -64,7 +64,7 @@ public interface FixedItemInvView extends Convertible {
      *            that this can hold of any stack.
      * @return The maximum amount that the given slot can hold of the given stack. This method will ignore the current
      *         stack in {@link #getInvStack(int)}. The default implementation just delegates to
-     *         {@link ItemStack#getMaxAmount()}. Note that any setters that this object implements (like
+     *         {@link ItemStack#getMaxCount()}. Note that any setters that this object implements (like
      *         {@link FixedItemInv#setInvStack(int, ItemStack, Simulation)} should reject stacks that are greater than
      *         this value. (and callers should only call this if they need to check the amounts separately. Note that it
      *         is meaningless to return values greater than the maximum amount an item can be stacked to here, and

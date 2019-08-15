@@ -17,8 +17,6 @@ import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.LimitedGroupedItemInv;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
-import alexiil.mc.lib.attributes.item.impl.SimpleLimitedGroupedItemInv.ExtractionRule;
-import alexiil.mc.lib.attributes.item.impl.SimpleLimitedGroupedItemInv.InsertionRule;
 
 public class SimpleLimitedGroupedItemInv extends DelegatingGroupedItemInv implements LimitedGroupedItemInv {
 

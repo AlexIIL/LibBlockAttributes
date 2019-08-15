@@ -44,7 +44,7 @@ public enum ItemStackCollections {
     ;
 
     /** A hash {@link Strategy} to use for {@link Map Map's} and {@link Set Set's} of {@link ItemStack}'s where the
-     * {@link ItemStack#getAmount()} is important. */
+     * {@link ItemStack#getCount()} is important. */
     public static final Strategy<ItemStack> STRATEGY_EXACT = new Strategy<ItemStack>() {
         @Override
         public int hashCode(ItemStack o) {
@@ -65,7 +65,7 @@ public enum ItemStackCollections {
     };
 
     /** A hash {@link Strategy} to use for {@link Map Map's} and {@link Set Set's} of {@link ItemStack}'s where the
-     * {@link ItemStack#getAmount()} is ignored. */
+     * {@link ItemStack#getCount()} is ignored. */
     public static final Strategy<ItemStack> STRATEGY_IGNORE_AMOUNT = new Strategy<ItemStack>() {
         @Override
         public int hashCode(ItemStack o) {

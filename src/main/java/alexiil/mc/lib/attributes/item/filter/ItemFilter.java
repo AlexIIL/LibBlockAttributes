@@ -16,7 +16,7 @@ import net.minecraft.item.ItemStack;
 public interface ItemFilter {
 
     /** Checks to see if the given filter matches the given stack. Note that this must not care about
-     * {@link ItemStack#getAmount()}.
+     * {@link ItemStack#getCount()}.
      * 
      * @throws IllegalArgumentException if the given {@link ItemStack} is {@link ItemStack#isEmpty() empty}. */
     boolean matches(ItemStack stack);
