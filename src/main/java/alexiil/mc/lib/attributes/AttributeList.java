@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 
 import net.minecraft.util.BooleanBiFunction;
 import net.minecraft.util.DefaultedList;
-import net.minecraft.util.math.BoundingBox;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Direction.AxisDirection;
 import net.minecraft.util.math.Vec3d;
@@ -32,8 +32,8 @@ public class AttributeList<T> {
     @Nonnull
     final VoxelShape defaultShape;
 
-    final DefaultedList<T> list = DefaultedList.create();
-    final DefaultedList<CacheInfo> cacheList = DefaultedList.create();
+    final DefaultedList<T> list = DefaultedList.of();
+    final DefaultedList<CacheInfo> cacheList = DefaultedList.of();
 
     /** May contain null elements if the caller didn't provide one (and so the actual shape should be taken from the
      * block). */
@@ -211,7 +211,7 @@ public class AttributeList<T> {
         }
         // TODO: Improve this algorithm!
         VoxelShape combined = VoxelShapes.empty();
-        for (BoundingBox box : shape.getBoundingBoxes()) {
+        for (Box box : shape.getBoundingBoxes()) {
             // Offset it a tiny bit to allow an obstacle to return attributes (as otherwise it would block itself)
             box = box.offset(new Vec3d(direction.getVector()).multiply(1 / 32.0));
             double minX = box.minX;

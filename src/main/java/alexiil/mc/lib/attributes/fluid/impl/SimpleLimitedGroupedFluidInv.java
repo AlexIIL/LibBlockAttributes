@@ -15,6 +15,8 @@ import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
 import alexiil.mc.lib.attributes.fluid.LimitedGroupedFluidInv;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
+import alexiil.mc.lib.attributes.fluid.impl.SimpleLimitedGroupedFluidInv.ExtractionRule;
+import alexiil.mc.lib.attributes.fluid.impl.SimpleLimitedGroupedFluidInv.InsertionRule;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 public class SimpleLimitedGroupedFluidInv extends DelegatingGroupedFluidInv implements LimitedGroupedFluidInv {

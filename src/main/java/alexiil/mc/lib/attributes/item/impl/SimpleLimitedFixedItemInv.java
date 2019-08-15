@@ -53,13 +53,13 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
                 for (int s = 0; s < getSlotCount(); s++) {
                     ItemStack slotStack = inv.getInvStack(s);
                     int minimum = minimumAmounts[s];
-                    int available = slotStack.getAmount() - minimum;
+                    int available = slotStack.getCount() - minimum;
                     if (slotStack.isEmpty() || available <= 0) {
                         continue;
                     }
-                    int slotMax = Math.min(maxAmount - stack.getAmount(), available);
+                    int slotMax = Math.min(maxAmount - stack.getCount(), available);
                     stack = ItemInvUtil.extractSingle(inv, s, filter, stack, slotMax, simulation);
-                    if (stack.getAmount() >= maxAmount) {
+                    if (stack.getCount() >= maxAmount) {
                         return stack;
                     }
                 }
@@ -122,11 +122,11 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
     public boolean setInvStack(int slot, ItemStack to, Simulation simulation) {
         ItemStack current = getInvStack(slot);
         boolean same = ItemStackUtil.areEqualIgnoreAmounts(current, to);
-        boolean isExtracting = !same || to.getAmount() < current.getAmount();
-        boolean isInserting = !same || to.getAmount() > current.getAmount();
+        boolean isExtracting = !same || to.getCount() < current.getCount();
+        boolean isInserting = !same || to.getCount() > current.getCount();
         if (isExtracting) {
             if (same) {
-                if (to.getAmount() < minimumAmounts[slot]) {
+                if (to.getCount() < minimumAmounts[slot]) {
                     return false;
                 }
             } else {
@@ -139,7 +139,7 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
             if (!isItemValidForSlot(slot, to)) {
                 return false;
             }
-            if (to.getAmount() > maxInsertionAmounts[slot]) {
+            if (to.getCount() > maxInsertionAmounts[slot]) {
                 return false;
             }
         }

@@ -49,7 +49,7 @@ public final class ItemInvModificationTracker {
         }
 
         void check(ItemStack current) {
-            if (ItemStack.areEqual(current, copy)) {
+            if (ItemStack.areEqualIgnoreDamage(current, copy)) {
                 return;
             }
             throw new IllegalStateException("The ItemStack that is stored has been changed! (\n\tOriginal = "
@@ -61,7 +61,7 @@ public final class ItemInvModificationTracker {
         if (stack.isEmpty()) {
             return "Empty";
         }
-        int amount = stack.getAmount();
+        int amount = stack.getCount();
         String stackStr = amount + "x" + stack.getTranslationKey();
         return stackStr + " tag = " + stack.getTag();
     }

@@ -63,9 +63,9 @@ public class GroupedItemInvViewFixedWrapper implements GroupedItemInvView {
             ItemStack stack = inv.getInvStack(s);
             if (!stack.isEmpty()) {
                 if (filter.matches(stack)) {
-                    amount += stack.getAmount();
+                    amount += stack.getCount();
                     int max = inv.getMaxAmount(s, stack);
-                    space += max - stack.getAmount();
+                    space += max - stack.getCount();
                 }
                 continue;
             }
@@ -91,22 +91,22 @@ public class GroupedItemInvViewFixedWrapper implements GroupedItemInvView {
                     // No changes: don't propogate
                 } else {
                     int currentAmount = this.getAmount(current);
-                    listener.onChange(this, current, currentAmount - current.getAmount(), currentAmount);
+                    listener.onChange(this, current, currentAmount - current.getCount(), currentAmount);
                 }
             } else {
                 if (current.isEmpty()) {
                     int previousAmount = this.getAmount(previous);
-                    listener.onChange(this, previous, previousAmount + previous.getAmount(), previousAmount);
+                    listener.onChange(this, previous, previousAmount + previous.getCount(), previousAmount);
                 } else {
-                    if (ItemStack.areEqual(previous, current)) {
+                    if (ItemStack.areEqualIgnoreDamage(previous, current)) {
                         int currentAmount = this.getAmount(current);
-                        int diff = current.getAmount() - previous.getAmount();
+                        int diff = current.getCount() - previous.getCount();
                         listener.onChange(this, current, currentAmount - diff, currentAmount);
                     } else {
                         int currentAmount = this.getAmount(current);
                         int previousAmount = this.getAmount(previous);
-                        listener.onChange(this, current, currentAmount - current.getAmount(), currentAmount);
-                        listener.onChange(this, previous, previousAmount + previous.getAmount(), previousAmount);
+                        listener.onChange(this, current, currentAmount - current.getCount(), currentAmount);
+                        listener.onChange(this, previous, previousAmount + previous.getCount(), previousAmount);
                     }
                 }
             }

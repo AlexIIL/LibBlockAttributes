@@ -85,8 +85,8 @@ public final class SimpleFixedItemInvInsertable implements ItemInsertable {
         stack = stack.copy();
         for (int s = 0; s < inv.getSlotCount(); s++) {
             ItemStack inSlot = inv.getInvStack(s);
-            int current = inSlot.isEmpty() ? 0 : inSlot.getAmount();
-            int max = Math.min(current + stack.getAmount(), inv.getMaxAmount(s, stack));
+            int current = inSlot.isEmpty() ? 0 : inSlot.getCount();
+            int max = Math.min(current + stack.getCount(), inv.getMaxAmount(s, stack));
             int addable = max - current;
             if (addable <= 0) {
                 continue;
@@ -96,12 +96,12 @@ public final class SimpleFixedItemInvInsertable implements ItemInsertable {
             }
             if (inSlot.isEmpty()) {
                 inSlot = stack.copy();
-                inSlot.setAmount(addable);
+                inSlot.setCount(addable);
             } else {
-                inSlot.addAmount(addable);
+                inSlot.increment(addable);
             }
             if (inv.setInvStack(s, inSlot, simulation)) {
-                stack.subtractAmount(addable);
+                stack.decrement(addable);
                 if (stack.isEmpty()) {
                     return ItemStack.EMPTY;
                 }

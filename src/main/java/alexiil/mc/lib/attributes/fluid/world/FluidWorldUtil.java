@@ -48,8 +48,8 @@ public enum FluidWorldUtil {
                 return fluidVolume;
             }
             return FluidKeys.EMPTY.withAmount(0);
-        } else if (block instanceof FluidBlock && state.contains(Properties.FLUID_BLOCK_LEVEL)) {
-            if (state.get(Properties.FLUID_BLOCK_LEVEL) == 0) {
+        } else if (block instanceof FluidBlock && state.contains(Properties.LEVEL_15)) {
+            if (state.get(Properties.LEVEL_15) == 0) {
                 FluidKey fluidKey = FluidKeys.get(((IFluidBlockMixin) block).__fluid());
                 if (fluidKey == null) {
                     return FluidKeys.EMPTY.withAmount(0);

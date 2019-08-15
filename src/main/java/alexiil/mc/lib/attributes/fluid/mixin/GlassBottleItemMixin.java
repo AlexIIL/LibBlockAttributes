@@ -37,7 +37,7 @@ public class GlassBottleItemMixin extends Item implements FluidProviderItem {
 
     @Override
     public boolean fill(Ref<ItemStack> stack, Ref<FluidVolume> with) {
-        if (stack.obj.getAmount() != 1) {
+        if (stack.obj.getCount() != 1) {
             return false;
         }
         final Potion potion;

@@ -87,13 +87,13 @@ public class SimpleGroupedItemInv implements GroupedItemInv {
         if (current < 0 && stacks.size() >= maxItemTypes) {
             return stack;
         }
-        int insertable = Math.min(stack.getAmount(), maxItems - cachedItemCount);
+        int insertable = Math.min(stack.getCount(), maxItems - cachedItemCount);
         if (insertable <= 0) {
             return stack;
         }
         stack = stack.copy();
         ItemStack insStack = stack.split(insertable);
-        assert insStack.getAmount() == insertable;
+        assert insStack.getCount() == insertable;
         if (simulation == Simulation.ACTION) {
             stacks.put(insStack, insertable + (current < 0 ? 0 : current));
             cachedItemCount += insertable;
@@ -119,7 +119,7 @@ public class SimpleGroupedItemInv implements GroupedItemInv {
                     fireAmountChange(stack, current, current - extracted);
                 }
                 stack = stack.copy();
-                stack.setAmount(extracted);
+                stack.setCount(extracted);
                 return stack;
             }
         }

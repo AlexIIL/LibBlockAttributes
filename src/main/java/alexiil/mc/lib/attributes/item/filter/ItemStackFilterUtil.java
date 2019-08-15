@@ -22,7 +22,7 @@ public enum ItemStackFilterUtil {
         }
 
         if (filter instanceof ExactItemStackFilter) {
-            return ((ExactItemStackFilter) filter).stack.getMaxAmount();
+            return ((ExactItemStackFilter) filter).stack.getMaxCount();
         }
 
         if (filter instanceof AggregateItemFilter) {

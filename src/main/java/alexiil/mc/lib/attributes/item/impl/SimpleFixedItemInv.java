@@ -55,7 +55,7 @@ public class SimpleFixedItemInv implements FixedItemInv, ItemTransferable {
     private ItemInvSlotChangeListener[] bakedListeners = NO_LISTENERS;
 
     public SimpleFixedItemInv(int invSize) {
-        slots = DefaultedList.create(invSize, ItemStack.EMPTY);
+        slots = DefaultedList.ofSize(invSize, ItemStack.EMPTY);
 
         if (AttributeUtil.EXPENSIVE_DEBUG_CHECKS) {
             Class<?> cls = getClass();
@@ -172,10 +172,10 @@ public class SimpleFixedItemInv implements FixedItemInv, ItemTransferable {
             ItemStack current = getInvStack(slot);
             if (
                 !current.isEmpty()
-                && current.getAmount() > to.getAmount() && ItemStackUtil.areEqualIgnoreAmounts(to, current)
+                && current.getCount() > to.getCount() && ItemStackUtil.areEqualIgnoreAmounts(to, current)
             ) {
                 allowed = true;
-            } else if (isItemValidForSlot(slot, to) && to.getAmount() <= getMaxAmount(slot, to)) {
+            } else if (isItemValidForSlot(slot, to) && to.getCount() <= getMaxAmount(slot, to)) {
                 allowed = true;
             }
         }

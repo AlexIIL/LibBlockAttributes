@@ -63,7 +63,7 @@ public final class FluidRegistryEntry<T> {
         } else if ("p".equals(name)) {
             return Registry.POTION;
         } else {
-            Identifier id = Identifier.ofNullable(name);
+            Identifier id = Identifier.tryParse(name);
             MutableRegistry<?> registry = Registry.REGISTRIES.get(id);
             if (registry instanceof DefaultedRegistry<?>) {
                 return (DefaultedRegistry<?>) registry;
@@ -83,7 +83,7 @@ public final class FluidRegistryEntry<T> {
     }
 
     private static <T> FluidRegistryEntry<T> fromTag0(DefaultedRegistry<T> registry, String name) {
-        T obj = registry.get(Identifier.ofNullable(name));
+        T obj = registry.get(Identifier.tryParse(name));
         return new FluidRegistryEntry<>(registry, obj);
     }
 

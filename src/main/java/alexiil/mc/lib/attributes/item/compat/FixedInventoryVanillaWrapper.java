@@ -31,7 +31,7 @@ public class FixedInventoryVanillaWrapper extends FixedInventoryViewVanillaWrapp
             if (current.isEmpty()) {
                 allowed = canInsert(slot, to);
             } else if (ItemStackUtil.areEqualIgnoreAmounts(to, current)) {
-                if (to.getAmount() < current.getAmount()) {
+                if (to.getCount() < current.getCount()) {
                     allowed = canExtract(slot, current);
                 } else {
                     allowed = canInsert(slot, to);

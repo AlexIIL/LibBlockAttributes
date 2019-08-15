@@ -65,7 +65,7 @@ public class BucketItemMixin extends Item implements FluidProviderItem {
                 FluidVolume fluidHeld = bucket.drain(stackRef);
                 int amount = fluidHeld.getAmount();
                 if (FluidVolume.areEqualExceptAmounts(with.obj, fluidHeld) && amount <= with.obj.getAmount()
-                    && ItemStack.areEqual(stackRef.obj, stack.obj)) {
+                    && ItemStack.areEqualIgnoreDamage(stackRef.obj, stack.obj)) {
                     with.obj = with.obj.copy();
                     assert with.obj.split(amount).getAmount() == amount;
                     stack.obj = newStack;

@@ -61,7 +61,7 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable {
     private FluidInvTankChangeListener[] bakedListeners = NO_LISTENERS;
 
     public SimpleFixedFluidInv(int invSize, int tankCapacity) {
-        tanks = DefaultedList.create(invSize, FluidKeys.EMPTY.withAmount(0));
+        tanks = DefaultedList.ofSize(invSize, FluidKeys.EMPTY.withAmount(0));
         this.tankCapacity = tankCapacity;
     }
 

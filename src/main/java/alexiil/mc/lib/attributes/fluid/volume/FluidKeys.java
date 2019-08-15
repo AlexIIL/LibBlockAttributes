@@ -17,11 +17,11 @@ import net.minecraft.block.Block;
 import net.minecraft.fluid.BaseFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.Potions;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -44,7 +44,7 @@ public class FluidKeys {
         // Empty doesn't have a proper sprite or text component because it doesn't ever make sense to use it.
         EMPTY = new NormalFluidKeyBuilder(Fluids.EMPTY, //
             MISSING_SPRITE, //
-            new TextComponent("!EMPTY FLUID!")//
+            new LiteralText("!EMPTY FLUID!")//
         ).build();
         LAVA = createImplicitVanillaFluid(Fluids.LAVA);
         WATER = WaterFluidKey.INSTANCE;
@@ -100,7 +100,7 @@ public class FluidKeys {
 
     private static ImplicitVanillaFluidKey createImplicitVanillaFluid(Fluid fluid) {
         Block block = fluid.getDefaultState().getBlockState().getBlock();
-        Component name = new TranslatableComponent(block.getTranslationKey());
+        Text name = new TranslatableText(block.getTranslationKey());
         return new ImplicitVanillaFluidKey(NormalFluidKey.builder(fluid, MISSING_SPRITE, name));
     }
 

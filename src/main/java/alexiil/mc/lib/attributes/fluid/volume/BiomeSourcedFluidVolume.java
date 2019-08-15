@@ -8,12 +8,12 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
 import java.util.List;
-import net.minecraft.ChatFormat;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
@@ -47,7 +47,7 @@ public class BiomeSourcedFluidVolume extends NormalFluidVolume {
         ListTag biomes = tag.getList("biomes", new CompoundTag().getType());
         for (int i = 0; i < biomes.size(); i++) {
             CompoundTag biomeTag = biomes.getCompoundTag(i);
-            Biome biome = Registry.BIOME.get(Identifier.ofNullable(biomeTag.getString("Name")));
+            Biome biome = Registry.BIOME.get(Identifier.tryParse(biomeTag.getString("Name")));
             int amount = biomeTag.getInt("Amount");
             if (amount < 1) {
                 amount = 1;
@@ -250,13 +250,13 @@ public class BiomeSourcedFluidVolume extends NormalFluidVolume {
     }
 
     @Override
-    public List<Component> getTooltipText(TooltipContext ctx) {
-        List<Component> list = super.getTooltipText(ctx);
+    public List<Text> getTooltipText(TooltipContext ctx) {
+        List<Text> list = super.getTooltipText(ctx);
         if (ctx.isAdvanced()) {
             for (Biome biome : biomeSources.keySet()) {
                 int amount = biomeSources.getInt(biome);
-                Component text = new TextComponent(amount + " / " + BUCKET + " of ");
-                list.add(text.append(biome.getTextComponent()).applyFormat(ChatFormat.GRAY));
+                Text text = new LiteralText(amount + " / " + BUCKET + " of ");
+                list.add(text.append(biome.getName()).formatted(Formatting.GRAY));
             }
         }
         return list;

@@ -147,7 +147,7 @@ public abstract class InventoryFixedWrapper implements Inventory {
 
         void validate(InventoryFixedWrapper inv, int slot) {
             ItemStack current = inv.inv.getInvStack(slot);
-            if (!ItemStack.areEqual(originalCopy, current) && !ItemStack.areEqual(originalCopy, returned)) {
+            if (!ItemStack.areEqualIgnoreDamage(originalCopy, current) && !ItemStack.areEqualIgnoreDamage(originalCopy, returned)) {
                 throw new IllegalStateException("The inventory has been modifed in two places at once! (\n\tcurrent = "
                     + ItemInvModificationTracker.stackToFullString(current) + ", \n\toriginal = "
                     + ItemInvModificationTracker.stackToFullString(originalCopy) + ", \n\tnew = "
@@ -157,7 +157,7 @@ public abstract class InventoryFixedWrapper implements Inventory {
 
         void process(InventoryFixedWrapper inv, int slot) {
             validate(inv, slot);
-            if (ItemStack.areEqual(returned, originalCopy)) {
+            if (ItemStack.areEqualIgnoreDamage(returned, originalCopy)) {
                 // Nothing changed
                 return;
             }

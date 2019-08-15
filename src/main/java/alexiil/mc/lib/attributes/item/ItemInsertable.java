@@ -49,7 +49,7 @@ public interface ItemInsertable {
                 throw new IllegalArgumentException("You should never test an ItemFilter with an empty stack!");
             }
             ItemStack leftover = attemptInsertion(stack, Simulation.SIMULATE);
-            return leftover.isEmpty() || leftover.getAmount() < stack.getAmount();
+            return leftover.isEmpty() || leftover.getCount() < stack.getCount();
         };
     }
 

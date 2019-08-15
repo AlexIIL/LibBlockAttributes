@@ -63,7 +63,7 @@ public final class ItemInvUtil {
             return 0;
         }
         ItemStack leftover = to.attemptInsertion(extracted, Simulation.ACTION);
-        int insertedAmount = extracted.getAmount() - (leftover.isEmpty() ? 0 : leftover.getAmount());
+        int insertedAmount = extracted.getCount() - (leftover.isEmpty() ? 0 : leftover.getCount());
         ItemStack reallyExtracted = from.attemptExtraction(insertionFilter, insertedAmount, Simulation.ACTION);
 
         if (reallyExtracted.isEmpty()) {
@@ -73,9 +73,9 @@ public final class ItemInvUtil {
                 new String[] { "from A", "to B", "filter C" }, new Object[] { from, to, filter }
             );
         }
-        if (reallyExtracted.getAmount() != insertedAmount) {
+        if (reallyExtracted.getCount() != insertedAmount) {
             throw throwBadImplException(
-                "Tried to extract " + insertedAmount + " but we actually extracted " + reallyExtracted.getAmount()
+                "Tried to extract " + insertedAmount + " but we actually extracted " + reallyExtracted.getCount()
                     + "!\nThe inventory is now in an invalid (duped) state!", new String[] { "from A", "to B",
                         "filter C", "originally extracted", "really extracted" }, new Object[] { from, to,
                             insertionFilter, extracted, reallyExtracted }
@@ -99,8 +99,8 @@ public final class ItemInvUtil {
             return ItemStack.EMPTY;
         }
         ItemStack inSlot = inv.getInvStack(slot);
-        int current = inSlot.isEmpty() ? 0 : inSlot.getAmount();
-        int max = Math.min(current + toInsert.getAmount(), inv.getMaxAmount(slot, toInsert));
+        int current = inSlot.isEmpty() ? 0 : inSlot.getCount();
+        int max = Math.min(current + toInsert.getCount(), inv.getMaxAmount(slot, toInsert));
         int addable = max - current;
         if (addable <= 0) {
             return toInsert;
@@ -110,14 +110,14 @@ public final class ItemInvUtil {
         }
         if (inSlot.isEmpty()) {
             inSlot = toInsert.copy();
-            inSlot.setAmount(addable);
+            inSlot.setCount(addable);
         } else {
             inSlot = inSlot.copy();
-            inSlot.addAmount(addable);
+            inSlot.increment(addable);
         }
         if (inv.setInvStack(slot, inSlot, simulation)) {
             toInsert = toInsert.copy();
-            toInsert.subtractAmount(addable);
+            toInsert.decrement(addable);
             if (toInsert.isEmpty()) {
                 return ItemStack.EMPTY;
             }
@@ -144,7 +144,7 @@ public final class ItemInvUtil {
             if (!ItemStackUtil.areEqualIgnoreAmounts(toAddWith, inSlot)) {
                 return toAddWith;
             }
-            maxAmount = Math.min(maxAmount, toAddWith.getMaxAmount() - toAddWith.getAmount());
+            maxAmount = Math.min(maxAmount, toAddWith.getMaxCount() - toAddWith.getCount());
             if (maxAmount <= 0) {
                 return toAddWith;
             }
@@ -156,7 +156,7 @@ public final class ItemInvUtil {
             if (toAddWith.isEmpty()) {
                 toAddWith = addable;
             } else {
-                toAddWith.addAmount(addable.getAmount());
+                toAddWith.increment(addable.getCount());
             }
         }
         return toAddWith;

@@ -65,8 +65,8 @@ public class DirectFixedItemInv implements FixedItemInv, GroupedItemInv {
 
     public DirectFixedItemInv(int slotCount) {
         this.slotCount = slotCount;
-        this.slots = DefaultedList.create(slotCount, ItemStack.EMPTY);
-        this.lastSeenStacks = DefaultedList.create(slotCount, ItemStack.EMPTY);
+        this.slots = DefaultedList.ofSize(slotCount, ItemStack.EMPTY);
+        this.lastSeenStacks = DefaultedList.ofSize(slotCount, ItemStack.EMPTY);
         this.touchedSlots = new BitSet(slotCount);
     }
 

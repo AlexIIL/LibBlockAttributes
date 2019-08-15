@@ -9,7 +9,7 @@ package alexiil.mc.lib.attributes.fluid.volume;
 
 import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.biome.Biome;
 
@@ -20,7 +20,7 @@ import net.minecraft.world.biome.Biome;
     private WaterFluidKey() {
         super(NormalFluidKey.builder(Fluids.WATER, //
             new Identifier("minecraft", "block/water_still"), //
-            new TranslatableComponent("block.minecraft.water")//
+            new TranslatableText("block.minecraft.water")//
         ));
     }
 

@@ -8,9 +8,9 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -30,7 +30,7 @@ public final class PotionFluidKey extends FluidKey {
     /* package-private */ PotionFluidKey(Potion potion) {
         super(new FluidKeyBuilder(new FluidRegistryEntry<>(Registry.POTION, potion), //
             POTION_TEXTURE, //
-            new TranslatableComponent(potion.getName("item.minecraft.potion.effect."))//
+            new TranslatableText(potion.getName("item.minecraft.potion.effect."))//
         ).setUnit(FluidUnit.BOTTLE).setRenderColor(PotionUtil.getColor(potion)));
         this.potion = potion;
     }

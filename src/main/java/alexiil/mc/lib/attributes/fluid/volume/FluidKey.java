@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 
 import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.ViewableWorld;
@@ -39,16 +39,16 @@ public abstract class FluidKey {
     /** The name to use when displaying tooltips for this {@link FluidKey} specifically.
      * <p>
      * Note that this might differ from the one returned by {@link FluidVolume#getName()}! */
-    public final Component name;
+    public final Text name;
 
     public static class FluidKeyBuilder {
         /* package-private */ final FluidRegistryEntry<?> registryEntry;
         /* package-private */ final Identifier spriteId;
-        /* package-private */ final Component name;
+        /* package-private */ final Text name;
         /* package-private */ int renderColor = 0xFF_FF_FF;
         /* package-private */ FluidUnit unit = FluidUnit.BUCKET;
 
-        public FluidKeyBuilder(FluidRegistryEntry<?> registryEntry, Identifier spriteId, Component name) {
+        public FluidKeyBuilder(FluidRegistryEntry<?> registryEntry, Identifier spriteId, Text name) {
             this.registryEntry = registryEntry;
             this.spriteId = spriteId;
             this.name = name;

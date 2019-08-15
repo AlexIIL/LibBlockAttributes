@@ -72,7 +72,7 @@ public interface FixedItemInvView extends Convertible {
      *         shouldn't implement this interface).
      * @throws RuntimeException if the given slot wasn't a valid index. */
     default int getMaxAmount(int slot, ItemStack stack) {
-        return stack.isEmpty() ? 64 : stack.getMaxAmount();
+        return stack.isEmpty() ? 64 : stack.getMaxCount();
     }
 
     /** Checks to see if the given stack is valid for a given slot. This ignores any current stacks in the slot.

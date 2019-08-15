@@ -127,7 +127,7 @@ public enum FluidVolumeUtil {
                 return fluid;
             }
             stack = stack.copy();
-            final ItemStack split = stack.getAmount() > 1 ? stack.split(1) : stack;
+            final ItemStack split = stack.getCount() > 1 ? stack.split(1) : stack;
             FluidProviderItem fluidItem = (FluidProviderItem) stack.getItem();
             Ref<ItemStack> filledStackRef = new Ref<>(split);
             Ref<FluidVolume> incomingFluid = new Ref<>(fluid.copy());
@@ -151,7 +151,7 @@ public enum FluidVolumeUtil {
         return (FluidFilter filter, int maxAmount, Simulation simulate) -> {
 
             final ItemStack stack = stackRef.obj.copy();
-            final ItemStack split = stack.getAmount() > 1 ? stack.split(1) : stack;
+            final ItemStack split = stack.getCount() > 1 ? stack.split(1) : stack;
             FluidVolume drained = EMPTY;
             if (stack.getItem() instanceof FluidProviderItem) {
                 FluidProviderItem fluidItem = (FluidProviderItem) stack.getItem();

@@ -14,7 +14,7 @@ import net.minecraft.fluid.EmptyFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -22,7 +22,7 @@ import net.minecraft.util.registry.Registry;
  * this is safe to use in normal maps and sets. */
 public class NormalFluidKey extends FluidKey {
 
-    public static NormalFluidKeyBuilder builder(Fluid fluid, Identifier spriteId, Component name) {
+    public static NormalFluidKeyBuilder builder(Fluid fluid, Identifier spriteId, Text name) {
         return new NormalFluidKeyBuilder(fluid, spriteId, name);
     }
 
@@ -30,7 +30,7 @@ public class NormalFluidKey extends FluidKey {
 
         public final Fluid fluid;
 
-        public NormalFluidKeyBuilder(Fluid fluid, Identifier spriteId, Component name) {
+        public NormalFluidKeyBuilder(Fluid fluid, Identifier spriteId, Text name) {
             super(new FluidRegistryEntry<>(Registry.FLUID, fluid), spriteId, name);
             this.fluid = fluid;
         }

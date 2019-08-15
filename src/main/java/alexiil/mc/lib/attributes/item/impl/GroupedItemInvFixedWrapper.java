@@ -88,8 +88,8 @@ public class GroupedItemInvFixedWrapper extends GroupedItemInvViewFixedWrapper i
             return stack;
         }
         for (int s = 0; s < inv.getSlotCount(); s++) {
-            stack = ItemInvUtil.extractSingle(inv(), s, filter, stack, maxCount - stack.getAmount(), simulation);
-            if (stack.getAmount() >= maxCount) {
+            stack = ItemInvUtil.extractSingle(inv(), s, filter, stack, maxCount - stack.getCount(), simulation);
+            if (stack.getCount() >= maxCount) {
                 return stack;
             }
         }

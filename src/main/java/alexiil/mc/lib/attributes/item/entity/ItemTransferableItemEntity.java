@@ -28,7 +28,7 @@ public class ItemTransferableItemEntity implements ItemTransferable {
             return stack;
         }
         ItemStack current = entity.getStack();
-        int max = current.getMaxAmount() - current.getAmount();
+        int max = current.getMaxCount() - current.getCount();
         if (max <= 0 || current.isEmpty()) {
             return stack;
         }
@@ -39,7 +39,7 @@ public class ItemTransferableItemEntity implements ItemTransferable {
         ItemStack insertable = stack.split(max);
         if (simulation == Simulation.ACTION) {
             current = current.copy();
-            current.addAmount(insertable.getAmount());
+            current.increment(insertable.getCount());
             entity.setStack(current);
         }
         return stack;

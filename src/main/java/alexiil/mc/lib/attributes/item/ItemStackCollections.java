@@ -52,7 +52,7 @@ public enum ItemStackCollections {
                 return 0;
             }
             return Arrays.hashCode(
-                new int[] { o.getAmount(), System.identityHashCode(o.getItem()), Objects.hashCode(o.getTag()) });
+                new int[] { o.getCount(), System.identityHashCode(o.getItem()), Objects.hashCode(o.getTag()) });
         }
 
         @Override
@@ -60,7 +60,7 @@ public enum ItemStackCollections {
             if (a == null || b == null) {
                 return a == b;
             }
-            return ItemStack.areEqual(a, b);
+            return ItemStack.areEqualIgnoreDamage(a, b);
         }
     };
 
@@ -100,7 +100,7 @@ public enum ItemStackCollections {
         if (comp != 0) {
             return comp;
         }
-        return Integer.compare(a.getAmount(), b.getAmount());
+        return Integer.compare(a.getCount(), b.getCount());
     }
 
     private static int compareItemStacksIgnoreAmounts(ItemStack a, ItemStack b) {

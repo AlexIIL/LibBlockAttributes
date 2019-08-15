@@ -54,9 +54,9 @@ public final class SimpleFixedItemInvExtractable implements ItemExtractable {
                 if (stack.isEmpty()) {
                     stack = addable;
                 } else {
-                    stack.addAmount(addable.getAmount());
+                    stack.increment(addable.getCount());
                 }
-                maxCount -= addable.getAmount();
+                maxCount -= addable.getCount();
                 assert maxCount >= 0;
                 if (maxCount <= 0) {
                     return stack;

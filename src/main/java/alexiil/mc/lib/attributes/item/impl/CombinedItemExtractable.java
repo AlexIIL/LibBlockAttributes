@@ -37,12 +37,12 @@ public final class CombinedItemExtractable implements ItemExtractable {
                 if (extracted.isEmpty()) {
                     continue;
                 }
-                if (extracted.getAmount() >= maxAmount) {
+                if (extracted.getCount() >= maxAmount) {
                     return extracted;
                 }
                 filter = new ExactItemStackFilter(extracted);
             } else {
-                int newMaxCount = maxAmount - extracted.getAmount();
+                int newMaxCount = maxAmount - extracted.getCount();
                 ItemStack additional = extractable.attemptExtraction(filter, newMaxCount, simulation);
                 if (additional.isEmpty()) {
                     continue;
@@ -50,8 +50,8 @@ public final class CombinedItemExtractable implements ItemExtractable {
                 if (!ItemStackUtil.areEqualIgnoreAmounts(additional, extracted)) {
                     throw new IllegalStateException("bad ItemExtractable " + extractable.getClass().getName());
                 }
-                extracted.addAmount(additional.getAmount());
-                if (extracted.getAmount() >= maxAmount) {
+                extracted.increment(additional.getCount());
+                if (extracted.getCount() >= maxAmount) {
                     return extracted;
                 }
             }

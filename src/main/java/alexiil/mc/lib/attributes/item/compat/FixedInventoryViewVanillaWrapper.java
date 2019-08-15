@@ -48,7 +48,7 @@ public class FixedInventoryViewVanillaWrapper implements FixedItemInvView {
 
     @Override
     public int getMaxAmount(int slot, ItemStack stack) {
-        return Math.min(inv.getInvMaxStackAmount(), stack.getMaxAmount());
+        return Math.min(inv.getInvMaxStackAmount(), stack.getMaxCount());
     }
 
     @Override

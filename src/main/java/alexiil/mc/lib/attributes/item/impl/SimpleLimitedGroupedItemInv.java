@@ -17,6 +17,8 @@ import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.LimitedGroupedItemInv;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.item.impl.SimpleLimitedGroupedItemInv.ExtractionRule;
+import alexiil.mc.lib.attributes.item.impl.SimpleLimitedGroupedItemInv.InsertionRule;
 
 public class SimpleLimitedGroupedItemInv extends DelegatingGroupedItemInv implements LimitedGroupedItemInv {
 
@@ -76,7 +78,7 @@ public class SimpleLimitedGroupedItemInv extends DelegatingGroupedItemInv implem
                 throw new IllegalArgumentException("You should never test an ItemFilter with an empty stack!");
             }
             ItemStack leftover = attemptInsertion(stack, Simulation.SIMULATE);
-            return leftover.isEmpty() || leftover.getAmount() < stack.getAmount();
+            return leftover.isEmpty() || leftover.getCount() < stack.getCount();
         };
     }
 
