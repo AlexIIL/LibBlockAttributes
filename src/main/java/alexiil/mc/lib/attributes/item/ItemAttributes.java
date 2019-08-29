@@ -9,11 +9,8 @@ package alexiil.mc.lib.attributes.item;
 
 import java.util.function.Function;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.ChestBlock;
-import net.minecraft.block.HopperBlock;
 import net.minecraft.block.InventoryProvider;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.ChestBlockEntity;
@@ -54,64 +51,59 @@ public final class ItemAttributes {
             FixedItemInvView.class, //
             EmptyFixedItemInv.INSTANCE, //
             list -> new CombinedFixedItemInvView<>(list), //
-            createFixedInvAdder(false, null, inv -> inv)//
+            createFixedInvAdder(inv -> inv)//
         );
         FIXED_INV = Attributes.createCombinable(
             //
             FixedItemInv.class, //
             EmptyFixedItemInv.INSTANCE, //
             list -> new CombinedFixedItemInv<>(list), //
-            createFixedInvAdder(false, null, Function.identity())//
+            createFixedInvAdder(Function.identity())//
         );
         GROUPED_INV_VIEW = Attributes.createCombinable(
             //
             GroupedItemInvView.class, //
             EmptyGroupedItemInv.INSTANCE, //
             list -> new CombinedGroupedItemInvView(list), //
-            createFixedInvAdder(false, null, FixedItemInv::getGroupedInv)//
+            createFixedInvAdder(FixedItemInv::getGroupedInv)//
         );
         GROUPED_INV = Attributes.createCombinable(
             //
             GroupedItemInv.class, //
             EmptyGroupedItemInv.INSTANCE, //
             list -> new CombinedGroupedItemInv(list), //
-            createFixedInvAdder(false, null, FixedItemInv::getGroupedInv)//
+            createFixedInvAdder(FixedItemInv::getGroupedInv)//
         );
         INSERTABLE = Attributes.createCombinable(
             //
             ItemInsertable.class, //
             RejectingItemInsertable.NULL, //
             list -> new CombinedItemInsertable(list), //
-            createFixedInvAdder(true, null, FixedItemInv::getInsertable)//
+            createFixedInvAdder(FixedItemInv::getInsertable)//
         );
         EXTRACTABLE = Attributes.createCombinable(
             //
             ItemExtractable.class, //
             EmptyItemExtractable.NULL, //
             list -> new CombinedItemExtractable(list), //
-            createFixedInvAdder(true, EmptyItemExtractable.SUPPLIER, FixedItemInv::getExtractable)//
+            createFixedInvAdder(FixedItemInv::getExtractable)//
         );
     }
 
-    private static <T> CustomAttributeAdder<T> createFixedInvAdder(boolean specialCaseHoppers,
-        @Nullable T hopperInstance, Function<FixedItemInv, T> getter) {
+    private static <T> CustomAttributeAdder<T> createFixedInvAdder(Function<FixedItemInv, T> getter) {
         return (world, pos, state, list) -> {
             Block block = state.getBlock();
             Direction direction = list.getSearchDirection();
+            Direction blockSide = direction == null ? null : direction.getOpposite();
 
-            // Vanilla wrappers
-            if (specialCaseHoppers && block instanceof HopperBlock && state.get(HopperBlock.FACING) == direction) {
-                if (hopperInstance != null) {
-                    list.add(hopperInstance);
-                }
-            } else if (block instanceof InventoryProvider) {
+            if (block instanceof InventoryProvider) {
                 InventoryProvider provider = (InventoryProvider) block;
                 SidedInventory inventory = provider.getInventory(state, world, pos);
                 if (inventory != null) {
                     if (inventory.getInvSize() > 0) {
                         final FixedItemInv wrapper;
                         if (direction != null) {
-                            wrapper = FixedSidedInventoryVanillaWrapper.create(inventory, direction.getOpposite());
+                            wrapper = FixedSidedInventoryVanillaWrapper.create(inventory, blockSide);
                         } else {
                             wrapper = new FixedInventoryVanillaWrapper(inventory);
                         }
@@ -126,8 +118,8 @@ public final class ItemAttributes {
                     // Special case chests here, rather than through a mixin because it just simplifies
                     // everything
 
-                    Inventory chestInv = ChestBlock.getInventory(state, world, pos, /* Check if the top is blocked by a
-                                                                                     * solid block or a cat */false);
+                    boolean checkForBlockingCats = false;
+                    Inventory chestInv = ChestBlock.getInventory(state, world, pos, checkForBlockingCats);
                     if (chestInv != null) {
                         list.add(getter.apply(new FixedInventoryVanillaWrapper(chestInv)));
                     }
@@ -135,7 +127,7 @@ public final class ItemAttributes {
                     SidedInventory sidedInv = (SidedInventory) be;
                     final FixedItemInv wrapper;
                     if (direction != null) {
-                        wrapper = FixedSidedInventoryVanillaWrapper.create(sidedInv, direction.getOpposite());
+                        wrapper = FixedSidedInventoryVanillaWrapper.create(sidedInv, blockSide);
                     } else {
                         wrapper = new FixedInventoryVanillaWrapper(sidedInv);
                     }

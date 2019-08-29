@@ -1,0 +1,5 @@
+Changes:
+
+* Removed special-casing from hoppers in ItemAttributes.
+* Moved the lambda in "ItemFilter.asPredicate" out to it's own (public) class: "ItemFilterAsPredicate".
+    * This lets the predicate and/or with itself into a (potentially) more optimised version.
