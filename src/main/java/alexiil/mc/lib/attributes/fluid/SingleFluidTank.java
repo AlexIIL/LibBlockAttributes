@@ -12,9 +12,10 @@ import java.util.function.Function;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.misc.Reference;
 
 /** A delegating accessor of a single slot in a {@link FixedFluidInv}. */
-public final class SingleFluidTank extends SingleFluidTankView implements FluidTransferable {
+public final class SingleFluidTank extends SingleFluidTankView implements FluidTransferable, Reference<FluidVolume> {
 
     SingleFluidTank(FixedFluidInv backingView, int tank) {
         super(backingView, tank);
@@ -25,6 +26,7 @@ public final class SingleFluidTank extends SingleFluidTankView implements FluidT
         return (FixedFluidInv) this.backingView;
     }
 
+    @Override
     public final boolean set(FluidVolume to, Simulation simulation) {
         return getBackingInv().setInvFluid(tank, to, simulation);
     }
@@ -53,5 +55,17 @@ public final class SingleFluidTank extends SingleFluidTankView implements FluidT
     @Override
     public FluidFilter getInsertionFilter() {
         return getBackingInv().getFilterForTank(tank);
+    }
+
+    // Reference
+
+    @Override
+    public boolean set(FluidVolume value) {
+        return set(value, Simulation.ACTION);
+    }
+
+    @Override
+    public boolean isValid(FluidVolume value) {
+        return super.isValid(value.getFluidKey());
     }
 }

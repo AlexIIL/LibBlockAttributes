@@ -1,0 +1,46 @@
+Breaking Changes:
+
+* Made CombinableAttribute.combiner private, rather than public.
+    * This is only to encourage using CombinableAttribute.combine() instead - which handles empty
+      and singleton lists correctly.
+
+Additions:
+
+* Added item-based attributes! These are fairly similar to block-based attributes, but use
+  references to the ItemStack rather than a world+pos reference. Attribute instances obtained from
+  items also can only be cached while their backing reference is still active. (In other words
+  unless you control the reference you shouldn't cache returned instances).
+
+
+* Added AttributeProviderItem, which is similar to AttributeProvider, but for items rather than blocks.
+* Added CustomItemAttributeAdder, which is similar to CustomAttributeAdder, but for items rather than blocks.
+* Added ItemAttributeList, which is similar to AttributeList but for items rather than blocks.
+* Added the interface LimitedConsumer, which is similar to java.util.function.Consumer but can reject the incoming object.
+    * Made ItemInsertable implement LimitedConsumer<ItemStack>
+    * Made FluidInsertable implement LimitedConsumer<FluidVolume>
+    * Made SingleItemSlot implement 
+* Added the interface Reference<T>, which has three methods:
+    * "void get()": returns the object.
+    * "boolean set(T obj)": Sets the reference to the given object if it is allowed (and returns true), otherwise it returns false.
+    * "boolean isValid(T obj)": Like set, but doesn't modify the return value of get().
+* Made a few existing classes implement Reference:
+    * attributes.misc.Ref<T> now implements Reference<T>.
+    * SingleItemSlot now implements Reference<ItemStack>.
+    * SingleFluidTank now implements Reference<FluidVolume>.
+* Added 4 new implementations of a Reference<T>:
+    * UnmodifiableRef, which holds a final reference to an object and rejects any attempt to set it.
+    * CallableRef, which delegates to a java.util.function Supplier, Consumer, and Predicate for all methods.
+    * SimulatableRef, which delegates to a java.util.function.Supplier for get and LimitedConsumer for set() and isValid().
+    * DestroyableRef, which delegates to another Reference, but refuses all set attempts after "destroy()" is called.
+* Added various methods to Attribute, DefaultedAttribute, and CombinableAttribute for getting attribute instances from any ItemStack.
+    * All of these methods boil down to a method with 3 parameters:
+        * Reference<ItemStack>, which holds the ItemStack in question. This is a Reference (with get/set/canSet methods)
+          rather than a normal ItemStack to allow attribute instances to modify the ItemStack according to how they are used.
+          (For example a fluid "extractable" attribute would replace a bucket of lava with an empty bucket when it is drained).
+        * (optional) LimitedConsumer<ItemStack>, which can accept excess items. (For example a fluid "insertable" attribute might
+          replace a stack of 6 empty buckets with a stack of 5 empty buckets plus one bucket filled with the appropriate fluid).
+        * (optional) Predicate<ItemStack>, which is identical to the predicate given to SearchOptions.matching().
+
+Changes:
+
+* (TODO: Make changes)

@@ -13,9 +13,10 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.misc.Reference;
 
 /** A delegating accessor of a single slot in a {@link FixedItemInv}. */
-public final class SingleItemSlot extends SingleItemSlotView implements ItemTransferable {
+public final class SingleItemSlot extends SingleItemSlotView implements ItemTransferable, Reference<ItemStack> {
 
     SingleItemSlot(FixedItemInv backingView, int slot) {
         super(backingView, slot);
@@ -30,6 +31,7 @@ public final class SingleItemSlot extends SingleItemSlotView implements ItemTran
      * 
      * @return True if the modification was allowed, false otherwise. (For example if the given stack doesn't pass the
      *         FixedItemInvView.isItemValidForSlot(int, ItemStack) test). */
+    @Override
     public final boolean set(ItemStack to, Simulation simulation) {
         return getBackingInv().setInvStack(slot, to, simulation);
     }
@@ -58,5 +60,12 @@ public final class SingleItemSlot extends SingleItemSlotView implements ItemTran
     @Override
     public final ItemFilter getInsertionFilter() {
         return getBackingInv().getFilterForSlot(slot);
+    }
+
+    // Reference
+
+    @Override
+    public boolean set(ItemStack value) {
+        return this.set(value, Simulation.ACTION);
     }
 }

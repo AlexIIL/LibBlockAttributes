@@ -7,10 +7,27 @@
  */
 package alexiil.mc.lib.attributes.misc;
 
-public final class Ref<T> {
+/** A simple {@link Reference} that holds the value directly in the field {@link #obj}, and accepts any new value. */
+public final class Ref<T> implements Reference<T> {
     public T obj;
 
     public Ref(T obj) {
         this.obj = obj;
+    }
+
+    @Override
+    public T get() {
+        return obj;
+    }
+
+    @Override
+    public boolean set(T value) {
+        obj = value;
+        return true;
+    }
+
+    @Override
+    public boolean isValid(T value) {
+        return true;
     }
 }

@@ -11,10 +11,11 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.misc.LimitedConsumer;
 
 /** Defines an object that can have items inserted into it. */
 @FunctionalInterface
-public interface ItemInsertable {
+public interface ItemInsertable extends LimitedConsumer<ItemStack> {
 
     /** Inserts the given stack into this insertable, and returns the excess.
      * 
@@ -23,6 +24,31 @@ public interface ItemInsertable {
      * @return the excess {@link ItemStack} that wasn't accepted. This will be independent of this insertable, however
      *         it might be the given stack instead of a completely new object. */
     ItemStack attemptInsertion(ItemStack stack, Simulation simulation);
+
+    /** @deprecated This is an override for {@link LimitedConsumer}, for the full javadoc you probably want to call
+     *             {@link #attemptInsertion(ItemStack, Simulation)} directly. */
+    @Override
+    @Deprecated
+    default boolean offer(ItemStack object, Simulation simulation) {
+        return attemptInsertion(object, simulation).isEmpty();
+    }
+
+    /** @deprecated This is an override for {@link LimitedConsumer}, for the full javadoc you probably want to call
+     *             {@link #insert(ItemStack)} directly. */
+    @Override
+    @Deprecated
+    default boolean offer(ItemStack object) {
+        return insert(object).isEmpty();
+    }
+
+    /** @deprecated This is an override for {@link LimitedConsumer}, for the full javadoc you probably want to call
+     *             {@link #attemptInsertion(ItemStack, Simulation) #attemptInsertion}(ItemStack, Simulation.SIMULATE)
+     *             directly. */
+    @Override
+    @Deprecated
+    default boolean wouldAccept(ItemStack object) {
+        return attemptInsertion(object, Simulation.SIMULATE).isEmpty();
+    }
 
     /** Inserts the given stack into this insertable, and returns the excess.
      * <p>

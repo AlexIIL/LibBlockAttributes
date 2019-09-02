@@ -10,10 +10,11 @@ package alexiil.mc.lib.attributes.fluid;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.misc.LimitedConsumer;
 
 /** Defines an object that can have fluids inserted into it. */
 @FunctionalInterface
-public interface FluidInsertable {
+public interface FluidInsertable extends LimitedConsumer<FluidVolume> {
 
     /** Inserts the given stack into this insertable, and returns the excess.
      * 
@@ -22,6 +23,31 @@ public interface FluidInsertable {
      * @return the excess {@link FluidVolume} that wasn't accepted. This will be independent of this insertable, however
      *         it might be the given object instead of a completely new object. */
     FluidVolume attemptInsertion(FluidVolume fluid, Simulation simulation);
+
+    /** @deprecated This is an override for {@link LimitedConsumer}, for the full javadoc you probably want to call
+     *             {@link #attemptInsertion(FluidVolume, Simulation)} directly. */
+    @Override
+    @Deprecated
+    default boolean offer(FluidVolume fluid, Simulation simulation) {
+        return attemptInsertion(fluid, simulation).isEmpty();
+    }
+
+    /** @deprecated This is an override for {@link LimitedConsumer}, for the full javadoc you probably want to call
+     *             {@link #insert(FluidVolume)} directly. */
+    @Override
+    @Deprecated
+    default boolean offer(FluidVolume object) {
+        return insert(object).isEmpty();
+    }
+
+    /** @deprecated This is an override for {@link LimitedConsumer}, for the full javadoc you probably want to call
+     *             {@link #attemptInsertion(FluidVolume, Simulation) attemptInsertion}(FluidVolume, Simulation.SIMULATE)
+     *             directly. */
+    @Override
+    @Deprecated
+    default boolean wouldAccept(FluidVolume object) {
+        return attemptInsertion(object, Simulation.SIMULATE).isEmpty();
+    }
 
     /** Inserts the given stack into this insertable, and returns the excess.
      * <p>

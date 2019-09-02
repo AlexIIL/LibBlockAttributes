@@ -15,7 +15,7 @@ public class Attributes {
     }
 
     public static <T> Attribute<T> create(Class<T> clazz, CustomAttributeAdder<T> customAdder) {
-        return new Attribute<>(clazz, customAdder);
+        return create(clazz).appendBlockAdder(customAdder);
     }
 
     public static <T> DefaultedAttribute<T> createDefaulted(Class<T> clazz, @Nonnull T defaultValue) {
@@ -24,7 +24,7 @@ public class Attributes {
 
     public static <T> DefaultedAttribute<T> createDefaulted(Class<T> clazz, @Nonnull T defaultValue,
         CustomAttributeAdder<T> customAdder) {
-        return new DefaultedAttribute<>(clazz, defaultValue, customAdder);
+        return createDefaulted(clazz, defaultValue).appendBlockAdder(customAdder);
     }
 
     public static <T> CombinableAttribute<T> createCombinable(Class<T> clazz, @Nonnull T defaultValue,
@@ -34,6 +34,6 @@ public class Attributes {
 
     public static <T> CombinableAttribute<T> createCombinable(Class<T> clazz, @Nonnull T defaultValue,
         AttributeCombiner<T> combiner, CustomAttributeAdder<T> customAdder) {
-        return new CombinableAttribute<>(clazz, defaultValue, combiner, customAdder);
+        return createCombinable(clazz, defaultValue, combiner).appendBlockAdder(customAdder);
     }
 }

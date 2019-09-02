@@ -22,17 +22,12 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 
-import it.unimi.dsi.fastutil.Swapper;
-import it.unimi.dsi.fastutil.ints.IntComparator;
-
-public class AttributeList<T> {
-    public final Attribute<T> attribute;
+public class AttributeList<T> extends AbstractAttributeList<T> {
     public final SearchOption<? super T> searchParam;
 
     @Nonnull
     final VoxelShape defaultShape;
 
-    final DefaultedList<T> list = DefaultedList.of();
     final DefaultedList<CacheInfo> cacheList = DefaultedList.of();
 
     /** May contain null elements if the caller didn't provide one (and so the actual shape should be taken from the
@@ -44,23 +39,26 @@ public class AttributeList<T> {
      * direction should be blocked from). */
     VoxelShape obstructingShape;
 
-    private AttributeListMode mode = AttributeListMode.ADDING;
-
     AttributeList(Attribute<T> attribute, @Nullable SearchOption<? super T> searchOption, VoxelShape defaultShape) {
+        super(attribute);
+
         if (defaultShape == null) {
             throw new NullPointerException("defaultShape");
         }
+
         if (searchOption == null) {
             searchOption = SearchOptions.ALL;
         }
-        this.attribute = attribute;
+
         this.searchParam = searchOption;
         this.defaultShape = defaultShape;
+
         if (getSearchDirection() != null) {
             this.obstructingShape = VoxelShapes.empty();
         } else {
             this.obstructingShape = null;
         }
+
         if (this.searchParam.getShape() != VoxelShapes.fullCube() || obstructingShape != null) {
             this.combinedShapeList = new ArrayList<>();
         } else {
@@ -239,18 +237,6 @@ public class AttributeList<T> {
 
     // Accessors (used by attribute lookup functions)
 
-    /** @return The number of attribute instances added to this list. */
-    public int getCount() {
-        assertUsing();
-        return list.size();
-    }
-
-    @Nonnull
-    public T get(int index) {
-        assertUsing();
-        return list.get(index);
-    }
-
     public CacheInfo getCacheInfo(int index) {
         assertUsing();
         return cacheList.get(index);
@@ -282,31 +268,6 @@ public class AttributeList<T> {
         }
     }
 
-    @Nullable
-    public T getFirstOrNull() {
-        assertUsing();
-        if (list.isEmpty()) {
-            return null;
-        }
-        return list.get(0);
-    }
-
-    @Nonnull
-    public T getFirst(DefaultedAttribute<T> defaulted) {
-        assertUsing();
-        if (list.isEmpty()) {
-            return defaulted.defaultValue;
-        }
-        return list.get(0);
-    }
-
-    /** @return A combined version of this list, or the attribute's default value if this list is empty. */
-    @Nonnull
-    public T combine(CombinableAttribute<T> combinable) {
-        assertUsing();
-        return combinable.combine(list);
-    }
-
     /** @return A combined version of this list and then the second given list, or the attribute's default value if both
      *         lists are empty. */
     @Nonnull
@@ -315,78 +276,4 @@ public class AttributeList<T> {
         return combinable.combine(list, after.list);
     }
 
-    // Internal
-
-    private enum AttributeListMode {
-        ADDING,
-        USING;
-    }
-
-    void reset() {
-        list.clear();
-        cacheList.clear();
-        shapeList.clear();
-        if (combinedShapeList != null) {
-            combinedShapeList.clear();
-        }
-        mode = AttributeListMode.ADDING;
-    }
-
-    void finishAdding() {
-        assertAdding();
-        mode = AttributeListMode.USING;
-        if (searchParam instanceof SearchOptionDirectionalVoxel) {
-            SearchOptionDirectionalVoxel<?> param = (SearchOptionDirectionalVoxel<?>) searchParam;
-            if (param.ordered) {
-                if (list.size() > 1) {
-                    Swapper swapper = (a, b) -> {
-                        swap(list, a, b);
-                        swap(cacheList, a, b);
-                        swap(shapeList, a, b);
-                        swap(combinedShapeList, a, b);
-                    };
-                    IntComparator comparator = (a, b) -> {
-                        VoxelShape shapeA = combinedShapeList.get(a);
-                        VoxelShape shapeB = combinedShapeList.get(b);
-                        if (param.direction.getDirection() == AxisDirection.POSITIVE) {
-                            double minA = shapeA.getMinimum(param.direction.getAxis());
-                            double minB = shapeB.getMinimum(param.direction.getAxis());
-                            return Double.compare(minA, minB);
-                        } else {
-                            double maxA = shapeA.getMaximum(param.direction.getAxis());
-                            double maxB = shapeB.getMaximum(param.direction.getAxis());
-                            return Double.compare(maxB, maxA);
-                        }
-                    };
-                    // Dammit fastutil why do you have to use the same name as java :(
-                    it.unimi.dsi.fastutil.Arrays.quickSort(0, list.size(), comparator, swapper);
-                }
-            }
-        }
-        if (obstructingShape != null) {
-            for (int i = list.size() - 1; i >= 0; i--) {
-                VoxelShape attributeShape = combinedShapeList.get(i);
-                if (VoxelShapes.combine(obstructingShape, attributeShape, BooleanBiFunction.ONLY_SECOND).isEmpty()) {
-                    list.remove(i);
-                    cacheList.remove(i);
-                    shapeList.remove(i);
-                    if (combinedShapeList != null) {
-                        combinedShapeList.remove(i);
-                    }
-                }
-            }
-        }
-    }
-
-    private static <T> void swap(List<T> list, int a, int b) {
-        list.set(a, list.set(b, list.get(a)));
-    }
-
-    void assertAdding() {
-        assert mode == AttributeListMode.ADDING;
-    }
-
-    void assertUsing() {
-        assert mode == AttributeListMode.USING;
-    }
 }

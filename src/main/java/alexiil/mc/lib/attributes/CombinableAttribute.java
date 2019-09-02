@@ -9,28 +9,104 @@ package alexiil.mc.lib.attributes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
-public final class CombinableAttribute<T> extends DefaultedAttribute<T> {
+import alexiil.mc.lib.attributes.misc.LimitedConsumer;
+import alexiil.mc.lib.attributes.misc.Reference;
+import alexiil.mc.lib.attributes.misc.UnmodifiableRef;
 
-    public final AttributeCombiner<T> combiner;
+public class CombinableAttribute<T> extends DefaultedAttribute<T> {
 
-    CombinableAttribute(Class<T> clazz, @Nonnull T defaultValue, AttributeCombiner<T> combiner) {
+    private final AttributeCombiner<T> combiner;
+
+    protected CombinableAttribute(Class<T> clazz, @Nonnull T defaultValue, AttributeCombiner<T> combiner) {
         super(clazz, defaultValue);
         this.combiner = combiner;
     }
 
-    CombinableAttribute(Class<T> clazz, @Nonnull T defaultValue, AttributeCombiner<T> combiner,
-        CustomAttributeAdder<T> customAdder) {
-        super(clazz, defaultValue, customAdder);
-        this.combiner = combiner;
+    @Override
+    public CombinableAttribute<T> appendBlockAdder(CustomAttributeAdder<T> blockAdder) {
+        super.appendBlockAdder(blockAdder);
+        return this;
     }
+
+    @Override
+    public CombinableAttribute<T> appendItemAdder(ItemAttributeAdder<T> itemAdder) {
+        super.appendItemAdder(itemAdder);
+        return this;
+    }
+
+    // ##########################
+    //
+    // Combining
+    //
+    // ##########################
+
+    @Nonnull
+    public final T combine(List<T> list) {
+        switch (list.size()) {
+            case 0: {
+                return defaultValue;
+            }
+            case 1: {
+                return asNonNull(list.get(0));
+            }
+            default: {
+                return combiner.combine(list);
+            }
+        }
+    }
+
+    @Nonnull
+    public final T combine(List<T> firstList, List<T> secondList) {
+        switch (firstList.size() + secondList.size()) {
+            case 0: {
+                return defaultValue;
+            }
+            case 1: {
+                if (secondList.isEmpty()) {
+                    return asNonNull(firstList.get(0));
+                } else {
+                    return asNonNull(firstList.get(0));
+                }
+            }
+            default: {
+                if (firstList.isEmpty()) {
+                    return combiner.combine(secondList);
+                } else if (secondList.isEmpty()) {
+                    return combiner.combine(firstList);
+                } else {
+                    List<T> combined = new ArrayList<>();
+                    combined.add(asNonNull(firstList.get(0)));
+                    combined.addAll(secondList);
+                    return combiner.combine(combined);
+                }
+            }
+        }
+    }
+
+    @Nonnull
+    private final T asNonNull(@Nullable T value) {
+        if (value == null) {
+            throw new NullPointerException("The value was null, when all elements are meant to be non-null!");
+        }
+        return value;
+    }
+
+    // ##########################
+    //
+    // Block handling
+    //
+    // ##########################
 
     /** @return Either the {@link DefaultedAttribute #defaultValue defaultValue}, a single instance, or a
      *         {@link #combiner combined} instance depending on how many attribute instances could be found. */
@@ -61,46 +137,86 @@ public final class CombinableAttribute<T> extends DefaultedAttribute<T> {
         return get(be.getWorld(), be.getPos().offset(dir), SearchOptions.inDirection(dir));
     }
 
+    // ##########################
+    //
+    // Item handling
+    //
+    // ##########################
+
+    /** Obtains a combined instance of this attribute in the given {@link ItemStack} {@link Reference}, or the
+     * {@link #defaultValue} if none were found.
+     * <p>
+     * This method is just a quicker way of calling {@link #getFirst(Reference)} of a single {@link ItemStack} which
+     * cannot be modified. Internally this creates a new {@link UnmodifiableRef} for the reference.
+     * 
+     * @param unmodifiableStack An {@link ItemStack} that may not be modified by any of the attribute instances
+     *            returned.
+     * @return The combined attribute instance found by {@link #getAll(ItemStack)}, or the {@link #defaultValue} if none
+     *         were found in the given {@link ItemStack}. */
     @Nonnull
-    public T combine(List<T> list) {
-        switch (list.size()) {
-            case 0: {
-                return defaultValue;
-            }
-            case 1: {
-                return list.get(0);
-            }
-            default: {
-                return combiner.combine(list);
-            }
-        }
+    public final T get(ItemStack unmodifiableStack) {
+        return getAll(unmodifiableStack).combine(this);
     }
 
+    /** Obtains a combined instance of this attribute in the given {@link ItemStack} {@link Reference}, or the
+     * {@link #defaultValue} if none were found.
+     * 
+     * @param stackRef A {@link Reference} to the {@link ItemStack} to be searched. This is a full reference, which may
+     *            allow any of the returned attribute instances to modify it. (For example if it was in an inventory
+     *            then changes would be correctly reflected in the backing inventory).
+     * @return The combined attribute instance found by {@link #getAll(Reference)}, or tge {@link #defaultValue} if none
+     *         were found in the given {@link ItemStack}. */
     @Nonnull
-    public T combine(List<T> firstList, List<T> secondList) {
-        switch (firstList.size() + secondList.size()) {
-            case 0: {
-                return defaultValue;
-            }
-            case 1: {
-                if (secondList.isEmpty()) {
-                    return firstList.get(0);
-                } else {
-                    return firstList.get(0);
-                }
-            }
-            default: {
-                if (firstList.isEmpty()) {
-                    return combiner.combine(secondList);
-                } else if (secondList.isEmpty()) {
-                    return combiner.combine(firstList);
-                } else {
-                    List<T> combined = new ArrayList<>();
-                    combined.add(firstList.get(0));
-                    combined.addAll(secondList);
-                    return combiner.combine(combined);
-                }
-            }
-        }
+    public final T get(Reference<ItemStack> stackRef) {
+        return getAll(stackRef).combine(this);
+    }
+
+    /** Obtains a combined instance of this attribute in the given {@link ItemStack} {@link Reference}, or the
+     * {@link #defaultValue} if none were found.
+     * 
+     * @param filter A {@link Predicate} to test all {@link ItemAttributeList#add(Object) offered} objects before
+     *            accepting them into the list. A null value equals no filter, which will not block any values.
+     * @return The combined attribute instance found by {@link #getAll(Reference, Predicate)}, or the
+     *         {@link #defaultValue} if none were found in the given {@link ItemStack}. */
+    @Nonnull
+    public final T get(Reference<ItemStack> stackRef, @Nullable Predicate<T> filter) {
+        return getAll(stackRef, filter).combine(this);
+    }
+
+    /** Obtains a combined instance of this attribute in the given {@link ItemStack} {@link Reference}, or the
+     * {@link #defaultValue} if none were found.
+     * 
+     * @param stackRef A {@link Reference} to the {@link ItemStack} to be searched. This is a full reference, which may
+     *            allow any of the returned attribute instances to modify it. (For example if it was in an inventory
+     *            then changes would be correctly reflected in the backing inventory).
+     * @param excess A {@link LimitedConsumer} which allows any of the returned attribute instances to spit out excess
+     *            items in addition to changing the main stack. (As this is a LimitedConsumer rather than a normal
+     *            consumer it is important to note that excess items items are not guaranteed to be accepted). A null
+     *            value will default to {@link LimitedConsumer#rejecting()}.
+     * @return The combined attribute instance found by {@link #getAll(Reference, LimitedConsumer)}, or the
+     *         {@link #defaultValue} if none were found in the given {@link ItemStack}. */
+    @Nonnull
+    public final T get(Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excess) {
+        return getAll(stackRef, excess).combine(this);
+    }
+
+    /** Obtains a combined instance of this attribute in the given {@link ItemStack} {@link Reference}, or the
+     * {@link #defaultValue} if none were found.
+     * 
+     * @param stackRef A {@link Reference} to the {@link ItemStack} to be searched. This is a full reference, which may
+     *            allow any of the returned attribute instances to modify it. (For example if it was in an inventory
+     *            then changes would be correctly reflected in the backing inventory).
+     * @param excess A {@link LimitedConsumer} which allows any of the returned attribute instances to spit out excess
+     *            items in addition to changing the main stack. (As this is a LimitedConsumer rather than a normal
+     *            consumer it is important to note that excess items items are not guaranteed to be accepted). A null
+     *            value will default to {@link LimitedConsumer#rejecting()}.
+     * @param filter A {@link Predicate} to test all {@link ItemAttributeList#add(Object) offered} objects before
+     *            accepting them into the list. A null value equals no filter, which will not block any values.
+     * @return The combined attribute instance found by {@link #getAll(Reference, LimitedConsumer, Predicate)}, or the
+     *         {@link #defaultValue} if none were found in the given {@link ItemStack}. */
+    @Nonnull
+    public final T get(Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excess, @Nullable Predicate<
+        T> filter) {
+        return getAll(stackRef, excess, filter).combine(this);
     }
 }
