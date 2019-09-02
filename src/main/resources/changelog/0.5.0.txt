@@ -3,6 +3,7 @@ Breaking Changes:
 * Made CombinableAttribute.combiner private, rather than public.
     * This is only to encourage using CombinableAttribute.combine() instead - which handles empty
       and singleton lists correctly.
+* Disallowed ItemFilter.matches and FixedItemInvView.isItemValidForSlot from throwing an exception when they are passed an empty stack.
 
 Additions:
 

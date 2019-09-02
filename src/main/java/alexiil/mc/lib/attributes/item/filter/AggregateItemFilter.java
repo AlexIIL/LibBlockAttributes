@@ -26,8 +26,9 @@ public final class AggregateItemFilter implements ReadableItemFilter, Iterable<I
 
     public AggregateItemFilter(AggregateFilterType type, ItemFilter... filters) {
         if (filters.length < 2) {
-            throw new IllegalArgumentException("There's no reason to construct an aggregate stack filter that matches "
-                + filters.length + " filters!");
+            throw new IllegalArgumentException(
+                "There's no reason to construct an aggregate stack filter that matches " + filters.length + " filters!"
+            );
         }
         this.type = type;
         this.filters = filters;
@@ -117,15 +118,15 @@ public final class AggregateItemFilter implements ReadableItemFilter, Iterable<I
         return combine(type, Arrays.asList(filters));
     }
 
-    public static ItemFilter allOf(List<ItemFilter> filters) {
+    public static ItemFilter allOf(List<? extends ItemFilter> filters) {
         return combine(AggregateFilterType.ALL, filters);
     }
 
-    public static ItemFilter anyOf(List<ItemFilter> filters) {
+    public static ItemFilter anyOf(List<? extends ItemFilter> filters) {
         return combine(AggregateFilterType.ANY, filters);
     }
 
-    public static ItemFilter combine(AggregateFilterType type, List<ItemFilter> filters) {
+    public static ItemFilter combine(AggregateFilterType type, List<? extends ItemFilter> filters) {
         if (!(filters instanceof RandomAccess)) {
             filters = Arrays.asList(filters.toArray(new ItemFilter[0]));
         }

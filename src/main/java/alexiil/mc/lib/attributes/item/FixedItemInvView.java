@@ -79,8 +79,7 @@ public interface FixedItemInvView extends Convertible {
      * 
      * @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
-     * @param stack The {@link ItemStack} to check. Like {@link ItemFilter#matches(ItemStack)} this cannot be an empty
-     *            stack.
+     * @param stack The {@link ItemStack} to check.
      * @throws RuntimeException if the given slot wasn't a valid index. */
     boolean isItemValidForSlot(int slot, ItemStack stack);
 

@@ -73,7 +73,7 @@ public class SimpleLimitedGroupedItemInv extends DelegatingGroupedItemInv implem
         // TODO: return a more useful filter!
         return stack -> {
             if (stack.isEmpty()) {
-                throw new IllegalArgumentException("You should never test an ItemFilter with an empty stack!");
+                return true;
             }
             ItemStack leftover = attemptInsertion(stack, Simulation.SIMULATE);
             return leftover.isEmpty() || leftover.getCount() < stack.getCount();

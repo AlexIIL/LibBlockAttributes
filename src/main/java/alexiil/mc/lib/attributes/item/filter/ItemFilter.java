@@ -16,9 +16,7 @@ import net.minecraft.item.ItemStack;
 public interface ItemFilter {
 
     /** Checks to see if the given filter matches the given stack. Note that this must not care about
-     * {@link ItemStack#getCount()}.
-     * 
-     * @throws IllegalArgumentException if the given {@link ItemStack} is {@link ItemStack#isEmpty() empty}. */
+     * {@link ItemStack#getCount()}, except in the case where the stack is {@link ItemStack#isEmpty()}. */
     boolean matches(ItemStack stack);
 
     default ItemFilter negate() {
@@ -49,7 +47,7 @@ public interface ItemFilter {
 
         @Override
         public boolean test(ItemStack stack) {
-            if (stack == null || stack.isEmpty()) {
+            if (stack == null) {
                 // Predicate.test doesn't have this restriction
                 return false;
             }

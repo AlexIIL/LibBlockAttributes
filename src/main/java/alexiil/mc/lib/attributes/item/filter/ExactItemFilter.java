@@ -31,7 +31,7 @@ public final class ExactItemFilter implements ReadableItemFilter {
      *         or an {@link ExactItemFilter} if it returns any other {@link Item}. */
     public static ReadableItemFilter createFilter(ItemConvertible entry) {
         Item item = entry.asItem();
-        if (item == Items.AIR) {
+        if (item == Items.AIR || item == null) {
             return ConstantItemFilter.NOTHING;
         }
         return new ExactItemFilter(item);
@@ -65,6 +65,6 @@ public final class ExactItemFilter implements ReadableItemFilter {
 
     @Override
     public boolean matches(ItemStack stack) {
-        return stack.getItem() == item;
+        return !stack.isEmpty() && stack.getItem() == item;
     }
 }

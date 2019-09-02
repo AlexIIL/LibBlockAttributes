@@ -10,47 +10,90 @@ package alexiil.mc.lib.attributes.item.filter;
 import net.minecraft.item.ItemStack;
 
 public enum ConstantItemFilter implements ReadableItemFilter {
-    ANYTHING(true),
-    NOTHING(false);
+    ANYTHING(true, true),
+    ANYTHING_EXCEPT_EMPTY(true, false),
+    ONLY_EMPTY(false, true),
+    NOTHING(false, false);
 
-    private final boolean result;
+    private final boolean fullResult, emptyResult;
 
-    private ConstantItemFilter(boolean result) {
-        this.result = result;
+    private ConstantItemFilter(boolean fullResult, boolean emptyResult) {
+        this.fullResult = fullResult;
+        this.emptyResult = emptyResult;
     }
 
     public static ConstantItemFilter of(boolean result) {
         return result ? ANYTHING : NOTHING;
     }
 
+    public static ConstantItemFilter of(boolean fullResult, boolean emptyResult) {
+        if (fullResult) {
+            return emptyResult ? ANYTHING : ANYTHING_EXCEPT_EMPTY;
+        } else {
+            return emptyResult ? ONLY_EMPTY : NOTHING;
+        }
+    }
+
     @Override
     public boolean matches(ItemStack stack) {
-        if (stack.isEmpty()) {
-            throw new IllegalArgumentException("You should never test an IItemFilter with an empty stack!");
-        }
-        return result;
+        return stack.isEmpty() ? emptyResult : fullResult;
     }
 
     @Override
     public ItemFilter negate() {
-        return of(!result);
+        return of(!fullResult, !emptyResult);
     }
 
     @Override
     public ItemFilter and(ItemFilter other) {
-        if (result) {
+        if (fullResult && emptyResult) {
             return other;
-        } else {
+        }
+        if (!fullResult && !emptyResult) {
             return NOTHING;
+        }
+
+        boolean otherMatchesEmpty = other.matches(ItemStack.EMPTY);
+
+        if (otherMatchesEmpty) {
+            if (fullResult) {
+                return ReadableItemFilter.super.and(other);
+            } else {
+                return ONLY_EMPTY;
+            }
+        } else {
+            if (fullResult) {
+                return other;
+            } else {
+                return NOTHING;
+            }
         }
     }
 
     @Override
     public ItemFilter or(ItemFilter other) {
-        if (result) {
+
+        if (fullResult && emptyResult) {
             return ANYTHING;
-        } else {
+        }
+        if (!fullResult && !emptyResult) {
             return other;
+        }
+
+        boolean otherMatchesEmpty = other.matches(ItemStack.EMPTY);
+
+        if (otherMatchesEmpty) {
+            if (fullResult) {
+                return ANYTHING;
+            } else {
+                return other;
+            }
+        } else {
+            if (fullResult) {
+                return other;
+            } else {
+                return ReadableItemFilter.super.or(other);
+            }
         }
     }
 

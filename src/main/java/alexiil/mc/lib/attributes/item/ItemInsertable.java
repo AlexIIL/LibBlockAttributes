@@ -72,7 +72,9 @@ public interface ItemInsertable extends LimitedConsumer<ItemStack> {
     default ItemFilter getInsertionFilter() {
         return stack -> {
             if (stack.isEmpty()) {
-                throw new IllegalArgumentException("You should never test an ItemFilter with an empty stack!");
+                // Bit strange, because inserting an empty stack will always return
+                // the empty stack, which indicates a successful insertion.
+                return true;
             }
             ItemStack leftover = attemptInsertion(stack, Simulation.SIMULATE);
             return leftover.isEmpty() || leftover.getCount() < stack.getCount();

@@ -20,6 +20,6 @@ public final class ItemClassFilter implements ReadableItemFilter {
 
     @Override
     public boolean matches(ItemStack stack) {
-        return matchedClass.isInstance(stack.getItem());
+        return !stack.isEmpty() && matchedClass.isInstance(stack.getItem());
     }
 }

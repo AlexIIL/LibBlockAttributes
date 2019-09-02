@@ -37,6 +37,9 @@ import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.compat.FixedInventoryVanillaWrapper;
 import alexiil.mc.lib.attributes.item.compat.FixedSidedInventoryVanillaWrapper;
+import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.CombinedFixedItemInvView;
 import alexiil.mc.lib.attributes.item.impl.CombinedGroupedItemInv;
@@ -59,6 +62,11 @@ public final class ItemAttributes {
     public static final CombinableAttribute<GroupedItemInv> GROUPED_INV;
     public static final CombinableAttribute<ItemInsertable> INSERTABLE;
     public static final CombinableAttribute<ItemExtractable> EXTRACTABLE;
+
+    /** Mostly intended to be used for {@link ItemStack}'s, not {@link Block}'s. (As this interface doesn't really make
+     * much sense when applied to block's alone, however it makes much more sense in pipe input or extraction
+     * filters). */
+    public static final CombinableAttribute<ItemFilter> FILTER;
 
     static {
         FIXED_INV_VIEW = create(
@@ -96,6 +104,11 @@ public final class ItemAttributes {
             EmptyItemExtractable.NULL, //
             list -> new CombinedItemExtractable(list), //
             FixedItemInv::getExtractable//
+        );
+        FILTER = Attributes.createCombinable(
+            ItemFilter.class, //
+            ConstantItemFilter.NOTHING, //
+            list -> AggregateItemFilter.allOf(list)//
         );
     }
 
@@ -209,7 +222,7 @@ public final class ItemAttributes {
         public boolean isItemValidForSlot(int slot, ItemStack stack) {
             // Check for grouped item inv because everything else boils down to this
             // (Plus we don't care about insertable or extractable's, only inventories)
-            return ItemAttributes.GROUPED_INV_VIEW.getFirstOrNull(stack) == null;
+            return stack.isEmpty() || ItemAttributes.GROUPED_INV_VIEW.getFirstOrNull(stack) == null;
         }
 
         @Override
