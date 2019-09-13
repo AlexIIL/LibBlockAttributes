@@ -13,16 +13,17 @@ import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.item.FixedItemInv.ModifiableFixedItemInv;
 import alexiil.mc.lib.attributes.item.FixedItemInvView;
 import alexiil.mc.lib.attributes.item.GroupedItemInv;
+import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
 import alexiil.mc.lib.attributes.item.ItemExtractable;
 import alexiil.mc.lib.attributes.item.ItemInsertable;
-import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 /** An {@link FixedItemInv} with no slots. Because this inventory is unmodifiable this also doubles as the empty
  * implementation for {@link FixedItemInvView}. */
-public enum EmptyFixedItemInv implements FixedItemInv {
+public enum EmptyFixedItemInv implements ModifiableFixedItemInv {
     INSTANCE;
 
     private static IllegalArgumentException throwInvalidSlotException() {
@@ -60,7 +61,17 @@ public enum EmptyFixedItemInv implements FixedItemInv {
     }
 
     @Override
-    public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken remToken) {
+    public int getChangeValue() {
+        return 0;
+    }
+
+    @Override
+    public void markDirty() {
+        // NO-OP
+    }
+
+    @Override
+    public ListenerToken addListener(InvMarkDirtyListener listener, ListenerRemovalToken removalToken) {
         // We don't need to keep track of the listener because this empty inventory never changes.
         return () -> {
             // (And we don't need to do anything when the listener is removed)

@@ -9,10 +9,8 @@ package alexiil.mc.lib.attributes.item.impl;
 
 import java.util.Arrays;
 
-import alexiil.mc.lib.attributes.ListenerRemovalToken;
-import alexiil.mc.lib.attributes.ListenerToken;
+import alexiil.mc.lib.attributes.item.FixedItemInv;
 import alexiil.mc.lib.attributes.item.FixedItemInvView;
-import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
@@ -20,8 +18,8 @@ import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 /** Default implementation for {@link FixedItemInvView#getMappedInv(int...)}. */
 public class MappedFixedItemInvView extends AbstractPartialFixedItemInvView {
 
-    private final int[] slots;
-    private final Int2IntMap inverseSlotMap;
+    protected final int[] slots;
+    protected final Int2IntMap inverseSlotMap;
 
     public MappedFixedItemInvView(FixedItemInvView inv, int[] slots) {
         super(inv);
@@ -31,15 +29,25 @@ public class MappedFixedItemInvView extends AbstractPartialFixedItemInvView {
         for (int i = 0; i < slots.length; i++) {
             int s = slots[i];
             if (s < 0 || s >= inv.getSlotCount()) {
-                throw new IllegalArgumentException("Invalid slot index: " + s
-                    + ", as it must be between 0 and the slot count of " + inv.getSlotCount());
+                throw new IllegalArgumentException(
+                    "Invalid slot index: " + s + ", as it must be between 0 and the slot count of " + inv.getSlotCount()
+                );
             }
             int prev = inverseSlotMap.put(s, i);
             if (prev != -1) {
-                throw new IllegalStateException("Duplicated slot index! (" + s + " appears at both index " + prev
-                    + " and " + i + " in " + Arrays.toString(slots) + ")");
+                throw new IllegalStateException(
+                    "Duplicated slot index! (" + s + " appears at both index " + prev + " and " + i + " in " + Arrays
+                        .toString(slots) + ")"
+                );
             }
         }
+    }
+
+    public static MappedFixedItemInvView createView(FixedItemInvView inv, int[] slots) {
+        if (inv instanceof FixedItemInv) {
+            return MappedFixedItemInv.create((FixedItemInv) inv, slots);
+        }
+        return new MappedFixedItemInvView(inv, slots);
     }
 
     @Override
@@ -53,14 +61,28 @@ public class MappedFixedItemInvView extends AbstractPartialFixedItemInvView {
     }
 
     @Override
-    public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken) {
-        FixedItemInvView wrapper = this;
-        return inv.addListener((realInv, slot, previous, current) -> {
-            assert realInv == inv;
-            int exposedSlot = inverseSlotMap.get(slot);
-            if (exposedSlot >= 0) {
-                listener.onChange(wrapper, exposedSlot, previous, current);
-            }
-        }, removalToken);
+    public FixedItemInvView getSubInv(int fromIndex, int toIndex) {
+        if (fromIndex == toIndex) {
+            return EmptyFixedItemInv.INSTANCE;
+        }
+
+        int[] nSlots = new int[toIndex - fromIndex];
+        int i = 0;
+        for (int s = fromIndex; s < toIndex; s++) {
+            nSlots[i++] = getInternalSlot(s);
+        }
+        return new MappedFixedItemInvView(inv, nSlots);
+    }
+
+    @Override
+    public FixedItemInvView getMappedInv(int... slots) {
+        if (slots.length == 0) {
+            return EmptyFixedItemInv.INSTANCE;
+        }
+        slots = Arrays.copyOf(slots, slots.length);
+        for (int i = 0; i < slots.length; i++) {
+            slots[i] = getInternalSlot(slots[i]);
+        }
+        return new MappedFixedItemInvView(inv, slots);
     }
 }

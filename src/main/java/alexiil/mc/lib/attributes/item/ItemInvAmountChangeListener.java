@@ -17,4 +17,19 @@ public interface ItemInvAmountChangeListener {
      * @param previous The previous amount of the given stack.
      * @param current The new amount of the given stack. */
     void onChange(GroupedItemInvView inv, ItemStack stack, int previous, int current);
+
+    /** A simple listener for an {@link ItemInvAmountChangeListener} that wraps an {@link InvMarkDirtyListener}. */
+    public static final class MarkDirtyWrapper implements ItemInvAmountChangeListener {
+
+        public final InvMarkDirtyListener realListener;
+
+        public MarkDirtyWrapper(InvMarkDirtyListener realListener) {
+            this.realListener = realListener;
+        }
+
+        @Override
+        public void onChange(GroupedItemInvView inv, ItemStack stack, int previous, int current) {
+            realListener.onMarkDirty(inv);
+        }
+    }
 }

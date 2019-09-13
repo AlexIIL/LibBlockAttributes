@@ -43,6 +43,11 @@ public class DelegatingGroupedItemInv implements GroupedItemInv {
     }
 
     @Override
+    public int getChangeValue() {
+        return delegate.getChangeValue();
+    }
+
+    @Override
     public ListenerToken addListener(ItemInvAmountChangeListener listener, ListenerRemovalToken removalToken) {
         GroupedItemInv real = this;
         return delegate.addListener((inv, stack, previous, current) -> {

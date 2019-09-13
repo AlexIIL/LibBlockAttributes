@@ -7,22 +7,20 @@
  */
 package alexiil.mc.lib.attributes.item.impl;
 
-import alexiil.mc.lib.attributes.ListenerRemovalToken;
-import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.item.FixedItemInvView;
-import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
 
 /** Default implementation for {@link FixedItemInvView#getSubInv(int, int)}. */
 public class SubFixedItemInvView extends AbstractPartialFixedItemInvView {
 
     /** The slots that we use. */
-    private final int fromIndex, toIndex;
+    protected final int fromIndex, toIndex;
 
     public SubFixedItemInvView(FixedItemInvView inv, int fromIndex, int toIndex) {
         super(inv);
         if (fromIndex > toIndex) {
             throw new IllegalArgumentException(
-                "fromIndex was greater than toIndex! (" + fromIndex + " > " + toIndex + ")");
+                "fromIndex was greater than toIndex! (" + fromIndex + " > " + toIndex + ")"
+            );
         }
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
@@ -33,8 +31,10 @@ public class SubFixedItemInvView extends AbstractPartialFixedItemInvView {
     protected final int getInternalSlot(int slot) {
         slot += fromIndex;
         if (slot >= toIndex) {
-            throw new IllegalArgumentException("The given slot " + (slot - fromIndex)
-                + "is greater than the size of this inventory! (" + getSlotCount() + ")");
+            throw new IllegalArgumentException(
+                "The given slot " + (slot - fromIndex) + "is greater than the size of this inventory! ("
+                    + getSlotCount() + ")"
+            );
         }
         return slot;
     }
@@ -53,14 +53,26 @@ public class SubFixedItemInvView extends AbstractPartialFixedItemInvView {
     }
 
     @Override
-    public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken) {
-        FixedItemInvView wrapper = this;
-        return inv.addListener((realInv, slot, previous, current) -> {
-            assert realInv == inv;
-            if (slot >= fromIndex && slot < toIndex) {
-                int exposedSlot = slot - fromIndex;
-                listener.onChange(wrapper, exposedSlot, previous, current);
-            }
-        }, removalToken);
+    public FixedItemInvView getSubInv(int fIndex, int tIndex) {
+        if (fIndex == tIndex) {
+            return EmptyFixedItemInv.INSTANCE;
+        }
+        if (fIndex == 0 && tIndex == getSlotCount()) {
+            return this;
+        }
+        fIndex = getInternalSlot(fIndex);
+        tIndex = getInternalSlot(tIndex - 1) + 1;
+        return new SubFixedItemInvView(inv, fIndex, tIndex);
+    }
+
+    @Override
+    public FixedItemInvView getMappedInv(int... slots) {
+        if (slots.length == 0) {
+            return EmptyFixedItemInv.INSTANCE;
+        }
+        for (int i = 0; i < slots.length; i++) {
+            slots[i] = getInternalSlot(slots[i]);
+        }
+        return new MappedFixedItemInvView(inv, slots);
     }
 }

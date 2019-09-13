@@ -22,7 +22,7 @@ import it.unimi.dsi.fastutil.Hash.Strategy;
 /** An alternative way of storing large numbers of {@link ItemStack}, without using large numbers of slots in a
  * {@link FixedItemInvView}. Instead of storing items in a List&lt;ItemStack&gt; this works more like a
  * Map&lt;ItemStack, int amount&gt;. */
-public interface GroupedItemInvView {
+public interface GroupedItemInvView extends AbstractItemInvView {
 
     /** @return a set containing all of the {@link ItemStack}'s that are stored in the inventory. NOTE: This must return
      *         a set using one of the {@link Strategy}'s in {@link ItemStackCollections} otherwise comparison methods
@@ -72,6 +72,11 @@ public interface GroupedItemInvView {
     /** @return A count of all the {@link ItemStack}'s that match the given filter. */
     default int getAmount(ItemFilter filter) {
         return getStatistics(filter).amount;
+    }
+
+    @Override
+    default ListenerToken addListener(InvMarkDirtyListener listener, ListenerRemovalToken removalToken) {
+        return addListener(new ItemInvAmountChangeListener.MarkDirtyWrapper(listener), removalToken);
     }
 
     /** Adds the given listener to this inventory, such that the
@@ -128,6 +133,24 @@ public interface GroupedItemInvView {
             @Override
             public ItemInvStatistic getStatistics(ItemFilter filter) {
                 return real.getStatistics(filter);
+            }
+
+            @Override
+            public int getChangeValue() {
+                return real.getChangeValue();
+            }
+
+            @Override
+            public ListenerToken addListener(InvMarkDirtyListener listener, ListenerRemovalToken removalToken) {
+                final GroupedItemInvView view = this;
+                return real.addListener(
+                    (inv) -> {
+                        // Defend against giving the listener the real (possibly changeable) inventory.
+                        // In addition the listener would probably cache *this view* rather than the backing inventory
+                        // so they most likely need it to be this inventory.
+                        listener.onMarkDirty(view);
+                    }, removalToken
+                );
             }
 
             @Override

@@ -35,6 +35,7 @@ import alexiil.mc.lib.attributes.ItemAttributeList;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.item.FixedItemInv.CopyingFixedItemInv;
 import alexiil.mc.lib.attributes.item.compat.FixedInventoryVanillaWrapper;
 import alexiil.mc.lib.attributes.item.compat.FixedSidedInventoryVanillaWrapper;
 import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
@@ -188,8 +189,9 @@ public final class ItemAttributes {
         return Block.getBlockFromItem(stack.getItem()) instanceof ShulkerBoxBlock;
     }
 
-    static final class ShulkerBoxItemInv implements FixedItemInv {
+    static final class ShulkerBoxItemInv implements CopyingFixedItemInv {
         private final Reference<ItemStack> ref;
+        private int changes = 0;
 
         private ShulkerBoxItemInv(Reference<ItemStack> ref) {
             this.ref = ref;
@@ -219,10 +221,22 @@ public final class ItemAttributes {
         }
 
         @Override
+        public ItemStack getUnmodifiableInvStack(int slot) {
+            // Because we deserialise every time it's safe to just return it
+            return getInvStack(slot);
+        }
+
+        @Override
         public boolean isItemValidForSlot(int slot, ItemStack stack) {
             // Check for grouped item inv because everything else boils down to this
             // (Plus we don't care about insertable or extractable's, only inventories)
             return stack.isEmpty() || ItemAttributes.GROUPED_INV_VIEW.getFirstOrNull(stack) == null;
+        }
+
+        @Override
+        public int getChangeValue() {
+            // We don't have access to whatever the reference is, so we can't be certain about when it's changed
+            return changes++;
         }
 
         @Override

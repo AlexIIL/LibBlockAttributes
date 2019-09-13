@@ -45,15 +45,16 @@ import alexiil.mc.lib.attributes.item.impl.SubFixedItemInvView;
  * <li>A partial view of a single inventory is {@link SubFixedItemInv}</li>
  * </ul>
  */
-public interface FixedItemInvView extends Convertible {
+public interface FixedItemInvView extends Convertible, AbstractItemInvView {
 
     /** @return The number of slots in this inventory. */
     int getSlotCount();
 
     /** @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
-     * @return The ItemStack that is held in the inventory at the moment. The returned stack must never be modified!
-     *         Note that this stack might not be valid for this slot in either
+     * @return The ItemStack that is held in the inventory at the moment. It is unspecified whether you are allowed to
+     *         modify this returned {@link ItemStack} - however subinterfaces (like {@link FixedItemInv}) may have
+     *         different limitations on this. Note that this stack might not be valid for this slot in either
      *         {@link #isItemValidForSlot(int, ItemStack)} or {@link #getFilterForSlot(int)}.
      * @throws RuntimeException if the given slot wasn't a valid index. */
     ItemStack getInvStack(int slot);
@@ -103,16 +104,6 @@ public interface FixedItemInvView extends Convertible {
         return new GroupedItemInvViewFixedWrapper(this);
     }
 
-    /** Adds the given listener to this inventory, such that the
-     * {@link ItemInvSlotChangeListener#onChange(FixedItemInvView, int, ItemStack, ItemStack)} will be called every time
-     * that this inventory changes. However if this inventory doesn't support listeners then this will return a null
-     * {@link ListenerToken token}.
-     * 
-     * @param removalToken A token that will be called whenever the given listener is removed from this inventory (or if
-     *            this inventory itself is unloaded or otherwise invalidated).
-     * @return A token that represents the listener, or null if the listener could not be added. */
-    ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken);
-
     /** Equivalent to {@link List#subList(int, int)}.
      * 
      * @param fromIndex The first slot to expose
@@ -138,19 +129,29 @@ public interface FixedItemInvView extends Convertible {
         if (slots.length == 0) {
             return EmptyFixedItemInv.INSTANCE;
         }
-        if (slots.length == getSlotCount()) {
-            boolean isThis = true;
-            for (int i = 0; i < slots.length; i++) {
-                if (slots[i] != i) {
-                    isThis = false;
-                    break;
-                }
-            }
-            if (isThis) {
-                return this;
-            }
+        if (areSlotArraysEqual(this, slots)) {
+            return this;
         }
         return new MappedFixedItemInvView(this, slots);
+    }
+
+    /** Used as a helper for {@link #getMappedInv(int...)}, to see if it should return itself or not. */
+    public static boolean areSlotArraysEqual(FixedItemInvView inv, int[] slots) {
+        return isFlatSlotArray(slots, inv.getSlotCount());
+    }
+
+    /** @return True if the given array is equal to [0, 1, 2 ... count-2, count-1]. */
+    public static boolean isFlatSlotArray(int[] slots, int count) {
+        if (slots.length == count) {
+            for (int i = 0; i < slots.length; i++) {
+                if (slots[i] != i) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /** Offers this object and {@link #getGroupedInv()} to the attribute list. (Which, in turn, adds
@@ -207,16 +208,21 @@ public interface FixedItemInvView extends Convertible {
             }
 
             @Override
-            public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken) {
-                final FixedItemInvView view = this;
+            public ListenerToken addListener(InvMarkDirtyListener listener, ListenerRemovalToken removalToken) {
+                FixedItemInvView wrapper = this;
                 return real.addListener(
-                    (inv, slot, prev, curr) -> {
+                    (inv) -> {
                         // Defend against giving the listener the real (possibly changeable) inventory.
                         // In addition the listener would probably cache *this view* rather than the backing inventory
                         // so they most likely need it to be this inventory.
-                        listener.onChange(view, slot, prev, curr);
+                        listener.onMarkDirty(wrapper);
                     }, removalToken
                 );
+            }
+
+            @Override
+            public int getChangeValue() {
+                return real.getChangeValue();
             }
         };
     }

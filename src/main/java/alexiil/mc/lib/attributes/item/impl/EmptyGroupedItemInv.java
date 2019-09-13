@@ -17,6 +17,7 @@ import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.GroupedItemInvView;
+import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
 import alexiil.mc.lib.attributes.item.ItemInvAmountChangeListener;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
@@ -82,6 +83,20 @@ public enum EmptyGroupedItemInv implements GroupedItemInv {
 
     @Override
     public ListenerToken addListener(ItemInvAmountChangeListener listener, ListenerRemovalToken removalToken) {
+        // We don't need to keep track of the listener because this empty inventory never changes.
+        return () -> {
+            // (And we don't need to do anything when the listener is removed)
+        };
+        // Never call the removal token as it's unnecessary (and saves the caller from re-adding it every tick)
+    }
+
+    @Override
+    public int getChangeValue() {
+        return 0;
+    }
+
+    @Override
+    public ListenerToken addListener(InvMarkDirtyListener listener, ListenerRemovalToken removalToken) {
         // We don't need to keep track of the listener because this empty inventory never changes.
         return () -> {
             // (And we don't need to do anything when the listener is removed)

@@ -10,12 +10,16 @@ package alexiil.mc.lib.attributes.item.compat;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 
+import alexiil.mc.lib.attributes.ListenerRemovalToken;
+import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.item.FixedItemInv.ModifiableFixedItemInv;
+import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
 
 /** An {@link FixedItemInv} that wraps a vanilla {@link Inventory}. */
-public class FixedInventoryVanillaWrapper extends FixedInventoryViewVanillaWrapper implements FixedItemInv {
+public class FixedInventoryVanillaWrapper extends FixedInventoryViewVanillaWrapper implements ModifiableFixedItemInv {
 
     public FixedInventoryVanillaWrapper(Inventory inv) {
         super(inv);
@@ -55,5 +59,16 @@ public class FixedInventoryVanillaWrapper extends FixedInventoryViewVanillaWrapp
 
     protected boolean canInsert(int slot, ItemStack newStack) {
         return isItemValidForSlot(slot, newStack);
+    }
+
+    @Override
+    public void markDirty() {
+        inv.markDirty();
+    }
+
+    @Override
+    public ListenerToken addListener(InvMarkDirtyListener listener, ListenerRemovalToken removalToken) {
+        // Oddly enough vanilla doesn't support listeners.
+        return null;
     }
 }

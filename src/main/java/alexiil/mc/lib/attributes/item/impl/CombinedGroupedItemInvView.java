@@ -97,6 +97,15 @@ public class CombinedGroupedItemInvView implements GroupedItemInvView {
     }
 
     @Override
+    public int getChangeValue() {
+        int total = 0;
+        for (GroupedItemInvView inv : inventories) {
+            total += inv.getChangeValue();
+        }
+        return total;
+    }
+
+    @Override
     public ListenerToken addListener(ItemInvAmountChangeListener listener, ListenerRemovalToken removalToken) {
         final ListenerToken[] tokens = new ListenerToken[inventories.size()];
         final ListenerRemovalToken ourRemToken = new ListenerRemovalToken() {

@@ -39,10 +39,12 @@ public class SimpleGroupedItemInv implements GroupedItemInv {
     /** A cached count of the number of items stored in {@link #stacks}. */
     private int cachedItemCount;
 
+    private int changes;
+
     private ItemInvAmountChangeListener ownerListener;
 
-    private final Map<ItemInvAmountChangeListener, ListenerRemovalToken> listeners =
-        new Object2ObjectLinkedOpenCustomHashMap<>(SystemUtil.identityHashStrategy());
+    private final Map<ItemInvAmountChangeListener, ListenerRemovalToken> listeners
+        = new Object2ObjectLinkedOpenCustomHashMap<>(SystemUtil.identityHashStrategy());
 
     // Should this use WeakReference instead of storing them directly?
     private ItemInvAmountChangeListener[] bakedListeners = NO_LISTENERS;
@@ -170,7 +172,13 @@ public class SimpleGroupedItemInv implements GroupedItemInv {
         bakedListeners = NO_LISTENERS;
     }
 
+    @Override
+    public int getChangeValue() {
+        return changes;
+    }
+
     protected final void fireAmountChange(ItemStack stack, int previous, int current) {
+        changes++;
         if (ownerListener != null) {
             ownerListener.onChange(this, stack, previous, current);
         }

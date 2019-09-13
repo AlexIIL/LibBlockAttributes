@@ -11,9 +11,14 @@ import java.util.Arrays;
 
 import net.minecraft.item.ItemStack;
 
+import alexiil.mc.lib.attributes.ListenerRemovalToken;
+import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.item.FixedItemInvView;
 import alexiil.mc.lib.attributes.item.GroupedItemInv;
+import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
+import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.ItemInvUtil;
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
 import alexiil.mc.lib.attributes.item.LimitedFixedItemInv;
@@ -72,6 +77,16 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
         };
     }
 
+    public static SimpleLimitedFixedItemInv createLimited(FixedItemInv inv) {
+        if (inv instanceof OfModifiable) {
+            return new OfModifiable((ModifiableFixedItemInv) inv);
+        }
+        if (inv instanceof OfCopying) {
+            return new OfCopying((CopyingFixedItemInv) inv);
+        }
+        return new SimpleLimitedFixedItemInv(inv);
+    }
+
     @Override
     public SimpleLimitedFixedItemInv markFinal() {
         isImmutable = true;
@@ -88,7 +103,15 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
 
     @Override
     public LimitedFixedItemInv copy() {
-        SimpleLimitedFixedItemInv inv = new SimpleLimitedFixedItemInv(delegate);
+        final SimpleLimitedFixedItemInv inv;
+        // Test this class so we don't have any unexpected surprises if the returned class is different
+        if (this instanceof OfModifiable) {
+            inv = new OfModifiable((ModifiableFixedItemInv) delegate);
+        } else if (this instanceof OfCopying) {
+            inv = new OfCopying((CopyingFixedItemInv) delegate);
+        } else {
+            inv = new SimpleLimitedFixedItemInv(delegate);
+        }
         for (int i = 0; i < inv.getSlotCount(); i++) {
             inv.insertionFilters[i] = insertionFilters[i];
             inv.maxInsertionAmounts[i] = maxInsertionAmounts[i];
@@ -225,5 +248,45 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
                 return this;
             }
         };
+    }
+
+    public static class OfModifiable extends SimpleLimitedFixedItemInv implements ModifiableFixedItemInv {
+
+        public OfModifiable(ModifiableFixedItemInv delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public void markDirty() {
+            ((ModifiableFixedItemInv) delegate).markDirty();
+        }
+
+        @Override
+        public ListenerToken addListener(InvMarkDirtyListener listener, ListenerRemovalToken removalToken) {
+            ModifiableFixedItemInv wrapper = this;
+            return ((ModifiableFixedItemInv) delegate).addListener(inv -> {
+                listener.onMarkDirty(wrapper);
+            }, removalToken);
+        }
+    }
+
+    public static class OfCopying extends SimpleLimitedFixedItemInv implements CopyingFixedItemInv {
+
+        public OfCopying(CopyingFixedItemInv delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public ItemStack getUnmodifiableInvStack(int slot) {
+            return ((CopyingFixedItemInv) delegate).getUnmodifiableInvStack(slot);
+        }
+
+        @Override
+        public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken) {
+            FixedItemInvView wrapper = this;
+            return ((CopyingFixedItemInv) delegate).addListener((realInv, slot, previous, current) -> {
+                listener.onChange(wrapper, slot, previous, current);
+            }, removalToken);
+        }
     }
 }

@@ -13,8 +13,10 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
+import alexiil.mc.lib.attributes.item.FixedItemInv.CopyingFixedItemInv;
 import alexiil.mc.lib.attributes.item.FixedItemInvView;
 import alexiil.mc.lib.attributes.item.GroupedItemInvView;
+import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
 import alexiil.mc.lib.attributes.item.ItemInvAmountChangeListener;
 import alexiil.mc.lib.attributes.item.ItemStackCollections;
 import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
@@ -84,8 +86,27 @@ public class GroupedItemInvViewFixedWrapper implements GroupedItemInvView {
     }
 
     @Override
+    public int getChangeValue() {
+        return inv.getChangeValue();
+    }
+
+    @Override
+    public ListenerToken addListener(InvMarkDirtyListener listener, ListenerRemovalToken removalToken) {
+        return inv.addListener(i -> {
+            listener.onMarkDirty(this);
+        }, removalToken);
+    }
+
+    @Override
     public ListenerToken addListener(ItemInvAmountChangeListener listener, ListenerRemovalToken removalToken) {
-        return inv.addListener((i, slot, previous, current) -> {
+
+        if (!(inv instanceof CopyingFixedItemInv)) {
+            // It's generally impossible to do this without really expensive checks
+            // which the caller needs to do *anyway* to handle other grouped inventories that don't support listeners.
+            return null;
+        }
+
+        return ((CopyingFixedItemInv) inv).addListener((i, slot, previous, current) -> {
             if (previous.isEmpty()) {
                 if (current.isEmpty()) {
                     // No changes: don't propogate

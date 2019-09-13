@@ -14,14 +14,9 @@ import net.minecraft.util.DefaultedList;
 
 public abstract class AbstractAttributeList<T> {
 
-    enum AttributeListMode {
-        ADDING,
-        USING;
-    }
-
     public final Attribute<T> attribute;
     protected final DefaultedList<T> list = DefaultedList.of();
-    private AttributeListMode mode = AttributeListMode.ADDING;
+    private boolean hasFinishedAdding = false;
 
     public AbstractAttributeList(Attribute<T> attribute) {
         this.attribute = attribute;
@@ -66,20 +61,20 @@ public abstract class AbstractAttributeList<T> {
 
     void reset() {
         list.clear();
-        mode = AbstractAttributeList.AttributeListMode.ADDING;
+        hasFinishedAdding = false;
     }
 
     void finishAdding() {
         assertAdding();
-        mode = AbstractAttributeList.AttributeListMode.USING;
+        hasFinishedAdding = true;
     }
 
     protected void assertAdding() {
-        assert mode == AbstractAttributeList.AttributeListMode.ADDING;
+        assert !hasFinishedAdding;
     }
 
     protected void assertUsing() {
-        assert mode == AbstractAttributeList.AttributeListMode.USING;
+        assert hasFinishedAdding;
     }
 
 }

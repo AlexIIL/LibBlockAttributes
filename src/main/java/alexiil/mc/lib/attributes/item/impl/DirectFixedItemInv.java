@@ -7,7 +7,6 @@
  */
 package alexiil.mc.lib.attributes.item.impl;
 
-import java.util.BitSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,54 +19,49 @@ import net.minecraft.util.SystemUtil;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.item.FixedItemInv.ModifiableFixedItemInv;
 import alexiil.mc.lib.attributes.item.GroupedItemInv;
+import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
 import alexiil.mc.lib.attributes.item.ItemInvAmountChangeListener;
-import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
-import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener.ItemInvSlotListener;
 import alexiil.mc.lib.attributes.item.ItemInvUtil;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
 
-/** A simple, directly modifiable, {@link FixedItemInv}. Unlike {@link SimpleFixedItemInv} this doesn't allow for
- * controlling the functionality quite as much.
- * <p>
- * If no listeners are registered to this inventory then this will perform slightly better than
- * {@link SimpleFixedItemInv}, (although the opposite is true when listeners are registered to this inventory, as this
- * needs to perform a bit more work in {@link #markDirty()}. */
-public class DirectFixedItemInv implements FixedItemInv, GroupedItemInv {
+/** A simple implementation of {@link ModifiableFixedItemInv} that supports all of the features that the interface
+ * exposes. For simplicities sake this also implements {@link GroupedItemInv}, however none of the grouped methods run
+ * in O(1). */
 
-    private static final ItemInvSlotChangeListener[] NO_LISTENERS = new ItemInvSlotChangeListener[0];
+// TODO: Think about new class names!
+
+// Should this get renamed to SimpleFixedItemInv and a new (deprecated) class DirectFixedItemInv extend that to maintain
+// backwards compatibility? (As this is basically identical to how it behaved in 0.4.x)
+
+public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemInv {
+
+    private static final InvMarkDirtyListener[] NO_LISTENERS = new InvMarkDirtyListener[0];
 
     /** Sentinel value used during {@link #invalidateListeners()}. */
-    private static final ItemInvSlotChangeListener[] INVALIDATING_LISTENERS = new ItemInvSlotChangeListener[0];
+    private static final InvMarkDirtyListener[] INVALIDATING_LISTENERS = new InvMarkDirtyListener[0];
 
     private final int slotCount;
     private final DefaultedList<ItemStack> slots;
-    /** Only populated if a listener is actually registered that wants the previous stacks. */
-    private final DefaultedList<ItemStack> lastSeenStacks;
-    private final BitSet touchedSlots;
+
+    private int changes = 0;
 
     // TODO: Optimise this to cache more information!
     private final GroupedItemInv groupedVersion = new GroupedItemInvFixedWrapper(this);
 
-    private final Map<ItemInvSlotChangeListener, ListenerRemovalToken> listeners
+    private final Map<InvMarkDirtyListener, ListenerRemovalToken> listeners
         = new Object2ObjectLinkedOpenCustomHashMap<>(SystemUtil.identityHashStrategy());
 
-    private ItemInvSlotChangeListener ownerListener;
+    private InvMarkDirtyListener ownerListener;
 
-    private ItemInvSlotChangeListener[] bakedListeners = NO_LISTENERS;
-
-    // Optimisation flag: this allows us to avoid copying if we don't have listeners that need it.
-    /** Set to false if {@link #listeners} only contains instances of {@link ItemInvSlotListener}, or it's empty. */
-    private boolean listenersNeedStacks = false;
+    private InvMarkDirtyListener[] bakedListeners = NO_LISTENERS;
 
     public DirectFixedItemInv(int slotCount) {
         this.slotCount = slotCount;
         this.slots = DefaultedList.ofSize(slotCount, ItemStack.EMPTY);
-        this.lastSeenStacks = DefaultedList.ofSize(slotCount, ItemStack.EMPTY);
-        this.touchedSlots = new BitSet(slotCount);
     }
 
     // ##################
@@ -76,71 +70,24 @@ public class DirectFixedItemInv implements FixedItemInv, GroupedItemInv {
     //
     // ##################
 
-    /** Gets the {@link ItemStack} stored in the given slot.
-     * 
-     * @return The {@link ItemStack} in the slot. Unlike {@link #getInvStack(int)} you <strong>are allowed to
-     *         modify</strong> the returned stack! */
+    /** @deprecated This used to be necessary in 0.4.x, but since 0.5.0 {@link #getInvStack(int)} just returns the
+     *             itemstack in the slot index. */
+    @Deprecated
     public final ItemStack get(int slot) {
-        validateSlotIndex(slot);
-        touchedSlots.set(slot);
-        return slots.get(slot);
+        return getInvStack(slot);
     }
 
-    /** Directly sets the stack in the given slot, ignoring any filters that may be present.
-     * 
-     * @param slot
-     * @param stack */
+    /** @deprecated This used to be necessary in 0.4.x, but since 0.5.0 this is unnecessary. */
+    @Deprecated
     public final void set(int slot, ItemStack stack) {
-        validateSlotIndex(slot);
-        touchedSlots.clear(slot);
-        slots.set(slot, stack);
-        if (listenersNeedStacks) {
-            ItemStack previous = lastSeenStacks.get(slot);
-            ItemStack current = stack.copy();
-            lastSeenStacks.set(slot, current);
-
-            // Even though this inventory provides mutable stacks the listeners still expect non-modifiable stacks
-            ItemInvModificationTracker.trackNeverChanging(previous);
-            ItemInvModificationTracker.trackNeverChanging(current);
-            for (ItemInvSlotChangeListener listener : bakedListeners) {
-                listener.onChange(this, slot, previous, current);
-            }
-            ItemInvModificationTracker.trackNeverChanging(previous);
-            ItemInvModificationTracker.trackNeverChanging(current);
-        } else {
-            for (ItemInvSlotChangeListener listener : bakedListeners) {
-                ((ItemInvSlotListener) listener).onChange(this, slot);
-            }
-        }
+        forceSetInvStack(slot, stack);
     }
 
-    /** Call this if you modify the result of {@link #get(int)} without calling {@link #set(int, ItemStack)}
-     * afterwards! */
+    @Override
     public final void markDirty() {
-        for (int i = touchedSlots.nextSetBit(0); i >= 0; i = touchedSlots.nextSetBit(i + 1)) {
-            touchedSlots.clear(i);
-            if (i == Integer.MAX_VALUE) {
-                break; // or (i+1) would overflow
-            }
-
-            if (listenersNeedStacks) {
-                ItemStack previous = lastSeenStacks.get(i);
-                ItemStack current = slots.get(i).copy();
-                lastSeenStacks.set(i, current);
-
-                // Even though this inventory provides mutable stacks the listeners still expect non-modifiable stacks
-                ItemInvModificationTracker.trackNeverChanging(previous);
-                ItemInvModificationTracker.trackNeverChanging(current);
-                for (ItemInvSlotChangeListener listener : bakedListeners) {
-                    listener.onChange(this, i, previous, current);
-                }
-                ItemInvModificationTracker.trackNeverChanging(previous);
-                ItemInvModificationTracker.trackNeverChanging(current);
-            } else {
-                for (ItemInvSlotChangeListener listener : bakedListeners) {
-                    ((ItemInvSlotListener) listener).onChange(this, i);
-                }
-            }
+        changes++;
+        for (InvMarkDirtyListener listener : bakedListeners) {
+            listener.onMarkDirty(this);
         }
     }
 
@@ -202,12 +149,10 @@ public class DirectFixedItemInv implements FixedItemInv, GroupedItemInv {
         return slotCount;
     }
 
-    /** @return A copy of the {@link ItemStack} in the given slot.
-     * @deprecated Because you probably want to use {@link #get(int)} instead. */
     @Override
-    @Deprecated
     public ItemStack getInvStack(int slot) {
-        return slots.get(slot).copy();
+        validateSlotIndex(slot);
+        return slots.get(slot);
     }
 
     @Override
@@ -216,7 +161,7 @@ public class DirectFixedItemInv implements FixedItemInv, GroupedItemInv {
     }
 
     @Override
-    public final ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken) {
+    public final ListenerToken addListener(InvMarkDirtyListener listener, ListenerRemovalToken removalToken) {
         if (bakedListeners == INVALIDATING_LISTENERS) {
             // It doesn't really make sense to add listeners while we are invalidating them
             return null;
@@ -239,50 +184,42 @@ public class DirectFixedItemInv implements FixedItemInv, GroupedItemInv {
 
     /** Sets the owner listener callback, which is never removed from the listener list when
      * {@link #invalidateListeners()} is called. */
-    public void setOwnerListener(ItemInvSlotChangeListener ownerListener) {
+    public void setOwnerListener(InvMarkDirtyListener ownerListener) {
         this.ownerListener = ownerListener;
         bakeListeners();
     }
 
     private void bakeListeners() {
-        boolean didNeedStacks = listenersNeedStacks;
-        listenersNeedStacks = false;
         if (listeners.isEmpty() && ownerListener == null) {
             bakedListeners = NO_LISTENERS;
             return;
         }
-        ItemInvSlotChangeListener[] array = listeners.keySet().toArray(new ItemInvSlotChangeListener[0]);
+        InvMarkDirtyListener[] array = listeners.keySet().toArray(new InvMarkDirtyListener[0]);
         if (ownerListener != null) {
-            ItemInvSlotChangeListener[] array2 = new ItemInvSlotChangeListener[array.length + 1];
+            InvMarkDirtyListener[] array2 = new InvMarkDirtyListener[array.length + 1];
             System.arraycopy(array, 0, array2, 1, array.length);
             array2[0] = ownerListener;
             array = array2;
         }
-        for (ItemInvSlotChangeListener listener : array) {
-            if (!(listener instanceof ItemInvSlotListener)) {
-                listenersNeedStacks = true;
-                break;
-            }
-        }
         bakedListeners = array;
-
-        if (!didNeedStacks && listenersNeedStacks) {
-            for (int i = 0; i < slotCount; i++) {
-                lastSeenStacks.set(i, slots.get(i).copy());
-            }
-        }
     }
 
     @Override
     public boolean setInvStack(int slot, ItemStack to, Simulation simulation) {
         validateSlotIndex(slot);
-        if (!isItemValidForSlot(slot, to)) {
+        if (to != slots.get(slot) && !isItemValidForSlot(slot, to)) {
             return false;
         }
         if (simulation.isAction()) {
-            set(slot, to.copy());
+            slots.set(slot, to);
+            markDirty();
         }
         return true;
+    }
+
+    @Override
+    public int getChangeValue() {
+        return changes;
     }
 
     // ##################

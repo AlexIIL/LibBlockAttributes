@@ -14,6 +14,7 @@ import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
 import alexiil.mc.lib.attributes.item.FixedItemInvView;
+import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
 import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
@@ -24,6 +25,17 @@ public class DelegatingFixedItemInv implements FixedItemInv {
 
     public DelegatingFixedItemInv(FixedItemInv delegate) {
         this.delegate = delegate;
+    }
+
+    public static DelegatingFixedItemInv createDelegate(FixedItemInv inv) {
+        if (inv instanceof ModifiableFixedItemInv) {
+            return new OfModifiable((ModifiableFixedItemInv) inv);
+        }
+        if (inv instanceof CopyingFixedItemInv) {
+            return new OfCopying((CopyingFixedItemInv) inv);
+        }
+
+        return new DelegatingFixedItemInv(inv);
     }
 
     @Override
@@ -47,15 +59,52 @@ public class DelegatingFixedItemInv implements FixedItemInv {
     }
 
     @Override
-    public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken) {
-        FixedItemInvView wrapper = this;
-        return delegate.addListener((realInv, slot, previous, current) -> {
-            listener.onChange(wrapper, slot, previous, current);
-        }, removalToken);
+    public int getChangeValue() {
+        return delegate.getChangeValue();
     }
 
     @Override
     public boolean setInvStack(int slot, ItemStack to, Simulation simulation) {
         return delegate.setInvStack(slot, to, simulation);
+    }
+
+    @Override
+    public ListenerToken addListener(InvMarkDirtyListener listener, ListenerRemovalToken removalToken) {
+        FixedItemInvView wrapper = this;
+        return delegate.addListener(inv -> {
+            listener.onMarkDirty(wrapper);
+        }, removalToken);
+    }
+
+    public static class OfModifiable extends DelegatingFixedItemInv implements ModifiableFixedItemInv {
+
+        public OfModifiable(ModifiableFixedItemInv delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public void markDirty() {
+            ((ModifiableFixedItemInv) delegate).markDirty();
+        }
+    }
+
+    public static class OfCopying extends DelegatingFixedItemInv implements CopyingFixedItemInv {
+
+        public OfCopying(CopyingFixedItemInv delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public ItemStack getUnmodifiableInvStack(int slot) {
+            return ((CopyingFixedItemInv) delegate).getUnmodifiableInvStack(slot);
+        }
+
+        @Override
+        public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken) {
+            FixedItemInvView wrapper = this;
+            return ((CopyingFixedItemInv) delegate).addListener((realInv, slot, previous, current) -> {
+                listener.onChange(wrapper, slot, previous, current);
+            }, removalToken);
+        }
     }
 }

@@ -20,7 +20,7 @@ import alexiil.mc.lib.attributes.AttributeUtil;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.item.FixedItemInv.CopyingFixedItemInv;
 import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
@@ -30,11 +30,12 @@ import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
 
-/** A simple, extendible, fixed size item inventory that supports all of the features that {@link FixedItemInv} exposes.
+/** A simple, extendible, fixed size item inventory that supports all of the features that {@link CopyingFixedItemInv}
+ * exposes.
  * <p>
  * Extending classes should take care to override {@link #getFilterForSlot(int)} if they also override
  * {@link #isItemValidForSlot(int, ItemStack)}. */
-public class SimpleFixedItemInv implements FixedItemInv, ItemTransferable {
+public class SimpleFixedItemInv implements CopyingFixedItemInv, ItemTransferable {
 
     private static final ItemInvSlotChangeListener[] NO_LISTENERS = new ItemInvSlotChangeListener[0];
 
@@ -46,6 +47,7 @@ public class SimpleFixedItemInv implements FixedItemInv, ItemTransferable {
     // TODO: Optimise this to cache more information!
     private final GroupedItemInv groupedVersion = new GroupedItemInvFixedWrapper(this);
 
+    private int changes = 0;
     private ItemInvSlotChangeListener ownerListener;
 
     private final Map<ItemInvSlotChangeListener, ListenerRemovalToken> listeners
@@ -68,15 +70,14 @@ public class SimpleFixedItemInv implements FixedItemInv, ItemTransferable {
                     if (overriden1 != overriden2) {
                         // only one has been overridden, which probably isn't going to go well.
                         throw new IllegalStateException(
-                            "The subclass "
-                            + method2.getDeclaringClass()
-                            + " has overriden isItemValidForSlot() or getFilterForSlot() without overriding the other!"
+                            "The subclass " + method2.getDeclaringClass()
+                                + " has overriden isItemValidForSlot() or getFilterForSlot() without overriding the other!"
                         );
                     }
                 } catch (ReflectiveOperationException roe) {
                     throw new Error(
                         "Failed to get the isItemValidForSlot method! I'm not sure what"
-                        + " to do now, as this shouldn't happen normally :(", roe
+                            + " to do now, as this shouldn't happen normally :(", roe
                     );
                 }
             }
@@ -89,7 +90,7 @@ public class SimpleFixedItemInv implements FixedItemInv, ItemTransferable {
     }
 
     @Override
-    public ItemStack getInvStack(int slot) {
+    public ItemStack getUnmodifiableInvStack(int slot) {
         ItemStack stack = slots.get(slot);
         ItemInvModificationTracker.trackNeverChanging(stack);
         return stack;
@@ -108,6 +109,11 @@ public class SimpleFixedItemInv implements FixedItemInv, ItemTransferable {
     @Override
     public GroupedItemInv getGroupedInv() {
         return this.groupedVersion;
+    }
+
+    @Override
+    public int getChangeValue() {
+        return changes;
     }
 
     @Override
@@ -153,6 +159,7 @@ public class SimpleFixedItemInv implements FixedItemInv, ItemTransferable {
     }
 
     protected final void fireSlotChange(int slot, ItemStack previous, ItemStack current) {
+        changes++;
         if (ownerListener != null) {
             ownerListener.onChange(this, slot, previous, current);
         }
@@ -171,8 +178,9 @@ public class SimpleFixedItemInv implements FixedItemInv, ItemTransferable {
         } else {
             ItemStack current = getInvStack(slot);
             if (
-                !current.isEmpty()
-                && current.getCount() > to.getCount() && ItemStackUtil.areEqualIgnoreAmounts(to, current)
+                !current.isEmpty() && current.getCount() > to.getCount() && ItemStackUtil.areEqualIgnoreAmounts(
+                    to, current
+                )
             ) {
                 allowed = true;
             } else if (isItemValidForSlot(slot, to) && to.getCount() <= getMaxAmount(slot, to)) {

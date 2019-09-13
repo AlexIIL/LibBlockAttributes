@@ -4,6 +4,19 @@ Breaking Changes:
     * This is only to encourage using CombinableAttribute.combine() instead - which handles empty
       and singleton lists correctly.
 * Disallowed ItemFilter.matches and FixedItemInvView.isItemValidForSlot from throwing an exception when they are passed an empty stack.
+* DirectFixedItemInv.setOwnerListener now takes an InvMarkDirtyListener rather than an ItemInvSlotChangeListener
+* FixedItemInvView.addListener has been removed.
+* FixedItemInvView.getInvStack no longer mandates that it's result is not modified - instead it is undefined whether you can modify it or not
+* FixedItemInv.getInvStack now always returns a modifiable ItemStack - however it might not be the ItemStack in the inventory!
+* Renamed the 2 standard FixedItemInv implementation classes:
+    * Renamed "SimpleFixedItemInv" to "FullFixedItemInv".
+    * Renamed "DirectFixedItemInv" to "SimpleFixedItemInv".
+    * This is due to the biggest change here: FixedItemInv no longer mandates stack 
+      immutability for anything *except* "CopyingFixedItemInv". As such it's probably
+      a good idea to look through all usages of these classes to determine which one
+      you should be using. If you don't like the idea of immutable stacks or you don't
+      need to do anything fancy with filters you should use SimpleFixedItemInv
+      (formally DirectFixedItemInv).
 
 Additions:
 

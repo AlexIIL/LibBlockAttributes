@@ -16,14 +16,14 @@ import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 import alexiil.mc.lib.attributes.misc.Reference;
 
 /** A delegating accessor of a single slot in a {@link FixedItemInv}. */
-public final class SingleItemSlot extends SingleItemSlotView implements ItemTransferable, Reference<ItemStack> {
+public class SingleItemSlot extends SingleItemSlotView implements ItemTransferable, Reference<ItemStack> {
 
     SingleItemSlot(FixedItemInv backingView, int slot) {
         super(backingView, slot);
     }
 
     @Override
-    public final FixedItemInv getBackingInv() {
+    public FixedItemInv getBackingInv() {
         return (FixedItemInv) this.backingView;
     }
 

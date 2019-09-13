@@ -9,7 +9,11 @@ package alexiil.mc.lib.attributes.item.impl;
 
 import net.minecraft.item.ItemStack;
 
+import alexiil.mc.lib.attributes.ListenerRemovalToken;
+import alexiil.mc.lib.attributes.ListenerToken;
+import alexiil.mc.lib.attributes.item.FixedItemInv.ModifiableFixedItemInv;
 import alexiil.mc.lib.attributes.item.FixedItemInvView;
+import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 /** Base class for {@link SubFixedItemInvView} and {@link MappedFixedItemInvView}. */
@@ -43,5 +47,18 @@ public abstract class AbstractPartialFixedItemInvView implements FixedItemInvVie
     @Override
     public int getMaxAmount(int slot, ItemStack stack) {
         return inv.getMaxAmount(getInternalSlot(slot), stack);
+    }
+
+    @Override
+    public int getChangeValue() {
+        return inv.getChangeValue();
+    }
+
+    @Override
+    public ListenerToken addListener(InvMarkDirtyListener listener, ListenerRemovalToken removalToken) {
+        FixedItemInvView wrapper = this;
+        return ((ModifiableFixedItemInv) inv).addListener(realInv -> {
+            listener.onMarkDirty(wrapper);
+        }, removalToken);
     }
 }

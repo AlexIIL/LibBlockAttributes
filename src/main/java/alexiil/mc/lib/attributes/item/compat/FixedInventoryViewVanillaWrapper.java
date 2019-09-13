@@ -14,11 +14,12 @@ import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
 import alexiil.mc.lib.attributes.item.FixedItemInvView;
-import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
+import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
 
 /** An {@link FixedItemInv} that wraps a vanilla {@link Inventory}. */
 public class FixedInventoryViewVanillaWrapper implements FixedItemInvView {
     final Inventory inv;
+    int changes = 0;
 
     public FixedInventoryViewVanillaWrapper(Inventory inv) {
         this.inv = inv;
@@ -52,8 +53,15 @@ public class FixedInventoryViewVanillaWrapper implements FixedItemInvView {
     }
 
     @Override
-    public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken remToken) {
-        // Oddly enough vanilla doesn't support listeners.
+    public ListenerToken addListener(InvMarkDirtyListener listener, ListenerRemovalToken removalToken) {
+        // Vanilla doesn't support listeners
         return null;
+    }
+
+    @Override
+    public int getChangeValue() {
+        // Vanilla doesn't support listening to changes
+        // so instead we say it is *always* changing
+        return changes++;
     }
 }

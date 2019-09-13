@@ -38,7 +38,7 @@ public interface LimitedFixedItemInv extends FixedItemInv {
 
     /** @return A new {@link FixedItemInv} with the current rules of this, but that cannot be modified. */
     default FixedItemInv asUnmodifiable() {
-        return new DelegatingFixedItemInv(this);
+        return DelegatingFixedItemInv.createDelegate(this);
     }
 
     /** @return A rule for the single slot. */
