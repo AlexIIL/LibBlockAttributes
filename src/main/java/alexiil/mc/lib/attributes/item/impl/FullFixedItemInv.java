@@ -35,7 +35,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
  * <p>
  * Extending classes should take care to override {@link #getFilterForSlot(int)} if they also override
  * {@link #isItemValidForSlot(int, ItemStack)}. */
-public class SimpleFixedItemInv implements CopyingFixedItemInv, ItemTransferable {
+public class FullFixedItemInv implements CopyingFixedItemInv, ItemTransferable {
 
     private static final ItemInvSlotChangeListener[] NO_LISTENERS = new ItemInvSlotChangeListener[0];
 
@@ -56,17 +56,17 @@ public class SimpleFixedItemInv implements CopyingFixedItemInv, ItemTransferable
     // Should this use WeakReference instead of storing them directly?
     private ItemInvSlotChangeListener[] bakedListeners = NO_LISTENERS;
 
-    public SimpleFixedItemInv(int invSize) {
+    public FullFixedItemInv(int invSize) {
         slots = DefaultedList.ofSize(invSize, ItemStack.EMPTY);
 
         if (AttributeUtil.EXPENSIVE_DEBUG_CHECKS) {
             Class<?> cls = getClass();
-            if (cls != SimpleFixedItemInv.class) {
+            if (cls != FullFixedItemInv.class) {
                 try {
                     Method method1 = cls.getMethod("isItemValidForSlot", int.class, ItemStack.class);
                     Method method2 = cls.getMethod("getFilterForSlot", int.class);
-                    boolean overriden1 = method1.getDeclaringClass() != SimpleFixedItemInv.class;
-                    boolean overriden2 = method2.getDeclaringClass() != SimpleFixedItemInv.class;
+                    boolean overriden1 = method1.getDeclaringClass() != FullFixedItemInv.class;
+                    boolean overriden2 = method2.getDeclaringClass() != FullFixedItemInv.class;
                     if (overriden1 != overriden2) {
                         // only one has been overridden, which probably isn't going to go well.
                         throw new IllegalStateException(
