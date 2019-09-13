@@ -9,8 +9,7 @@ Breaking Changes:
 * FixedItemInvView.getInvStack no longer mandates that it's result is not modified - instead it is undefined whether you can modify it or not
 * FixedItemInv.getInvStack now always returns a modifiable ItemStack - however it might not be the ItemStack in the inventory!
 * Renamed the 2 standard FixedItemInv implementation classes:
-    * Renamed "SimpleFixedItemInv" to "FullFixedItemInv".
-    * Renamed "DirectFixedItemInv" to "SimpleFixedItemInv".
+    * Renamed "SimpleFixedItemInv" to "FullFixedItemInv", as it's no longer the simple inventory class that it used to be.
     * This is due to the biggest change here: FixedItemInv no longer mandates stack 
       immutability for anything *except* "CopyingFixedItemInv". As such it's probably
       a good idea to look through all usages of these classes to determine which one
