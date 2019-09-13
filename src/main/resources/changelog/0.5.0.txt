@@ -16,6 +16,9 @@ Breaking Changes:
       you should be using. If you don't like the idea of immutable stacks or you don't
       need to do anything fancy with filters you should use SimpleFixedItemInv
       (formally DirectFixedItemInv).
+* Added new abstract methods to GroupedItemInvView and FixedItemInvView:
+    * "int getChangeValue()", which returns a number to compare to see if a given inventory has changed or not since it was last called.
+    * "ListenerToken addListener(InvMarkDirtyListener listener, ListenerRemovalToken removalToken)", which is a basic listener fired when an inventory changed.
 
 Additions:
 
