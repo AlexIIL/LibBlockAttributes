@@ -180,7 +180,6 @@ public final class FluidVolumeUtil {
      * @param excessStacks A {@link Consumer} to take the excess {@link ItemStack}'s. */
     public static FluidTankInteraction interactWithTank(FixedFluidInv inv, Reference<ItemStack> stack, LimitedConsumer<
         ItemStack> excessStacks) {
-
         FluidVolume fluidMoved = move(inv.getExtractable(), FluidAttributes.INSERTABLE.get(stack, excessStacks));
         if (!fluidMoved.isEmpty()) {
             return FluidTankInteraction.fromTank(fluidMoved);

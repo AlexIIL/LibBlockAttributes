@@ -278,10 +278,6 @@ public final class FluidAttributes {
             if (fluid.getAmount() < perBucket) {
                 return fluid;
             }
-            int rem = fluid.getAmount() / perBucket;
-            if (rem != 0) {
-                return fluid;
-            }
             FluidKey current = bucket.libblockattributes__getFluid(stack);
             if (!current.isEmpty()) {
                 return fluid;
