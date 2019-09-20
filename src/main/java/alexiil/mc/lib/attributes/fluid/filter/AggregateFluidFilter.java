@@ -25,8 +25,9 @@ public class AggregateFluidFilter implements ReadableFluidFilter, Iterable<Fluid
 
     public AggregateFluidFilter(AggregateFilterType type, FluidFilter... filters) {
         if (filters.length < 2) {
-            throw new IllegalArgumentException("There's no reason to construct an aggregate stack filter that matches "
-                + filters.length + " filters!");
+            throw new IllegalArgumentException(
+                "There's no reason to construct an aggregate stack filter that matches " + filters.length + " filters!"
+            );
         }
         this.type = type;
         this.filters = filters;
@@ -116,15 +117,15 @@ public class AggregateFluidFilter implements ReadableFluidFilter, Iterable<Fluid
         return combine(type, Arrays.asList(filters));
     }
 
-    public static FluidFilter allOf(List<FluidFilter> filters) {
+    public static FluidFilter allOf(List<? extends FluidFilter> filters) {
         return combine(AggregateFilterType.ALL, filters);
     }
 
-    public static FluidFilter anyOf(List<FluidFilter> filters) {
+    public static FluidFilter anyOf(List<? extends FluidFilter> filters) {
         return combine(AggregateFilterType.ANY, filters);
     }
 
-    public static FluidFilter combine(AggregateFilterType type, List<FluidFilter> filters) {
+    public static FluidFilter combine(AggregateFilterType type, List<? extends FluidFilter> filters) {
         if (!(filters instanceof RandomAccess)) {
             filters = Arrays.asList(filters.toArray(new FluidFilter[0]));
         }

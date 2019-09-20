@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-package alexiil.mc.lib.attributes.fluid.mixin;
+package alexiil.mc.lib.attributes.fluid.mixin.impl;
 
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,16 +17,18 @@ import net.minecraft.item.BucketItem;
 import net.minecraft.item.FishBucketItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.registry.Registry;
 
 import alexiil.mc.lib.attributes.fluid.FluidProviderItem;
+import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.misc.Ref;
 
 @Mixin(BucketItem.class)
-public class BucketItemMixin extends Item implements FluidProviderItem {
+public class BucketItemMixin extends Item implements FluidProviderItem, IBucketItem {
 
     @Final
     @Shadow
@@ -64,15 +66,46 @@ public class BucketItemMixin extends Item implements FluidProviderItem {
                 Ref<ItemStack> stackRef = new Ref<>(newStack);
                 FluidVolume fluidHeld = bucket.drain(stackRef);
                 int amount = fluidHeld.getAmount();
-                if (FluidVolume.areEqualExceptAmounts(with.obj, fluidHeld) && amount <= with.obj.getAmount()
-                    && ItemStack.areEqualIgnoreDamage(stackRef.obj, stack.obj)) {
+                if (
+                    FluidVolume.areEqualExceptAmounts(with.obj, fluidHeld) && amount <= with.obj.getAmount()
+                        && ItemStack.areEqualIgnoreDamage(stackRef.obj, stack.obj)
+                ) {
                     with.obj = with.obj.copy();
-                    assert with.obj.split(amount).getAmount() == amount;
+                    FluidVolume splitOff = with.obj.split(amount);
+                    assert splitOff.getAmount() == amount;
                     stack.obj = newStack;
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean libblockattributes__shouldExposeFluid() {
+        return !(((Object) this) instanceof FishBucketItem);
+    }
+
+    @Override
+    public FluidKey libblockattributes__getFluid(ItemStack stack) {
+        return FluidKeys.get(fluid);
+    }
+
+    @Override
+    public ItemStack libblockattributes__withFluid(FluidKey fluid) {
+        // TODO: handle other (modded) bucket types? (Like wooden or steel or etc)
+        if (fluid == FluidKeys.EMPTY) {
+            return new ItemStack(Items.BUCKET);
+        }
+        Fluid rawFluid = fluid.getRawFluid();
+        if (rawFluid == null) {
+            return ItemStack.EMPTY;
+        }
+        return new ItemStack(rawFluid.getBucketItem());
+    }
+
+    @Override
+    public int libblockattributes__getFluidVolumeAmount() {
+        return FluidVolume.BUCKET;
     }
 }

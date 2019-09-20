@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-package alexiil.mc.lib.attributes.fluid.mixin;
+package alexiil.mc.lib.attributes.fluid.mixin.impl;
 
 import org.spongepowered.asm.mixin.Mixin;
 
@@ -18,13 +18,16 @@ import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 
 import alexiil.mc.lib.attributes.fluid.FluidProviderItem;
+import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.fluid.volume.PotionFluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.PotionFluidVolume;
 import alexiil.mc.lib.attributes.misc.Ref;
 
 @Mixin(GlassBottleItem.class)
-public class GlassBottleItemMixin extends Item implements FluidProviderItem {
+public class GlassBottleItemMixin extends Item implements FluidProviderItem, IBucketItem {
 
     public GlassBottleItemMixin(Item.Settings settings) {
         super(settings);
@@ -57,5 +60,37 @@ public class GlassBottleItemMixin extends Item implements FluidProviderItem {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean libblockattributes__shouldExposeFluid() {
+        return true;
+    }
+
+    @Override
+    public FluidKey libblockattributes__getFluid(ItemStack stack) {
+        return FluidKeys.EMPTY;
+    }
+
+    @Override
+    public ItemStack libblockattributes__withFluid(FluidKey fluid) {
+        Potion potion;
+        if (fluid instanceof PotionFluidKey) {
+            potion = ((PotionFluidKey) fluid).potion;
+        } else if (fluid == FluidKeys.WATER) {
+            potion = Potions.WATER;
+        } else if (fluid == FluidKeys.EMPTY) {
+            return new ItemStack(Items.GLASS_BOTTLE);
+        } else {
+            return ItemStack.EMPTY;
+        }
+        ItemStack potionStack = new ItemStack(Items.POTION);
+        PotionUtil.setPotion(potionStack, potion);
+        return potionStack;
+    }
+
+    @Override
+    public int libblockattributes__getFluidVolumeAmount() {
+        return FluidVolume.BOTTLE;
     }
 }

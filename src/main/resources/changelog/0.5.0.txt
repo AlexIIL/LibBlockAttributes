@@ -56,7 +56,3 @@ Additions:
         * (optional) LimitedConsumer<ItemStack>, which can accept excess items. (For example a fluid "insertable" attribute might
           replace a stack of 6 empty buckets with a stack of 5 empty buckets plus one bucket filled with the appropriate fluid).
         * (optional) Predicate<ItemStack>, which is identical to the predicate given to SearchOptions.matching().
-
-Changes:
-
-* (TODO: Make changes)

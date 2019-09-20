@@ -72,9 +72,9 @@ public interface GroupedFluidInvView {
     }
 
     /** Adds the given listener to this inventory, such that the
-     * {@link FluidInvAmountChangeListener#onChange(GroupedFluidInvView, FluidKey, int, int)} will be
-     * called every time that this inventory changes. However if this inventory doesn't support listeners then this will
-     * return a null {@link ListenerToken token}.
+     * {@link FluidInvAmountChangeListener#onChange(GroupedFluidInvView, FluidKey, int, int)} will be called every time
+     * that this inventory changes. However if this inventory doesn't support listeners then this will return a null
+     * {@link ListenerToken token}.
      * 
      * @param removalToken A token that will be called whenever the given listener is removed from this inventory (or if
      *            this inventory itself is unloaded or otherwise invalidated).
@@ -130,12 +130,14 @@ public interface GroupedFluidInvView {
             @Override
             public ListenerToken addListener(FluidInvAmountChangeListener listener, ListenerRemovalToken removalToken) {
                 final GroupedFluidInvView view = this;
-                return real.addListener((inv, stack, prev, curr) -> {
-                    // Defend against giving the listener the real (possibly changeable) inventory.
-                    // In addition the listener would probably cache *this view* rather than the backing inventory
-                    // so they most likely need it to be this inventory.
-                    listener.onChange(view, stack, prev, curr);
-                }, removalToken);
+                return real.addListener(
+                    (inv, stack, prev, curr) -> {
+                        // Defend against giving the listener the real (possibly changeable) inventory.
+                        // In addition the listener would probably cache *this view* rather than the backing inventory
+                        // so they most likely need it to be this inventory.
+                        listener.onChange(view, stack, prev, curr);
+                    }, removalToken
+                );
             }
         };
     }
@@ -161,6 +163,12 @@ public interface GroupedFluidInvView {
             this.amount = amount;
             this.spaceAddable = spaceAddable;
             this.spaceTotal = spaceTotal;
+        }
+
+        /** @return A new {@link FluidInvStatistic} that has 0's for {@link #amount}, {@link #spaceAddable}, and
+         *         {@link #spaceTotal} */
+        public static FluidInvStatistic emptyOf(FluidFilter filter) {
+            return new FluidInvStatistic(filter, 0, 0, 0);
         }
     }
 }

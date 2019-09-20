@@ -10,18 +10,24 @@ package alexiil.mc.lib.attributes.fluid;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
+import alexiil.mc.lib.attributes.CombinableAttribute;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.misc.Ref;
 
-/** An interface for {@link Item}'s to implement if they can be filled and drained like a bucket. */
+/** An interface for {@link Item}'s to implement if they can be filled and drained like a bucket.
+ * 
+ * @deprecated This has been completely replaced by item-based attribute accessors. */
+@Deprecated
 public interface FluidProviderItem {
-    /* NOTE: As I haven't attempted to make attributes for items yet this is all that there is. */
-
     /** Attempts to drain some fluid from the given stack.
      * 
      * @param stack A reference to the input stack - the stack itself should never be modified, but the reference should
      *            be.
-     * @return The drained fluid, or {@link FluidVolume#isEmpty()} if nothing was drained. */
+     * @return The drained fluid, or {@link FluidVolume#isEmpty()} if nothing was drained.
+     * @deprecated This has been replaced by {@link FluidAttributes#EXTRACTABLE}.
+     *             {@link CombinableAttribute#get(alexiil.mc.lib.attributes.misc.Reference) get}(stack).
+     *             {@link FluidExtractable#extract(int) extract(maximumAmount)} */
+    @Deprecated
     FluidVolume drain(Ref<ItemStack> stack);
 
     /** Attempts to fill the given stack with the given fluid.
@@ -30,6 +36,10 @@ public interface FluidProviderItem {
      *            be.
      * @param with A reference to the input fluid - the stack itself should never be modified, but the reference should
      *            be.
-     * @return True if the stack was drained, false otherwise */
+     * @return True if the stack was drained, false otherwise
+     * @deprecated This has been replaced by {@link FluidAttributes#INSERTABLE}.
+     *             {@link CombinableAttribute#get(alexiil.mc.lib.attributes.misc.Reference) get}(stack).
+     *             {@link FluidInsertable#insert(FluidVolume) insert}(with) */
+    @Deprecated
     boolean fill(Ref<ItemStack> stack, Ref<FluidVolume> with);
 }
