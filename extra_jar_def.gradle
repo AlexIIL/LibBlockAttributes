@@ -384,5 +384,6 @@ def generateJar(
 }
 
 tasks.publish.dependsOn(tasks.build)
+tasks.publishToMavenLocal.dependsOn(tasks.build)
 
 ext.generateJar = this.&generateJar
