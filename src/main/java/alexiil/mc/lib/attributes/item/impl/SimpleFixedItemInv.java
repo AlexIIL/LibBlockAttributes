@@ -32,7 +32,7 @@ import alexiil.mc.lib.attributes.item.FixedItemInvView;
  *             </ul>
  */
 @Deprecated
-public class SimpleFixedItemInv {
+public class SimpleFixedItemInv extends FullFixedItemInv {
 
     // Copy-pasted from the top
     /** @deprecated You should use either {@link DirectFixedItemInv} or {@link FullFixedItemInv} instead of this!
@@ -54,10 +54,6 @@ public class SimpleFixedItemInv {
      */
     @Deprecated
     public SimpleFixedItemInv(int invSize) {
-        throw new IncompatibleClassChangeError(
-            "FixedItemInv changed a lot in LBA 0.5.x\n"//
-                + "\t\tThe mod author should refer to either the changelog or\n"
-                + "\t\tthe deprecated explanation in SimpleFixedItemInv for what to change!"
-        );
+        super(invSize);
     }
 }
