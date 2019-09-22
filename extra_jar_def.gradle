@@ -1,0 +1,319 @@
+// =======================================
+// Multi-jar creation plugin
+
+// How to apply:
+// Copy this file into your project (completely - you don't need to change anything in this file)
+// Apply this script from your main build.gradle:
+
+/*
+
+apply from: "extra_jar_def.gradle"
+
+// Variables (that should be changed)
+ext.mainName = "libblockattributes"
+ext.mavenGroupId = "alexiil.mc.lib";
+
+*/
+
+// Note - you must change the "ext.mainName" and "ext.mavenGroupId" values to your own mod.
+
+// Then call "generateJar" with the following parameters:
+//   key: The name for this jar-module
+//   _includes: Everything that should be included in the module
+//   _excludes: Everything that should not be included in this module
+//   hasMixins: If true then the refmap will be included
+//   nestedJars: A list of every module (that is also defined here) to nest in this module
+//   includedJars: A list of every external jar file (that must be defined with "include")
+//                 to include in this module. Note that you must specify the full name of
+//                 the file, except the ".jar" suffix.
+
+// If you want to access a set of all resources included by something else you can use "ext.extra_jar_def__taken"
+
+// For example
+
+/*
+
+// Custom modules
+def itemsReq = [
+    "alexiil/mc/lib/attributes/item/**",
+    "assets/libblockattributes/icon_items.png"
+];
+generateJar("items", itemsReq, [], false, [], ["core"]);
+
+*/
+
+
+// ==========================================================
+// User config - change both of these on a per-project basis
+// ==========================================================
+
+ext.mainName = "unnamed_you_need_to_redeclare_ext_dot_mainname_after_applying_extra_jar_def_gradle"
+ext.mavenGroupId = "unnamed.nope"
+
+// =================================================
+// Internal config - you might need to change these
+// =================================================
+
+// The location for the "fabric.mod.json" file, relative
+// to the root of the project
+ext.extra_jar_def__fabricModJsonLocation = "src/main/resources/"
+
+// If this is true then all of the dependencies declared
+// by modApi or modImplementation will be removed from
+// the generated POM's.
+ext.extra_jar_def__clear_implicit_depedencies = true;
+
+// ==============================
+// Internals - don't touch this!
+// ==============================
+
+ext.extra_jar_def__jarFile = zipTree(jar.archivePath)
+ext.extra_jar_def__modulesDir = new File(System.getenv("LIBS_DIR") ?: "$projectDir/build/libs/", version)
+ext.extra_jar_def__taken = new HashSet<>();
+ext.extra_jar_def__requiredJars = new HashMap<String, List<String>>();
+
+def getFabricModJsonFile(String key) {
+    return new File("$projectDir/build/processing/fabric_jsons/$key/fabric.mod.json");
+}
+
+def getNestedJarFile(String key) {
+    return new File("$projectDir/build/processing/nested_jars/$key/$mainName-$key-${project.version}.jar");
+}
+
+def getNestedSourceJarFile(String key) {
+    return new File("$projectDir/build/processing/nested_jars/$key-sources/$mainName-$key-$project.version-sources.jar");
+}
+
+def getIncludedJarFile(String key) {
+    return new File("$projectDir/build/processing/included_jars/${key}.jar");
+}
+
+def transformJson(json, diff) {
+    for (entry in diff.entrySet()) {
+        String jKey = entry.getKey();
+        def diffValue = entry.getValue();
+        char first = jKey.charAt(0);
+        String realKey = jKey.substring(1)
+        if (first == '-') {
+            json.remove(realKey);
+            continue;
+        } else if (first == '+') {
+            json.put(realKey, diffValue);
+        } else if (first == '~') {
+            def old = json.get(realKey);
+            if (old == null) {
+                old = new LinkedHashMap<>();
+                json.put(realKey, old);
+            }
+            transformJson(old, diffValue);
+        } else {
+            throw new Error("Must be either -+~, but got " + first + "!");
+        }
+    }
+}
+
+def writeFabricModJsonFile(String key, List<String> addedJars) {
+    File temp = getFabricModJsonFile(key);
+    def source = new groovy.json.JsonSlurper().parse(file(extra_jar_def__fabricModJsonLocation + "fabric.mod.json"));
+    temp.parentFile.mkdirs();
+    if (temp.exists()) {
+        temp.delete();
+    }
+    temp.createNewFile();
+    def elements = new HashMap<>();
+    def diff = source.remove("__buildscript_diff")[key];
+    transformJson(source, diff);
+
+    if (!addedJars.isEmpty()) {
+        def prevJars = source.get("jars");
+        if (prevJars == null) {
+            prevJars = new ArrayList<>();
+            source.put("jars", prevJars);
+        }
+        for (added in addedJars) {
+            def map = new LinkedHashMap<>()
+            map.put("file", added);
+            prevJars.add(map);
+        }
+    }
+
+    String prettyPrinted = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(source));
+    prettyPrinted = prettyPrinted.replace("\$version", project.version);
+    temp.write(prettyPrinted);
+
+    return temp;
+}
+
+task extractAllNestedJars(type: Copy, dependsOn: tasks["remapJar"]) {
+    from(project.ext.extra_jar_def__jarFile) {
+        include "META-INF/jars/*.jar"
+    }
+    into "$projectDir/build/processing/included_jars/"
+}
+
+def generateJar(
+    String key, Collection<String> _includes,
+    Collection<String> _excludes, boolean hasMixins,
+    List<String> required = [], List<String> nestedJars = [],
+    List<String> includedJars = []
+) {
+
+    // Sanity check
+    for (int i = 0; i < includedJars.size(); i++) { 
+        def name = includedJars.get(i);
+        if (!name.endsWith(".jar")) {
+            includedJars.set(i, name + ".jar");
+        }
+    }
+
+    def allRequired = new LinkedHashSet<>();
+    allRequired.addAll(required);
+    allRequired.addAll(nestedJars);
+    for (req in required) {
+        allRequired.addAll(extra_jar_def__requiredJars.get(req));
+    }
+    extra_jar_def__requiredJars.put(key, allRequired);
+
+    task("writeFabricModJson_" + key) {
+        doLast {
+            def finalJarList = new ArrayList<>();
+            for (module in nestedJars) {
+               finalJarList.add("$mainName-$module-${version}.jar");
+            }
+            for (included in includedJars) {
+               finalJarList.add(included);
+            }
+            writeFabricModJsonFile(key, finalJarList);
+        }
+    }
+
+    task("submod_" + key + "Jar", type: Jar, dependsOn: "writeFabricModJson_" + key) {
+
+        baseName = "$mainName-$key";
+        destinationDir = extra_jar_def__modulesDir;
+
+        from(getFabricModJsonFile(key).parentFile);
+        for (nKey in nestedJars) {
+            from(getNestedJarFile(nKey).parentFile);
+        }
+        for (nKey in includedJars) {
+            from("$projectDir/build/processing/included_jars/META-INF/jars") {
+                include nKey
+            }
+        }
+        from(project.ext.extra_jar_def__jarFile) {
+            excludes.add("fabric.mod.json");
+            includes.addAll(_includes);
+            excludes.addAll(_excludes);
+            if (hasMixins) {
+                includes.add(project.name + "-refmap.json");
+            } else {
+                excludes.add(project.name + "-refmap.json");
+            }
+        }
+    }
+
+    task("submod_" + key + "SourcesJar", type: Jar, dependsOn: [unzipSourcesJar, "writeFabricModJson_" + key]) {
+        baseName = "$mainName-$key";
+        classifier = "sources";
+        destinationDir = extra_jar_def__modulesDir;
+        from(getFabricModJsonFile(key).parentFile);
+        for (nKey in nestedJars) {
+            from(getNestedSourceJarFile(nKey).parentFile);
+        }
+        from (unzippedSourceJar) {
+            excludes.add("fabric.mod.json");
+            includes.addAll(_includes);
+            excludes.addAll(_excludes);
+        }
+    }
+
+    for (nKey in nestedJars) {
+        tasks["submod_" + key + "Jar"].dependsOn(tasks["copySubModJar_" + nKey])
+        tasks["submod_" + key + "SourcesJar"].dependsOn(tasks["copySubModSourcesJar_" + nKey])
+    }
+
+    if (!includedJars.isEmpty()) {
+        task validateNestedJars(dependsOn: extractAllNestedJars) {
+            doLast {
+                for (included in includedJars) {
+                    if (!new File("$projectDir/build/processing/included_jars/META-INF/jars/" + included).isFile()) {
+                        throw new Error("The included jar '" + included + "' didn't exist! (Perhaps check the spelling?)");
+                    }
+                }
+            }
+        }
+        tasks["submod_" + key + "Jar"].dependsOn(tasks["validateNestedJars"])
+    }
+
+    task("copySubModJar_" + key, type: Copy, dependsOn: tasks["submod_" + key + "Jar"]) {
+        from "" + extra_jar_def__modulesDir + "/$mainName-$key-${project.version}.jar";
+        into getNestedJarFile(key).parentFile;
+    }
+
+    task("copySubModSourcesJar_" + key, type: Copy, dependsOn: tasks["submod_" + key + "SourcesJar"]) {
+        from "" + extra_jar_def__modulesDir + "/$mainName-$key-$project.version-sources.jar";
+        into getNestedSourceJarFile(key).parentFile;
+    }
+
+    extra_jar_def__taken.addAll(_includes);
+    build.dependsOn("submod_" + key + "Jar");
+    build.dependsOn("submod_" + key + "SourcesJar");
+
+    publishing.publications.create("publishJars_" + key, MavenPublication) {
+        groupId "$mavenGroupId"
+        artifactId "$mainName-$key";
+        version project.version
+
+        artifact tasks["submod_" + key + "Jar"]
+        artifact tasks["submod_" + key + "SourcesJar"]
+
+        pom {
+            dependencies {
+                // FIXME: For some reason this doesn't work :(
+                // clear();
+            }
+        }
+
+        // Otherwise the value of key is lost?
+        def k = key;
+        pom.withXml {
+            def root = asNode();
+            // def required = extra_jar_def__requiredJars.get(k);
+            if (!allRequired.isEmpty()) {
+                def hasFinished = false;
+
+                // Gradle (or fabric loom or the maven publish plugin, I don't know which)
+                // doesn't respect the definition of "modImplementation". So we return a
+                // different Node class that refuses to add any additional dependencies after
+                // we have finished. (Although only if this behaviour hasn't been disabled by
+                // the real project, as some people may want the normal behaviour)
+                Node deps = new Node(root, "dependencies") {
+                    @Override
+                    def Node appendNode(Object nodeKey) {
+                        if (hasFinished) {
+                            return new Node(null, nodeKey);
+                        }
+                        return super.appendNode(nodeKey);
+                    }
+                };
+
+                for (dep in allRequired) {
+                    Node depNode = deps.appendNode('dependency');
+                    depNode.appendNode('groupId', "$mavenGroupId");
+                    depNode.appendNode('artifactId', "$mainName-" + dep);
+                    depNode.appendNode('version', project.version);
+                    depNode.appendNode('scope', 'compile');
+                }
+
+                if (extra_jar_def__clear_implicit_depedencies) {
+                    hasFinished = true;
+                }
+            }
+        }
+    }
+}
+
+tasks.publish.dependsOn(tasks.build)
+
+ext.generateJar = this.&generateJar

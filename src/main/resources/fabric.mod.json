@@ -68,12 +68,7 @@
         "+libblockattributes_items": ">=$version",
         "+libblockattributes_fluids": ">=$version"
       },
-      "+icon": "assets/libblockattributes/icon_all.png",
-      "+jars": [
-        { "file": "libblockattributes-core-$version.jar" },
-        { "file": "libblockattributes-items-$version.jar" },
-        { "file": "libblockattributes-fluids-$version.jar" }
-      ]
+      "+icon": "assets/libblockattributes/icon_all.png"
     }
   }
 }

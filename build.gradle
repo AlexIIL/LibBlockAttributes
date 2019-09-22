@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.2.4-SNAPSHOT'
+    id 'fabric-loom' version '0.2.5-SNAPSHOT'
     id 'net.minecrell.licenser' version '0.4.1'
 }
 
@@ -20,15 +20,16 @@ minecraft {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:1.14.4"
-    mappings "net.fabricmc:yarn:1.14.4+build.9"
-    modCompile "net.fabricmc:fabric-loader:0.4.8+build.159"
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings "net.fabricmc:yarn:${yarn_mappings}"
+    modImplementation "net.fabricmc:fabric-loader:${loader_version}"
 
     //Fabric api
-    modCompile "net.fabricmc.fabric-api:fabric-api:0.3.1+build.208"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
 
     // Silk API
-    modCompile "io.github.prospector.silk:SilkAPI:1.2.3-38"
+    modImplementation "io.github.prospector.silk:SilkAPI:${silk_version}"
+    include "io.github.prospector.silk:SilkAPI:${silk_version}"
 
     // Misc
     compile "com.google.code.findbugs:jsr305:3.0.1"
@@ -79,228 +80,44 @@ task unzipSourcesJar(type: Copy, dependsOn: sourcesJar) {
     into unzippedSourceJar
 }
 
-// #####################
-//
-// Extra jar section
-//
-// #####################
-
-// Variables (that should be changed)
-ext.mainName = "libblockattributes"
-ext.mavenGroupId = "alexiil.mc.lib";
-
-// Internals
-ext.jarFile = zipTree(jar.archivePath)
-ext.modulesDir = new File(System.getenv("LIBS_DIR") ?: "$projectDir/build/libs/", version)
-
-def getFabricModJsonFile(String key) {
-    return new File("$projectDir/build/processing/fabric_jsons/$key/fabric.mod.json");
-}
-
-def getNestedJarFile(String key) {
-    return new File("$projectDir/build/processing/nested_jars/$key/$mainName-$key-${project.version}.jar");
-}
-
-def getNestedSourceJarFile(String key) {
-    return new File("$projectDir/build/processing/nested_jars/$key-sources/$mainName-$key-$project.version-sources.jar");
-}
-
-def transformJson(json, diff) {
-    for (entry in diff.entrySet()) {
-        String jKey = entry.getKey();
-        def diffValue = entry.getValue();
-        char first = jKey.charAt(0);
-        String realKey = jKey.substring(1)
-        if (first == '-') {
-            json.remove(realKey);
-            continue;
-        } else if (first == '+') {
-            json.put(realKey, diffValue);
-        } else if (first == '~') {
-            def old = json.get(realKey);
-            if (old == null) {
-                old = new LinkedHashMap<>();
-                json.put(realKey, old);
-            }
-            transformJson(old, diffValue);
-        } else {
-            throw new Error("Must be either -+~, but got " + first + "!");
-        }
-    }
-}
-
-def writeFabricModJsonFile(String key) {
-    File temp = getFabricModJsonFile(key);
-    def source = new groovy.json.JsonSlurper().parse(file("src/main/resources/fabric.mod.json"));
-    temp.parentFile.mkdirs();
-    if (temp.exists()) {
-        temp.delete();
-    }
-    temp.createNewFile();
-    def elements = new HashMap<>();
-    def diff = source.remove("__buildscript_diff")[key];
-    transformJson(source, diff);
-
-    String prettyPrinted = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(source));
-    prettyPrinted = prettyPrinted.replace("\$version", project.version);
-    temp.write(prettyPrinted);
-
-    return temp;
-}
-
-ext.taken = new HashSet<>();
-ext.requiredJars = new HashMap<String, List<String>>();
-
-// Arguments:
-//   key: The name for this jar-module
-//   _includes: Everything that should be included in the module
-//   _excludes: Everything that should not be included in this module
-//   hasMixins: If true then the refmap will be included
-//   nestedJars: A list of every module (that is also defined here) to nest in this module
-//   required: A list of every external jar file (that must be defined with "nest") to include in this module (TODO)
-def generateJar(
-    String key, Collection<String> _includes,
-    Collection<String> _excludes, boolean hasMixins,
-    List<String> nestedJars = [], List<String> required = []
-) {
-    def allRequired = new LinkedHashSet<>();
-    allRequired.addAll(required);
-    allRequired.addAll(nestedJars);
-    for (req in required) {
-        allRequired.addAll(requiredJars.get(req));
-    }
-    requiredJars.put(key, allRequired);
-
-    task("submod_" + key + "Jar", type: Jar) {
-        baseName = "$mainName-$key";
-        destinationDir = modulesDir;
-        from(writeFabricModJsonFile(key).parentFile);
-        for (nKey in nestedJars) {
-            from(getNestedJarFile(nKey).parentFile);
-        }
-        from(project.ext.jarFile) {
-            excludes.add("fabric.mod.json");
-            includes.addAll(_includes);
-            excludes.addAll(_excludes);
-            if (hasMixins) {
-                includes.add(project.name + "-refmap.json");
-            } else {
-                excludes.add(project.name + "-refmap.json");
-            }
-        }
-        doFirst {
-            writeFabricModJsonFile(key);
-        }
-    }
-
-    task("submod_" + key + "SourcesJar", type: Jar, dependsOn: unzipSourcesJar) {
-        baseName = "$mainName-$key";
-        classifier = "sources";
-        destinationDir = modulesDir;
-        from(writeFabricModJsonFile(key).parentFile);
-        for (nKey in nestedJars) {
-            from(getNestedSourceJarFile(nKey).parentFile);
-        }
-        from (unzippedSourceJar) {
-            excludes.add("fabric.mod.json");
-            includes.addAll(_includes);
-            excludes.addAll(_excludes);
-        }
-        doFirst {
-            writeFabricModJsonFile(key);
-        }
-    }
-
-    for (nKey in nestedJars) {
-        tasks["submod_" + key + "Jar"].dependsOn(tasks["copySubModJar_" + nKey])
-        tasks["submod_" + key + "SourcesJar"].dependsOn(tasks["copySubModSourcesJar_" + nKey])
-    }
-
-    task("copySubModJar_" + key, type: Copy, dependsOn: tasks["submod_" + key + "Jar"]) {
-        from "" + modulesDir + "/$mainName-$key-${project.version}.jar";
-        into getNestedJarFile(key).parentFile;
-    }
-
-    task("copySubModSourcesJar_" + key, type: Copy, dependsOn: tasks["submod_" + key + "SourcesJar"]) {
-        from "" + modulesDir + "/$mainName-$key-$project.version-sources.jar";
-        into getNestedSourceJarFile(key).parentFile;
-    }
-
-    taken.addAll(_includes);
-    build.dependsOn("submod_" + key + "Jar");
-    build.dependsOn("submod_" + key + "SourcesJar");
-}
-
-// Custom modules
-def itemsReq = [
-    "alexiil/mc/lib/attributes/item/**",
-    "assets/libblockattributes/icon_items.png"
-];
-def fluidsReq = [
-    "alexiil/mc/lib/attributes/fluid/**",
-    "assets/libblockattributes/textures/fluid/**",
-    "assets/libblockattributes/icon_fluids.png",
-    "libblockattributes_fluid.common.json"
-];
-def coreExclude = new HashSet<>();
-coreExclude.addAll(itemsReq);
-coreExclude.addAll(fluidsReq);
-
-generateJar("core", ["**"], coreExclude, false);
-generateJar("items", itemsReq, [], false, [], ["core"]);
-generateJar("fluids", fluidsReq, [], true, [], ["core"]);
-generateJar("all",
-    [
-        "assets/libblockattributes/icon_all.png"
-    ],
-    [], false, ["core", "items", "fluids"]
-);
-
 publishing {
     repositories {
         maven {
             url System.getenv("MAVEN_DIR") ?: "$projectDir/build/maven"
         }
     }
-    publications {
-        for (key in requiredJars.keySet()) {
-            create("publishJars_" + key, MavenPublication) {
-                groupId "$mavenGroupId"
-                artifactId "$mainName-$key";
-                version project.version
-
-                artifact tasks["submod_" + key + "Jar"]
-                artifact tasks["submod_" + key + "SourcesJar"]
-
-                pom {
-                    developers {
-                        developer {
-                            id = "AlexIIL"
-                        }
-                    }
-                    dependencies {
-                        clear();
-                    }
-                }
-
-                // Otherwise the value of key is lost?
-                def k = key;
-                pom.withXml {
-                    def root = asNode();
-                    def required = requiredJars.get(k);
-                    if (!required.isEmpty()) {
-                        Node deps = root.appendNode('dependencies');
-
-                        for (dep in required) {
-                            Node depNode = deps.appendNode('dependency');
-                            depNode.appendNode('groupId', "$mavenGroupId");
-                            depNode.appendNode('artifactId', "$mainName-" + dep);
-                            depNode.appendNode('version', project.version);
-                            depNode.appendNode('scope', 'compile');
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
+
+// #####################
+//
+// Extra jar section
+//
+// #####################
+
+apply from: "extra_jar_def.gradle"
+
+ext.mainName = "libblockattributes"
+ext.mavenGroupId = "alexiil.mc.lib";
+
+// Custom modules
+def itemsIncludes = [
+    "alexiil/mc/lib/attributes/item/**",
+    "assets/libblockattributes/icon_items.png"
+];
+def fluidsIncludes = [
+    "alexiil/mc/lib/attributes/fluid/**",
+    "assets/libblockattributes/textures/fluid/**",
+    "assets/libblockattributes/icon_fluids.png",
+    "libblockattributes_fluid.common.json"
+];
+def allIncludes = [
+    "assets/libblockattributes/icon_all.png"
+];
+def coreExclude = new HashSet<>();
+coreExclude.addAll(itemsIncludes);
+coreExclude.addAll(fluidsIncludes);
+
+generateJar("core", ["**"], coreExclude, false);
+generateJar("items", itemsIncludes, [], false, ["core"]);
+generateJar("fluids", fluidsIncludes, [], true, ["core"]);
+generateJar("all", allIncludes, [], false, [], ["core", "items", "fluids"]);
