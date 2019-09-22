@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.CompoundTag;
@@ -135,7 +136,11 @@ public abstract class FluidVolume {
 
     @Override
     public String toString() {
-        return fluidKey + " " + fluidKey.unit.localizeAmount(getAmount());
+        return fluidKey + " " + localizeAmount();
+    }
+
+    public String localizeAmount() {
+        return fluidKey.unit.localizeAmount(getAmount());
     }
 
     /** @deprecated Use {@link Objects#equals(Object)} instead of this. */
@@ -292,9 +297,7 @@ public abstract class FluidVolume {
                 new LiteralText(FluidRegistryEntry.getName(getFluidKey().registryEntry.backingRegistry).toString())
                     .formatted(Formatting.DARK_GRAY)
             );
-            list.add(
-                new LiteralText(getFluidKey().registryEntry.getId().toString()).formatted(Formatting.DARK_GRAY)
-            );
+            list.add(new LiteralText(getFluidKey().registryEntry.getId().toString()).formatted(Formatting.DARK_GRAY));
         }
         return list;
     }
