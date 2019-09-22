@@ -140,7 +140,7 @@ public abstract class FluidVolume {
     }
 
     public String localizeAmount() {
-        return fluidKey.unit.localizeAmount(getAmount());
+        return fluidKey.unitSet.localizeAmount(getAmount());
     }
 
     /** @deprecated Use {@link Objects#equals(Object)} instead of this. */

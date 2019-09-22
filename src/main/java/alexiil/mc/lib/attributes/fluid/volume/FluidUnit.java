@@ -7,20 +7,48 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import java.util.Arrays;
 import java.util.IllegalFormatException;
 
 import net.minecraft.util.Language;
 
-public final class FluidUnit {
+public final class FluidUnit implements Comparable<FluidUnit> {
 
     public static final FluidUnit BUCKET = new FluidUnit(FluidVolume.BUCKET, "bucket");
     public static final FluidUnit BOTTLE = new FluidUnit(FluidVolume.BOTTLE, "bottle");
 
+    /** Amount, Unit */
     /* package-private */ static final String KEY_AMOUNT = "libblockattributes.fluid.amount";
+
+    /** Time, (Amount+Unit) */
     /* package-private */ static final String KEY_FLOW_RATE = "libblockattributes.fluid.flow_rate";
+
+    /** (Amount+Unit) */
     /* package-private */ static final String KEY_TANK_EMPTY = "libblockattributes.fluid.tank_empty";
-    /* package-private */ static final String KEY_TANK_PARTIAL = "libblockattributes.fluid.tank_partial";
+
+    /** (Amount+Unit) */
     /* package-private */ static final String KEY_TANK_FULL = "libblockattributes.fluid.tank_full";
+
+    /** Unit, Amount, Capacity */
+    /* package-private */ static final String KEY_TANK_PARTIAL = "libblockattributes.fluid.tank_partial";
+
+    /** Amount, Capacity */
+    /* package-private */ static final String KEY_TANK_MULTI_UNIT = "libblockattributes.fluid.tank_multi_unit";
+
+    /** Amount1, Unit1, Amount2, Unit2 */
+    /* package-private */ static final String KEY_MULTI_UNIT_2 = "libblockattributes.fluid.multi_unit.2";
+
+    /** Amount1, Unit1, Amount2, Unit2, Amount3, Unit3 */
+    /* package-private */ static final String KEY_MULTI_UNIT_3 = "libblockattributes.fluid.multi_unit.3";
+
+    /** Amount1, Unit1, Amount2, Unit2, Amount3, Unit3, Amount4, Unit4 */
+    /* package-private */ static final String KEY_MULTI_UNIT_4 = "libblockattributes.fluid.multi_unit.4";
+
+    /** Amount1, Unit1, Amount2, Unit2 */
+    /* package-private */ static final String KEY_MULTI_UNIT_COMBINER = "libblockattributes.fluid.multi_unit.combiner";
+
+    /** ((Amount+Unit)[1...N-1]), Amount_N, Unit_N */
+    /* package-private */ static final String KEY_MULTI_UNIT_END = "libblockattributes.fluid.multi_unit.end";
 
     /* package-private */ static final String KEY_SECOND = "libblockattributes.time_unit.second";
     /* package-private */ static final String KEY_TICK = "libblockattributes.time_unit.tick";
@@ -48,11 +76,11 @@ public final class FluidUnit {
     }
 
     public String localizeEmptyTank(int capacity) {
-        return localize(KEY_TANK_EMPTY, true, capacity);
+        return localizeDirect(KEY_TANK_EMPTY, localizeAmount(capacity));
     }
 
     public String localizeFullTank(int capacity) {
-        return localize(KEY_TANK_FULL, true, capacity);
+        return localizeDirect(KEY_TANK_FULL, localizeAmount(capacity));
     }
 
     public String localizeTank(int amount, int capacity) {
@@ -68,27 +96,17 @@ public final class FluidUnit {
         double rate = amountPerTick / (double) timeGap;
         String translatedUnit = translateUnit(rate == unitAmount);
         String format = format(rate);
-        String translatedKey = Language.getInstance().translate(KEY_FLOW_RATE);
         String translatedtime = Language.getInstance().translate(keyTime);
-        try {
-            return String.format(translatedKey, translatedUnit, translatedtime, format);
-        } catch (IllegalFormatException ife) {
-            return KEY_FLOW_RATE + " [" + format + "] " + ife.getMessage();
-        }
+        return localizeDirect(KEY_FLOW_RATE, translatedtime, localizeDirect(KEY_AMOUNT, format, translatedUnit));
     }
 
     /* package-private */ String localize(String key, boolean isSingular, int number) {
         String translatedUnit = translateUnit(isSingular);
         String format = format(number);
-        String translatedKey = Language.getInstance().translate(key);
-        try {
-            return String.format(translatedKey, translatedUnit, format);
-        } catch (IllegalFormatException ife) {
-            return key + " [" + format + "] " + ife.getMessage();
-        }
+        return localizeDirect(key, format, translatedUnit);
     }
 
-    private String translateUnit(boolean isSingular) {
+    /* package-private */ String translateUnit(boolean isSingular) {
         return Language.getInstance().translate(isSingular ? keySingular : keyPlural);
     }
 
@@ -96,15 +114,22 @@ public final class FluidUnit {
         String translatedUnit = translateUnit(isSingular);
         String format1 = format(number1);
         String format2 = format(number2);
-        String translatedKey = Language.getInstance().translate(key);
+        return localizeDirect(key, translatedUnit, format1, format2);
+    }
+
+    /* package-private */ static String localizeDirect(String localeKey, Object... args) {
+        String translatedKey = Language.getInstance().translate(localeKey);
+        if (translatedKey == localeKey) {
+            return localeKey + " " + Arrays.toString(args);
+        }
         try {
-            return String.format(translatedKey, translatedUnit, format1, format2);
+            return String.format(translatedKey, args);
         } catch (IllegalFormatException ife) {
-            return key + " [" + format1 + ", " + format2 + "] " + ife.getMessage();
+            return localeKey + " " + Arrays.toString(args) + " " + ife.getMessage();
         }
     }
 
-    private String format(int number) {
+    /* package-private */ String format(int number) {
         if (unitAmount == 1) {
             return Integer.toString(number);
         }
@@ -127,5 +152,11 @@ public final class FluidUnit {
             return Integer.toString((int) number);
         }
         return Double.toString(number);
+    }
+
+    @Override
+    public int compareTo(FluidUnit o) {
+        // So that buckets are sorted *before* bottles.
+        return Integer.compare(o.unitAmount, unitAmount);
     }
 }

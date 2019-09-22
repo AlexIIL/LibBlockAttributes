@@ -23,8 +23,14 @@ public abstract class FluidKey {
 
     /* package-private */ final FluidRegistryEntry<?> registryEntry;
 
-    /** The units to use when displaying amounts, capacities, and flow rates to the player. */
+    /** The singular (main) unit to use when displaying amounts, capacities, and flow rates to the player.
+     * 
+     * @deprecated Because most of the time you should use {@link #unitSet} rather than this. */
+    @Deprecated
     public final FluidUnit unit;
+
+    /** All units to use when displaying amounts, capacities, and flow rates to the player. */
+    public final FluidUnitSet unitSet;
 
     /** The sprite to use when rendering this {@link FluidKey}'s specifically.
      * <p>
@@ -47,6 +53,7 @@ public abstract class FluidKey {
         /* package-private */ final Text name;
         /* package-private */ int renderColor = 0xFF_FF_FF;
         /* package-private */ FluidUnit unit = FluidUnit.BUCKET;
+        /* package-private */ final FluidUnitSet unitSet = new FluidUnitSet();
 
         public FluidKeyBuilder(FluidRegistryEntry<?> registryEntry, Identifier spriteId, Text name) {
             this.registryEntry = registryEntry;
@@ -61,6 +68,12 @@ public abstract class FluidKey {
 
         public FluidKeyBuilder setUnit(FluidUnit unit) {
             this.unit = unit;
+            return this;
+        }
+
+        /** Adds the given unit to the set of units used. */
+        public FluidKeyBuilder addUnit(FluidUnit unit) {
+            this.unitSet.addUnit(unit);
             return this;
         }
     }
@@ -80,6 +93,8 @@ public abstract class FluidKey {
         }
         this.registryEntry = builder.registryEntry;
         this.unit = builder.unit;
+        this.unitSet = builder.unitSet;
+        unitSet.addUnit(builder.unit);
         this.spriteId = builder.spriteId;
         this.name = builder.name;
         this.renderColor = builder.renderColor;

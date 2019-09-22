@@ -21,7 +21,7 @@ import net.minecraft.world.biome.Biome;
         super(NormalFluidKey.builder(Fluids.WATER, //
             new Identifier("minecraft", "block/water_still"), //
             new TranslatableText("block.minecraft.water")//
-        ));
+        ).addUnit(FluidUnit.BOTTLE));
     }
 
     @Override

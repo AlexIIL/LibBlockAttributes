@@ -45,6 +45,11 @@ public class NormalFluidKey extends FluidKey {
             return (NormalFluidKeyBuilder) super.setUnit(unit);
         }
 
+        @Override
+        public NormalFluidKeyBuilder addUnit(FluidUnit unit) {
+            return (NormalFluidKeyBuilder) super.addUnit(unit);
+        }
+
         public NormalFluidKey build() {
             return new NormalFluidKey(this);
         }
