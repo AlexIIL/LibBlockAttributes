@@ -1,5 +1,6 @@
-// =======================================
+// ===========================
 // Multi-jar creation plugin
+// ===========================
 
 // How to apply:
 // Copy this file into your project (completely - you don't need to change anything in this file)
@@ -21,11 +22,79 @@ ext.mavenGroupId = "alexiil.mc.lib";
 //   key: The name for this jar-module
 //   _includes: Everything that should be included in the module
 //   _excludes: Everything that should not be included in this module
-//   hasMixins: If true then the refmap will be included
+//   hasMixins: If true then the refmap will be included (which is necessary for mixins)
 //   nestedJars: A list of every module (that is also defined here) to nest in this module
 //   includedJars: A list of every external jar file (that must be defined with "include")
 //                 to include in this module. Note that you must specify the full name of
 //                 the file, except the ".jar" suffix.
+
+// Per-module fabric.mod.json files are generated from "diffs" of the main fabric.mod.json file:
+// these should be in an object called "__buildscript_diff" in the main fabric.mod.json file.
+// Then each module should declare a child with the same name as the "key" passed to "generateJar"
+// Each child of *that* should be a "json-diff" of the main fabric.mod.json file, where each key
+// is prefixed with one of the following:
+// '-': The value won't be present in the json
+// '+': The value will be added to the json, (and will replace any existing json entry)
+// '~': The value must be an object, and will be applied as a json-diff.
+
+// For example, given this "fabric.mod.json":
+
+/*
+
+{
+    "id": "buildcraft",
+    "name": "BuildCraft",
+    "version": "$version",
+    "depends": { "minecraft": "1.14.4" },
+    "__buildscript_diff": {
+        "core": {
+            "+id": "buildcraftcore",
+            "+name": "BuildCraft Core"
+        },
+        "transport": {
+            "+id": "buildcrafttransport",
+            "+name": "BuildCraft Transport",
+            "+description": "Expanding minecraft with item and fluid transportation!",
+            "~depends": { "+buildcraftcore": "$version" }
+        }
+    }
+}
+
+*/
+
+// The following modules would be generated:
+
+// For 'core':
+
+/*
+
+{
+    "id": "buildcraftcore",
+    "name": "BuildCraft Core",
+    "version": "$version",
+    "depends": {
+        "minecraft": "1.14.4"
+    }
+}
+
+*/
+
+// For 'transport':
+
+/*
+
+{
+    "id": "buildcrafttransport",
+    "name": "BuildCraft Transport",
+    "version": "$version",
+    "depends": {
+        "minecraft": "1.14.4",
+        "buildcraftcore": "$version"
+    },
+    "description": "Expanding minecraft with item and fluid transportation!"
+}
+
+*/ 
 
 // If you want to access a set of all resources included by something else you can use "ext.extra_jar_def__taken"
 
