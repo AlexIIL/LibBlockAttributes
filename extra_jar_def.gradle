@@ -24,9 +24,13 @@ ext.mavenGroupId = "alexiil.mc.lib";
 //   _excludes: Everything that should not be included in this module
 //   hasMixins: If true then the refmap will be included (which is necessary for mixins)
 //   nestedJars: A list of every module (that is also defined here) to nest in this module
+//   requiredJars: A list of every maven jar that this mod requires, but doesn't include.
+//                 (The syntax is the same as "includedJars")
 //   includedJars: A list of every external jar file (that must be defined with "include")
 //                 to include in this module. Note that you must specify the full name of
-//                 the file, except the ".jar" suffix.
+//                 the file, except the ".jar" suffix. This should be an array with 3
+//                 sections: ["maven_group", "maven_artifact_id", "file_name"]. Note that
+//                 the "maven_artifact_id" will be prefixed to "file_name".
 
 // Per-module fabric.mod.json files are generated from "diffs" of the main fabric.mod.json file:
 // these should be in an object called "__buildscript_diff" in the main fabric.mod.json file.
@@ -139,7 +143,6 @@ ext.extra_jar_def__clear_implicit_depedencies = true;
 ext.extra_jar_def__jarFile = zipTree(jar.archivePath)
 ext.extra_jar_def__modulesDir = new File(System.getenv("LIBS_DIR") ?: "$projectDir/build/libs/", version)
 ext.extra_jar_def__taken = new HashSet<>();
-ext.extra_jar_def__requiredJars = new HashMap<String, List<String>>();
 
 def getFabricModJsonFile(String key) {
     return new File("$projectDir/build/processing/fabric_jsons/$key/fabric.mod.json");
@@ -155,6 +158,14 @@ def getNestedSourceJarFile(String key) {
 
 def getIncludedJarFile(String key) {
     return new File("$projectDir/build/processing/included_jars/${key}.jar");
+}
+
+ext.extra_jar_def__unzippedSourceJar = new File("$projectDir/build/processing/tasks/unzipped_src_jar/unzip")
+task unzipSourcesJar(type: Copy, dependsOn: sourcesJar) {
+    from (zipTree(sourcesJar.archivePath)) {
+        include "**"
+    }
+    into extra_jar_def__unzippedSourceJar
 }
 
 def transformJson(json, diff) {
@@ -224,24 +235,25 @@ def generateJar(
     String key, Collection<String> _includes,
     Collection<String> _excludes, boolean hasMixins,
     List<String> required = [], List<String> nestedJars = [],
-    List<String> includedJars = []
+    List<List<String>> requiredJars = [],
+    List<List<String>> includedJars = []
 ) {
 
     // Sanity check
-    for (int i = 0; i < includedJars.size(); i++) { 
-        def name = includedJars.get(i);
-        if (!name.endsWith(".jar")) {
-            includedJars.set(i, name + ".jar");
+    for (int i = 0; i < includedJars.size(); i++) {
+        def array = includedJars.get(i);
+        if (array.size() != 3) {
+            throw new IllegalArgumentException("Expected an array of length 3, but got " + array.size());
+        }
+        array.add(array[1] + "-" + array[2]);
+        if (!array[3].endsWith(".jar")) {
+            array[3] = array[3] + ".jar";
         }
     }
 
     def allRequired = new LinkedHashSet<>();
     allRequired.addAll(required);
     allRequired.addAll(nestedJars);
-    for (req in required) {
-        allRequired.addAll(extra_jar_def__requiredJars.get(req));
-    }
-    extra_jar_def__requiredJars.put(key, allRequired);
 
     task("writeFabricModJson_" + key) {
         doLast {
@@ -250,7 +262,7 @@ def generateJar(
                finalJarList.add("$mainName-$module-${version}.jar");
             }
             for (included in includedJars) {
-               finalJarList.add(included);
+               finalJarList.add(included[3]);
             }
             writeFabricModJsonFile(key, finalJarList);
         }
@@ -290,7 +302,7 @@ def generateJar(
         for (nKey in nestedJars) {
             from(getNestedSourceJarFile(nKey).parentFile);
         }
-        from (unzippedSourceJar) {
+        from (extra_jar_def__unzippedSourceJar) {
             excludes.add("fabric.mod.json");
             includes.addAll(_includes);
             excludes.addAll(_excludes);
@@ -306,8 +318,8 @@ def generateJar(
         task validateNestedJars(dependsOn: extractAllNestedJars) {
             doLast {
                 for (included in includedJars) {
-                    if (!new File("$projectDir/build/processing/included_jars/META-INF/jars/" + included).isFile()) {
-                        throw new Error("The included jar '" + included + "' didn't exist! (Perhaps check the spelling?)");
+                    if (!new File("$projectDir/build/processing/included_jars/META-INF/jars/" + included[3]).isFile()) {
+                        throw new Error("The included jar '" + included[3] + "' didn't exist! (Perhaps check the spelling?)");
                     }
                 }
             }
@@ -349,7 +361,7 @@ def generateJar(
         pom.withXml {
             def root = asNode();
             // def required = extra_jar_def__requiredJars.get(k);
-            if (!allRequired.isEmpty()) {
+            if (!allRequired.isEmpty() || !requiredJars.isEmpty() || !includedJars.isEmpty() || extra_jar_def__clear_implicit_depedencies) {
                 def hasFinished = false;
 
                 // Gradle (or fabric loom or the maven publish plugin, I don't know which)
@@ -372,6 +384,22 @@ def generateJar(
                     depNode.appendNode('groupId', "$mavenGroupId");
                     depNode.appendNode('artifactId', "$mainName-" + dep);
                     depNode.appendNode('version', project.version);
+                    depNode.appendNode('scope', 'compile');
+                }
+
+                for (dep in requiredJars) {
+                    Node depNode = deps.appendNode('dependency');
+                    depNode.appendNode('groupId', dep[0]);
+                    depNode.appendNode('artifactId', dep[1]);
+                    depNode.appendNode('version', dep[2]);
+                    depNode.appendNode('scope', 'compile');
+                }
+
+                for (dep in includedJars) {
+                    Node depNode = deps.appendNode('dependency');
+                    depNode.appendNode('groupId', dep[0]);
+                    depNode.appendNode('artifactId', dep[1]);
+                    depNode.appendNode('version', dep[2]);
                     depNode.appendNode('scope', 'compile');
                 }
 

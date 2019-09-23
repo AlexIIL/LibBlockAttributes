@@ -72,14 +72,6 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
-ext.unzippedSourceJar = new File("$projectDir/build/processing/tasks/unzipped_src_jar/unzip")
-task unzipSourcesJar(type: Copy, dependsOn: sourcesJar) {
-    from (zipTree(sourcesJar.archivePath)) {
-        include "**"
-    }
-    into unzippedSourceJar
-}
-
 publishing {
     repositories {
         maven {
