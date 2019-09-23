@@ -7,10 +7,12 @@
  */
 package alexiil.mc.lib.attributes.fluid;
 
+import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.shape.VoxelShape;
 
 import alexiil.mc.lib.attributes.AttributeList;
@@ -28,6 +30,7 @@ import alexiil.mc.lib.attributes.fluid.impl.SubFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.impl.SubFixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.item.SingleItemSlotView;
 
 /** A view of a fixed inventory for fluids, where the number of tanks never changes, and every tank is "simple":
  * <ul>
@@ -88,6 +91,38 @@ public interface FixedFluidInvView extends Convertible {
 
     default SingleFluidTankView getTank(int tank) {
         return new SingleFluidTankView(this, tank);
+    }
+
+    default Iterable<? extends SingleFluidTankView> tankIterable() {
+        return () -> new Iterator<SingleFluidTankView>() {
+            int index = 0;
+
+            @Override
+            public SingleFluidTankView next() {
+                return getTank(index++);
+            }
+
+            @Override
+            public boolean hasNext() {
+                return index < getTankCount();
+            }
+        };
+    }
+
+    default Iterable<FluidVolume> fluidIterable() {
+        return () -> new Iterator<FluidVolume>() {
+            int index = 0;
+
+            @Override
+            public FluidVolume next() {
+                return getInvFluid(index);
+            }
+
+            @Override
+            public boolean hasNext() {
+                return index < getTankCount();
+            }
+        };
     }
 
     /** @return A statistical view of this inventory. */

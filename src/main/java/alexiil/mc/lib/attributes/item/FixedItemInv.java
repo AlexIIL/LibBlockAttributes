@@ -7,6 +7,7 @@
  */
 package alexiil.mc.lib.attributes.item;
 
+import java.util.Iterator;
 import java.util.function.Function;
 
 import net.minecraft.item.ItemStack;
@@ -59,6 +60,23 @@ public interface FixedItemInv extends FixedItemInvView {
     @Override
     default SingleItemSlot getSlot(int slot) {
         return new SingleItemSlot(this, slot);
+    }
+
+    @Override
+    default Iterable<? extends SingleItemSlot> slotIterable() {
+        return () -> new Iterator<SingleItemSlot>() {
+            int index = 0;
+
+            @Override
+            public SingleItemSlot next() {
+                return getSlot(index++);
+            }
+
+            @Override
+            public boolean hasNext() {
+                return index < getSlotCount();
+            }
+        };
     }
 
     /** @return A new {@link LimitedFixedItemInv} that provides a more controllable version of this

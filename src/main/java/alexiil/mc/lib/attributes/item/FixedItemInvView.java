@@ -7,6 +7,7 @@
  */
 package alexiil.mc.lib.attributes.item;
 
+import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -97,6 +98,38 @@ public interface FixedItemInvView extends Convertible {
     /** @return A view of a single slot in this inventory. */
     default SingleItemSlotView getSlot(int slot) {
         return new SingleItemSlotView(this, slot);
+    }
+
+    default Iterable<? extends SingleItemSlotView> slotIterable() {
+        return () -> new Iterator<SingleItemSlotView>() {
+            int index = 0;
+
+            @Override
+            public SingleItemSlotView next() {
+                return getSlot(index++);
+            }
+
+            @Override
+            public boolean hasNext() {
+                return index < getSlotCount();
+            }
+        };
+    }
+
+    default Iterable<ItemStack> stackIterable() {
+        return () -> new Iterator<ItemStack>() {
+            int index = 0;
+
+            @Override
+            public ItemStack next() {
+                return getInvStack(index++);
+            }
+
+            @Override
+            public boolean hasNext() {
+                return index < getSlotCount();
+            }
+        };
     }
 
     /** @return A {@link GroupedItemInvView} of this inventory. */
