@@ -18,7 +18,7 @@ import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
 
 /** An {@link FixedItemInv} that wraps a vanilla {@link Inventory}. */
 public class FixedInventoryViewVanillaWrapper implements FixedItemInvView {
-    final Inventory inv;
+    protected final Inventory inv;
     int changes = 0;
 
     public FixedInventoryViewVanillaWrapper(Inventory inv) {

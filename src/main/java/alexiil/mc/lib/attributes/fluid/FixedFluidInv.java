@@ -7,6 +7,7 @@
  */
 package alexiil.mc.lib.attributes.fluid;
 
+import java.util.Iterator;
 import java.util.function.Function;
 
 import alexiil.mc.lib.attributes.Simulation;
@@ -48,6 +49,23 @@ public interface FixedFluidInv extends FixedFluidInvView {
     @Override
     default SingleFluidTank getTank(int tank) {
         return new SingleFluidTank(this, tank);
+    }
+
+    @Override
+    default Iterable<? extends SingleFluidTank> tankIterable() {
+        return () -> new Iterator<SingleFluidTank>() {
+            int index = 0;
+
+            @Override
+            public SingleFluidTank next() {
+                return getTank(index++);
+            }
+
+            @Override
+            public boolean hasNext() {
+                return index < getTankCount();
+            }
+        };
     }
 
     /** @return A new {@link LimitedFixedFluidInv} that provides a more controllable version of this
