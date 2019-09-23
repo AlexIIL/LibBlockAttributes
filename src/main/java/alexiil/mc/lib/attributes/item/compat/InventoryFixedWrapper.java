@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
  * {@link Inventory#canPlayerUseInv(PlayerEntity)}. */
 public abstract class InventoryFixedWrapper implements Inventory {
 
-    final FixedItemInv inv;
+    protected final FixedItemInv inv;
     private final Int2ObjectMap<SlotStatus> slotStatus = new Int2ObjectOpenHashMap<>();
 
     public InventoryFixedWrapper(FixedItemInv inv) {
