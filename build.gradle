@@ -9,7 +9,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 archivesBaseName = "libblockatttributes"
-version = "0.5.0-pre6"
+version = "0.5.0-pre.12"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -98,6 +98,7 @@ def itemsIncludes = [
 ];
 def fluidsIncludes = [
     "alexiil/mc/lib/attributes/fluid/**",
+    "assets/libblockattributes/lang/**",
     "assets/libblockattributes/textures/fluid/**",
     "assets/libblockattributes/icon_fluids.png",
     "libblockattributes_fluid.common.json"

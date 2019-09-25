@@ -35,15 +35,19 @@ public final class FluidUnitSet {
     }
 
     public String localizeAmount(int amount) {
+        return localizeAmount(amount, false);
+    }
+
+    public String localizeAmount(int amount, boolean forceLastSingular) {
         if (units.isEmpty()) {
             // Default to buckets
-            return FluidUnit.BUCKET.localizeAmount(amount);
+            return FluidUnit.BUCKET.localizeAmount(amount, forceLastSingular);
         } else if (amount == 0) {
-            return getSmallestUnit().localizeAmount(amount);
+            return getSmallestUnit().localizeAmount(amount, forceLastSingular);
         }
         int unitCount = units.size();
         if (unitCount == 1) {
-            return getSmallestUnit().localizeAmount(amount);
+            return getSmallestUnit().localizeAmount(amount, forceLastSingular);
         }
 
         int usedCount = 0;
@@ -73,6 +77,10 @@ public final class FluidUnitSet {
             if (rem == 0) {
                 break;
             }
+        }
+
+        if (forceLastSingular) {
+            isUnitSingular[usedCount - 1] = true;
         }
 
         switch (usedCount) {
@@ -156,7 +164,7 @@ public final class FluidUnitSet {
         }
 
         return FluidUnit.localizeDirect(
-            FluidUnit.KEY_TANK_MULTI_UNIT, localizeAmount(amount), localizeAmount(capacity)
+            FluidUnit.KEY_TANK_MULTI_UNIT, localizeAmount(amount), localizeAmount(capacity, true)
         );
     }
 

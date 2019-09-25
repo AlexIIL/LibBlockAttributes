@@ -20,7 +20,7 @@ public final class FluidUnit implements Comparable<FluidUnit> {
     /** Amount, Unit */
     /* package-private */ static final String KEY_AMOUNT = "libblockattributes.fluid.amount";
 
-    /** Time, (Amount+Unit) */
+    /** (Amount+Unit), Time */
     /* package-private */ static final String KEY_FLOW_RATE = "libblockattributes.fluid.flow_rate";
 
     /** (Amount+Unit) */
@@ -29,7 +29,7 @@ public final class FluidUnit implements Comparable<FluidUnit> {
     /** (Amount+Unit) */
     /* package-private */ static final String KEY_TANK_FULL = "libblockattributes.fluid.tank_full";
 
-    /** Unit, Amount, Capacity */
+    /** Amount, Capacity, Unit */
     /* package-private */ static final String KEY_TANK_PARTIAL = "libblockattributes.fluid.tank_partial";
 
     /** Amount, Capacity */
@@ -72,7 +72,11 @@ public final class FluidUnit implements Comparable<FluidUnit> {
     }
 
     public String localizeAmount(int amount) {
-        return localize(KEY_AMOUNT, amount == unitAmount, amount);
+        return localizeAmount(amount, false);
+    }
+
+    public String localizeAmount(int amount, boolean forceSingular) {
+        return localize(KEY_AMOUNT, forceSingular ? true : amount == unitAmount, amount);
     }
 
     public String localizeEmptyTank(int capacity) {
@@ -89,7 +93,7 @@ public final class FluidUnit implements Comparable<FluidUnit> {
         } else if (amount == capacity) {
             return localizeFullTank(capacity);
         }
-        return localize(KEY_TANK_PARTIAL, true, amount, capacity);
+        return localizeDirect(KEY_TANK_PARTIAL, format(amount), format(capacity), translateUnit(true));
     }
 
     public String localizeFlowRate(int amountPerTick) {
@@ -97,7 +101,7 @@ public final class FluidUnit implements Comparable<FluidUnit> {
         String translatedUnit = translateUnit(rate == unitAmount);
         String format = format(rate);
         String translatedtime = Language.getInstance().translate(keyTime);
-        return localizeDirect(KEY_FLOW_RATE, translatedtime, localizeDirect(KEY_AMOUNT, format, translatedUnit));
+        return localizeDirect(KEY_FLOW_RATE, localizeDirect(KEY_AMOUNT, format, translatedUnit), translatedtime);
     }
 
     /* package-private */ String localize(String key, boolean isSingular, int number) {
@@ -108,13 +112,6 @@ public final class FluidUnit implements Comparable<FluidUnit> {
 
     /* package-private */ String translateUnit(boolean isSingular) {
         return Language.getInstance().translate(isSingular ? keySingular : keyPlural);
-    }
-
-    /* package-private */ String localize(String key, boolean isSingular, int number1, int number2) {
-        String translatedUnit = translateUnit(isSingular);
-        String format1 = format(number1);
-        String format2 = format(number2);
-        return localizeDirect(key, translatedUnit, format1, format2);
     }
 
     /* package-private */ static String localizeDirect(String localeKey, Object... args) {
