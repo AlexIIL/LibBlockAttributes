@@ -80,11 +80,11 @@ public final class FluidUnit implements Comparable<FluidUnit> {
     }
 
     public String localizeEmptyTank(int capacity) {
-        return localizeDirect(KEY_TANK_EMPTY, localizeAmount(capacity));
+        return localizeDirect(KEY_TANK_EMPTY, localizeAmount(capacity, true));
     }
 
     public String localizeFullTank(int capacity) {
-        return localizeDirect(KEY_TANK_FULL, localizeAmount(capacity));
+        return localizeDirect(KEY_TANK_FULL, localizeAmount(capacity, true));
     }
 
     public String localizeTank(int amount, int capacity) {

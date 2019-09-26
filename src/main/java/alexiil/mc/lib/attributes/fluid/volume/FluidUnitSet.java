@@ -142,11 +142,11 @@ public final class FluidUnitSet {
     }
 
     public String localizeEmptyTank(int capacity) {
-        return FluidUnit.localizeDirect(FluidUnit.KEY_TANK_EMPTY, localizeAmount(capacity));
+        return FluidUnit.localizeDirect(FluidUnit.KEY_TANK_EMPTY, localizeAmount(capacity, true));
     }
 
     public String localizeFullTank(int capacity) {
-        return FluidUnit.localizeDirect(FluidUnit.KEY_TANK_FULL, localizeAmount(capacity));
+        return FluidUnit.localizeDirect(FluidUnit.KEY_TANK_FULL, localizeAmount(capacity, true));
     }
 
     public String localizeTank(int amount, int capacity) {
