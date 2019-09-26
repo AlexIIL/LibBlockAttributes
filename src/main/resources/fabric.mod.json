@@ -22,13 +22,12 @@
   "contact": {
     "issues": "https://github.com/AlexIIL/LibBlockAttributes/issues",
     "homepage": "https://github.com/AlexIIL/LibBlockAttributes",
-    "sources": "https://github.com/AlexIIL/LibBlockAttributes",
-    "license": "MPLv2"
+    "sources": "https://github.com/AlexIIL/LibBlockAttributes"
   },
+  "license": "Mozilla Public License Version 2.0",
   "custom": {
     "modmenu:api": true
   },
-
   "__buildscript_diff": {
     "core": {
       "+id": "libblockattributes_core",
