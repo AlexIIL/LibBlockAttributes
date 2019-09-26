@@ -41,6 +41,9 @@ ext.mavenGroupId = "alexiil.mc.lib";
 // '+': The value will be added to the json, (and will replace any existing json entry)
 // '~': The value must be an object, and will be applied as a json-diff.
 
+// Optionally you can include a "__buildscript_inherit" json object which will be applied to the
+// fabric.mod.json before applying per-module diffs.
+
 // For example, given this "fabric.mod.json":
 
 /*
@@ -115,6 +118,13 @@ generateJar("items", itemsReq, [], false, [], ["core"]);
 
 */
 
+// ==========
+// Changelog
+// ==========
+
+// 2019/09/26 AlexIIL: Add everything (and this changelog)
+// 2019/09/26 AlexIIL: Add an additional section "__buildscript_inherit" to fabric.mod.json, which is applied to everything.
+// 2019/09/26 AlexIIL: Add a new user variable "extra_jar_def__fabric_mod_json_replacements", for replacing additional strings in fabric.mod.json
 
 // ==========================================================
 // User config - change both of these on a per-project basis
@@ -135,6 +145,9 @@ ext.extra_jar_def__fabricModJsonLocation = "src/main/resources/"
 // by modApi or modImplementation will be removed from
 // the generated POM's.
 ext.extra_jar_def__clear_implicit_depedencies = true;
+
+// All of the keys changed in fabric.mod.json.
+ext.extra_jar_def__fabric_mod_json_replacements = [["\$version", project.version]]; 
 
 // ==============================
 // Internals - don't touch this!
@@ -201,6 +214,12 @@ def writeFabricModJsonFile(String key, List<String> addedJars) {
     }
     temp.createNewFile();
     def elements = new HashMap<>();
+
+    def allDiff = source.remove("__buildscript_inherit");
+    if (allDiff != null) {
+        transformJson(source, allDiff);
+    }
+
     def diff = source.remove("__buildscript_diff")[key];
     transformJson(source, diff);
 
@@ -218,7 +237,9 @@ def writeFabricModJsonFile(String key, List<String> addedJars) {
     }
 
     String prettyPrinted = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(source));
-    prettyPrinted = prettyPrinted.replace("\$version", project.version);
+    for (repl in extra_jar_def__fabric_mod_json_replacements) {
+        prettyPrinted = prettyPrinted.replace(repl[0], repl[1]);
+    }
     temp.write(prettyPrinted);
 
     return temp;
@@ -286,6 +307,7 @@ def generateJar(
             excludes.add("fabric.mod.json");
             includes.addAll(_includes);
             excludes.addAll(_excludes);
+            exclude "META-INF/jars/**"
             if (hasMixins) {
                 includes.add(project.name + "-refmap.json");
             } else {
@@ -306,6 +328,7 @@ def generateJar(
             excludes.add("fabric.mod.json");
             includes.addAll(_includes);
             excludes.addAll(_excludes);
+            exclude "META-INF/jars/**"
         }
     }
 
