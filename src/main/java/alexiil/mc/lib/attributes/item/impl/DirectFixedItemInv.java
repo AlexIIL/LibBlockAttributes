@@ -10,7 +10,6 @@ package alexiil.mc.lib.attributes.item.impl;
 import java.util.Map;
 import java.util.Set;
 
-import alexiil.mc.lib.attributes.Savable;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -20,6 +19,7 @@ import net.minecraft.util.SystemUtil;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.Savable;
 import alexiil.mc.lib.attributes.item.FixedItemInv.ModifiableFixedItemInv;
 import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;

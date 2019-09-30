@@ -10,12 +10,16 @@ package alexiil.mc.lib.attributes.fluid.impl;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import alexiil.mc.lib.attributes.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.util.DefaultedList;
 import net.minecraft.util.SystemUtil;
 
+import alexiil.mc.lib.attributes.AttributeUtil;
+import alexiil.mc.lib.attributes.ListenerRemovalToken;
+import alexiil.mc.lib.attributes.ListenerToken;
+import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.Savable;
 import alexiil.mc.lib.attributes.fluid.FixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.FluidInvTankChangeListener;
 import alexiil.mc.lib.attributes.fluid.FluidTransferable;
