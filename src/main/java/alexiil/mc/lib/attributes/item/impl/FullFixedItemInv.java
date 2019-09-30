@@ -10,16 +10,13 @@ package alexiil.mc.lib.attributes.item.impl;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import alexiil.mc.lib.attributes.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.util.DefaultedList;
 import net.minecraft.util.SystemUtil;
 
-import alexiil.mc.lib.attributes.AttributeUtil;
-import alexiil.mc.lib.attributes.ListenerRemovalToken;
-import alexiil.mc.lib.attributes.ListenerToken;
-import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv.CopyingFixedItemInv;
 import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
@@ -35,7 +32,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
  * <p>
  * Extending classes should take care to override {@link #getFilterForSlot(int)} if they also override
  * {@link #isItemValidForSlot(int, ItemStack)}. */
-public class FullFixedItemInv implements CopyingFixedItemInv, ItemTransferable {
+public class FullFixedItemInv implements CopyingFixedItemInv, ItemTransferable, Savable {
 
     private static final ItemInvSlotChangeListener[] NO_LISTENERS = new ItemInvSlotChangeListener[0];
 
@@ -203,11 +200,6 @@ public class FullFixedItemInv implements CopyingFixedItemInv, ItemTransferable {
     }
 
     // NBT support
-
-    public final CompoundTag toTag() {
-        return toTag(new CompoundTag());
-    }
-
     public CompoundTag toTag(CompoundTag tag) {
         ListTag tanksTag = new ListTag();
         for (ItemStack stack : slots) {

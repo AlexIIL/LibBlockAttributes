@@ -10,6 +10,7 @@ package alexiil.mc.lib.attributes.item.impl;
 import java.util.Map;
 import java.util.Set;
 
+import alexiil.mc.lib.attributes.Savable;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -37,7 +38,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
 // Should this get renamed to SimpleFixedItemInv and a new (deprecated) class DirectFixedItemInv extend that to maintain
 // backwards compatibility? (As this is basically identical to how it behaved in 0.4.x)
 
-public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemInv {
+public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemInv, Savable {
 
     private static final InvMarkDirtyListener[] NO_LISTENERS = new InvMarkDirtyListener[0];
 
@@ -114,10 +115,6 @@ public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemIn
     // NBT support
     //
     // ##################
-
-    public final CompoundTag toTag() {
-        return toTag(new CompoundTag());
-    }
 
     public CompoundTag toTag(CompoundTag tag) {
         ListTag tanksTag = new ListTag();
