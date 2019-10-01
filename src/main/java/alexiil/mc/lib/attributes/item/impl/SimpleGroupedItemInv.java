@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.util.SystemUtil;
 
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
@@ -20,13 +22,14 @@ import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.ItemInvAmountChangeListener;
 import alexiil.mc.lib.attributes.item.ItemStackCollections;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.misc.Saveable;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
 
 /** A simple {@link GroupedItemInv} that has a limit on both the number of different items that this can store, and the
  * total number of items that can be stored. */
-public class SimpleGroupedItemInv implements GroupedItemInv {
+public class SimpleGroupedItemInv implements GroupedItemInv, Saveable {
 
     private static final ItemInvAmountChangeListener[] NO_LISTENERS = new ItemInvAmountChangeListener[0];
 
@@ -190,4 +193,41 @@ public class SimpleGroupedItemInv implements GroupedItemInv {
     }
 
     // NBT support
+
+    @Override
+    public CompoundTag toTag(CompoundTag tag) {
+        ListTag items = new ListTag();
+        for (Object2IntMap.Entry<ItemStack> entry : this.stacks.object2IntEntrySet()) {
+            ItemStack stack = entry.getKey();
+            int count = entry.getIntValue();
+            if (count <= 0) {
+                continue;
+            }
+            CompoundTag itemTag = stack.toTag(new CompoundTag());
+            itemTag.putInt("Count", count);
+            items.add(itemTag);
+        }
+        if (!items.isEmpty()) {
+            tag.put("items", items);
+        }
+        return tag;
+    }
+
+    @Override
+    public void fromTag(CompoundTag tag) {
+        ListTag items = tag.getList("items", new CompoundTag().getType());
+        for (int i = 0; i < items.size(); i++) {
+            CompoundTag itemTag = items.getCompoundTag(i);
+            int count = itemTag.getInt("Count");
+            itemTag.putByte("Count", (byte) 1);
+            ItemStack stack = ItemStack.fromTag(itemTag);
+            if (!stack.isEmpty()) {
+                stacks.put(stack, count);
+            }
+        }
+
+        for (int count : stacks.values().toIntArray()) {
+            cachedItemCount += count;
+        }
+    }
 }

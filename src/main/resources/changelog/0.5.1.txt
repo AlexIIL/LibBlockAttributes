@@ -1,0 +1,6 @@
+Additions:
+
+* Added misc.Saveable interface, which includes "toTag" and "fromTag" methods.
+    * FullFixedItemInv, DirectFixedItemInv, and SimpleFixedFluidInv implement this.
+* Added saving methods to SimpleGroupedItemInv (how did I miss these ???)
+    * Plus it now implements misc.Saveable
