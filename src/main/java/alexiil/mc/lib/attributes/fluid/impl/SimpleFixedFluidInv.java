@@ -28,6 +28,7 @@ import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.misc.Saveable;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
 
@@ -39,7 +40,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
  * <p>
  * Note: Generally it is better to extend {@link JumboFixedFluidInv} for inventories with a large number of similar
  * tanks (like a chest). */
-public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable {
+public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable, Saveable {
 
     private static final FluidInvTankChangeListener[] NO_LISTENERS = new FluidInvTankChangeListener[0];
 
@@ -187,10 +188,12 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable {
 
     // NBT support
 
+    @Override
     public final CompoundTag toTag() {
         return toTag(new CompoundTag());
     }
 
+    @Override
     public CompoundTag toTag(CompoundTag tag) {
         ListTag tanksTag = new ListTag();
         for (FluidVolume volume : tanks) {
@@ -200,6 +203,7 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable {
         return tag;
     }
 
+    @Override
     public void fromTag(CompoundTag tag) {
         ListTag tanksTag = tag.getList("tanks", new CompoundTag().getType());
         for (int i = 0; i < tanksTag.size() && i < tanks.size(); i++) {

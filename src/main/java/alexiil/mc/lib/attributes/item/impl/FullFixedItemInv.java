@@ -27,6 +27,7 @@ import alexiil.mc.lib.attributes.item.ItemStackUtil;
 import alexiil.mc.lib.attributes.item.ItemTransferable;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.misc.Saveable;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
 
@@ -35,7 +36,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
  * <p>
  * Extending classes should take care to override {@link #getFilterForSlot(int)} if they also override
  * {@link #isItemValidForSlot(int, ItemStack)}. */
-public class FullFixedItemInv implements CopyingFixedItemInv, ItemTransferable {
+public class FullFixedItemInv implements CopyingFixedItemInv, ItemTransferable, Saveable {
 
     private static final ItemInvSlotChangeListener[] NO_LISTENERS = new ItemInvSlotChangeListener[0];
 
@@ -204,10 +205,12 @@ public class FullFixedItemInv implements CopyingFixedItemInv, ItemTransferable {
 
     // NBT support
 
+    @Override
     public final CompoundTag toTag() {
         return toTag(new CompoundTag());
     }
 
+    @Override
     public CompoundTag toTag(CompoundTag tag) {
         ListTag tanksTag = new ListTag();
         for (ItemStack stack : slots) {
@@ -218,6 +221,7 @@ public class FullFixedItemInv implements CopyingFixedItemInv, ItemTransferable {
         return tag;
     }
 
+    @Override
     public void fromTag(CompoundTag tag) {
         ListTag slotsTag = tag.getList("slots", new CompoundTag().getType());
         for (int i = 0; i < slotsTag.size() && i < slots.size(); i++) {

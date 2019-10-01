@@ -25,6 +25,7 @@ import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
 import alexiil.mc.lib.attributes.item.ItemInvAmountChangeListener;
 import alexiil.mc.lib.attributes.item.ItemInvUtil;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.misc.Saveable;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
 
@@ -37,7 +38,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
 // Should this get renamed to SimpleFixedItemInv and a new (deprecated) class DirectFixedItemInv extend that to maintain
 // backwards compatibility? (As this is basically identical to how it behaved in 0.4.x)
 
-public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemInv {
+public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemInv, Saveable {
 
     private static final InvMarkDirtyListener[] NO_LISTENERS = new InvMarkDirtyListener[0];
 
@@ -115,10 +116,12 @@ public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemIn
     //
     // ##################
 
+    @Override
     public final CompoundTag toTag() {
         return toTag(new CompoundTag());
     }
 
+    @Override
     public CompoundTag toTag(CompoundTag tag) {
         ListTag tanksTag = new ListTag();
         for (ItemStack stack : slots) {
@@ -128,6 +131,7 @@ public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemIn
         return tag;
     }
 
+    @Override
     public void fromTag(CompoundTag tag) {
         ListTag slotsTag = tag.getList("slots", new CompoundTag().getType());
         for (int i = 0; i < slotsTag.size() && i < slots.size(); i++) {
