@@ -35,16 +35,18 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
     private boolean isImmutable = false;
 
     protected final ItemFilter[] insertionFilters;
+    protected final ItemFilter[] extractionFilters;
     protected final byte[] maxInsertionAmounts;
     protected final byte[] minimumAmounts;
 
     public SimpleLimitedFixedItemInv(FixedItemInv delegate) {
         super(delegate);
         insertionFilters = new ItemFilter[delegate.getSlotCount()];
+        extractionFilters = new ItemFilter[delegate.getSlotCount()];
         maxInsertionAmounts = new byte[delegate.getSlotCount()];
         minimumAmounts = new byte[delegate.getSlotCount()];
         Arrays.fill(maxInsertionAmounts, MAX_AMOUNT);
-        groupedItemInv = new DelegatingGroupedItemInv(delegate.getGroupedInv()) {
+        groupedItemInv = new DelegatingGroupedItemInv(super.getGroupedInv()) {
             @Override
             public ItemStack attemptExtraction(ItemFilter filter, int maxAmount, Simulation simulation) {
                 if (maxAmount < 0) {
@@ -54,7 +56,7 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
                 if (maxAmount == 0) {
                     return stack;
                 }
-                FixedItemInv inv = SimpleLimitedFixedItemInv.this.delegate;
+                FixedItemInv inv = SimpleLimitedFixedItemInv.this;
                 for (int s = 0; s < getSlotCount(); s++) {
                     ItemStack slotStack = inv.getInvStack(s);
                     int minimum = minimumAmounts[s];
@@ -62,6 +64,7 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
                     if (slotStack.isEmpty() || available <= 0) {
                         continue;
                     }
+
                     int slotMax = Math.min(maxAmount - stack.getCount(), available);
                     stack = ItemInvUtil.extractSingle(inv, s, filter, stack, slotMax, simulation);
                     if (stack.getCount() >= maxAmount) {
@@ -112,6 +115,7 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
         } else {
             inv = new SimpleLimitedFixedItemInv(delegate);
         }
+        inv.isImmutable = isImmutable; 
         for (int i = 0; i < inv.getSlotCount(); i++) {
             inv.insertionFilters[i] = insertionFilters[i];
             inv.maxInsertionAmounts[i] = maxInsertionAmounts[i];
@@ -157,12 +161,15 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
                     return false;
                 }
             }
-        }
-        if (isInserting) {
-            if (!isItemValidForSlot(slot, to)) {
+            if (extractionFilters[slot] != null && !extractionFilters[slot].matches(current)) {
                 return false;
             }
+        }
+        if (isInserting) {
             if (to.getCount() > maxInsertionAmounts[slot]) {
+                return false;
+            }
+            if (!isItemValidForSlot(slot, to)) {
                 return false;
             }
         }
@@ -184,28 +191,35 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
 
             @Override
             public ItemSlotLimitRule setMinimum(int min) {
-                if (min < 0 || min > 63) {
-                    min = 0;
-                }
-                minimumAmounts[slot] = (byte) min;
+                assertMutable();
+                minimumAmounts[slot] = (byte) Math.max(0, Math.min(MAX_AMOUNT, min));
                 return this;
             }
 
             @Override
             public ItemSlotLimitRule limitInsertionCount(int max) {
-                if (max < 0 || max > 63) {
-                    max = MAX_AMOUNT;
-                }
-                maxInsertionAmounts[slot] = (byte) max;
+                assertMutable();
+                maxInsertionAmounts[slot] = (byte) Math.max(0, Math.min(MAX_AMOUNT, max));
                 return this;
             }
 
             @Override
             public ItemSlotLimitRule filterInserts(ItemFilter filter) {
+                assertMutable();
                 if (filter == ConstantItemFilter.ANYTHING) {
                     filter = null;
                 }
                 insertionFilters[slot] = filter;
+                return this;
+            }
+
+            @Override
+            public ItemSlotLimitRule filterExtracts(ItemFilter filter) {
+                assertMutable();
+                if (filter == ConstantItemFilter.ANYTHING) {
+                    filter = null;
+                }
+                extractionFilters[slot] = filter;
                 return this;
             }
         };
@@ -217,34 +231,37 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
 
             @Override
             public ItemSlotLimitRule setMinimum(int min) {
-                byte value;
-                if (min < 0 || min > 63) {
-                    value = 0;
-                } else {
-                    value = (byte) min;
-                }
+                assertMutable();
+                byte value = (byte) Math.max(0, Math.min(MAX_AMOUNT, min));
                 Arrays.fill(minimumAmounts, from, to, value);
                 return this;
             }
 
             @Override
             public ItemSlotLimitRule limitInsertionCount(int max) {
-                byte value;
-                if (max < 0 || max > 63) {
-                    value = MAX_AMOUNT;
-                } else {
-                    value = (byte) max;
-                }
+                assertMutable();
+                byte value = (byte) Math.max(0, Math.min(MAX_AMOUNT, max));
                 Arrays.fill(maxInsertionAmounts, from, to, value);
                 return this;
             }
 
             @Override
             public ItemSlotLimitRule filterInserts(ItemFilter filter) {
+                assertMutable();
                 if (filter == ConstantItemFilter.ANYTHING) {
                     filter = null;
                 }
                 Arrays.fill(insertionFilters, from, to, filter);
+                return this;
+            }
+
+            @Override
+            public ItemSlotLimitRule filterExtracts(ItemFilter filter) {
+                assertMutable();
+                if (filter == ConstantItemFilter.ANYTHING) {
+                    filter = null;
+                }
+                Arrays.fill(extractionFilters, from, to, filter);
                 return this;
             }
         };

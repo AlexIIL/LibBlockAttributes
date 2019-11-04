@@ -4,3 +4,14 @@ Additions:
     * FullFixedItemInv, DirectFixedItemInv, and SimpleFixedFluidInv implement this.
 * Added saving methods to SimpleGroupedItemInv (how did I miss these ???)
     * Plus it now implements misc.Saveable
+* Added LimitedFixedItemInv.ItemSlotLimitRule.disallowInsertion()
+    * And the fluid variant.
+
+Bug Fixes:
+
+* Fixed SimpleLimitedFixedItemInv exposing the delegate inventory, rather than itself.
+  (so now the rules are correctly applied to insert/extract as well as setInvStack)
+* Fixed CombinedItemInsertable.getInsertionFilter incorrectly combining insertion filters
+  using AND rather than OR.
+* Fixed CombinedItemInsertable pre-computing the insertion filter when there's no guarantee
+  that the filters returned from the insertables will stay constant.

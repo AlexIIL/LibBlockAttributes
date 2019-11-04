@@ -42,6 +42,6 @@ public final class CombinedFluidInsertable implements FluidInsertable {
         for (int i = 0; i < insertables.size(); i++) {
             filters.add(insertables.get(i).getInsertionFilter());
         }
-        return AggregateFluidFilter.allOf(filters);
+        return AggregateFluidFilter.anyOf(filters);
     }
 }

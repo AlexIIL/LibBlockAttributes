@@ -47,7 +47,7 @@ public class GroupedItemInvFixedWrapper extends GroupedItemInvViewFixedWrapper i
                 return inv.getFilterForSlot(0);
             }
             case 2: {
-                return inv.getFilterForSlot(0).and(inv.getFilterForSlot(1));
+                return inv.getFilterForSlot(0).or(inv.getFilterForSlot(1));
             }
             default: {
                 List<ItemFilter> filters = new ArrayList<>(invSize);

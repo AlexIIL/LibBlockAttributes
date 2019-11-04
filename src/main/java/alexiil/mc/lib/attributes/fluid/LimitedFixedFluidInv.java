@@ -13,6 +13,8 @@ import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.impl.DelegatingFixedFluidInv;
 import alexiil.mc.lib.attributes.item.LimitedFixedItemInv;
+import alexiil.mc.lib.attributes.item.LimitedFixedItemInv.ItemSlotLimitRule;
+import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 
 /** A type of {@link FixedFluidInv} that wraps an existing {@link FixedFluidInv} and provides custom control over the
  * actual modification of the wrapped {@link FixedFluidInv}.
@@ -84,6 +86,13 @@ public interface LimitedFixedFluidInv extends FixedFluidInv {
         /** Removes the current {@link #filterInserts(FluidFilter)}. */
         default FluidTankLimitRule noInsertionLimits() {
             return filterInserts(null);
+        }
+
+        /** Completely disallows inserting items.
+         * 
+         * @return this. */
+        default FluidTankLimitRule disallowInsertion() {
+            return filterInserts(ConstantFluidFilter.NOTHING);
         }
 
         /** Limits the amount of fluid that can be inserted (in total) to the given count.

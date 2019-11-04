@@ -25,7 +25,8 @@ public interface LimitedFixedItemInv extends FixedItemInv {
      * @return this. */
     LimitedFixedItemInv markFinal();
 
-    /** Creates a copy of this {@link LimitedFixedItemInv} (with the same backing inventory and the same rules). */
+    /** Creates a copy of this {@link LimitedFixedItemInv} (with the same backing inventory and the same rules). If this
+     * has been marked as final ({@link #markFinal()}) then the copy will be marked as final as well.. */
     LimitedFixedItemInv copy();
 
     /** Completely clears all rules currently imposed.
@@ -59,7 +60,7 @@ public interface LimitedFixedItemInv extends FixedItemInv {
 
         /** Clears all limitations for this current rule. */
         default ItemSlotLimitRule reset() {
-            return allowExtraction().noInsertionLimits().setMinimum(0).limitInsertionCount(-1);
+            return allowExtraction().allowInsertion().noExtractionFilter().noInsertionFilter();
         }
 
         /** Completely disallows extraction of items.
@@ -81,15 +82,50 @@ public interface LimitedFixedItemInv extends FixedItemInv {
          * @param filter Null or {@link ConstantItemFilter#ANYTHING} to clear the current filter. */
         ItemSlotLimitRule filterInserts(@Nullable ItemFilter filter);
 
-        /** Removes the current {@link #filterInserts(ItemFilter)}. */
+        /** Filters all extractions with the given filter in addition to whatever filters are already present.
+         * 
+         * @param filter Null or {@link ConstantItemFilter#ANYTHING} to clear the current filter. */
+        ItemSlotLimitRule filterExtracts(@Nullable ItemFilter filter);
+
+        /** Removes the current {@link #filterInserts(ItemFilter)}.
+         * 
+         * @deprecated Because this is ambiguous as the name could refer to the count, or the filter, so instead you
+         *             should use {@link #noInsertionFilter()}. */
+        @Deprecated
         default ItemSlotLimitRule noInsertionLimits() {
             return filterInserts(null);
         }
 
+        /** Removes the current {@link #filterInserts(ItemFilter) insertion filter}. */
+        default ItemSlotLimitRule noInsertionFilter() {
+            return filterInserts(null);
+        }
+
+        /** Removes the current {@link #filterExtracts(ItemFilter) extraction filter}. */
+        default ItemSlotLimitRule noExtractionFilter() {
+            return filterExtracts(null);
+        }
+
+        /** Completely disallows inserting items by setting the {@link #limitInsertionCount(int)} to 0. (This leaves the
+         * {@link #filterInserts(ItemFilter)} alone, however setting it to {@link ConstantItemFilter#NOTHING} would have
+         * the same effect).
+         * 
+         * @return this. */
+        default ItemSlotLimitRule disallowInsertion() {
+            return limitInsertionCount(0);
+        }
+
+        /** Stops disallowing insertion of items by setting the {@link #limitInsertionCount(int)} to 64.
+         * 
+         * @return this. */
+        default ItemSlotLimitRule allowInsertion() {
+            return limitInsertionCount(64);
+        }
+
         /** Limits the number of items that can be inserted (in total) to the given count.
          * 
-         * @param max The maximum. A value outside the normal bounds of an item (so less than 0 or more than 63) will
-         *            reset this rule.
+         * @param max The maximum, clamped between 0 and 64. (A value of 0 disallows insertion, and a value of 64
+         *            removes the limit).
          * @return this. */
         ItemSlotLimitRule limitInsertionCount(int max);
 
@@ -97,7 +133,8 @@ public interface LimitedFixedItemInv extends FixedItemInv {
          * below the given value. (This of course has no effect on the underlying inventory, so it is always possible
          * for the underlying inventory to be modified to contain less than the given amount).
          * 
-         * @param min The minimum. Values less than or equal to zero clear this limitation.
+         * @param min The minimum, clamped between 0 and 64. (A value of 0 removes this limit, and a value of 64
+         *            disallows extraction).
          * @return this. */
         ItemSlotLimitRule setMinimum(int min);
     }

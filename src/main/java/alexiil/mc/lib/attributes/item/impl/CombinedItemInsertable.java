@@ -20,14 +20,8 @@ import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 public final class CombinedItemInsertable implements ItemInsertable {
 
     private final List<? extends ItemInsertable> insertables;
-    private final ItemFilter filter;
 
     public CombinedItemInsertable(List<? extends ItemInsertable> list) {
-        List<ItemFilter> filters = new ArrayList<>(list.size());
-        for (int i = 0; i < list.size(); i++) {
-            filters.add(list.get(i).getInsertionFilter());
-        }
-        this.filter = AggregateItemFilter.allOf(filters);
         this.insertables = list;
     }
 
@@ -44,6 +38,10 @@ public final class CombinedItemInsertable implements ItemInsertable {
 
     @Override
     public ItemFilter getInsertionFilter() {
-        return filter;
+        List<ItemFilter> filters = new ArrayList<>(insertables.size());
+        for (int i = 0; i < insertables.size(); i++) {
+            filters.add(insertables.get(i).getInsertionFilter());
+        }
+        return AggregateItemFilter.anyOf(filters);
     }
 }

@@ -36,7 +36,7 @@ public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implemen
         maxInsertionAmounts = new int[getTankCount()];
         minimumAmounts = new int[getTankCount()];
         Arrays.fill(maxInsertionAmounts, Integer.MAX_VALUE);
-        groupedInv = new DelegatingGroupedFluidInv(delegate.getGroupedInv()) {
+        groupedInv = new DelegatingGroupedFluidInv(super.getGroupedInv()) {
             @Override
             public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
                 if (maxAmount < 0) {
@@ -46,7 +46,7 @@ public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implemen
                 if (maxAmount == 0) {
                     return volume;
                 }
-                FixedFluidInv inv = SimpleLimitedFixedFluidInv.this.delegate;
+                FixedFluidInv inv = SimpleLimitedFixedFluidInv.this;
                 for (int t = 0; t < getTankCount(); t++) {
                     FluidVolume tankVolume = inv.getInvFluid(t);
                     int minimum = minimumAmounts[t];
