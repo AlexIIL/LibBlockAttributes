@@ -6,6 +6,8 @@ Additions:
     * Plus it now implements misc.Saveable
 * Added LimitedFixedItemInv.ItemSlotLimitRule.disallowInsertion()
     * And the fluid variant.
+* Added many variants of FluidVolumeUtil.interactWithTank that take FluidInsertable
+    and FluidExtractable or FluidTransferable instead of just FixedFluidInv. 
 
 Bug Fixes:
 

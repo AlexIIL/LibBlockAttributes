@@ -136,6 +136,15 @@ public final class FluidVolumeUtil {
     }
 
     public static boolean interactWithTank(FixedFluidInv inv, PlayerEntity player, Hand hand) {
+        return interactWithTank(inv.getInsertable(), inv.getExtractable(), player, hand);
+    }
+
+    public static boolean interactWithTank(FluidTransferable inv, PlayerEntity player, Hand hand) {
+        return interactWithTank(inv, inv, player, hand);
+    }
+
+    public static boolean interactWithTank(FluidInsertable invInsert, FluidExtractable invExtract, PlayerEntity player,
+        Hand hand) {
         ItemStack inHand = player.getStackInHand(hand);
         if (inHand.isEmpty()) {
             return false;
@@ -143,7 +152,9 @@ public final class FluidVolumeUtil {
         Ref<ItemStack> stack = new Ref<>(inHand);
         boolean isSurvival = !player.abilities.creativeMode;
         Consumer<ItemStack> stackConsumer = isSurvival ? ItemInvUtil.createPlayerInsertable(player) : s -> {};
-        FluidTankInteraction result = interactWithTank(inv, stack, LimitedConsumer.fromConsumer(stackConsumer));
+        FluidTankInteraction result = interactWithTank(
+            invInsert, invExtract, stack, LimitedConsumer.fromConsumer(stackConsumer)
+        );
         if (!result.didMoveAny()) {
             return false;
         }
@@ -165,14 +176,31 @@ public final class FluidVolumeUtil {
         return true;
     }
 
-    /** @param inv The fluid inventory to interact with
-     * @param stack The held {@link ItemStack} to interact with.
-     * @param excessStacks A {@link Consumer} to take the excess {@link ItemStack}'s.
-     * @deprecated This has been replaced by {@link #interactWithTank(FixedFluidInv, Reference, LimitedConsumer)}. */
+    /** @deprecated This has been replaced by {@link #interactWithTank(FixedFluidInv, Reference, LimitedConsumer)}. */
+    @Deprecated
     public static FluidTankInteraction interactWithTank(FixedFluidInv inv, Ref<ItemStack> stack, Consumer<
         ItemStack> excessStacks) {
 
-        return interactWithTank(inv, stack, LimitedConsumer.fromConsumer(excessStacks));
+        return interactWithTank(inv.getInsertable(), inv.getExtractable(), stack, excessStacks);
+    }
+
+    /** @deprecated This has been replaced by {@link #interactWithTank(FixedFluidInv, Reference, LimitedConsumer)}. */
+    @Deprecated
+    public static FluidTankInteraction interactWithTank(FluidTransferable inv, Ref<ItemStack> stack, Consumer<
+        ItemStack> excessStacks) {
+
+        return interactWithTank(inv, inv, stack, excessStacks);
+    }
+
+    /** @param invInsert The fluid inventory to interact with
+     * @param invExtract The fluid inventory to interact with
+     * @param stack The held {@link ItemStack} to interact with.
+     * @param excessStacks A {@link Consumer} to take the excess {@link ItemStack}'s.
+     * @deprecated This has been replaced by {@link #interactWithTank(FixedFluidInv, Reference, LimitedConsumer)}. */
+    public static FluidTankInteraction interactWithTank(FluidInsertable invInsert, FluidExtractable invExtract, Ref<
+        ItemStack> stack, Consumer<ItemStack> excessStacks) {
+
+        return interactWithTank(invInsert, invExtract, stack, LimitedConsumer.fromConsumer(excessStacks));
     }
 
     /** @param inv The fluid inventory to interact with
@@ -180,11 +208,24 @@ public final class FluidVolumeUtil {
      * @param excessStacks A {@link Consumer} to take the excess {@link ItemStack}'s. */
     public static FluidTankInteraction interactWithTank(FixedFluidInv inv, Reference<ItemStack> stack, LimitedConsumer<
         ItemStack> excessStacks) {
-        FluidVolume fluidMoved = move(inv.getExtractable(), FluidAttributes.INSERTABLE.get(stack, excessStacks));
+
+        return interactWithTank(inv.getInsertable(), inv.getExtractable(), stack, excessStacks);
+    }
+
+    public static FluidTankInteraction interactWithTank(FluidTransferable inv, Reference<ItemStack> stack,
+        LimitedConsumer<ItemStack> excessStacks) {
+
+        return interactWithTank(inv, inv, stack, excessStacks);
+    }
+
+    public static FluidTankInteraction interactWithTank(FluidInsertable invInsert, FluidExtractable invExtract,
+        Reference<ItemStack> stack, LimitedConsumer<ItemStack> excessStacks) {
+
+        FluidVolume fluidMoved = move(invExtract, FluidAttributes.INSERTABLE.get(stack, excessStacks));
         if (!fluidMoved.isEmpty()) {
             return FluidTankInteraction.fromTank(fluidMoved);
         }
-        fluidMoved = move(FluidAttributes.EXTRACTABLE.get(stack, excessStacks), inv.getInsertable());
+        fluidMoved = move(FluidAttributes.EXTRACTABLE.get(stack, excessStacks), invInsert);
         return FluidTankInteraction.intoTank(fluidMoved);
     }
 
