@@ -17,3 +17,7 @@ Bug Fixes:
   using AND rather than OR.
 * Fixed CombinedItemInsertable pre-computing the insertion filter when there's no guarantee
   that the filters returned from the insertables will stay constant.
+* Fixed FluidInsertable.getInsertionFilter() inserting Integer.MAX_VALUE of
+  the fluid, which caused a few crashes when it was added to and overflowed.
+* Fixed ImplicitFluidVolumeRenderer not using fabric api's FluidRenderHandlerRegistry
+  to get the sprite. (Now it falls back to the block model rather than relying on it).

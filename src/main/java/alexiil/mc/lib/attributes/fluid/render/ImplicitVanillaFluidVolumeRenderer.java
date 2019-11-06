@@ -9,6 +9,9 @@ package alexiil.mc.lib.attributes.fluid.render;
 
 import java.util.List;
 
+import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
+import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.Sprite;
@@ -28,8 +31,15 @@ public class ImplicitVanillaFluidVolumeRenderer extends FluidVolumeRenderer {
 
         if (fluid instanceof NormalFluidVolume) {
             Fluid fl = ((NormalFluidVolume) fluid).getRawFluid();
-            BlockState state = fl.getDefaultState().getBlockState();
-            sprite = MinecraftClient.getInstance().getBlockRenderManager().getModel(state).getSprite();
+            FluidRenderHandler handler = FluidRenderHandlerRegistry.INSTANCE.get(fl);
+            if (handler != null) {
+                Sprite[] sprites = handler.getFluidSprites(null, null, fl.getDefaultState());
+                assert sprites.length == 2;
+                sprite = sprites[0];
+            } else {
+                BlockState state = fl.getDefaultState().getBlockState();
+                sprite = MinecraftClient.getInstance().getBlockRenderManager().getModel(state).getSprite();
+            }
         } else {
             sprite = MinecraftClient.getInstance().getSpriteAtlas().getSprite(fluid.getSprite());
         }

@@ -77,8 +77,8 @@ public interface FluidInsertable extends LimitedConsumer<FluidVolume> {
      *         given stack. */
     default FluidFilter getInsertionFilter() {
         return fluid -> {
-            FluidVolume volume = fluid.withAmount(Integer.MAX_VALUE);
-            return attemptInsertion(volume, Simulation.SIMULATE).getAmount() < Integer.MAX_VALUE;
+            FluidVolume volume = fluid.withAmount(2 * FluidVolume.BUCKET);
+            return attemptInsertion(volume, Simulation.SIMULATE).getAmount() < 2 * FluidVolume.BUCKET;
         };
     }
 

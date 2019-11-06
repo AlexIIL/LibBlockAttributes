@@ -29,7 +29,7 @@ import alexiil.mc.lib.attributes.fluid.volume.NormalFluidKey.NormalFluidKeyBuild
 
 public class FluidKeys {
 
-    private static final Identifier MISSING_SPRITE = new Identifier("minecraft", "missingno");
+    public static final Identifier MISSING_SPRITE = new Identifier("minecraft", "missingno");
 
     public static final NormalFluidKey EMPTY;
     public static final NormalFluidKey LAVA;
