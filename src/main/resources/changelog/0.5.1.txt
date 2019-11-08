@@ -12,12 +12,13 @@ Additions:
 Bug Fixes:
 
 * Fixed SimpleLimitedFixedItemInv exposing the delegate inventory, rather than itself.
-  (so now the rules are correctly applied to insert/extract as well as setInvStack)
+    (so now the rules are correctly applied to insert/extract as well as setInvStack)
 * Fixed CombinedItemInsertable.getInsertionFilter incorrectly combining insertion filters
-  using AND rather than OR.
+    using AND rather than OR.
 * Fixed CombinedItemInsertable pre-computing the insertion filter when there's no guarantee
-  that the filters returned from the insertables will stay constant.
+    that the filters returned from the insertables will stay constant.
 * Fixed FluidInsertable.getInsertionFilter() inserting Integer.MAX_VALUE of
-  the fluid, which caused a few crashes when it was added to and overflowed.
+    the fluid, which caused a few crashes when it was added to and overflowed.
 * Fixed ImplicitFluidVolumeRenderer not using fabric api's FluidRenderHandlerRegistry
-  to get the sprite. (Now it falls back to the block model rather than relying on it).
+    to get the sprite. (Now it falls back to the block model rather than relying on it).
+* Fixed FluidVolumeRenderer.renderGuiRectangle rendering at z=30, rather than z=0.

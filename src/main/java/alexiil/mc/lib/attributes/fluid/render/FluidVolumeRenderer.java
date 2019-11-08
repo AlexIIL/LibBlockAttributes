@@ -35,7 +35,7 @@ public abstract class FluidVolumeRenderer {
     public void renderGuiRectangle(FluidVolume fluid, double x0, double y0, double x1, double y1) {
         List<FluidRenderFace> faces = new ArrayList<>();
         faces.add(FluidRenderFace.createFlatFaceZ(x0, y0, 0, x1, y1, 0, 1, true));
-        render(fluid, faces, 0, 0, 30);
+        render(fluid, faces, 0, 0, 0);
     }
 
     protected static List<FluidRenderFace> splitFaces(List<FluidRenderFace> faces) {
