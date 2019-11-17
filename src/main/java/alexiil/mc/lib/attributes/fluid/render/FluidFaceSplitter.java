@@ -10,6 +10,7 @@ package alexiil.mc.lib.attributes.fluid.render;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer.ComponentRenderFaces;
 
 /** The implementation for {@link FluidVolumeRenderer#splitFaces(List)} and
@@ -151,17 +152,18 @@ import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer.ComponentRende
     static final class Quad {
         final Vertex v0, v1, v2, v3;
         final Line l0, l1, l2, l3;
+        final boolean flowing;
 
-        Quad() {
-            this(new Vertex(), new Vertex(), new Vertex(), new Vertex());
+        Quad(boolean flowing) {
+            this(new Vertex(), new Vertex(), new Vertex(), new Vertex(), flowing);
         }
 
         Quad(FluidRenderFace rounded, FluidRenderFace normal) {
-            this();
+            this(rounded.flowing);
             set(rounded, normal);
         }
 
-        public Quad(Vertex v0, Vertex v1, Vertex v2, Vertex v3) {
+        public Quad(Vertex v0, Vertex v1, Vertex v2, Vertex v3, boolean flowing) {
             this.v0 = v0.l0 == null && v0.l1 == null ? v0 : new Vertex(v0);
             this.v1 = v1.l0 == null && v1.l1 == null ? v1 : new Vertex(v1);
             this.v2 = v2.l0 == null && v2.l1 == null ? v2 : new Vertex(v2);
@@ -171,6 +173,8 @@ import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer.ComponentRende
             l1 = new Line(v1, v2);
             l2 = new Line(v2, v3);
             l3 = new Line(v3, v0);
+
+            this.flowing = flowing;
         }
 
         void set(FluidRenderFace rounded, FluidRenderFace normal) {
@@ -256,7 +260,7 @@ import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer.ComponentRende
                         Vertex vl1 = list0.get(0);
                         Vertex vr0 = list1.remove(0);
                         Vertex vr1 = list1.get(0);
-                        Quad quad = new Quad(vl0, vl1, vr1, vr0);
+                        Quad quad = new Quad(vl0, vl1, vr1, vr0, flowing);
                         splitFull.add(quad.toRounded(u, bucket0.texValue));
                         splitTex.add(quad.toFace());
                     } else if (size0 > 2 && size1 > 0) {
@@ -264,7 +268,7 @@ import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer.ComponentRende
                         Vertex vl1 = list0.remove(0);
                         Vertex vl2 = list0.get(0);
                         Vertex vr0 = list1.get(0);
-                        Quad quad = new Quad(vl0, vl1, vl2, vr0);
+                        Quad quad = new Quad(vl0, vl1, vl2, vr0, flowing);
                         splitFull.add(quad.toRounded(u, bucket0.texValue));
                         splitTex.add(quad.toFace());
                     } else if (size0 > 0 && size1 > 2) {
@@ -272,35 +276,35 @@ import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer.ComponentRende
                         Vertex vr0 = list1.remove(0);
                         Vertex vr1 = list1.remove(0);
                         Vertex vr2 = list1.get(0);
-                        Quad quad = new Quad(vl0, vr2, vr1, vr0);
+                        Quad quad = new Quad(vl0, vr2, vr1, vr0, flowing);
                         splitFull.add(quad.toRounded(u, bucket0.texValue));
                         splitTex.add(quad.toFace());
                     } else if (size0 > 1 && size1 > 0) {
                         Vertex vl0 = list0.remove(0);
                         Vertex vl1 = list0.get(0);
                         Vertex vr0 = list1.get(0);
-                        Quad quad = new Quad(vl0, vl1, vr0, vr0);
+                        Quad quad = new Quad(vl0, vl1, vr0, vr0, flowing);
                         splitFull.add(quad.toRounded(u, bucket0.texValue));
                         splitTex.add(quad.toFace());
                     } else if (size0 > 0 && size1 > 1) {
                         Vertex vl0 = list0.get(0);
                         Vertex vr0 = list1.remove(0);
                         Vertex vr1 = list1.get(0);
-                        Quad quad = new Quad(vl0, vr1, vr0, vl0);
+                        Quad quad = new Quad(vl0, vr1, vr0, vl0, flowing);
                         splitFull.add(quad.toRounded(u, bucket0.texValue));
                         splitTex.add(quad.toFace());
                     } else if (size0 > 2) {
                         Vertex vl0 = list0.remove(0);
                         Vertex vl1 = list0.remove(0);
                         Vertex vl2 = list0.get(0);
-                        Quad quad = new Quad(vl0, vl1, vl2, vl0);
+                        Quad quad = new Quad(vl0, vl1, vl2, vl0, flowing);
                         splitFull.add(quad.toRounded(u, bucket0.texValue));
                         splitTex.add(quad.toFace());
                     } else if (size1 > 2) {
                         Vertex vr0 = list1.remove(0);
                         Vertex vr1 = list1.remove(0);
                         Vertex vr2 = list1.get(0);
-                        Quad quad = new Quad(vr2, vr1, vr0, vr2);
+                        Quad quad = new Quad(vr2, vr1, vr0, vr2, flowing);
                         splitFull.add(quad.toRounded(u, bucket0.texValue));
                         splitTex.add(quad.toFace());
                     } else if (size0 + size1 > 2) {
@@ -419,7 +423,8 @@ import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer.ComponentRende
                 v0.x, v0.y, v0.z, _u0, _v0, //
                 v1.x, v1.y, v1.z, _u1, _v1, //
                 v2.x, v2.y, v2.z, _u2, _v2, //
-                v3.x, v3.y, v3.z, _u3, _v3//
+                v3.x, v3.y, v3.z, _u3, _v3, //
+                flowing
             );
         }
 
@@ -428,7 +433,8 @@ import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer.ComponentRende
                 v0.x, v0.y, v0.z, v0.uN * 16, v0.vN * 16, //
                 v1.x, v1.y, v1.z, v1.uN * 16, v1.vN * 16, //
                 v2.x, v2.y, v2.z, v2.uN * 16, v2.vN * 16, //
-                v3.x, v3.y, v3.z, v3.uN * 16, v3.vN * 16//
+                v3.x, v3.y, v3.z, v3.uN * 16, v3.vN * 16, //
+                flowing
             );
         }
 

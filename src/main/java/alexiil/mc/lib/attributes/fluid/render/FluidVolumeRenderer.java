@@ -34,7 +34,7 @@ public abstract class FluidVolumeRenderer {
 
     public void renderGuiRectangle(FluidVolume fluid, double x0, double y0, double x1, double y1) {
         List<FluidRenderFace> faces = new ArrayList<>();
-        faces.add(FluidRenderFace.createFlatFaceZ(x0, y0, 0, x1, y1, 0, 1, true));
+        faces.add(FluidRenderFace.createFlatFaceZ(x0, y0, 0, x1, y1, 0, 1, true, false));
         render(fluid, faces, 0, 0, 0);
     }
 
@@ -61,16 +61,27 @@ public abstract class FluidVolumeRenderer {
      * @param r Colour - Red (0 -> 255)
      * @param g Colour - Green (0 -> 255)
      * @param b Colour - Blue (0 -> 255) */
-    protected static void vertex(BufferBuilder bb, double x, double y, double z, float u, float v, int r, int g,
-        int b) {
+    protected static void vertex(
+        BufferBuilder bb, double x, double y, double z, float u, float v, int r, int g, int b
+    ) {
         bb.vertex(x, y, z);
         bb.texture(u, v);
         bb.color(r, g, b, 0xFF);
         bb.next();
     }
 
-    protected static void renderSimpleFluid(List<FluidRenderFace> faces, double x, double y, double z, Sprite sprite,
-        int colour) {
+    /** @deprecated Use {@link #renderSimpleFluid(List, double, double, double, Sprite, Sprite, int)} instead, which
+     *             takes both the still and flowing sprites. */
+    @Deprecated
+    protected static void renderSimpleFluid(
+        List<FluidRenderFace> faces, double x, double y, double z, Sprite sprite, int colour
+    ) {
+        renderSimpleFluid(faces, x, y, z, sprite, sprite, colour);
+    }
+
+    protected static void renderSimpleFluid(
+        List<FluidRenderFace> faces, double x, double y, double z, Sprite still, Sprite flowing, int colour
+    ) {
         Tessellator tess = Tessellator.getInstance();
         BufferBuilder bb = tess.getBufferBuilder();
         bb.begin(GL11.GL_QUADS, VertexFormats.POSITION_UV_COLOR);
@@ -79,14 +90,15 @@ public abstract class FluidVolumeRenderer {
         int r = (colour >> 16) & 0xFF;
         int g = (colour >> 8) & 0xFF;
         int b = (colour >> 0) & 0xFF;
-        for (FluidRenderFace f : splitFaces(faces)) {
-            vertex(bb, f.x0, f.y0, f.z0, sprite.getU(f.u0), sprite.getV(f.v0), r, g, b);
-            vertex(bb, f.x1, f.y1, f.z1, sprite.getU(f.u1), sprite.getV(f.v1), r, g, b);
-            vertex(bb, f.x2, f.y2, f.z2, sprite.getU(f.u2), sprite.getV(f.v2), r, g, b);
-            vertex(bb, f.x3, f.y3, f.z3, sprite.getU(f.u3), sprite.getV(f.v3), r, g, b);
-        }
-        bb.setOffset(0, 0, 0);
 
+        for (FluidRenderFace f : splitFaces(faces)) {
+            vertex(bb, f.x0, f.y0, f.z0, f.getU(still, flowing, f.u0), f.getV(still, flowing, f.v0), r, g, b);
+            vertex(bb, f.x1, f.y1, f.z1, f.getU(still, flowing, f.u1), f.getV(still, flowing, f.v1), r, g, b);
+            vertex(bb, f.x2, f.y2, f.z2, f.getU(still, flowing, f.u2), f.getV(still, flowing, f.v2), r, g, b);
+            vertex(bb, f.x3, f.y3, f.z3, f.getU(still, flowing, f.u3), f.getV(still, flowing, f.v3), r, g, b);
+        }
+
+        bb.setOffset(0, 0, 0);
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
         MinecraftClient.getInstance().getTextureManager().bindTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEX);

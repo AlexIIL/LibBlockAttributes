@@ -15,6 +15,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.GlassBottleItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.PotionItem;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
@@ -145,27 +146,49 @@ public final class FluidVolumeUtil {
 
     public static boolean interactWithTank(FluidInsertable invInsert, FluidExtractable invExtract, PlayerEntity player,
         Hand hand) {
-        ItemStack inHand = player.getStackInHand(hand);
-        if (inHand.isEmpty()) {
+
+        return interactWithTank(invInsert, invExtract, player, ItemInvUtil.referenceHand(player, hand));
+    }
+
+    public static boolean interactCursorWithTank(FixedFluidInv inv, ServerPlayerEntity player) {
+        return interactCursorWithTank(inv.getInsertable(), inv.getExtractable(), player);
+    }
+
+    public static boolean interactCursorWithTank(FluidTransferable inv, ServerPlayerEntity player) {
+        return interactCursorWithTank(inv, inv, player);
+    }
+
+    /** Interacts with a tank from the player's cursor stack when there is a gui open. */
+    public static boolean interactCursorWithTank(FluidInsertable invInsert, FluidExtractable invExtract,
+        ServerPlayerEntity player) {
+
+        return interactWithTank(invInsert, invExtract, player, ItemInvUtil.referenceGuiCursor(player));
+    }
+
+    public static boolean interactWithTank(FluidInsertable invInsert, FluidExtractable invExtract, PlayerEntity player,
+        Reference<ItemStack> mainStackRef) {
+
+        ItemStack mainStack = mainStackRef.get();
+        if (mainStack.isEmpty()) {
             return false;
         }
-        Ref<ItemStack> stack = new Ref<>(inHand);
         boolean isSurvival = !player.abilities.creativeMode;
+        Reference<ItemStack> realRef = isSurvival ? mainStackRef : Reference.callable(
+            mainStackRef::get, s -> {}, s -> true
+        );
         Consumer<ItemStack> stackConsumer = isSurvival ? ItemInvUtil.createPlayerInsertable(player) : s -> {};
         FluidTankInteraction result = interactWithTank(
-            invInsert, invExtract, stack, LimitedConsumer.fromConsumer(stackConsumer)
+            invInsert, invExtract, realRef, LimitedConsumer.fromConsumer(stackConsumer)
         );
         if (!result.didMoveAny()) {
             return false;
-        }
-        if (isSurvival) {
-            player.setStackInHand(hand, stack.obj);
         }
         final SoundEvent soundEvent;
         if (result.fluidMoved.fluidKey == FluidKeys.LAVA) {
             soundEvent = result.intoTank ? SoundEvents.ITEM_BUCKET_EMPTY_LAVA : SoundEvents.ITEM_BUCKET_FILL_LAVA;
         } else {
-            boolean isBottle = inHand.getItem() instanceof GlassBottleItem || inHand.getItem() instanceof PotionItem;
+            boolean isBottle = mainStack.getItem() instanceof GlassBottleItem || mainStack
+                .getItem() instanceof PotionItem;
             if (isBottle) {
                 soundEvent = result.intoTank ? SoundEvents.ITEM_BOTTLE_EMPTY : SoundEvents.ITEM_BOTTLE_FILL;
             } else {

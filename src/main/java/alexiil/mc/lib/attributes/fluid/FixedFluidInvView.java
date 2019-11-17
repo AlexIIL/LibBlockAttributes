@@ -12,7 +12,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.shape.VoxelShape;
 
 import alexiil.mc.lib.attributes.AttributeList;
@@ -30,7 +29,6 @@ import alexiil.mc.lib.attributes.fluid.impl.SubFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.impl.SubFixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
-import alexiil.mc.lib.attributes.item.SingleItemSlotView;
 
 /** A view of a fixed inventory for fluids, where the number of tanks never changes, and every tank is "simple":
  * <ul>

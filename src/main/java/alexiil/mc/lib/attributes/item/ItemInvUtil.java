@@ -12,12 +12,16 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Hand;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.misc.Reference;
 
 /** Various hooks and methods for dealing with pairs of {@link FixedItemInv}, {@link FixedItemInvView},
  * {@link ItemInsertable}, {@link ItemExtractable}, and {@link GroupedItemInvView} instances. */
@@ -28,10 +32,28 @@ public final class ItemInvUtil {
     // Direct utility methods
     // #######################
 
+    /** Returns a {@link Consumer} that will call {@link #insertItemIntoPlayerInventory(PlayerEntity, ItemStack)} for
+     * every {@link ItemStack} passed to it. */
     public static Consumer<ItemStack> createPlayerInsertable(PlayerEntity player) {
         return stack -> insertItemIntoPlayerInventory(player, stack);
     }
 
+    /** Creates a {@link Reference} to the what the player is currently holding in the given {@link Hand}. */
+    public static Reference<ItemStack> referenceHand(PlayerEntity player, Hand hand) {
+        return Reference.callable(() -> player.getStackInHand(hand), s -> player.setStackInHand(hand, s), s -> true);
+    }
+
+    /** Creates a {@link Reference} to the given player's {@link PlayerInventory#getCursorStack() cursor stack}, that
+     * updates the client whenever it is changed. */
+    public static Reference<ItemStack> referenceGuiCursor(ServerPlayerEntity player) {
+        return Reference.callable(player.inventory::getCursorStack, s -> {
+            player.inventory.setCursorStack(s);
+            player.method_14241();
+        }, s -> true);
+    }
+
+    /** Either inserts the given item into the player's inventory or drops it in front of them. Note that this will
+     * always keep a reference to the passed stack (and might modify it!) */
     public static void insertItemIntoPlayerInventory(PlayerEntity player, ItemStack stack) {
         if (player.inventory.insertStack(stack) && stack.isEmpty()) {
             return;

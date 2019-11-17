@@ -42,9 +42,8 @@ public class FluidKeys {
 
     static {
         // Empty doesn't have a proper sprite or text component because it doesn't ever make sense to use it.
-        EMPTY = new NormalFluidKeyBuilder(Fluids.EMPTY, //
-            MISSING_SPRITE, //
-            new LiteralText("!EMPTY FLUID!")//
+        EMPTY = new NormalFluidKeyBuilder(
+            Fluids.EMPTY, MISSING_SPRITE, MISSING_SPRITE, new LiteralText("!EMPTY FLUID!")
         ).build();
         LAVA = createImplicitVanillaFluid(Fluids.LAVA);
         WATER = WaterFluidKey.INSTANCE;
@@ -101,7 +100,7 @@ public class FluidKeys {
     private static ImplicitVanillaFluidKey createImplicitVanillaFluid(Fluid fluid) {
         Block block = fluid.getDefaultState().getBlockState().getBlock();
         Text name = new TranslatableText(block.getTranslationKey());
-        return new ImplicitVanillaFluidKey(NormalFluidKey.builder(fluid, MISSING_SPRITE, name));
+        return new ImplicitVanillaFluidKey(NormalFluidKey.builder(fluid, MISSING_SPRITE, MISSING_SPRITE, name));
     }
 
     public static FluidKey get(Potion potion) {

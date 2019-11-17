@@ -9,7 +9,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 archivesBaseName = "libblockatttributes"
-version = "0.5.1-pre.8"
+version = "0.5.1-pre.9"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');

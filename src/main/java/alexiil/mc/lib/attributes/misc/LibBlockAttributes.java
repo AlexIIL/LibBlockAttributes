@@ -10,6 +10,13 @@ package alexiil.mc.lib.attributes.misc;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import net.minecraft.util.Identifier;
+
 public class LibBlockAttributes {
-    public static final Logger LOGGER = LogManager.getLogger("libblockattributes");
+    private static final String MODID = "libblockattributes";
+    public static final Logger LOGGER = LogManager.getLogger(MODID);
+
+    public static Identifier id(String path) {
+        return new Identifier(MODID, path);
+    }
 }

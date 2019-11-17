@@ -273,9 +273,29 @@ public abstract class FluidVolume {
         return getFluidKey().withAmount(toTake);
     }
 
-    /** @return An {@link Identifier} for the sprite that this fluid volume should render with in gui's and in-world. */
+    /** Note: it is recommended that you call {@link #getStillSprite()} instead of this as this method will likely be
+     * removed at some point in the future.
+     * 
+     * @return An {@link Identifier} for the still sprite that this fluid volume should render with in gui's and
+     *         in-world. */
     public Identifier getSprite() {
         return getFluidKey().spriteId;
+    }
+
+    /** Provided for completeness with {@link #getFlowingSprite()}. As this is final (and so cannot be overridden) it is
+     * always safe to call this instead of {@link #getSprite()}. (If getSprite() is ever deprecated it is recommended to
+     * that you call this instead).
+     * 
+     * @return An {@link Identifier} for the still sprite that this fluid volume should render with in gui's and
+     *         in-world. */
+    public final Identifier getStillSprite() {
+        return getSprite();
+    }
+
+    /** @return An {@link Identifier} for the flowing sprite that this fluid volume should render with in gui's and
+     *         in-world when {@link FluidRenderFace#flowing} is true. */
+    public Identifier getFlowingSprite() {
+        return getFluidKey().flowingSpriteId;
     }
 
     /** @return The colour tint to use when rendering this fluid volume in gui's or in-world. Note that this MUST be in

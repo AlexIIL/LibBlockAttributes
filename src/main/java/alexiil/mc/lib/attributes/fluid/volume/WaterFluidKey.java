@@ -15,13 +15,17 @@ import net.minecraft.world.biome.Biome;
 
 /* package-private */ final class WaterFluidKey extends BiomeSourcedFluidKey {
 
+    public static final Identifier SPRITE_STILL = new Identifier("minecraft", "block/water_still");
+    public static final Identifier SPRITE_FLOWING = new Identifier("minecraft", "block/water_flowing");
+
     static final WaterFluidKey INSTANCE = new WaterFluidKey();
 
     private WaterFluidKey() {
-        super(NormalFluidKey.builder(Fluids.WATER, //
-            new Identifier("minecraft", "block/water_still"), //
-            new TranslatableText("block.minecraft.water")//
-        ).addUnit(FluidUnit.BOTTLE));
+        super(
+            NormalFluidKey.builder(
+                Fluids.WATER, SPRITE_STILL, SPRITE_FLOWING, new TranslatableText("block.minecraft.water")
+            ).addUnit(FluidUnit.BOTTLE)
+        );
     }
 
     @Override

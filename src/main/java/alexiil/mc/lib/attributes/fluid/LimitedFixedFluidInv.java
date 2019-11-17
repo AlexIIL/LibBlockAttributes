@@ -13,8 +13,6 @@ import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.impl.DelegatingFixedFluidInv;
 import alexiil.mc.lib.attributes.item.LimitedFixedItemInv;
-import alexiil.mc.lib.attributes.item.LimitedFixedItemInv.ItemSlotLimitRule;
-import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 
 /** A type of {@link FixedFluidInv} that wraps an existing {@link FixedFluidInv} and provides custom control over the
  * actual modification of the wrapped {@link FixedFluidInv}.

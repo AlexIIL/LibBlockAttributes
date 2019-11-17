@@ -32,10 +32,15 @@ public abstract class FluidKey {
     /** All units to use when displaying amounts, capacities, and flow rates to the player. */
     public final FluidUnitSet unitSet;
 
-    /** The sprite to use when rendering this {@link FluidKey}'s specifically.
+    /** The still sprite to use when rendering this {@link FluidKey}'s specifically.
      * <p>
      * Note that this might differ from the one returned by {@link FluidVolume#getSprite()}! */
     public final Identifier spriteId;
+
+    /** The flowing sprite to use when rendering this {@link FluidKey}'s specifically.
+     * <p>
+     * Note that this might differ from the one returned by {@link FluidVolume#getFlowingSprite()}! */
+    public final Identifier flowingSpriteId;
 
     /** The colour to use when rendering this {@link FluidKey}'s specifically.
      * <p>
@@ -50,14 +55,23 @@ public abstract class FluidKey {
     public static class FluidKeyBuilder {
         /* package-private */ final FluidRegistryEntry<?> registryEntry;
         /* package-private */ final Identifier spriteId;
+        /* package-private */ final Identifier flowingSpriteId;
         /* package-private */ final Text name;
         /* package-private */ int renderColor = 0xFF_FF_FF;
         /* package-private */ FluidUnit unit = FluidUnit.BUCKET;
         /* package-private */ final FluidUnitSet unitSet = new FluidUnitSet();
 
+        /** @deprecated As the flowing sprite ID is needed as well. */
+        @Deprecated
         public FluidKeyBuilder(FluidRegistryEntry<?> registryEntry, Identifier spriteId, Text name) {
+            this(registryEntry, spriteId, spriteId, name);
+        }
+
+        public FluidKeyBuilder(FluidRegistryEntry<?> registryEntry, Identifier spriteId, Identifier flowingSpriteId,
+            Text name) {
             this.registryEntry = registryEntry;
             this.spriteId = spriteId;
+            this.flowingSpriteId = flowingSpriteId;
             this.name = name;
         }
 
@@ -96,6 +110,7 @@ public abstract class FluidKey {
         this.unitSet = builder.unitSet;
         unitSet.addUnit(builder.unit);
         this.spriteId = builder.spriteId;
+        this.flowingSpriteId = builder.flowingSpriteId;
         this.name = builder.name;
         this.renderColor = builder.renderColor;
     }

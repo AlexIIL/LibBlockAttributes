@@ -14,24 +14,29 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
+import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
+
 public final class PotionFluidKey extends FluidKey {
 
-    public static final Identifier POTION_TEXTURE;
+    public static final Identifier POTION_TEXTURE, FLOWING_POTION_TEXTURE;
 
     static {
         // potion_glint = FF_80_40_CC
         // @ -50 around Z
         // + 10 around Z
-        POTION_TEXTURE = new Identifier("libblockattributes", "fluid/potion");
+        POTION_TEXTURE = LibBlockAttributes.id("fluid/potion");
+        FLOWING_POTION_TEXTURE = LibBlockAttributes.id("fluid/potion_flowing");
     }
 
     public final Potion potion;
 
     /* package-private */ PotionFluidKey(Potion potion) {
-        super(new FluidKeyBuilder(new FluidRegistryEntry<>(Registry.POTION, potion), //
-            POTION_TEXTURE, //
-            new TranslatableText(potion.getName("item.minecraft.potion.effect."))//
-        ).setUnit(FluidUnit.BOTTLE).setRenderColor(PotionUtil.getColor(potion)));
+        super(
+            new FluidKeyBuilder(
+                new FluidRegistryEntry<>(Registry.POTION, potion), POTION_TEXTURE, FLOWING_POTION_TEXTURE,
+                new TranslatableText(potion.getName("item.minecraft.potion.effect."))
+            ).setUnit(FluidUnit.BOTTLE).setRenderColor(PotionUtil.getColor(potion))
+        );
         this.potion = potion;
     }
 
