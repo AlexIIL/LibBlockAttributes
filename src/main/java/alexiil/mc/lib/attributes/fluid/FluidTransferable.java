@@ -8,8 +8,10 @@
 package alexiil.mc.lib.attributes.fluid;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
@@ -37,13 +39,19 @@ public interface FluidTransferable extends FluidInsertable, FluidExtractable {
             }
 
             @Override
-            public int getMinimumAcceptedAmount() {
+            @Nullable
+            public FluidAmount getMinimumAcceptedAmount() {
                 return insertable.getMinimumAcceptedAmount();
             }
 
             @Override
             public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
-                return FluidKeys.EMPTY.withAmount(0);
+                return FluidKeys.EMPTY.withAmount(FluidAmount.ZERO);
+            }
+
+            @Override
+            public FluidVolume attemptExtraction(FluidFilter filter, FluidAmount maxAmount, Simulation simulation) {
+                return FluidKeys.EMPTY.withAmount(FluidAmount.ZERO);
             }
         };
     }
@@ -65,12 +73,24 @@ public interface FluidTransferable extends FluidInsertable, FluidExtractable {
             }
 
             @Override
+            @Deprecated
             public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
                 return extractable.attemptExtraction(filter, maxAmount, simulation);
             }
 
             @Override
+            @Deprecated
             public FluidVolume attemptAnyExtraction(int maxAmount, Simulation simulation) {
+                return extractable.attemptAnyExtraction(maxAmount, simulation);
+            }
+
+            @Override
+            public FluidVolume attemptExtraction(FluidFilter filter, FluidAmount maxAmount, Simulation simulation) {
+                return extractable.attemptExtraction(filter, maxAmount, simulation);
+            }
+
+            @Override
+            public FluidVolume attemptAnyExtraction(FluidAmount maxAmount, Simulation simulation) {
                 return extractable.attemptAnyExtraction(maxAmount, simulation);
             }
         };
@@ -95,12 +115,30 @@ public interface FluidTransferable extends FluidInsertable, FluidExtractable {
             }
 
             @Override
+            @Nullable
+            public FluidAmount getMinimumAcceptedAmount() {
+                return insertable.getMinimumAcceptedAmount();
+            }
+
+            @Override
+            @Deprecated
             public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
                 return extractable.attemptExtraction(filter, maxAmount, simulation);
             }
 
             @Override
+            @Deprecated
             public FluidVolume attemptAnyExtraction(int maxAmount, Simulation simulation) {
+                return extractable.attemptAnyExtraction(maxAmount, simulation);
+            }
+
+            @Override
+            public FluidVolume attemptExtraction(FluidFilter filter, FluidAmount maxAmount, Simulation simulation) {
+                return extractable.attemptExtraction(filter, maxAmount, simulation);
+            }
+
+            @Override
+            public FluidVolume attemptAnyExtraction(FluidAmount maxAmount, Simulation simulation) {
                 return extractable.attemptAnyExtraction(maxAmount, simulation);
             }
         };

@@ -9,6 +9,7 @@ package alexiil.mc.lib.attributes.fluid;
 
 import javax.annotation.Nullable;
 
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.impl.DelegatingFixedFluidInv;
@@ -66,14 +67,14 @@ public interface LimitedFixedFluidInv extends FixedFluidInv {
          * 
          * @return this. */
         default FluidTankLimitRule disallowExtraction() {
-            return setMinimum(64);
+            return setMinimum(FluidAmount.MAX_VALUE);
         }
 
         /** Stops disallowing extraction of fluids.
          * 
          * @return this. */
         default FluidTankLimitRule allowExtraction() {
-            return setMinimum(0);
+            return setMinimum(null);
         }
 
         /** Filters all insertions with the given filter in addition to whatever filters are already present.
@@ -93,17 +94,43 @@ public interface LimitedFixedFluidInv extends FixedFluidInv {
             return filterInserts(ConstantFluidFilter.NOTHING);
         }
 
+        // Unlike all of the other migrations we don't add validate methods and
+        // make both methods default to calling each other because the only
+        // implementation ATM (that I'm aware of) is the standard, default one.
+
         /** Limits the amount of fluid that can be inserted (in total) to the given count.
          * 
          * @param max The maximum. A value below 0 will reset this rule.
+         * @return this.
+         * @deprecated Replaced by {@link #limitInsertionAmount(FluidAmount)}. */
+        @Deprecated
+        default FluidTankLimitRule limitInsertionCount(int max) {
+            return limitInsertionAmount(FluidAmount.of1620(max));
+        }
+
+        /** Limits the amount of fluid that can be inserted (in total) to the given count.
+         * 
+         * @param max The maximum. A value below 0 will reset this rule. Null is treated as zero.
          * @return this. */
-        FluidTankLimitRule limitInsertionCount(int max);
+        FluidTankLimitRule limitInsertionAmount(@Nullable FluidAmount max);
 
         /** Limits the amount of fluid that can be extracted to ensure that this tank cannot have an amount that goes
          * below the given value. (This of course has no effect on the underlying inventory, so it is always possible
          * for the underlying inventory to be modified to contain less than the given amount).
          * 
+         * @return this.
+         * @deprecated Replaced by {@link #setMinimum(FluidAmount)} */
+        @Deprecated
+        default FluidTankLimitRule setMinimum(int min) {
+            return setMinimum(FluidAmount.of1620(min));
+        }
+
+        /** Limits the amount of fluid that can be extracted to ensure that this tank cannot have an amount that goes
+         * below the given value. (This of course has no effect on the underlying tank, so it is always possible for the
+         * underlying tank to be modified to contain less than the given amount).
+         * 
+         * @param min The minimum. Both null and non-positive values are treated as removing the limit.
          * @return this. */
-        FluidTankLimitRule setMinimum(int min);
+        FluidTankLimitRule setMinimum(@Nullable FluidAmount min);
     }
 }

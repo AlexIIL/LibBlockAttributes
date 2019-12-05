@@ -7,6 +7,7 @@
  */
 package alexiil.mc.lib.attributes.fluid;
 
+import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
 
@@ -15,11 +16,13 @@ import javax.annotation.Nullable;
 import net.minecraft.util.shape.VoxelShape;
 
 import alexiil.mc.lib.attributes.AttributeList;
+import alexiil.mc.lib.attributes.AttributeUtil;
 import alexiil.mc.lib.attributes.CacheInfo;
 import alexiil.mc.lib.attributes.Convertible;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.impl.CombinedFixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.impl.EmptyFixedFluidInv;
@@ -67,8 +70,32 @@ public interface FixedFluidInvView extends Convertible {
      *         that it is meaningless to return values greater than the maximum amount an fluid can be stacked to here,
      *         and callers are free to throw an exception if this is violated. (Basically huge single-tank inventories
      *         shouldn't implement this interface).
+     * @throws RuntimeException if the given tank wasn't a valid index.
+     * @deprecated Replaced by {@link #getMaxAmount_F(int)} */
+    @Deprecated
+    default int getMaxAmount(int tank) {
+        if (AttributeUtil.EXPENSIVE_DEBUG_CHECKS) {
+            validateFixedFluidInvView(this);
+        }
+        return getMaxAmount_F(tank).as1620();
+    }
+
+    /** @param tank The tank index. Must be a value between 0 (inclusive) and {@link #getTankCount()} (exclusive) to be
+     *            valid. (Like in arrays, lists, etc).
+     * @return The maximum amount that the given tank can hold of the given fluid. This method will ignore the current
+     *         stack in {@link #getInvFluid(int)}. Note that any setters that this object implements (like
+     *         {@link FixedFluidInv#setInvFluid(int, FluidVolume, Simulation)} should reject stacks that are greater
+     *         than this value. (and callers should only call this if they need to check the amounts separately. Note
+     *         that it is meaningless to return values greater than the maximum amount an fluid can be stacked to here,
+     *         and callers are free to throw an exception if this is violated. (Basically huge single-tank inventories
+     *         shouldn't implement this interface).
      * @throws RuntimeException if the given tank wasn't a valid index. */
-    int getMaxAmount(int tank);
+    default FluidAmount getMaxAmount_F(int tank) {
+        if (AttributeUtil.EXPENSIVE_DEBUG_CHECKS) {
+            validateFixedFluidInvView(this);
+        }
+        return FluidAmount.of1620(getMaxAmount(tank));
+    }
 
     /** Checks to see if the given stack is valid for a given tank. This ignores any current stacks in the tank.
      * 
@@ -185,14 +212,30 @@ public interface FixedFluidInvView extends Convertible {
      * @deprecated Because this functionality has been fully replaced by {@link Convertible} and it's usage in
      *             {@link AttributeList}. */
     @Deprecated
-    default void offerSelfAsAttribute(AttributeList<?> list, @Nullable CacheInfo cacheInfo,
-        @Nullable VoxelShape shape) {
+    default void offerSelfAsAttribute(
+        AttributeList<?> list, @Nullable CacheInfo cacheInfo, @Nullable VoxelShape shape
+    ) {
         list.offer(this, cacheInfo, shape);
     }
 
     @Override
     default <T> T convertTo(Class<T> otherType) {
         return Convertible.offer(otherType, getGroupedInv());
+    }
+
+    public static void validateFixedFluidInvView(FixedFluidInvView instance) {
+        Class<?> c = instance.getClass();
+        try {
+            Method m0 = c.getDeclaredMethod("getMaxAmount", int.class);
+            Method m1 = c.getDeclaredMethod("getMaxAmount_F", int.class);
+            if (m0.getDeclaringClass() == FixedFluidInvView.class) {
+                if (m1.getDeclaringClass() == FixedFluidInvView.class) {
+                    throw new Error("The " + c + " needs to override either getMaxAmount() or getMaxAmount_F()!");
+                }
+            }
+        } catch (NoSuchMethodException e) {
+            throw new Error(e);
+        }
     }
 
     /** @return An object that only implements {@link FixedFluidInvView}, and does not expose the modification methods

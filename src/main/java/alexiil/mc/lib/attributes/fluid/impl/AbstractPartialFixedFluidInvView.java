@@ -8,6 +8,7 @@
 package alexiil.mc.lib.attributes.fluid.impl;
 
 import alexiil.mc.lib.attributes.fluid.FixedFluidInvView;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
@@ -41,7 +42,13 @@ public abstract class AbstractPartialFixedFluidInvView implements FixedFluidInvV
     }
 
     @Override
+    @Deprecated
     public int getMaxAmount(int tank) {
         return inv.getMaxAmount(getInternalTank(tank));
+    }
+
+    @Override
+    public FluidAmount getMaxAmount_F(int tank) {
+        return inv.getMaxAmount_F(getInternalTank(tank));
     }
 }

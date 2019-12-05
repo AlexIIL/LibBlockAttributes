@@ -14,10 +14,10 @@ import alexiil.mc.lib.attributes.fluid.FixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
 import alexiil.mc.lib.attributes.fluid.LimitedFixedFluidInv;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
-import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implements LimitedFixedFluidInv {
@@ -26,37 +26,36 @@ public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implemen
     private boolean isImmutable = false;
 
     protected final FluidFilter[] insertionFilters;
-    protected final int[] maxInsertionAmounts;
-    protected final int[] minimumAmounts;
+    protected final FluidAmount[] maxInsertionAmounts;
+    protected final FluidAmount[] minimumAmounts;
 
     public SimpleLimitedFixedFluidInv(FixedFluidInv delegate) {
         super(delegate);
 
         insertionFilters = new FluidFilter[getTankCount()];
-        maxInsertionAmounts = new int[getTankCount()];
-        minimumAmounts = new int[getTankCount()];
-        Arrays.fill(maxInsertionAmounts, Integer.MAX_VALUE);
+        maxInsertionAmounts = new FluidAmount[getTankCount()];
+        minimumAmounts = new FluidAmount[getTankCount()];
         groupedInv = new DelegatingGroupedFluidInv(super.getGroupedInv()) {
             @Override
-            public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
-                if (maxAmount < 0) {
+            public FluidVolume attemptExtraction(FluidFilter filter, FluidAmount maxAmount, Simulation simulation) {
+                if (maxAmount.isNegative()) {
                     throw new IllegalArgumentException("maxAmount cannot be negative! (was " + maxAmount + ")");
                 }
-                FluidVolume volume = FluidKeys.EMPTY.withAmount(0);
-                if (maxAmount == 0) {
+                FluidVolume volume = FluidVolumeUtil.EMPTY;
+                if (maxAmount.isZero()) {
                     return volume;
                 }
                 FixedFluidInv inv = SimpleLimitedFixedFluidInv.this;
                 for (int t = 0; t < getTankCount(); t++) {
                     FluidVolume tankVolume = inv.getInvFluid(t);
-                    int minimum = minimumAmounts[t];
-                    int available = tankVolume.getAmount() - minimum;
-                    if (tankVolume.isEmpty() || available <= 0) {
+                    FluidAmount minimum = minimumAmounts[t];
+                    FluidAmount available = tankVolume.getAmount_F().sub(minimum);
+                    if (tankVolume.isEmpty() || !available.isPositive()) {
                         continue;
                     }
-                    int tankMax = Math.min(maxAmount - volume.getAmount(), available);
+                    FluidAmount tankMax = maxAmount.sub(volume.getAmount_F()).min(available);
                     volume = FluidVolumeUtil.extractSingle(inv, t, filter, volume, tankMax, simulation);
-                    if (volume.getAmount() >= maxAmount) {
+                    if (!volume.getAmount_F().isLessThan(maxAmount)) {
                         return volume;
                     }
                 }
@@ -116,16 +115,16 @@ public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implemen
     public boolean setInvFluid(int tank, FluidVolume to, Simulation simulation) {
         FluidVolume current = getInvFluid(tank);
         boolean same = current.getFluidKey().equals(to.fluidKey);
-        boolean isExtracting = !same || to.getAmount() < current.getAmount();
-        boolean isInserting = !same || to.getAmount() > current.getAmount();
+        boolean isExtracting = !same || to.getAmount_F().isLessThan(current.getAmount_F());
+        boolean isInserting = !same || to.getAmount_F().isGreaterThan(current.getAmount_F());
 
         if (isExtracting) {
             if (same) {
-                if (to.getAmount() < minimumAmounts[tank]) {
+                if (to.getAmount_F().isLessThan(minimumAmounts[tank])) {
                     return false;
                 }
             } else {
-                if (minimumAmounts[tank] > 0) {
+                if (minimumAmounts[tank] != null) {
                     return false;
                 }
             }
@@ -135,7 +134,7 @@ public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implemen
             if (!isFluidValidForTank(tank, to.getFluidKey())) {
                 return false;
             }
-            if (to.getAmount() > maxInsertionAmounts[tank]) {
+            if (to.getAmount_F().isGreaterThan(maxInsertionAmounts[tank])) {
                 return false;
             }
         }
@@ -143,8 +142,8 @@ public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implemen
     }
 
     @Override
-    public int getMaxAmount(int tank) {
-        return Math.min(super.getMaxAmount(tank), maxInsertionAmounts[tank]);
+    public FluidAmount getMaxAmount_F(int tank) {
+        return super.getMaxAmount_F(tank).min(maxInsertionAmounts[tank]);
     }
 
     // Rules
@@ -154,20 +153,20 @@ public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implemen
         return new FluidTankLimitRule() {
 
             @Override
-            public FluidTankLimitRule setMinimum(int min) {
-                if (min < 0) {
-                    min = 0;
+            public FluidTankLimitRule setMinimum(FluidAmount min) {
+                if (min != null && !min.isPositive()) {
+                    min = null;
                 }
                 minimumAmounts[tank] = min;
                 return this;
             }
 
             @Override
-            public FluidTankLimitRule limitInsertionCount(int max) {
-                if (max < 0) {
-                    max = Integer.MAX_VALUE;
+            public FluidTankLimitRule limitInsertionAmount(FluidAmount max) {
+                if (max != null && !max.isPositive()) {
+                    max = FluidAmount.MAX_VALUE;
                 }
-                maxInsertionAmounts[max] = max;
+                maxInsertionAmounts[tank] = max;
                 return this;
             }
 
@@ -187,18 +186,18 @@ public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implemen
         return new FluidTankLimitRule() {
 
             @Override
-            public FluidTankLimitRule setMinimum(int min) {
-                if (min < 0) {
-                    min = 0;
+            public FluidTankLimitRule setMinimum(FluidAmount min) {
+                if (min != null && !min.isPositive()) {
+                    min = null;
                 }
                 Arrays.fill(minimumAmounts, min);
                 return this;
             }
 
             @Override
-            public FluidTankLimitRule limitInsertionCount(int max) {
-                if (max < 0) {
-                    max = Integer.MAX_VALUE;
+            public FluidTankLimitRule limitInsertionAmount(FluidAmount max) {
+                if (max != null && !max.isPositive()) {
+                    max = FluidAmount.MAX_VALUE;
                 }
                 Arrays.fill(maxInsertionAmounts, max);
                 return this;

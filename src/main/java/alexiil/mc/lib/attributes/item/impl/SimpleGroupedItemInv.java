@@ -13,7 +13,7 @@ import java.util.Set;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.util.SystemUtil;
+import net.minecraft.util.Util;
 
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
@@ -47,7 +47,7 @@ public class SimpleGroupedItemInv implements GroupedItemInv, Saveable {
     private ItemInvAmountChangeListener ownerListener;
 
     private final Map<ItemInvAmountChangeListener, ListenerRemovalToken> listeners
-        = new Object2ObjectLinkedOpenCustomHashMap<>(SystemUtil.identityHashStrategy());
+        = new Object2ObjectLinkedOpenCustomHashMap<>(Util.identityHashStrategy());
 
     // Should this use WeakReference instead of storing them directly?
     private ItemInvAmountChangeListener[] bakedListeners = NO_LISTENERS;
@@ -217,7 +217,7 @@ public class SimpleGroupedItemInv implements GroupedItemInv, Saveable {
     public void fromTag(CompoundTag tag) {
         ListTag items = tag.getList("items", new CompoundTag().getType());
         for (int i = 0; i < items.size(); i++) {
-            CompoundTag itemTag = items.getCompoundTag(i);
+            CompoundTag itemTag = items.getCompound(i);
             int count = itemTag.getInt("Count");
             itemTag.putByte("Count", (byte) 1);
             ItemStack stack = ItemStack.fromTag(itemTag);

@@ -12,6 +12,7 @@ import java.util.List;
 
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 
 public final class FluidRenderFace {
     public final double x0, y0, z0, u0, v0;
@@ -219,18 +220,20 @@ public final class FluidRenderFace {
     }
 
     public float getU(Sprite still, Sprite flowing, double u) {
+        Sprite s = still;
         if (this.flowing) {
-            return flowing.getU(4 + u / 2);
-        } else {
-            return still.getU(u);
+            s = flowing;
+            u = 0.25 + u * 0.5;
         }
+        return MathHelper.lerp((float) u, s.getMinU(), s.getMaxU());
     }
 
     public float getV(Sprite still, Sprite flowing, double v) {
+        Sprite s = still;
         if (this.flowing) {
-            return flowing.getV(4 + v / 2);
-        } else {
-            return still.getV(v);
+            s = flowing;
+            v = 0.25 + v * 0.5;
         }
+        return MathHelper.lerp((float) v, s.getMinV(), s.getMaxV());
     }
 }

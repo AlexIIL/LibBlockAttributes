@@ -31,8 +31,8 @@ public class FluidKeys {
 
     public static final Identifier MISSING_SPRITE = new Identifier("minecraft", "missingno");
 
-    public static final NormalFluidKey EMPTY;
-    public static final NormalFluidKey LAVA;
+    public static final FluidKey EMPTY;
+    public static final FluidKey LAVA;
     public static final BiomeSourcedFluidKey WATER;
 
     private static final Map<FluidRegistryEntry<?>, FluidKey> MASTER_MAP = new HashMap<>();
@@ -45,7 +45,7 @@ public class FluidKeys {
         EMPTY = new NormalFluidKeyBuilder(
             Fluids.EMPTY, MISSING_SPRITE, MISSING_SPRITE, new LiteralText("!EMPTY FLUID!")
         ).build();
-        LAVA = createImplicitVanillaFluid(Fluids.LAVA);
+        LAVA = createImplicitFluid(Fluids.LAVA);
         WATER = WaterFluidKey.INSTANCE;
 
         put(Fluids.EMPTY, EMPTY);
@@ -91,16 +91,16 @@ public class FluidKeys {
                     throw new IllegalStateException("fluid.getStill() returned a null fluid! (from " + fluid + ")");
                 }
             }
-            fluidKey = createImplicitVanillaFluid(fluid);
+            fluidKey = createImplicitFluid(fluid);
             put(fluid, fluidKey);
         }
         return fluidKey;
     }
 
-    private static ImplicitVanillaFluidKey createImplicitVanillaFluid(Fluid fluid) {
+    private static NormalFluidKey createImplicitFluid(Fluid fluid) {
         Block block = fluid.getDefaultState().getBlockState().getBlock();
         Text name = new TranslatableText(block.getTranslationKey());
-        return new ImplicitVanillaFluidKey(NormalFluidKey.builder(fluid, MISSING_SPRITE, MISSING_SPRITE, name));
+        return new NormalFluidKey(NormalFluidKey.builder(fluid, MISSING_SPRITE, MISSING_SPRITE, name));
     }
 
     public static FluidKey get(Potion potion) {

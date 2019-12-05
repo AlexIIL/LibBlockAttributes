@@ -7,7 +7,11 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -19,23 +23,28 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
 
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+
 import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.ints.IntComparator;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMaps;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
 /** A fluid that changes it's makup based on the {@link Biome}s that it is taken from. */
 public class BiomeSourcedFluidVolume extends NormalFluidVolume {
 
-    private final Object2IntMap<Biome> biomeSources = new Object2IntOpenHashMap<>();
+    private final Map<Biome, FluidAmount> biomeSources = new HashMap<>();
 
     protected BiomeSourcedFluidVolume(BiomeSourcedFluidKey fluid, int amount) {
         this(fluid, Biomes.DEFAULT, amount);
     }
 
+    @Deprecated
     protected BiomeSourcedFluidVolume(BiomeSourcedFluidKey fluid, Biome source, int amount) {
+        super(fluid, amount);
+        biomeSources.put(source, FluidAmount.of1620(amount));
+    }
+
+    protected BiomeSourcedFluidVolume(BiomeSourcedFluidKey fluid, Biome source, FluidAmount amount) {
         super(fluid, amount);
         biomeSources.put(source, amount);
     }
@@ -46,7 +55,7 @@ public class BiomeSourcedFluidVolume extends NormalFluidVolume {
         int total = 0;
         ListTag biomes = tag.getList("biomes", new CompoundTag().getType());
         for (int i = 0; i < biomes.size(); i++) {
-            CompoundTag biomeTag = biomes.getCompoundTag(i);
+            CompoundTag biomeTag = biomes.getCompound(i);
             Biome biome = Registry.BIOME.get(Identifier.tryParse(biomeTag.getString("Name")));
             int amount = biomeTag.getInt("Amount");
             if (amount < 1) {
@@ -233,19 +242,19 @@ public class BiomeSourcedFluidVolume extends NormalFluidVolume {
     }
 
     /** @return An unmodifiable view of the biome sources map. */
-    public Object2IntMap<Biome> getBiomeSources() {
-        return Object2IntMaps.unmodifiable(biomeSources);
+    public Map<Biome, FluidAmount> getBiomeSources() {
+        return Collections.unmodifiableMap(biomeSources);
     }
 
-    public void addAmount(Biome source, int amount) {
-        int thisAmount = biomeSources.getOrDefault(source, 0);
-        biomeSources.put(source, thisAmount + amount);
-        setAmount(getAmount() + amount);
+    public void addAmount(Biome source, FluidAmount amount) {
+        FluidAmount thisAmount = biomeSources.getOrDefault(source, FluidAmount.ZERO);
+        biomeSources.put(source, thisAmount.add(amount));
+        setAmount(getAmount_F().add(amount));
     }
 
-    public void addAmounts(Object2IntMap<Biome> sources) {
+    public void addAmounts(Map<Biome, FluidAmount> sources) {
         for (Biome biome : sources.keySet()) {
-            addAmount(biome, sources.getInt(biome));
+            addAmount(biome, sources.get(biome));
         }
     }
 
@@ -254,8 +263,8 @@ public class BiomeSourcedFluidVolume extends NormalFluidVolume {
         List<Text> list = super.getTooltipText(ctx);
         if (ctx.isAdvanced()) {
             for (Biome biome : biomeSources.keySet()) {
-                int amount = biomeSources.getInt(biome);
-                Text text = new LiteralText(amount + " / " + BUCKET + " of ");
+                FluidAmount amount = biomeSources.get(biome);
+                Text text = new LiteralText(amount + " of ");
                 list.add(text.append(biome.getName()).formatted(Formatting.GRAY));
             }
         }

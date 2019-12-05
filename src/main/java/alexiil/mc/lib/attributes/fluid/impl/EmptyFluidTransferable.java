@@ -11,9 +11,9 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.FluidExtractable;
 import alexiil.mc.lib.attributes.fluid.FluidInsertable;
 import alexiil.mc.lib.attributes.fluid.FluidTransferable;
+import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
-import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** An {@link FluidTransferable} that never returns any items from
@@ -40,6 +40,6 @@ public enum EmptyFluidTransferable implements FluidTransferable {
 
     @Override
     public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
-        return FluidKeys.EMPTY.withAmount(0);
+        return FluidVolumeUtil.EMPTY;
     }
 }

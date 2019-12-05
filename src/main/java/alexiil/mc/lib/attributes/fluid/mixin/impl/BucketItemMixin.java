@@ -21,6 +21,8 @@ import net.minecraft.item.Items;
 import net.minecraft.util.registry.Registry;
 
 import alexiil.mc.lib.attributes.fluid.FluidProviderItem;
+import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
@@ -41,16 +43,16 @@ public class BucketItemMixin extends Item implements FluidProviderItem, IBucketI
     @Override
     public FluidVolume drain(Ref<ItemStack> stack) {
         if (fluid == Fluids.EMPTY || ((Object) this) instanceof FishBucketItem) {
-            return FluidKeys.EMPTY.withAmount(0);
+            return FluidVolumeUtil.EMPTY;
         }
 
         Item remainder = this.getRecipeRemainder();
         FluidKey fluidKey = FluidKeys.get(fluid);
         if (remainder == null || fluidKey == null) {
-            return FluidKeys.EMPTY.withAmount(0);
+            return FluidVolumeUtil.EMPTY;
         }
         stack.obj = new ItemStack(remainder);
-        return fluidKey.withAmount(FluidVolume.BUCKET);
+        return fluidKey.withAmount(FluidAmount.BUCKET);
     }
 
     @Override
@@ -59,24 +61,29 @@ public class BucketItemMixin extends Item implements FluidProviderItem, IBucketI
             return false;
         }
         for (Item item : Registry.ITEM) {
-            if (item instanceof FluidProviderItem) {
-                FluidProviderItem bucket = (FluidProviderItem) item;
-                ItemStack newStack = new ItemStack(item);
-
-                Ref<ItemStack> stackRef = new Ref<>(newStack);
-                FluidVolume fluidHeld = bucket.drain(stackRef);
-                int amount = fluidHeld.getAmount();
-                if (
-                    FluidVolume.areEqualExceptAmounts(with.obj, fluidHeld) && amount <= with.obj.getAmount()
-                        && ItemStack.areEqualIgnoreDamage(stackRef.obj, stack.obj)
-                ) {
-                    with.obj = with.obj.copy();
-                    FluidVolume splitOff = with.obj.split(amount);
-                    assert splitOff.getAmount() == amount;
-                    stack.obj = newStack;
-                    return true;
-                }
+            if (!(item instanceof FluidProviderItem)) {
+                continue;
             }
+            FluidProviderItem bucket = (FluidProviderItem) item;
+            ItemStack newStack = new ItemStack(item);
+
+            Ref<ItemStack> stackRef = new Ref<>(newStack);
+            FluidVolume fluidHeld = bucket.drain(stackRef);
+            FluidAmount amount = fluidHeld.getAmount_F();
+            if (!FluidVolume.areEqualExceptAmounts(with.obj, fluidHeld)) {
+                continue;
+            }
+            if (amount.isGreaterThan(with.obj.getAmount_F())) {
+                continue;
+            }
+            if (!ItemStack.areEqualIgnoreDamage(stackRef.obj, stack.obj)) {
+                continue;
+            }
+            with.obj = with.obj.copy();
+            FluidVolume splitOff = with.obj.split(amount);
+            assert splitOff.getAmount_F().equals(amount);
+            stack.obj = newStack;
+            return true;
         }
         return false;
     }
@@ -105,7 +112,7 @@ public class BucketItemMixin extends Item implements FluidProviderItem, IBucketI
     }
 
     @Override
-    public int libblockattributes__getFluidVolumeAmount() {
-        return FluidVolume.BUCKET;
+    public FluidAmount libblockattributes__getFluidVolumeAmount() {
+        return FluidAmount.BUCKET;
     }
 }

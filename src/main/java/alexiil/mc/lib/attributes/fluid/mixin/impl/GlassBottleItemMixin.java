@@ -18,6 +18,8 @@ import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 
 import alexiil.mc.lib.attributes.fluid.FluidProviderItem;
+import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
@@ -35,12 +37,15 @@ public class GlassBottleItemMixin extends Item implements FluidProviderItem, IBu
 
     @Override
     public FluidVolume drain(Ref<ItemStack> stack) {
-        return FluidKeys.EMPTY.withAmount(0);
+        return FluidVolumeUtil.EMPTY;
     }
 
     @Override
     public boolean fill(Ref<ItemStack> stack, Ref<FluidVolume> with) {
         if (stack.obj.getCount() != 1) {
+            return false;
+        }
+        if (with.obj.getAmount_F().isLessThan(FluidAmount.BOTTLE)) {
             return false;
         }
         final Potion potion;
@@ -52,7 +57,7 @@ public class GlassBottleItemMixin extends Item implements FluidProviderItem, IBu
             return false;
         }
         with.obj = with.obj.copy();
-        FluidVolume split = with.obj.split(FluidVolume.BOTTLE);
+        FluidVolume split = with.obj.split(FluidAmount.BOTTLE);
         if (!split.isEmpty()) {
             ItemStack potionStack = new ItemStack(Items.POTION);
             PotionUtil.setPotion(potionStack, potion);
@@ -90,7 +95,7 @@ public class GlassBottleItemMixin extends Item implements FluidProviderItem, IBu
     }
 
     @Override
-    public int libblockattributes__getFluidVolumeAmount() {
-        return FluidVolume.BOTTLE;
+    public FluidAmount libblockattributes__getFluidVolumeAmount() {
+        return FluidAmount.BOTTLE;
     }
 }

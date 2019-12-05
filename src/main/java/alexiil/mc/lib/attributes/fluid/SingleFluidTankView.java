@@ -9,6 +9,7 @@ package alexiil.mc.lib.attributes.fluid;
 
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
@@ -36,8 +37,14 @@ public class SingleFluidTankView {
         return backingView.getInvFluid(tank);
     }
 
+    /** @deprecated Replaced by {@link #getMaxAmount_F()}. */
+    @Deprecated
     public final int getMaxAmount() {
         return backingView.getMaxAmount(tank);
+    }
+
+    public final FluidAmount getMaxAmount_F() {
+        return backingView.getMaxAmount_F(tank);
     }
 
     public final boolean isValid(FluidKey fluid) {

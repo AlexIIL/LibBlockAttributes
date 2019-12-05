@@ -12,6 +12,7 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.fluid.FluidAttributes;
 import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
@@ -37,5 +38,5 @@ public interface IBucketItem {
     }
 
     /** @return A value such as {@link FluidVolume#BUCKET}. */
-    int libblockattributes__getFluidVolumeAmount();
+    FluidAmount libblockattributes__getFluidVolumeAmount();
 }

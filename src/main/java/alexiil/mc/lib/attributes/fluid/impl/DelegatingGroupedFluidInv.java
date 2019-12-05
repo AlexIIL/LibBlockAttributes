@@ -13,8 +13,9 @@ import java.util.Set;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.FluidInvAmountChangeListener;
+import alexiil.mc.lib.attributes.fluid.FluidInvAmountChangeListener_F;
 import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
@@ -33,8 +34,8 @@ public class DelegatingGroupedFluidInv implements GroupedFluidInv {
     }
 
     @Override
-    public int getTotalCapacity() {
-        return delegate.getTotalCapacity();
+    public FluidAmount getTotalCapacity_F() {
+        return delegate.getTotalCapacity_F();
     }
 
     @Override
@@ -43,9 +44,9 @@ public class DelegatingGroupedFluidInv implements GroupedFluidInv {
     }
 
     @Override
-    public ListenerToken addListener(FluidInvAmountChangeListener listener, ListenerRemovalToken removalToken) {
+    public ListenerToken addListener_F(FluidInvAmountChangeListener_F listener, ListenerRemovalToken removalToken) {
         GroupedFluidInv real = this;
-        return delegate.addListener((inv, fluid, previous, current) -> {
+        return delegate.addListener_F((inv, fluid, previous, current) -> {
             listener.onChange(real, fluid, previous, current);
         }, removalToken);
     }
@@ -61,12 +62,12 @@ public class DelegatingGroupedFluidInv implements GroupedFluidInv {
     }
 
     @Override
-    public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
+    public FluidVolume attemptExtraction(FluidFilter filter, FluidAmount maxAmount, Simulation simulation) {
         return delegate.attemptExtraction(filter, maxAmount, simulation);
     }
 
     @Override
-    public FluidVolume attemptAnyExtraction(int maxAmount, Simulation simulation) {
+    public FluidVolume attemptAnyExtraction(FluidAmount maxAmount, Simulation simulation) {
         return delegate.attemptAnyExtraction(maxAmount, simulation);
     }
 }

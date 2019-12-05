@@ -26,6 +26,7 @@ import alexiil.mc.lib.attributes.ItemAttributeList;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.compat.silk.SilkFluidCompat;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
@@ -117,15 +118,18 @@ public final class FluidAttributes {
         }
     }
 
-    public static <T> CombinableAttribute<T> create(Class<T> clazz, @Nonnull T defaultValue, AttributeCombiner<
-        T> combiner, Function<FixedFluidInv, T> convertor) {
+    public static <T> CombinableAttribute<T> create(
+        Class<T> clazz, @Nonnull T defaultValue, AttributeCombiner<T> combiner, Function<FixedFluidInv, T> convertor
+    ) {
 
         return Attributes.createCombinable(clazz, defaultValue, combiner)//
             .appendItemAdder((stackRef, excess, to) -> appendItemAttributes(convertor, stackRef, excess, to));
     }
 
-    private static <T> void appendItemAttributes(Function<FixedFluidInv, T> convertor, Reference<ItemStack> stackRef,
-        LimitedConsumer<ItemStack> excess, ItemAttributeList<T> to) {
+    private static <T> void appendItemAttributes(
+        Function<FixedFluidInv, T> convertor, Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excess,
+        ItemAttributeList<T> to
+    ) {
 
         ItemStack stack = stackRef.get();
         Item item = stack.getItem();
@@ -166,12 +170,12 @@ public final class FluidAttributes {
         // public FluidVolume getInvFluid(int tank) {
         // ItemStack stack = stackRef.get();
         // if (!isValidBucket(stack)) {
-        // return FluidKeys.EMPTY.withAmount(0);
+        // return FluidVolumeUtil.EMPTY;
         // }
         // IBucketItem bucket = (IBucketItem) stack.getItem();
         // FluidKey fluid = bucket.libblockattributes__getFluid(stack);
         // if (fluid == FluidKeys.EMPTY) {
-        // return FluidKeys.EMPTY.withAmount(0);
+        // return FluidVolumeUtil.EMPTY;
         // } else {
         // return fluid.withAmount(bucket.libblockattributes__getFluidVolumeAmount() * stack.getCount());
         // }
@@ -217,14 +221,14 @@ public final class FluidAttributes {
         }
 
         @Override
-        public int getTotalCapacity() {
+        public FluidAmount getTotalCapacity_F() {
             ItemStack stack = stackRef.get();
             if (!isValidBucket(stack)) {
-                return 0;
+                return FluidAmount.ZERO;
             }
             IBucketItem bucket = (IBucketItem) stack.getItem();
-            int perBucket = bucket.libblockattributes__getFluidVolumeAmount();
-            return perBucket * stack.getCount();
+            FluidAmount perBucket = bucket.libblockattributes__getFluidVolumeAmount();
+            return perBucket.mul(stack.getCount());
         }
 
         @Override
@@ -239,9 +243,9 @@ public final class FluidAttributes {
 
             if (current != FluidKeys.EMPTY) {
                 if (filter.matches(current)) {
-                    int perBucket = bucket.libblockattributes__getFluidVolumeAmount();
-                    int amount = perBucket * stack.getCount();
-                    return new FluidInvStatistic(filter, amount, 0, amount);
+                    FluidAmount perBucket = bucket.libblockattributes__getFluidVolumeAmount();
+                    FluidAmount amount = perBucket.mul(stack.getCount());
+                    return new FluidInvStatistic(filter, amount, FluidAmount.ZERO, amount);
                 } else {
                     return FluidInvStatistic.emptyOf(filter);
                 }
@@ -250,11 +254,11 @@ public final class FluidAttributes {
             Set<FluidKey> any = FluidFilterUtil.decomposeFilter(filter);
 
             if (any != null) {
-                int perBucket = bucket.libblockattributes__getFluidVolumeAmount();
-                int space = perBucket * stack.getCount();
+                FluidAmount perBucket = bucket.libblockattributes__getFluidVolumeAmount();
+                FluidAmount space = perBucket.mul(stack.getCount());
                 for (FluidKey key : any) {
                     if (!bucket.libblockattributes__withFluid(key).isEmpty()) {
-                        return new FluidInvStatistic(filter, 0, 0, space);
+                        return new FluidInvStatistic(filter, FluidAmount.ZERO, FluidAmount.ZERO, space);
                     }
                 }
             }
@@ -274,8 +278,8 @@ public final class FluidAttributes {
                 return fluid;
             }
             IBucketItem bucket = (IBucketItem) stack.getItem();
-            int perBucket = bucket.libblockattributes__getFluidVolumeAmount();
-            if (fluid.getAmount() < perBucket) {
+            FluidAmount perBucket = bucket.libblockattributes__getFluidVolumeAmount();
+            if (fluid.getAmount_F().isLessThan(perBucket)) {
                 return fluid;
             }
             FluidKey current = bucket.libblockattributes__getFluid(stack);
@@ -292,7 +296,7 @@ public final class FluidAttributes {
 
             fluid = fluid.copy();
             FluidVolume splitOff = fluid.split(perBucket);
-            if (splitOff.getAmount() != perBucket) {
+            if (!splitOff.getAmount_F().equals(perBucket)) {
                 throw new IllegalStateException(
                     "Split off amount was not equal to perBucket!"//
                         + "\n\tsplitOff = " + splitOff//
@@ -319,14 +323,14 @@ public final class FluidAttributes {
         }
 
         @Override
-        public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
+        public FluidVolume attemptExtraction(FluidFilter filter, FluidAmount maxAmount, Simulation simulation) {
             ItemStack stack = stackRef.get();
             if (!isValidBucket(stack)) {
                 return FluidVolumeUtil.EMPTY;
             }
             IBucketItem bucket = (IBucketItem) stack.getItem();
-            int perBucket = bucket.libblockattributes__getFluidVolumeAmount();
-            if (maxAmount < perBucket) {
+            FluidAmount perBucket = bucket.libblockattributes__getFluidVolumeAmount();
+            if (maxAmount.isLessThan(perBucket)) {
                 return FluidVolumeUtil.EMPTY;
             }
             FluidKey current = bucket.libblockattributes__getFluid(stack);

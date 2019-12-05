@@ -9,12 +9,20 @@ package alexiil.mc.lib.attributes.fluid.render;
 
 import java.util.List;
 
-import net.minecraft.client.MinecraftClient;
+import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
+
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.texture.SpriteAtlasTexture;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.fluid.Fluid;
 
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
+/** Default {@link FluidVolumeRenderer} that can handle most default fluid types - if the {@link FluidVolume} is for a
+ * non-null minecraft {@link Fluid} then this will use the sprites provided from the {@link FluidRenderHandlerRegistry}.
+ * Otherwise this will fallback to the sprites in {@link FluidVolume#getStillSprite()} and
+ * {@link FluidVolume#getFlowingSprite()}. */
 public class DefaultFluidVolumeRenderer extends FluidVolumeRenderer {
 
     public static final DefaultFluidVolumeRenderer INSTANCE = new DefaultFluidVolumeRenderer();
@@ -22,10 +30,11 @@ public class DefaultFluidVolumeRenderer extends FluidVolumeRenderer {
     protected DefaultFluidVolumeRenderer() {}
 
     @Override
-    public void render(FluidVolume fluid, List<FluidRenderFace> faces, double x, double y, double z) {
-        SpriteAtlasTexture atlas = MinecraftClient.getInstance().getSpriteAtlas();
-        Sprite still = atlas.getSprite(fluid.getStillSprite());
-        Sprite flowing = atlas.getSprite(fluid.getFlowingSprite());
-        renderSimpleFluid(faces, x, y, z, still, flowing, fluid.getRenderColor());
+    public void render(
+        FluidVolume fluid, List<FluidRenderFace> faces, VertexConsumerProvider vcp, MatrixStack matrices
+    ) {
+        Sprite[] sprites = getSprites(fluid);
+        RenderLayer layer = getRenderLayer(fluid);
+        renderSimpleFluid(faces, vcp.getBuffer(layer), matrices, sprites[0], sprites[1], fluid.getRenderColor());
     }
 }

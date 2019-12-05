@@ -15,11 +15,24 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+
 /** {@link ItemStack} equivalent for {@link Fluid fluids}. Instances must be constructed via
- * {@link FluidKeys#get(Fluid)}.{@link FluidKey#withAmount(int) withAmount(int)}. */
+ * {@link FluidKeys#get(Fluid)}.{@link FluidKey#withAmount(FluidAmount) withAmount(FluidAmount)}. */
 public class NormalFluidVolume extends FluidVolume {
 
+    @Deprecated
     NormalFluidVolume(NormalFluidKey fluid, int amount) {
+        super(fluid, amount);
+        if (fluid.fluid instanceof EmptyFluid && fluid != FluidKeys.EMPTY) {
+            throw new IllegalArgumentException("Different empty fluid!");
+        }
+        if (fluid.fluid instanceof BaseFluid && fluid.fluid != ((BaseFluid) fluid.fluid).getStill()) {
+            throw new IllegalArgumentException("Only the still version of fluids are allowed!");
+        }
+    }
+
+    NormalFluidVolume(NormalFluidKey fluid, FluidAmount amount) {
         super(fluid, amount);
         if (fluid.fluid instanceof EmptyFluid && fluid != FluidKeys.EMPTY) {
             throw new IllegalArgumentException("Different empty fluid!");

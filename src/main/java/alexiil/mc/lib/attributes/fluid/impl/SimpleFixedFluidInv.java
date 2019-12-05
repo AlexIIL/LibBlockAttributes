@@ -8,12 +8,13 @@
 package alexiil.mc.lib.attributes.fluid.impl;
 
 import java.lang.reflect.Method;
+import java.math.RoundingMode;
 import java.util.Map;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.util.DefaultedList;
-import net.minecraft.util.SystemUtil;
+import net.minecraft.util.Util;
 
 import alexiil.mc.lib.attributes.AttributeUtil;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
@@ -22,11 +23,12 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.FixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.FluidInvTankChangeListener;
 import alexiil.mc.lib.attributes.fluid.FluidTransferable;
+import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
-import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.misc.Saveable;
 
@@ -47,7 +49,11 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable, Sa
     /** Sentinel value used during {@link #invalidateListeners()}. */
     private static final FluidInvTankChangeListener[] INVALIDATING_LISTENERS = new FluidInvTankChangeListener[0];
 
+    /** @deprecated Replaced by {@link #tankCapacity_F} */
+    @Deprecated
     public final int tankCapacity;
+
+    public final FluidAmount tankCapacity_F;
     protected final DefaultedList<FluidVolume> tanks;
 
     // TODO: Optimise this to cache more information!
@@ -56,14 +62,21 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable, Sa
     private FluidInvTankChangeListener ownerListener;
 
     private final Map<FluidInvTankChangeListener, ListenerRemovalToken> listeners
-        = new Object2ObjectLinkedOpenCustomHashMap<>(SystemUtil.identityHashStrategy());
+        = new Object2ObjectLinkedOpenCustomHashMap<>(Util.identityHashStrategy());
 
     // Should this use WeakReference instead of storing them directly?
     private FluidInvTankChangeListener[] bakedListeners = NO_LISTENERS;
 
+    /** @deprecated Replaced by {@link #SimpleFixedFluidInv(int, FluidAmount)}. */
+    @Deprecated
     public SimpleFixedFluidInv(int invSize, int tankCapacity) {
-        tanks = DefaultedList.ofSize(invSize, FluidKeys.EMPTY.withAmount(0));
-        this.tankCapacity = tankCapacity;
+        this(invSize, FluidAmount.of1620(tankCapacity));
+    }
+
+    public SimpleFixedFluidInv(int invSize, FluidAmount tankCapacity) {
+        tanks = DefaultedList.ofSize(invSize, FluidVolumeUtil.EMPTY);
+        this.tankCapacity = tankCapacity.as1620(RoundingMode.DOWN);
+        this.tankCapacity_F = tankCapacity;
     }
 
     // IFixedFluidInv
@@ -73,9 +86,16 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable, Sa
         return tanks.size();
     }
 
+    /** @deprecated Replaced by {@link #getMaxAmount_F(int)}. */
     @Override
+    @Deprecated
     public int getMaxAmount(int tank) {
         return tankCapacity;
+    }
+
+    @Override
+    public FluidAmount getMaxAmount_F(int tank) {
+        return tankCapacity_F;
     }
 
     @Override
@@ -115,7 +135,7 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable, Sa
 
     @Override
     public boolean setInvFluid(int tank, FluidVolume to, Simulation simulation) {
-        if (isFluidValidForTank(tank, to.fluidKey) && to.getAmount() <= getMaxAmount(tank)) {
+        if (isFluidValidForTank(tank, to.fluidKey) && !to.getAmount_F().isGreaterThan(getMaxAmount_F(tank))) {
             if (simulation == Simulation.ACTION) {
                 FluidVolume before = tanks.get(tank);
                 tanks.set(tank, to);
@@ -207,10 +227,10 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable, Sa
     public void fromTag(CompoundTag tag) {
         ListTag tanksTag = tag.getList("tanks", new CompoundTag().getType());
         for (int i = 0; i < tanksTag.size() && i < tanks.size(); i++) {
-            tanks.set(i, FluidVolume.fromTag(tanksTag.getCompoundTag(i)));
+            tanks.set(i, FluidVolume.fromTag(tanksTag.getCompound(i)));
         }
         for (int i = tanksTag.size(); i < tanks.size(); i++) {
-            tanks.set(i, FluidKeys.EMPTY.withAmount(0));
+            tanks.set(i, FluidVolumeUtil.EMPTY);
         }
     }
 
@@ -222,7 +242,7 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable, Sa
     }
 
     @Override
-    public int getMinimumAcceptedAmount() {
+    public FluidAmount getMinimumAcceptedAmount() {
         return groupedVersion.getMinimumAcceptedAmount();
     }
 
@@ -234,12 +254,12 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable, Sa
     // FluidExtractable
 
     @Override
-    public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
+    public FluidVolume attemptExtraction(FluidFilter filter, FluidAmount maxAmount, Simulation simulation) {
         return groupedVersion.attemptExtraction(filter, maxAmount, simulation);
     }
 
     @Override
-    public FluidVolume attemptAnyExtraction(int maxAmount, Simulation simulation) {
+    public FluidVolume attemptAnyExtraction(FluidAmount maxAmount, Simulation simulation) {
         return groupedVersion.attemptAnyExtraction(maxAmount, simulation);
     }
 }

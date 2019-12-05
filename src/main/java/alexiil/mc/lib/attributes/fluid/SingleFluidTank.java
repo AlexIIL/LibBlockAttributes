@@ -10,6 +10,7 @@ package alexiil.mc.lib.attributes.fluid;
 import java.util.function.Function;
 
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.misc.Reference;
@@ -37,7 +38,7 @@ public final class SingleFluidTank extends SingleFluidTankView implements FluidT
     }
 
     /** Applies the given function to the stack held in the slot, and uses {@link #forceSet(FluidVolume)} on the result
-     * (Which will throw an exception if the returned stack is not valid for this inventory). */
+     * (Which will throw an exception if the returned stack is not valid for this tank). */
     public final void modify(Function<FluidVolume, FluidVolume> function) {
         getBackingInv().modifyTank(tank, function);
     }
@@ -47,8 +48,15 @@ public final class SingleFluidTank extends SingleFluidTankView implements FluidT
         return FluidVolumeUtil.insertSingle(getBackingInv(), tank, fluid, simulation);
     }
 
+    /** @deprecated Replaced by {@link #attemptExtraction(FluidFilter, FluidAmount, Simulation)}. */
     @Override
+    @Deprecated
     public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
+        return FluidVolumeUtil.extractSingle(getBackingInv(), tank, filter, null, maxAmount, simulation);
+    }
+
+    @Override
+    public FluidVolume attemptExtraction(FluidFilter filter, FluidAmount maxAmount, Simulation simulation) {
         return FluidVolumeUtil.extractSingle(getBackingInv(), tank, filter, null, maxAmount, simulation);
     }
 

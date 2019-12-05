@@ -10,5 +10,7 @@ package alexiil.mc.lib.attributes;
 public final class AttributeUtil {
     private AttributeUtil() {}
 
-    public static final boolean EXPENSIVE_DEBUG_CHECKS = true;
+    // Ensure that it defaults to true, unless some-one explicitly goes looking for this
+    public static final boolean EXPENSIVE_DEBUG_CHECKS
+        = !Boolean.getBoolean("libblockattributes.disable_expensive_debug_checks");
 }

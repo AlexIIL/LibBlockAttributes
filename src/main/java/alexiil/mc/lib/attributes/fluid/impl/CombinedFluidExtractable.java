@@ -11,9 +11,10 @@ import java.util.List;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.FluidExtractable;
+import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.ExactFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
-import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 public final class CombinedFluidExtractable implements FluidExtractable {
@@ -25,24 +26,39 @@ public final class CombinedFluidExtractable implements FluidExtractable {
     }
 
     @Override
-    public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
-        if (maxAmount < 0) {
+    public FluidVolume attemptExtraction(FluidFilter filter, FluidAmount maxAmount, Simulation simulation) {
+        return attemptExtraction(filter, maxAmount, simulation, list);
+    }
+
+    /** Full implementation of {@link #attemptExtraction(FluidFilter, FluidAmount, Simulation)}, that takes an iterable
+     * so it's usable by {@link CombinedGroupedFluidInv} as well.
+     * 
+     * @param iter Every element will be casted to {@link FluidExtractable}, so you should ensure that the passed
+     *            iterable is of the correct type! */
+    static FluidVolume attemptExtraction(
+        FluidFilter filter, FluidAmount maxAmount, Simulation simulation, Iterable<?> iter
+    ) {
+        if (maxAmount.isNegative()) {
             throw new IllegalArgumentException("maxCount cannot be negative! (was " + maxAmount + ")");
         }
-        FluidVolume extracted = FluidKeys.EMPTY.withAmount(0);
-        for (FluidExtractable extractable : list) {
+        FluidVolume extracted = FluidVolumeUtil.EMPTY;
+        if (maxAmount.isZero()) {
+            return extracted;
+        }
+        for (Object obj : iter) {
+            FluidExtractable extractable = (FluidExtractable) obj;
             if (extracted.isEmpty()) {
                 extracted = extractable.attemptExtraction(filter, maxAmount, simulation);
                 if (extracted.isEmpty()) {
                     continue;
                 }
-                if (extracted.getAmount() >= maxAmount) {
+                if (!extracted.getAmount_F().isLessThan(maxAmount)) {
                     return extracted;
                 }
                 filter = new ExactFluidFilter(extracted.fluidKey);
             } else {
-                int newMaxCount = maxAmount - extracted.getAmount();
-                FluidVolume additional = extractable.attemptExtraction(filter, newMaxCount, simulation);
+                FluidAmount newMaxAmount = maxAmount.sub(extracted.getAmount_F());
+                FluidVolume additional = extractable.attemptExtraction(filter, newMaxAmount, simulation);
                 if (additional.isEmpty()) {
                     continue;
                 }
@@ -50,7 +66,7 @@ public final class CombinedFluidExtractable implements FluidExtractable {
                 if (extracted == null) {
                     throw new IllegalStateException("bad FluidExtractable " + extractable.getClass().getName());
                 }
-                if (extracted.getAmount() >= maxAmount) {
+                if (!extracted.getAmount_F().isLessThan(maxAmount)) {
                     return extracted;
                 }
             }

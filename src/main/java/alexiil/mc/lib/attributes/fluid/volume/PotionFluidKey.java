@@ -14,6 +14,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
 
 public final class PotionFluidKey extends FluidKey {
@@ -45,8 +46,15 @@ public final class PotionFluidKey extends FluidKey {
         return new PotionFluidVolume(this, tag);
     }
 
+    /** @deprecated Replaced by {@link #withAmount(FluidAmount)}. */
     @Override
+    @Deprecated
     public PotionFluidVolume withAmount(int amount) {
+        return new PotionFluidVolume(this, amount);
+    }
+
+    @Override
+    public PotionFluidVolume withAmount(FluidAmount amount) {
         return new PotionFluidVolume(this, amount);
     }
 }

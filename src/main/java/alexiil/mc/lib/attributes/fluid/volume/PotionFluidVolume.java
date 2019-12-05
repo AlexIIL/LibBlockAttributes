@@ -19,13 +19,20 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.text.Text;
+
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.render.DefaultFluidVolumeRenderer;
 import alexiil.mc.lib.attributes.fluid.render.EnchantmentGlintFluidRenderer;
 import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer;
 
 public final class PotionFluidVolume extends FluidVolume {
 
+    @Deprecated
     public PotionFluidVolume(PotionFluidKey key, int amount) {
+        super(key, amount);
+    }
+
+    public PotionFluidVolume(PotionFluidKey key, FluidAmount amount) {
         super(key, amount);
     }
 

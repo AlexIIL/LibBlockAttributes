@@ -15,10 +15,10 @@ import alexiil.mc.lib.attributes.fluid.FixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.FixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
-import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** An {@link GroupedFluidInv} wrapper over an {@link FixedFluidInv}. This implementation is the naive implementation
@@ -69,10 +69,10 @@ public class GroupedFluidInvFixedWrapper extends GroupedFluidInvViewFixedWrapper
         fluid = fluid.copy();
         for (int t = 0; t < inv().getTankCount(); t++) {
             FluidVolume inTank = inv().getInvFluid(t);
-            int current = inTank.getAmount();
-            int max = Math.min(current + fluid.getAmount(), inv().getMaxAmount(t));
-            int addable = max - current;
-            if (addable <= 0) {
+            FluidAmount current = inTank.getAmount_F();
+            FluidAmount max = current.add(fluid.getAmount_F()).min(inv().getMaxAmount_F(t));
+            FluidAmount addable = max.sub(current);
+            if (!addable.isPositive()) {
                 continue;
             }
             inTank = inTank.copy();
@@ -83,7 +83,7 @@ public class GroupedFluidInvFixedWrapper extends GroupedFluidInvViewFixedWrapper
             if (merged != null && inv().setInvFluid(t, merged, simulation)) {
                 fluid = fluidCopy;
                 if (fluid.isEmpty()) {
-                    return FluidKeys.EMPTY.withAmount(0);
+                    return FluidVolumeUtil.EMPTY;
                 }
             }
         }
@@ -91,17 +91,18 @@ public class GroupedFluidInvFixedWrapper extends GroupedFluidInvViewFixedWrapper
     }
 
     @Override
-    public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
-        if (maxAmount < 0) {
+    public FluidVolume attemptExtraction(FluidFilter filter, FluidAmount maxAmount, Simulation simulation) {
+        if (maxAmount.isNegative()) {
             throw new IllegalArgumentException("maxAmount cannot be negative! (was " + maxAmount + ")");
         }
-        FluidVolume fluid = FluidKeys.EMPTY.withAmount(0);
-        if (maxAmount == 0) {
+        FluidVolume fluid = FluidVolumeUtil.EMPTY;
+        if (maxAmount.isPositive()) {
             return fluid;
         }
         for (int t = 0; t < inv().getTankCount(); t++) {
-            fluid = FluidVolumeUtil.extractSingle(inv(), t, filter, fluid, maxAmount - fluid.getAmount(), simulation);
-            if (fluid.getAmount() >= maxAmount) {
+            FluidAmount thisMax = maxAmount.sub(fluid.getAmount_F());
+            fluid = FluidVolumeUtil.extractSingle(inv(), t, filter, fluid, thisMax, simulation);
+            if (!fluid.getAmount_F().isLessThan(maxAmount)) {
                 return fluid;
             }
         }

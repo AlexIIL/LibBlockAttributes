@@ -14,7 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.util.DefaultedList;
-import net.minecraft.util.SystemUtil;
+import net.minecraft.util.Util;
 
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
@@ -54,7 +54,7 @@ public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemIn
     private final GroupedItemInv groupedVersion = new GroupedItemInvFixedWrapper(this);
 
     private final Map<InvMarkDirtyListener, ListenerRemovalToken> listeners
-        = new Object2ObjectLinkedOpenCustomHashMap<>(SystemUtil.identityHashStrategy());
+        = new Object2ObjectLinkedOpenCustomHashMap<>(Util.identityHashStrategy());
 
     private InvMarkDirtyListener ownerListener;
 
@@ -135,7 +135,7 @@ public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemIn
     public void fromTag(CompoundTag tag) {
         ListTag slotsTag = tag.getList("slots", new CompoundTag().getType());
         for (int i = 0; i < slotsTag.size() && i < slots.size(); i++) {
-            slots.set(i, ItemStack.fromTag(slotsTag.getCompoundTag(i)));
+            slots.set(i, ItemStack.fromTag(slotsTag.getCompound(i)));
         }
         for (int i = slotsTag.size(); i < slots.size(); i++) {
             slots.set(i, ItemStack.EMPTY);

@@ -7,14 +7,21 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import java.lang.reflect.Method;
+
 import javax.annotation.Nullable;
 
+import net.minecraft.fluid.BaseFluid;
+import net.minecraft.fluid.EmptyFluid;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ViewableWorld;
+import net.minecraft.world.WorldView;
+
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 
 /** A factory for {@link FluidVolume} instances. Identifying whether two {@link FluidKey}'s are equal is always done via
  * the object identity comparison (== rather than {@link #equals(Object)} - although {@link FluidKey} final-overrides
@@ -52,14 +59,18 @@ public abstract class FluidKey {
      * Note that this might differ from the one returned by {@link FluidVolume#getName()}! */
     public final Text name;
 
+    @Nullable
+    private final Fluid rawFluid;
+
     public static class FluidKeyBuilder {
-        /* package-private */ final FluidRegistryEntry<?> registryEntry;
-        /* package-private */ final Identifier spriteId;
-        /* package-private */ final Identifier flowingSpriteId;
-        /* package-private */ final Text name;
+        /* package-private */ FluidRegistryEntry<?> registryEntry;
+        /* package-private */ Identifier spriteId;
+        /* package-private */ Identifier flowingSpriteId;
+        /* package-private */ Text name;
         /* package-private */ int renderColor = 0xFF_FF_FF;
         /* package-private */ FluidUnit unit = FluidUnit.BUCKET;
         /* package-private */ final FluidUnitSet unitSet = new FluidUnitSet();
+        /* package-private */ Fluid rawFluid;
 
         /** @deprecated As the flowing sprite ID is needed as well. */
         @Deprecated
@@ -67,12 +78,31 @@ public abstract class FluidKey {
             this(registryEntry, spriteId, spriteId, name);
         }
 
-        public FluidKeyBuilder(FluidRegistryEntry<?> registryEntry, Identifier spriteId, Identifier flowingSpriteId,
-            Text name) {
+        public FluidKeyBuilder(
+            FluidRegistryEntry<?> registryEntry, Identifier spriteId, Identifier flowingSpriteId, Text name
+        ) {
             this.registryEntry = registryEntry;
             this.spriteId = spriteId;
             this.flowingSpriteId = flowingSpriteId;
             this.name = name;
+        }
+
+        public FluidKeyBuilder() {}
+
+        public FluidKeyBuilder setRegistryEntry(FluidRegistryEntry<?> registryEntry) {
+            this.registryEntry = registryEntry;
+            return this;
+        }
+
+        public FluidKeyBuilder setName(Text name) {
+            this.name = name;
+            return this;
+        }
+
+        public FluidKeyBuilder setSprites(Identifier stillSprite, Identifier flowingSprite) {
+            this.spriteId = stillSprite;
+            this.flowingSpriteId = flowingSprite;
+            return this;
         }
 
         public FluidKeyBuilder setRenderColor(int renderColor) {
@@ -88,6 +118,11 @@ public abstract class FluidKey {
         /** Adds the given unit to the set of units used. */
         public FluidKeyBuilder addUnit(FluidUnit unit) {
             this.unitSet.addUnit(unit);
+            return this;
+        }
+
+        public FluidKeyBuilder setRawFluid(Fluid rawFluid) {
+            this.rawFluid = rawFluid;
             return this;
         }
     }
@@ -113,6 +148,16 @@ public abstract class FluidKey {
         this.flowingSpriteId = builder.flowingSpriteId;
         this.name = builder.name;
         this.renderColor = builder.renderColor;
+        this.rawFluid = builder.rawFluid;
+        if (rawFluid != null) {
+            if (rawFluid instanceof EmptyFluid && rawFluid != Fluids.EMPTY) {
+                throw new IllegalArgumentException("Different empty fluid!");
+            }
+            if (rawFluid instanceof BaseFluid && rawFluid != ((BaseFluid) rawFluid).getStill()) {
+                throw new IllegalArgumentException("Only the still version of fluids are allowed!");
+            }
+        }
+        validateClass(getClass());
     }
 
     public static FluidKey fromTag(CompoundTag tag) {
@@ -149,7 +194,7 @@ public abstract class FluidKey {
 
     @Nullable
     public Fluid getRawFluid() {
-        return null;
+        return rawFluid;
     }
 
     @Override
@@ -163,11 +208,20 @@ public abstract class FluidKey {
         return this == FluidKeys.EMPTY;
     }
 
-    public abstract FluidVolume withAmount(int amount);
+    @Deprecated
+    public FluidVolume withAmount(int amount) {
+        return withAmount(FluidAmount.of1620(amount));
+    }
+
+    public FluidVolume withAmount(FluidAmount amount) {
+        FluidVolume vol = withAmount(amount.as1620());
+        vol.setAmount(amount);
+        return vol;
+    }
 
     /** Called when this is pumped out from the world. */
-    public FluidVolume fromWorld(ViewableWorld world, BlockPos pos) {
-        return withAmount(FluidVolume.BUCKET);
+    public FluidVolume fromWorld(WorldView world, BlockPos pos) {
+        return withAmount(FluidAmount.BUCKET);
     }
 
     @Override
@@ -178,5 +232,24 @@ public abstract class FluidKey {
     @Override
     public final int hashCode() {
         return System.identityHashCode(this);
+    }
+
+    private static void validateClass(Class<? extends FluidKey> clazz) {
+        try {
+            Method amountOld = clazz.getDeclaredMethod("withAmount", int.class);
+            Method amountNew = clazz.getDeclaredMethod("withAmount", FluidAmount.class);
+
+            if (amountOld.getDeclaringClass() == FluidKey.class) {
+                if (amountNew.getDeclaringClass() == FluidKey.class) {
+                    throw new IllegalStateException(
+                        "The " + clazz + " must override at least 1 of {'FluidKey.withAmount(int)'"
+                            + ", or 'FluidKey.withAmount(FluidAmount)' }"
+                    );
+                }
+            }
+
+        } catch (NoSuchMethodException e) {
+            throw new IllegalStateException("Failed to fine the methods during validation!", e);
+        }
     }
 }

@@ -12,6 +12,7 @@ import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.FixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.FluidInvTankChangeListener;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
@@ -36,8 +37,14 @@ public class DelegatingFixedFluidInv implements FixedFluidInv {
     }
 
     @Override
+    @Deprecated
     public int getMaxAmount(int tank) {
         return delegate.getMaxAmount(tank);
+    }
+
+    @Override
+    public FluidAmount getMaxAmount_F(int tank) {
+        return delegate.getMaxAmount_F(tank);
     }
 
     @Override

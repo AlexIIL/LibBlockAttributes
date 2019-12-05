@@ -20,6 +20,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IWorld;
 
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
@@ -47,12 +48,12 @@ public enum FluidWorldUtil {
                 }
                 return fluidVolume;
             }
-            return FluidKeys.EMPTY.withAmount(0);
+            return FluidVolumeUtil.EMPTY;
         } else if (block instanceof FluidBlock && state.contains(Properties.LEVEL_15)) {
             if (state.get(Properties.LEVEL_15) == 0) {
                 FluidKey fluidKey = FluidKeys.get(((IFluidBlockMixin) block).__fluid());
                 if (fluidKey == null) {
-                    return FluidKeys.EMPTY.withAmount(0);
+                    return FluidVolumeUtil.EMPTY;
                 }
                 FluidVolume fluidVolume = fluidKey.fromWorld(world, pos);
                 if (simulation == Simulation.ACTION) {
@@ -65,6 +66,6 @@ public enum FluidWorldUtil {
         if (drainer != null) {
             return drainer.tryDrainFluid(world, pos, state, simulation);
         }
-        return FluidKeys.EMPTY.withAmount(0);
+        return FluidVolumeUtil.EMPTY;
     }
 }

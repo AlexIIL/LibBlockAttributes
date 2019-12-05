@@ -8,6 +8,7 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import net.minecraft.fluid.BaseFluid;
 import net.minecraft.fluid.EmptyFluid;
@@ -17,6 +18,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 
 /** Identical to {@link NormalFluidVolume}, but without an amount and with extra data hidden from public view. As such
  * this is safe to use in normal maps and sets. */
@@ -36,6 +39,7 @@ public class NormalFluidKey extends FluidKey {
 
     public static class NormalFluidKeyBuilder extends FluidKeyBuilder {
 
+        @Deprecated
         public final Fluid fluid;
 
         /** @deprecated As the flowing sprite ID is needed as well. */
@@ -43,11 +47,13 @@ public class NormalFluidKey extends FluidKey {
         public NormalFluidKeyBuilder(Fluid fluid, Identifier spriteId, Text name) {
             super(new FluidRegistryEntry<>(Registry.FLUID, fluid), spriteId, name);
             this.fluid = fluid;
+            setRawFluid(fluid);
         }
 
-        public NormalFluidKeyBuilder(Fluid fluid, Identifier spriteId, Identifier flowingSpriteId, Text name) {
+        public NormalFluidKeyBuilder(@Nullable Fluid fluid, Identifier spriteId, Identifier flowingSpriteId, Text name) {
             super(new FluidRegistryEntry<>(Registry.FLUID, fluid), spriteId, flowingSpriteId, name);
             this.fluid = fluid;
+            setRawFluid(fluid);
         }
 
         @Override
@@ -94,7 +100,13 @@ public class NormalFluidKey extends FluidKey {
     }
 
     @Override
+    @Deprecated
     public NormalFluidVolume withAmount(int amount) {
+        return new NormalFluidVolume(this, amount);
+    }
+
+    @Override
+    public NormalFluidVolume withAmount(FluidAmount amount) {
         return new NormalFluidVolume(this, amount);
     }
 

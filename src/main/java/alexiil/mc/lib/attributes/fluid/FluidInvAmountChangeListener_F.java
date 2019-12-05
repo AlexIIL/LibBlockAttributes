@@ -7,22 +7,24 @@
  */
 package alexiil.mc.lib.attributes.fluid;
 
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
-/** Replaced by {@link FluidInvAmountChangeListener_F}. */
 @FunctionalInterface
-@Deprecated
-public interface FluidInvAmountChangeListener {
+public interface FluidInvAmountChangeListener_F {
 
     /** @param inv The inventory that changed
      * @param fluid The {@link FluidKey} whose amount changed.
      * @param previous The previous {@link FluidVolume}.
      * @param current The new {@link FluidVolume}. The {@link FluidVolume#getFluidKey()} will either be the empty fluid
      *            key, or equal to the passed {@link FluidKey} . */
-    void onChange(GroupedFluidInvView inv, FluidKey fluid, int previous, int current);
+    void onChange(GroupedFluidInvView inv, FluidKey fluid, FluidAmount previous, FluidAmount current);
 
-    public static FluidInvAmountChangeListener_F asNew(FluidInvAmountChangeListener old) {
-        return (inv, fluid, previous, current) -> old.onChange(inv, fluid, previous.as1620(), current.as1620());
+    @Deprecated
+    public static FluidInvAmountChangeListener asOld(FluidInvAmountChangeListener_F listener) {
+        return (inv, fluid, previous, current) -> {
+            listener.onChange(inv, fluid, FluidAmount.of1620(previous), FluidAmount.of1620(current));
+        };
     }
 }

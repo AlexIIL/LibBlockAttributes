@@ -1,0 +1,7 @@
+Breaking Changes:
+
+* FluidExtractable is no longer a valid functional interface.
+    * While it was never annotated with "@FunctionalInterface" it used to be 
+      possible to use it as one.
+* Changed the return type of "FluidInsertable.getMinimumAcceptedAmount" from an
+  integer to a nullable FluidAmount.

@@ -22,6 +22,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ExactFluidFilter;
@@ -36,14 +37,25 @@ import alexiil.mc.lib.attributes.misc.Reference;
 public final class FluidVolumeUtil {
     private FluidVolumeUtil() {}
 
-    public static final FluidVolume EMPTY = FluidKeys.EMPTY.withAmount(0);
+    public static final FluidVolume EMPTY = FluidKeys.EMPTY.withAmount(FluidAmount.ZERO);
 
     /** Attempts to move as much fluid as possible from the {@link FluidExtractable} to the {@link FluidInsertable}.
      * 
      * @return A copy of the fluid moved.
      * @see #move(FluidExtractable, FluidInsertable, FluidFilter, int) */
     public static FluidVolume move(FluidExtractable from, FluidInsertable to) {
-        return move(from, to, null, Integer.MAX_VALUE);
+        return move(from, to, null, FluidAmount.MAX_VALUE);
+    }
+
+    /** Attempts to move up to the given amount of fluid from the {@link FluidExtractable} to the
+     * {@link FluidInsertable}.
+     * 
+     * @return A copy of the fluid moved.
+     * @see #move(FluidExtractable, FluidInsertable, FluidFilter, int)
+     * @deprecated Replaced by {@link #move(FluidExtractable, FluidInsertable, FluidAmount)} */
+    @Deprecated
+    public static FluidVolume move(FluidExtractable from, FluidInsertable to, int maximum) {
+        return move(from, to, null, maximum);
     }
 
     /** Attempts to move up to the given amount of fluid from the {@link FluidExtractable} to the
@@ -51,15 +63,25 @@ public final class FluidVolumeUtil {
      * 
      * @return A copy of the fluid moved.
      * @see #move(FluidExtractable, FluidInsertable, FluidFilter, int) */
-    public static FluidVolume move(FluidExtractable from, FluidInsertable to, int maximum) {
+    public static FluidVolume move(FluidExtractable from, FluidInsertable to, FluidAmount maximum) {
         return move(from, to, null, maximum);
     }
 
     /** Attempts to move up to the given maximum amount of fluids from the {@link FluidExtractable} to the
      * {@link FluidInsertable}, provided they match the given {@link FluidFilter}.
      * 
-     * @return A copy of the fluid moved. */
+     * @return A copy of the fluid moved.
+     * @deprecated Replaced by {@link #move(FluidExtractable, FluidInsertable, FluidFilter, FluidAmount)} */
+    @Deprecated
     public static FluidVolume move(FluidExtractable from, FluidInsertable to, FluidFilter filter, int maximum) {
+        return move(from, to, filter, FluidAmount.of1620(maximum));
+    }
+
+    /** Attempts to move up to the given maximum amount of fluids from the {@link FluidExtractable} to the
+     * {@link FluidInsertable}, provided they match the given {@link FluidFilter}.
+     * 
+     * @return A copy of the fluid moved. */
+    public static FluidVolume move(FluidExtractable from, FluidInsertable to, FluidFilter filter, FluidAmount maximum) {
         FluidFilter insertionFilter = to.getInsertionFilter();
         if (filter != null && filter != ConstantFluidFilter.ANYTHING) {
             insertionFilter = AggregateFluidFilter.and(insertionFilter, filter);
@@ -84,16 +106,15 @@ public final class FluidVolumeUtil {
 
         // Step 2:
         FluidVolume firstLeftover = to.attemptInsertion(extracted, Simulation.SIMULATE);
-        int firstInserted = extracted.getAmount() - firstLeftover.getAmount();
-        if (firstInserted <= 0) {
+        FluidAmount firstInserted = extracted.getAmount_F().sub(firstLeftover.getAmount_F());
+        if (!firstInserted.isPositive()) {
             return EMPTY;
         }
 
         // Step 3:
-        FluidVolume exactExtracted = from.attemptExtraction(
-            new ExactFluidFilter(extracted.fluidKey), firstInserted, Simulation.SIMULATE
-        );
-        if (exactExtracted.getAmount() != firstInserted) {
+        FluidVolume exactExtracted
+            = from.attemptExtraction(new ExactFluidFilter(extracted.fluidKey), firstInserted, Simulation.SIMULATE);
+        if (!exactExtracted.getAmount_F().equals(firstInserted)) {
             return EMPTY;
         }
 
@@ -102,8 +123,8 @@ public final class FluidVolumeUtil {
         if (!reallyExtracted.equals(exactExtracted)) {
             throw throwBadImplException(
                 "A simulated extraction (returning A) didn't match the real extraction (returning B) from the fluid extractable C!",
-                new String[] { "fluid A", "fluid B", "from C", "filter D" }, new Object[] { exactExtracted,
-                    reallyExtracted, from, insertionFilter }
+                new String[] { "fluid A", "fluid B", "from C", "filter D" },
+                new Object[] { exactExtracted, reallyExtracted, from, insertionFilter }
             );
         }
 
@@ -115,8 +136,8 @@ public final class FluidVolumeUtil {
 
         throw throwBadImplException(
             "A simulated insertion (of A returning B) didn't match the real insertion (of C returning D) into the fluid insertable E!",
-            new String[] { "inserted A", "leftover B", "inserted C", "leftover D", "insertable E" }, new Object[] {
-                extracted, firstLeftover, reallyExtracted, leftover, to }
+            new String[] { "inserted A", "leftover B", "inserted C", "leftover D", "insertable E" },
+            new Object[] { extracted, firstLeftover, reallyExtracted, leftover, to }
         );
     }
 
@@ -124,14 +145,16 @@ public final class FluidVolumeUtil {
      *         {@link Consumer})
      * @deprecated This has been replaced by the item-based attributes system. */
     @Deprecated
-    public static FluidInsertable createItemInventoryInsertable(Ref<ItemStack> stackRef, Consumer<
-        ItemStack> excessStacks) {
+    public static FluidInsertable createItemInventoryInsertable(
+        Ref<ItemStack> stackRef, Consumer<ItemStack> excessStacks
+    ) {
 
         return FluidAttributes.INSERTABLE.get(stackRef, LimitedConsumer.fromConsumer(excessStacks));
     }
 
-    public static FluidExtractable createItemInventoryExtractable(Ref<ItemStack> stackRef, Consumer<
-        ItemStack> excessStacks) {
+    public static FluidExtractable createItemInventoryExtractable(
+        Ref<ItemStack> stackRef, Consumer<ItemStack> excessStacks
+    ) {
 
         return FluidAttributes.EXTRACTABLE.get(stackRef, LimitedConsumer.fromConsumer(excessStacks));
     }
@@ -144,8 +167,9 @@ public final class FluidVolumeUtil {
         return interactWithTank(inv, inv, player, hand);
     }
 
-    public static boolean interactWithTank(FluidInsertable invInsert, FluidExtractable invExtract, PlayerEntity player,
-        Hand hand) {
+    public static boolean interactWithTank(
+        FluidInsertable invInsert, FluidExtractable invExtract, PlayerEntity player, Hand hand
+    ) {
 
         return interactWithTank(invInsert, invExtract, player, ItemInvUtil.referenceHand(player, hand));
     }
@@ -159,27 +183,27 @@ public final class FluidVolumeUtil {
     }
 
     /** Interacts with a tank from the player's cursor stack when there is a gui open. */
-    public static boolean interactCursorWithTank(FluidInsertable invInsert, FluidExtractable invExtract,
-        ServerPlayerEntity player) {
+    public static boolean interactCursorWithTank(
+        FluidInsertable invInsert, FluidExtractable invExtract, ServerPlayerEntity player
+    ) {
 
         return interactWithTank(invInsert, invExtract, player, ItemInvUtil.referenceGuiCursor(player));
     }
 
-    public static boolean interactWithTank(FluidInsertable invInsert, FluidExtractable invExtract, PlayerEntity player,
-        Reference<ItemStack> mainStackRef) {
+    public static boolean interactWithTank(
+        FluidInsertable invInsert, FluidExtractable invExtract, PlayerEntity player, Reference<ItemStack> mainStackRef
+    ) {
 
         ItemStack mainStack = mainStackRef.get();
         if (mainStack.isEmpty()) {
             return false;
         }
         boolean isSurvival = !player.abilities.creativeMode;
-        Reference<ItemStack> realRef = isSurvival ? mainStackRef : Reference.callable(
-            mainStackRef::get, s -> {}, s -> true
-        );
+        Reference<ItemStack> realRef
+            = isSurvival ? mainStackRef : Reference.callable(mainStackRef::get, s -> {}, s -> true);
         Consumer<ItemStack> stackConsumer = isSurvival ? ItemInvUtil.createPlayerInsertable(player) : s -> {};
-        FluidTankInteraction result = interactWithTank(
-            invInsert, invExtract, realRef, LimitedConsumer.fromConsumer(stackConsumer)
-        );
+        FluidTankInteraction result
+            = interactWithTank(invInsert, invExtract, realRef, LimitedConsumer.fromConsumer(stackConsumer));
         if (!result.didMoveAny()) {
             return false;
         }
@@ -187,8 +211,8 @@ public final class FluidVolumeUtil {
         if (result.fluidMoved.fluidKey == FluidKeys.LAVA) {
             soundEvent = result.intoTank ? SoundEvents.ITEM_BUCKET_EMPTY_LAVA : SoundEvents.ITEM_BUCKET_FILL_LAVA;
         } else {
-            boolean isBottle = mainStack.getItem() instanceof GlassBottleItem || mainStack
-                .getItem() instanceof PotionItem;
+            boolean isBottle
+                = mainStack.getItem() instanceof GlassBottleItem || mainStack.getItem() instanceof PotionItem;
             if (isBottle) {
                 soundEvent = result.intoTank ? SoundEvents.ITEM_BOTTLE_EMPTY : SoundEvents.ITEM_BOTTLE_FILL;
             } else {
@@ -201,16 +225,18 @@ public final class FluidVolumeUtil {
 
     /** @deprecated This has been replaced by {@link #interactWithTank(FixedFluidInv, Reference, LimitedConsumer)}. */
     @Deprecated
-    public static FluidTankInteraction interactWithTank(FixedFluidInv inv, Ref<ItemStack> stack, Consumer<
-        ItemStack> excessStacks) {
+    public static FluidTankInteraction interactWithTank(
+        FixedFluidInv inv, Ref<ItemStack> stack, Consumer<ItemStack> excessStacks
+    ) {
 
         return interactWithTank(inv.getInsertable(), inv.getExtractable(), stack, excessStacks);
     }
 
     /** @deprecated This has been replaced by {@link #interactWithTank(FixedFluidInv, Reference, LimitedConsumer)}. */
     @Deprecated
-    public static FluidTankInteraction interactWithTank(FluidTransferable inv, Ref<ItemStack> stack, Consumer<
-        ItemStack> excessStacks) {
+    public static FluidTankInteraction interactWithTank(
+        FluidTransferable inv, Ref<ItemStack> stack, Consumer<ItemStack> excessStacks
+    ) {
 
         return interactWithTank(inv, inv, stack, excessStacks);
     }
@@ -220,8 +246,9 @@ public final class FluidVolumeUtil {
      * @param stack The held {@link ItemStack} to interact with.
      * @param excessStacks A {@link Consumer} to take the excess {@link ItemStack}'s.
      * @deprecated This has been replaced by {@link #interactWithTank(FixedFluidInv, Reference, LimitedConsumer)}. */
-    public static FluidTankInteraction interactWithTank(FluidInsertable invInsert, FluidExtractable invExtract, Ref<
-        ItemStack> stack, Consumer<ItemStack> excessStacks) {
+    public static FluidTankInteraction interactWithTank(
+        FluidInsertable invInsert, FluidExtractable invExtract, Ref<ItemStack> stack, Consumer<ItemStack> excessStacks
+    ) {
 
         return interactWithTank(invInsert, invExtract, stack, LimitedConsumer.fromConsumer(excessStacks));
     }
@@ -229,20 +256,24 @@ public final class FluidVolumeUtil {
     /** @param inv The fluid inventory to interact with
      * @param stack The held {@link ItemStack} to interact with.
      * @param excessStacks A {@link Consumer} to take the excess {@link ItemStack}'s. */
-    public static FluidTankInteraction interactWithTank(FixedFluidInv inv, Reference<ItemStack> stack, LimitedConsumer<
-        ItemStack> excessStacks) {
+    public static FluidTankInteraction interactWithTank(
+        FixedFluidInv inv, Reference<ItemStack> stack, LimitedConsumer<ItemStack> excessStacks
+    ) {
 
         return interactWithTank(inv.getInsertable(), inv.getExtractable(), stack, excessStacks);
     }
 
-    public static FluidTankInteraction interactWithTank(FluidTransferable inv, Reference<ItemStack> stack,
-        LimitedConsumer<ItemStack> excessStacks) {
+    public static FluidTankInteraction interactWithTank(
+        FluidTransferable inv, Reference<ItemStack> stack, LimitedConsumer<ItemStack> excessStacks
+    ) {
 
         return interactWithTank(inv, inv, stack, excessStacks);
     }
 
-    public static FluidTankInteraction interactWithTank(FluidInsertable invInsert, FluidExtractable invExtract,
-        Reference<ItemStack> stack, LimitedConsumer<ItemStack> excessStacks) {
+    public static FluidTankInteraction interactWithTank(
+        FluidInsertable invInsert, FluidExtractable invExtract, Reference<ItemStack> stack,
+        LimitedConsumer<ItemStack> excessStacks
+    ) {
 
         FluidVolume fluidMoved = move(invExtract, FluidAttributes.INSERTABLE.get(stack, excessStacks));
         if (!fluidMoved.isEmpty()) {
@@ -275,8 +306,13 @@ public final class FluidVolumeUtil {
             return !fluidMoved.isEmpty();
         }
 
+        @Deprecated
         public int amountMoved() {
             return fluidMoved.getAmount();
+        }
+
+        public FluidAmount amountMoved_F() {
+            return fluidMoved.getAmount_F();
         }
     }
 
@@ -295,13 +331,13 @@ public final class FluidVolumeUtil {
             return EMPTY;
         }
         FluidVolume inTank = inv.getInvFluid(tank);
-        int current = inTank.getAmount();
-        int max = Math.min(current + toInsert.getAmount(), inv.getMaxAmount(tank));
-        int addable = max - current;
-        if (addable <= 0) {
+        FluidAmount current = inTank.getAmount_F();
+        FluidAmount max = current.add(toInsert.getAmount_F()).min(inv.getMaxAmount_F(tank));
+        FluidAmount addable = max.sub(current);
+        if (!addable.isPositive()) {
             return toInsert;
         }
-        if (current > 0 && !inTank.canMerge(toInsert)) {
+        if (current.isPositive() && !inTank.canMerge(toInsert)) {
             return toInsert;
         }
         inTank = inTank.copy();
@@ -325,9 +361,31 @@ public final class FluidVolumeUtil {
      *            {@link FluidVolume#isEmpty() empty}.
      * @param maxAmount The maximum amount of fluid to extract. Note that the returned {@link FluidVolume} may have an
      *            amount up to this given amount plus the amount in "toAddWith".
+     * @return The extracted {@link FluidVolume}, merged with "toAddWith".
+     * @deprecated Replaced by
+     *             {@link #extractSingle(FixedFluidInv, int, FluidFilter, FluidVolume, FluidAmount, Simulation)} */
+    @Deprecated
+    public static FluidVolume extractSingle(
+        FixedFluidInv inv, int tank, @Nullable FluidFilter filter, FluidVolume toAddWith, int maxAmount,
+        Simulation simulation
+    ) {
+        return extractSingle(inv, tank, filter, toAddWith, FluidAmount.of1620(maxAmount), simulation);
+    }
+
+    /** Extracts a single {@link FluidVolume} from a {@link FixedFluidInv}, using only
+     * {@link FixedFluidInv#setInvFluid(int, FluidVolume, Simulation)}. As such this is useful for implementations of
+     * {@link FluidExtractable} (or others) for their base implementations.
+     * 
+     * @param filter The filter to match on. If this is null then it matches on anything.
+     * @param toAddWith An optional {@link FluidVolume} that the extracted fluid will be added to. Null is equivalent to
+     *            {@link FluidVolume#isEmpty() empty}.
+     * @param maxAmount The maximum amount of fluid to extract. Note that the returned {@link FluidVolume} may have an
+     *            amount up to this given amount plus the amount in "toAddWith".
      * @return The extracted {@link FluidVolume}, merged with "toAddWith". */
-    public static FluidVolume extractSingle(FixedFluidInv inv, int tank, @Nullable FluidFilter filter,
-        FluidVolume toAddWith, int maxAmount, Simulation simulation) {
+    public static FluidVolume extractSingle(
+        FixedFluidInv inv, int tank, @Nullable FluidFilter filter, FluidVolume toAddWith, FluidAmount maxAmount,
+        Simulation simulation
+    ) {
 
         if (toAddWith == null) {
             toAddWith = EMPTY;

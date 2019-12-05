@@ -7,7 +7,10 @@
  */
 package alexiil.mc.lib.attributes.fluid;
 
+import javax.annotation.Nullable;
+
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.misc.LimitedConsumer;
@@ -61,11 +64,27 @@ public interface FluidInsertable extends LimitedConsumer<FluidVolume> {
         return attemptInsertion(fluid, Simulation.ACTION);
     }
 
+    // Unfortunately there's no way (at all) to keep both methods
+    // due to it being a default method to begin with - we can't
+    // make them call each other and expect implementations to
+    // override one of them, because they don't at the moment.
+
+    // /** @return The minimum amount of fluid that {@link #attemptInsertion(FluidVolume, Simulation)} will actually
+    // * accept. Note that this only provides a guarantee that {@link FluidVolume fluid volumes} with an
+    // * {@link FluidVolume#getAmount() amount} less than this will never be accepted.
+    // * @deprecated Replaced by {@link #getMinimumAcceptedAmount_F()} */
+    // default int getMinimumAcceptedAmount() {
+    // return 1;
+    // }
+
     /** @return The minimum amount of fluid that {@link #attemptInsertion(FluidVolume, Simulation)} will actually
      *         accept. Note that this only provides a guarantee that {@link FluidVolume fluid volumes} with an
-     *         {@link FluidVolume#getAmount() amount} less than this will never be accepted. */
-    default int getMinimumAcceptedAmount() {
-        return 1;
+     *         {@link FluidVolume#getAmount() amount} less than this will never be accepted.
+     *         <p>
+     *         A null return value indicates that there is no minimum value. */
+    @Nullable
+    default FluidAmount getMinimumAcceptedAmount() {
+        return null;
     }
 
     /** Returns an {@link FluidFilter} to determine if {@link #attemptInsertion(FluidVolume, Simulation)} will accept a
@@ -77,8 +96,8 @@ public interface FluidInsertable extends LimitedConsumer<FluidVolume> {
      *         given stack. */
     default FluidFilter getInsertionFilter() {
         return fluid -> {
-            FluidVolume volume = fluid.withAmount(2 * FluidVolume.BUCKET);
-            return attemptInsertion(volume, Simulation.SIMULATE).getAmount() < 2 * FluidVolume.BUCKET;
+            FluidVolume volume = fluid.withAmount(FluidAmount.A_MILLION);
+            return attemptInsertion(volume, Simulation.SIMULATE).getAmount_F().isLessThan(FluidAmount.A_MILLION);
         };
     }
 

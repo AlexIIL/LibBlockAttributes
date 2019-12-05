@@ -13,12 +13,13 @@ import java.util.Set;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.FluidInvAmountChangeListener;
+import alexiil.mc.lib.attributes.fluid.FluidInvAmountChangeListener_F;
+import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
 import alexiil.mc.lib.attributes.fluid.GroupedFluidInvView;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
-import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** {@link GroupedFluidInvView} for an empty inventory. */
@@ -27,7 +28,7 @@ public enum EmptyGroupedFluidInv implements GroupedFluidInv {
 
     @Override
     public FluidInvStatistic getStatistics(FluidFilter filter) {
-        return new FluidInvStatistic(filter, 0, 0, 0);
+        return FluidInvStatistic.emptyOf(filter);
     }
 
     @Override
@@ -36,12 +37,12 @@ public enum EmptyGroupedFluidInv implements GroupedFluidInv {
     }
 
     @Override
-    public int getTotalCapacity() {
-        return 0;
+    public FluidAmount getTotalCapacity_F() {
+        return FluidAmount.ZERO;
     }
 
     @Override
-    public ListenerToken addListener(FluidInvAmountChangeListener listener, ListenerRemovalToken removalToken) {
+    public ListenerToken addListener_F(FluidInvAmountChangeListener_F listener, ListenerRemovalToken removalToken) {
         // We don't need to keep track of the listener because this empty inventory never changes.
         return () -> {
             // (And we don't need to do anything when the listener is removed)
@@ -56,6 +57,6 @@ public enum EmptyGroupedFluidInv implements GroupedFluidInv {
 
     @Override
     public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
-        return FluidKeys.EMPTY.withAmount(0);
+        return FluidVolumeUtil.EMPTY;
     }
 }
