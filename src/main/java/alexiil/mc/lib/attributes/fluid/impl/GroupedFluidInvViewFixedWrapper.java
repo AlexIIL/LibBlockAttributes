@@ -44,13 +44,13 @@ public class GroupedFluidInvViewFixedWrapper implements GroupedFluidInvView {
             FluidVolume fluid = inv.getInvFluid(t);
             if (!fluid.isEmpty()) {
                 if (filter.matches(fluid.fluidKey)) {
-                    amount = amount.add(fluid.getAmount_F());
-                    space = space.add(max.sub(fluid.getAmount_F()));
+                    amount = amount.roundedAdd(fluid.getAmount_F());
+                    space = space.roundedAdd(max.roundedSub(fluid.getAmount_F()));
                 }
                 continue;
             }
             if (FluidFilterUtil.hasIntersection(filter, inv.getFilterForTank(t))) {
-                totalSpace = totalSpace.add(max);
+                totalSpace = totalSpace.roundedAdd(max);
             }
         }
         return new FluidInvStatistic(filter, amount, space, totalSpaceValid ? totalSpace : FluidAmount.NEGATIVE_ONE);
@@ -72,7 +72,7 @@ public class GroupedFluidInvViewFixedWrapper implements GroupedFluidInvView {
     public FluidAmount getTotalCapacity_F() {
         FluidAmount total = FluidAmount.ZERO;
         for (int t = 0; t < inv.getTankCount(); t++) {
-            total = total.add(inv.getMaxAmount_F(t));
+            total = total.roundedAdd(inv.getMaxAmount_F(t));
         }
         return total;
     }
@@ -85,26 +85,28 @@ public class GroupedFluidInvViewFixedWrapper implements GroupedFluidInvView {
                     // No changes: don't propagate
                 } else {
                     FluidAmount currentAmount = this.getAmount_F(current.fluidKey);
-                    listener.onChange(this, current.fluidKey, currentAmount.sub(current.getAmount_F()), currentAmount);
+                    listener.onChange(
+                        this, current.fluidKey, currentAmount.roundedSub(current.getAmount_F()), currentAmount
+                    );
                 }
             } else {
                 if (current.isEmpty()) {
                     FluidAmount previousAmount = this.getAmount_F(previous.fluidKey);
-                    FluidAmount prev = previousAmount.add(previous.getAmount_F());
+                    FluidAmount prev = previousAmount.roundedAdd(previous.getAmount_F());
                     listener.onChange(this, previous.fluidKey, prev, previousAmount);
                 } else {
                     if (previous.fluidKey == current.fluidKey) {
                         FluidAmount currentAmount = this.getAmount_F(current.fluidKey);
-                        FluidAmount diff = current.getAmount_F().sub(previous.getAmount_F());
-                        listener.onChange(this, current.fluidKey, currentAmount.sub(diff), currentAmount);
+                        FluidAmount diff = current.getAmount_F().roundedSub(previous.getAmount_F());
+                        listener.onChange(this, current.fluidKey, currentAmount.roundedSub(diff), currentAmount);
                     } else {
                         FluidAmount currentAmount = this.getAmount_F(current.fluidKey);
                         FluidAmount previousAmount = this.getAmount_F(previous.fluidKey);
 
-                        FluidAmount newPrev = currentAmount.sub(current.getAmount_F());
+                        FluidAmount newPrev = currentAmount.roundedSub(current.getAmount_F());
                         listener.onChange(this, current.fluidKey, newPrev, currentAmount);
 
-                        FluidAmount oldPrev = previousAmount.add(previous.getAmount_F());
+                        FluidAmount oldPrev = previousAmount.roundedAdd(previous.getAmount_F());
                         listener.onChange(this, previous.fluidKey, oldPrev, previousAmount);
                     }
                 }

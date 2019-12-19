@@ -7,6 +7,7 @@
  */
 package alexiil.mc.lib.attributes.fluid.impl;
 
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,8 +71,8 @@ public class GroupedFluidInvFixedWrapper extends GroupedFluidInvViewFixedWrapper
         for (int t = 0; t < inv().getTankCount(); t++) {
             FluidVolume inTank = inv().getInvFluid(t);
             FluidAmount current = inTank.getAmount_F();
-            FluidAmount max = current.add(fluid.getAmount_F()).min(inv().getMaxAmount_F(t));
-            FluidAmount addable = max.sub(current);
+            FluidAmount max = current.roundedAdd(fluid.getAmount_F(), RoundingMode.DOWN).min(inv().getMaxAmount_F(t));
+            FluidAmount addable = max.roundedSub(current, RoundingMode.DOWN);
             if (!addable.isPositive()) {
                 continue;
             }
@@ -96,11 +97,11 @@ public class GroupedFluidInvFixedWrapper extends GroupedFluidInvViewFixedWrapper
             throw new IllegalArgumentException("maxAmount cannot be negative! (was " + maxAmount + ")");
         }
         FluidVolume fluid = FluidVolumeUtil.EMPTY;
-        if (maxAmount.isPositive()) {
+        if (maxAmount.isZero()) {
             return fluid;
         }
         for (int t = 0; t < inv().getTankCount(); t++) {
-            FluidAmount thisMax = maxAmount.sub(fluid.getAmount_F());
+            FluidAmount thisMax = maxAmount.roundedSub(fluid.getAmount_F(), RoundingMode.DOWN);
             fluid = FluidVolumeUtil.extractSingle(inv(), t, filter, fluid, thisMax, simulation);
             if (!fluid.getAmount_F().isLessThan(maxAmount)) {
                 return fluid;

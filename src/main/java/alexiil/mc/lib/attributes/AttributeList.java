@@ -201,6 +201,23 @@ public class AttributeList<T> extends AbstractAttributeList<T> {
         }
     }
 
+    @Override
+    void finishAdding() {
+        super.finishAdding();
+        if (obstructingShape != null) {
+            for (int i = 0; i < list.size(); i++) {
+                VoxelShape cShape = combinedShapeList.get(i);
+                VoxelShape visible = VoxelShapes.combine(obstructingShape, cShape, BooleanBiFunction.ONLY_SECOND);
+                if (visible.isEmpty()) {
+                    list.remove(i);
+                    shapeList.remove(i);
+                    combinedShapeList.remove(i);
+                    i--;
+                }
+            }
+        }
+    }
+
     /** @return A new voxel shape that has been extended to infinity(?) in the given direction, and also moved forwards
      *         by half a voxel. */
     private static VoxelShape extendShape(VoxelShape shape, Direction direction) {
@@ -212,12 +229,12 @@ public class AttributeList<T> extends AbstractAttributeList<T> {
         for (Box box : shape.getBoundingBoxes()) {
             // Offset it a tiny bit to allow an obstacle to return attributes (as otherwise it would block itself)
             box = box.offset(new Vec3d(direction.getVector()).multiply(1 / 32.0));
-            double minX = box.minX;
-            double minY = box.minY;
-            double minZ = box.minZ;
-            double maxX = box.maxX;
-            double maxY = box.maxY;
-            double maxZ = box.maxZ;
+            double minX = box.x1;
+            double minY = box.y1;
+            double minZ = box.z1;
+            double maxX = box.x2;
+            double maxY = box.y2;
+            double maxZ = box.z2;
             switch (direction) {
                 // @formatter:off
                 case DOWN: minY = 0; break;
@@ -275,5 +292,4 @@ public class AttributeList<T> extends AbstractAttributeList<T> {
         assertUsing();
         return combinable.combine(list, after.list);
     }
-
 }

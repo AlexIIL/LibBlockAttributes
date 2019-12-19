@@ -15,7 +15,8 @@
     "fabric": "*"
   },
   "mixins": [
-    "libblockattributes_fluid.common.json"
+    "libblockattributes_fluid.common.json",
+    "libblockattributes_fluid.client.json"
   ],
   "icon": "assets/libblockattributes/icon.png",
   "authors": [ "AlexIIL" ],

@@ -7,6 +7,7 @@
  */
 package alexiil.mc.lib.attributes.fluid.impl;
 
+import java.math.RoundingMode;
 import java.util.Arrays;
 
 import alexiil.mc.lib.attributes.Simulation;
@@ -49,11 +50,11 @@ public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implemen
                 for (int t = 0; t < getTankCount(); t++) {
                     FluidVolume tankVolume = inv.getInvFluid(t);
                     FluidAmount minimum = minimumAmounts[t];
-                    FluidAmount available = tankVolume.getAmount_F().sub(minimum);
+                    FluidAmount available = tankVolume.getAmount_F().roundedSub(minimum, RoundingMode.DOWN);
                     if (tankVolume.isEmpty() || !available.isPositive()) {
                         continue;
                     }
-                    FluidAmount tankMax = maxAmount.sub(volume.getAmount_F()).min(available);
+                    FluidAmount tankMax = maxAmount.roundedSub(volume.getAmount_F(), RoundingMode.DOWN).min(available);
                     volume = FluidVolumeUtil.extractSingle(inv, t, filter, volume, tankMax, simulation);
                     if (!volume.getAmount_F().isLessThan(maxAmount)) {
                         return volume;

@@ -7,6 +7,7 @@
  */
 package alexiil.mc.lib.attributes.fluid.impl;
 
+import java.math.RoundingMode;
 import java.util.List;
 
 import alexiil.mc.lib.attributes.Simulation;
@@ -57,7 +58,7 @@ public final class CombinedFluidExtractable implements FluidExtractable {
                 }
                 filter = new ExactFluidFilter(extracted.fluidKey);
             } else {
-                FluidAmount newMaxAmount = maxAmount.sub(extracted.getAmount_F());
+                FluidAmount newMaxAmount = maxAmount.roundedSub(extracted.getAmount_F(), RoundingMode.UP);
                 FluidVolume additional = extractable.attemptExtraction(filter, newMaxAmount, simulation);
                 if (additional.isEmpty()) {
                     continue;

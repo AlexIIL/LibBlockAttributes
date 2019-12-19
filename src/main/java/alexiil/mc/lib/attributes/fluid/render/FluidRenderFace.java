@@ -15,10 +15,15 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 
 public final class FluidRenderFace {
+    public static final int FULL_LIGHT = 0x00F0_00F0;
     public final double x0, y0, z0, u0, v0;
     public final double x1, y1, z1, u1, v1;
     public final double x2, y2, z2, u2, v2;
     public final double x3, y3, z3, u3, v3;
+
+    public int light = FULL_LIGHT;
+
+    public final float nx, ny, nz;
 
     /** If true then the renderer should use the centre 16x of the flowing sprite (assuming the texture is 32x),
      * otherwise it should use the still sprite. */
@@ -70,6 +75,59 @@ public final class FluidRenderFace {
         u3 = _u3;
         v3 = _v3;
 
+        double ax = x1 - x0;
+        double ay = y1 - y0;
+        double az = z1 - z0;
+
+        double bx = x2 - x0;
+        double by = y2 - y0;
+        double bz = z2 - z0;
+
+        nx = (float) (ay * bz - az * by);
+        ny = (float) (az * bx - ax * bz);
+        nz = (float) (ax * by - ay * bx);
+        light = FULL_LIGHT;
+
+        this.flowing = flowing;
+    }
+
+    public FluidRenderFace(
+        double _x0, double _y0, double _z0, double _u0, double _v0, //
+        double _x1, double _y1, double _z1, double _u1, double _v1, //
+        double _x2, double _y2, double _z2, double _u2, double _v2, //
+        double _x3, double _y3, double _z3, double _u3, double _v3, //
+        int light, float nx, float ny, float nz, boolean flowing//
+    ) {
+        x0 = _x0;
+        y0 = _y0;
+        z0 = _z0;
+        u0 = _u0;
+        v0 = _v0;
+
+        x1 = _x1;
+        y1 = _y1;
+        z1 = _z1;
+        u1 = _u1;
+        v1 = _v1;
+
+        x2 = _x2;
+        y2 = _y2;
+        z2 = _z2;
+        u2 = _u2;
+        v2 = _v2;
+
+        x3 = _x3;
+        y3 = _y3;
+        z3 = _z3;
+        u3 = _u3;
+        v3 = _v3;
+
+        this.light = light;
+
+        this.nx = nx;
+        this.ny = ny;
+        this.nz = nz;
+
         this.flowing = flowing;
     }
 
@@ -106,7 +164,7 @@ public final class FluidRenderFace {
                 x1, y1, z0, z1 * s, y0 * s, //
                 x1, y1, z1, z1 * s, y1 * s, //
                 x1, y0, z1, z0 * s, y1 * s, //
-                flowing
+                FULL_LIGHT, +1, 0, 0, flowing
             );
         } else {
             return new FluidRenderFace(
@@ -114,7 +172,7 @@ public final class FluidRenderFace {
                 x0, y0, z1, z0 * s, y1 * s, //
                 x0, y1, z1, z1 * s, y1 * s, //
                 x0, y1, z0, z1 * s, y0 * s, //
-                flowing
+                FULL_LIGHT, -1, 0, 0, flowing
             );
         }
     }
@@ -136,7 +194,7 @@ public final class FluidRenderFace {
                 x0, y1, z1, x0 * s, z1 * s, //
                 x1, y1, z1, x1 * s, z1 * s, //
                 x1, y1, z0, x1 * s, z0 * s, //
-                flowing
+                FULL_LIGHT, 0, +1, 0, flowing
             );
         } else {
             return new FluidRenderFace(
@@ -144,7 +202,7 @@ public final class FluidRenderFace {
                 x1, y0, z0, x1 * s, z0 * s, //
                 x1, y0, z1, x1 * s, z1 * s, //
                 x0, y0, z1, x0 * s, z1 * s, //
-                flowing
+                FULL_LIGHT, 0, -1, 0, flowing
             );
         }
     }
@@ -166,7 +224,7 @@ public final class FluidRenderFace {
                 x1, y0, z1, x1 * s, y0 * s, //
                 x1, y1, z1, x1 * s, y1 * s, //
                 x0, y1, z1, x0 * s, y1 * s, //
-                flowing
+                FULL_LIGHT, 0, 0, +1, flowing
             );
         } else {
             return new FluidRenderFace(
@@ -174,7 +232,7 @@ public final class FluidRenderFace {
                 x0, y1, z0, x0 * s, y1 * s, //
                 x1, y1, z0, x1 * s, y1 * s, //
                 x1, y0, z0, x1 * s, y0 * s, //
-                flowing
+                FULL_LIGHT, 0, 0, -1, flowing
             );
         }
     }

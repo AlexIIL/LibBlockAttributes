@@ -113,8 +113,9 @@ public final class ItemAttributes {
         );
     }
 
-    private static <T> CombinableAttribute<T> create(Class<T> clazz, @Nonnull T defaultValue, AttributeCombiner<
-        T> combiner, Function<FixedItemInv, T> convertor) {
+    private static <T> CombinableAttribute<T> create(
+        Class<T> clazz, @Nonnull T defaultValue, AttributeCombiner<T> combiner, Function<FixedItemInv, T> convertor
+    ) {
 
         return Attributes.createCombinable(clazz, defaultValue, combiner)//
             .appendBlockAdder(createBlockAdder(convertor))//
@@ -146,12 +147,13 @@ public final class ItemAttributes {
                 }
             } else if (block.hasBlockEntity()) {
                 BlockEntity be = world.getBlockEntity(pos);
-                if (be instanceof ChestBlockEntity) {
+                if (be instanceof ChestBlockEntity && state.getBlock() instanceof ChestBlock) {
                     // Special case chests here, rather than through a mixin because it just simplifies
                     // everything
 
                     boolean checkForBlockingCats = false;
-                    Inventory chestInv = ChestBlock.getInventory(state, world, pos, checkForBlockingCats);
+                    Inventory chestInv = ChestBlock
+                        .getInventory((ChestBlock) state.getBlock(), state, world, pos, checkForBlockingCats);
                     if (chestInv != null) {
                         list.add(convertor.apply(new FixedInventoryVanillaWrapper(chestInv)));
                     }
@@ -175,8 +177,10 @@ public final class ItemAttributes {
         return (ref, excess, list) -> appendItemAttributes(ref, excess, list, convertor);
     }
 
-    private static <T> void appendItemAttributes(Reference<ItemStack> ref, LimitedConsumer<ItemStack> excess,
-        ItemAttributeList<T> list, Function<FixedItemInv, T> convertor) {
+    private static <T> void appendItemAttributes(
+        Reference<ItemStack> ref, LimitedConsumer<ItemStack> excess, ItemAttributeList<T> list,
+        Function<FixedItemInv, T> convertor
+    ) {
 
         ItemStack stack = ref.get();
 

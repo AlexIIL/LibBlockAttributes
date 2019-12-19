@@ -9,12 +9,15 @@ package alexiil.mc.lib.attributes.fluid.volume;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ViewableWorld;
+import net.minecraft.world.WorldView;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.Biomes;
 
-public class BiomeSourcedFluidKey extends NormalFluidKey {
-    public BiomeSourcedFluidKey(NormalFluidKeyBuilder builder) {
-        super(builder);
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+
+public class BiomeSourcedFluidKey extends WeightedFluidKey<Biome> {
+    public BiomeSourcedFluidKey(FluidKeyBuilder builder) {
+        super(builder, Biome.class, Biomes.OCEAN);
     }
 
     @Override
@@ -23,16 +26,17 @@ public class BiomeSourcedFluidKey extends NormalFluidKey {
     }
 
     @Override
-    public BiomeSourcedFluidVolume withAmount(int amount) {
+    public BiomeSourcedFluidVolume withAmount(FluidAmount amount) {
         return new BiomeSourcedFluidVolume(this, amount);
     }
 
-    public BiomeSourcedFluidVolume withAmount(Biome source, int amount) {
+    @Override
+    public BiomeSourcedFluidVolume withAmount(Biome source, FluidAmount amount) {
         return new BiomeSourcedFluidVolume(this, source, amount);
     }
 
     @Override
-    public FluidVolume fromWorld(ViewableWorld world, BlockPos pos) {
-        return withAmount(world.getBiome(pos), FluidVolume.BUCKET);
+    public FluidVolume fromWorld(WorldView world, BlockPos pos) {
+        return withAmount(world.getBiome(pos), FluidAmount.BUCKET);
     }
 }

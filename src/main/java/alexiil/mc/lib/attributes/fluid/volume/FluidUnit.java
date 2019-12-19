@@ -12,10 +12,12 @@ import java.util.IllegalFormatException;
 
 import net.minecraft.util.Language;
 
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+
 public final class FluidUnit implements Comparable<FluidUnit> {
 
-    public static final FluidUnit BUCKET = new FluidUnit(FluidVolume.BUCKET, "bucket");
-    public static final FluidUnit BOTTLE = new FluidUnit(FluidVolume.BOTTLE, "bottle");
+    public static final FluidUnit BUCKET = new FluidUnit(FluidAmount.BUCKET, "bucket");
+    public static final FluidUnit BOTTLE = new FluidUnit(FluidAmount.BOTTLE, "bottle");
 
     /** Amount, Unit */
     /* package-private */ static final String KEY_AMOUNT = "libblockattributes.fluid.amount";
@@ -56,55 +58,95 @@ public final class FluidUnit implements Comparable<FluidUnit> {
     /* package-private */ static final String keyTime = KEY_SECOND;
     /* package-private */ static final int timeGap = 20;
 
-    /* package-private */ final int unitAmount, decimalPlaces, roundingValue;
+    /* package-private */ final FluidAmount unitAmount;
     // FIXME: This only works with singular vs plural languages!
     /* package-private */ final String keySingular, keyPlural;
 
+    /** @deprecated Replaced by {@link #FluidUnit(FluidAmount, String)} */
+    @Deprecated
     public FluidUnit(int unitAmount, String key) {
-        if (unitAmount < 0) {
+        this(FluidAmount.of1620(unitAmount), key);
+    }
+
+    public FluidUnit(FluidAmount unitAmount, String key) {
+        if (!unitAmount.isPositive()) {
             throw new IllegalArgumentException("Unit Amount must be a positive number!");
         }
         this.unitAmount = unitAmount;
-        this.decimalPlaces = unitAmount == 1 ? 0 : Integer.toString(unitAmount - 1).length();
-        this.roundingValue = (int) Math.pow(10, decimalPlaces);
         this.keySingular = "libblockattributes.fluid_unit." + key + ".singular";
         this.keyPlural = "libblockattributes.fluid_unit." + key + ".plural";
     }
 
+    /** @deprecated Replaced by {@link #localizeAmount(FluidAmount)} */
+    @Deprecated
     public String localizeAmount(int amount) {
+        return localizeAmount(FluidAmount.of1620(amount));
+    }
+
+    public String localizeAmount(FluidAmount amount) {
         return localizeAmount(amount, false);
     }
 
+    /** @deprecated Replaced by {@link #localizeAmount(FluidAmount, boolean)}. */
+    @Deprecated
     public String localizeAmount(int amount, boolean forceSingular) {
-        return localize(KEY_AMOUNT, forceSingular ? true : amount == unitAmount, amount);
+        return localizeAmount(FluidAmount.of1620(amount), forceSingular);
     }
 
+    public String localizeAmount(FluidAmount amount, boolean forceSingular) {
+        return localize(KEY_AMOUNT, forceSingular ? true : amount.equals(unitAmount), amount);
+    }
+
+    /** @deprecated Replaced by {@link #localizeEmptyTank(FluidAmount)}. */
+    @Deprecated
     public String localizeEmptyTank(int capacity) {
+        return localizeEmptyTank(FluidAmount.of1620(capacity));
+    }
+
+    public String localizeEmptyTank(FluidAmount capacity) {
         return localizeDirect(KEY_TANK_EMPTY, localizeAmount(capacity, true));
     }
 
+    /** @deprecated Replaced by {@link #localizeFullTank(FluidAmount)}. */
+    @Deprecated
     public String localizeFullTank(int capacity) {
+        return localizeFullTank(FluidAmount.of1620(capacity));
+    }
+
+    public String localizeFullTank(FluidAmount capacity) {
         return localizeDirect(KEY_TANK_FULL, localizeAmount(capacity, true));
     }
 
+    /** @deprecated Replaced by {@link #localizeTank(FluidAmount, FluidAmount)}. */
+    @Deprecated
     public String localizeTank(int amount, int capacity) {
-        if (amount == 0) {
+        return localizeTank(FluidAmount.of1620(amount), FluidAmount.of1620(capacity));
+    }
+
+    public String localizeTank(FluidAmount amount, FluidAmount capacity) {
+        if (amount.isZero()) {
             return localizeEmptyTank(capacity);
-        } else if (amount == capacity) {
+        } else if (amount.equals(capacity)) {
             return localizeFullTank(capacity);
         }
         return localizeDirect(KEY_TANK_PARTIAL, format(amount), format(capacity), translateUnit(true));
     }
 
+    /** @deprecated Replaced by {@link #localizeFlowRate(FluidAmount)}. */
+    @Deprecated
     public String localizeFlowRate(int amountPerTick) {
-        double rate = amountPerTick / (double) timeGap;
-        String translatedUnit = translateUnit(rate == unitAmount);
+        return localizeFlowRate(FluidAmount.of1620(amountPerTick));
+    }
+
+    public String localizeFlowRate(FluidAmount amountPerTick) {
+        FluidAmount rate = amountPerTick.roundedDiv(timeGap);
+        String translatedUnit = translateUnit(rate.equals(unitAmount));
         String format = format(rate);
         String translatedtime = Language.getInstance().translate(keyTime);
         return localizeDirect(KEY_FLOW_RATE, localizeDirect(KEY_AMOUNT, format, translatedUnit), translatedtime);
     }
 
-    /* package-private */ String localize(String key, boolean isSingular, int number) {
+    /* package-private */ String localize(String key, boolean isSingular, FluidAmount number) {
         String translatedUnit = translateUnit(isSingular);
         String format = format(number);
         return localizeDirect(key, format, translatedUnit);
@@ -126,34 +168,13 @@ public final class FluidUnit implements Comparable<FluidUnit> {
         }
     }
 
-    /* package-private */ String format(int number) {
-        if (unitAmount == 1) {
-            return Integer.toString(number);
-        }
-        int div = number / unitAmount;
-        int rem = number % unitAmount;
-        if (rem == 0) {
-            return Integer.toString(div);
-        }
-        double fraction = (number / (double) unitAmount) - div;
-        String fractionStr = Integer.toString((int) (fraction * roundingValue));
-        while (fractionStr.length() < decimalPlaces) {
-            fractionStr = "0" + fractionStr;
-        }
-        // FIXME: This '.' isn't locale aware!
-        return Integer.toString(div) + "." + fractionStr;
-    }
-
-    private static String format(double number) {
-        if (number == (int) number) {
-            return Integer.toString((int) number);
-        }
-        return Double.toString(number);
+    /* package-private */ String format(FluidAmount number) {
+        return number.roundedDiv(unitAmount).toDisplayString();
     }
 
     @Override
     public int compareTo(FluidUnit o) {
         // So that buckets are sorted *before* bottles.
-        return Integer.compare(o.unitAmount, unitAmount);
+        return o.unitAmount.compareTo(unitAmount);
     }
 }

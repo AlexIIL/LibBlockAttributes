@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2019 AlexIIL
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
 package alexiil.mc.lib.attributes.fluid.amount;
 
 import java.math.BigInteger;
@@ -113,6 +120,20 @@ public final class BigFluidAmount extends FluidAmountBase<BigFluidAmount> {
         return numerator.signum();
     }
 
+    @Override
+    public BigFluidAmount getDivisor() {
+        if (denominator.equals(BigInteger.ONE)) {
+            return ONE;
+        } else {
+            return new BigFluidAmount(BigInteger.ZERO, BigInteger.ONE, denominator);
+        }
+    }
+
+    @Override
+    public BigFluidAmount lcm(BigFluidAmount other) {
+        return _bigLcm(other);
+    }
+
     // Operators
 
     @Override
@@ -153,9 +174,23 @@ public final class BigFluidAmount extends FluidAmountBase<BigFluidAmount> {
      * {@link FluidAmount#MAX_VALUE} is returned (depending on this sign).
      * <p>
      * Otherwise this is approximately rounded to a valid value. */
+    public FluidAmount asLongIntRounded() {
+        return asLongIntRounded(RoundingMode.HALF_EVEN);
+    }
+
+    /** Converts this into a normal long-based {@link FluidAmount}.
+     * <p>
+     * If {@link #whole} is too large to fit in a long then either {@link FluidAmount#MIN_VALUE} or
+     * {@link FluidAmount#MAX_VALUE} is returned (depending on this sign).
+     * <p>
+     * Otherwise this is approximately rounded to a valid value. */
     public FluidAmount asLongIntRounded(RoundingMode rounding) {
         if (fitsInLongInt()) {
             return asLongIntExact();
+        }
+
+        if (rounding == null) {
+            rounding = RoundingMode.HALF_EVEN;
         }
 
         if (rounding == RoundingMode.UNNECESSARY) {
@@ -178,6 +213,7 @@ public final class BigFluidAmount extends FluidAmountBase<BigFluidAmount> {
         // or should we try to use any divisor instead in the hope that it might be closer?
         // ...for now we'll just divide the divisor by 2 to the power of whatever is necessary
 
+        // TODO: Use the rounding mode!
         int bits = denominator.bitLength();
         assert bits > 63;
         BigInteger shiftedD = denominator.shiftRight(bits - 63);
@@ -360,6 +396,11 @@ public final class BigFluidAmount extends FluidAmountBase<BigFluidAmount> {
         BigInteger a = numerator.multiply(o.denominator);
         BigInteger b = o.numerator.multiply(denominator);
         return a.compareTo(b);
+    }
+
+    @Override
+    public double asInexactDouble() {
+        return whole.doubleValue() + numerator.doubleValue() / denominator.doubleValue();
     }
 
     // Internal

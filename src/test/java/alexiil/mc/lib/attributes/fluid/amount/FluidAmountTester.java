@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2019 AlexIIL
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
 package alexiil.mc.lib.attributes.fluid.amount;
 
 import org.junit.Assert;
@@ -35,15 +42,15 @@ public class FluidAmountTester {
     @Test
     public void testAdd() {
         FluidAmount half = FluidAmount.of(1, 2);
-        Assert.assertEquals(FluidAmount.ONE, half.add(half));
+        Assert.assertEquals(FluidAmount.ONE, half.roundedAdd(half));
         Assert.assertEquals(FluidAmount.of(2, 1, 2), half.add(2));
     }
 
     @Test
     public void testMultiply() {
         FluidAmount half = FluidAmount.of(1, 2);
-        Assert.assertEquals(FluidAmount.ONE, half.mul(2));
-        Assert.assertEquals(FluidAmount.of(1, 4), half.mul(half));
+        Assert.assertEquals(FluidAmount.ONE, half.roundedMul(2));
+        Assert.assertEquals(FluidAmount.of(1, 4), half.saturatedMul(half));
 
         // Check to see if it will overflow
 
@@ -54,7 +61,14 @@ public class FluidAmountTester {
         long prettyBig = Long.MAX_VALUE / 2;
         FluidAmount expected = FluidAmount.of(3, prettyBig - 4, prettyBig);
         FluidAmount a = FluidAmount.of(prettyBig - 1, prettyBig);
-        Assert.assertEquals(expected, a.mul(4));
+        Assert.assertEquals(expected, a.checkedMul(4));
+    }
+
+    @Test
+    public void testDiv() {
+        FluidAmount half = FluidAmount.of(1, 2);
+        Assert.assertEquals(FluidAmount.ONE, half.roundedDiv(half));
+        Assert.assertEquals(FluidAmount.of(1, 4), half.roundedDiv(FluidAmount.ofWhole(2)));
     }
 
     @Test
@@ -68,10 +82,10 @@ public class FluidAmountTester {
 
     @Test
     public void testParseDoubles() {
-        Assert.assertEquals(FluidAmount.of(1, 10), FluidAmount.parse("-1 - 1/4"));
         Assert.assertEquals(FluidAmount.of(1, 10), FluidAmount.parse("0.1"));
         Assert.assertEquals(FluidAmount.of(28, 10), FluidAmount.parse("2.8"));
         Assert.assertEquals(FluidAmount.of(3, 10), FluidAmount.parse("0.3"));
+        Assert.assertEquals(FluidAmount.of(18927361293L, 100000000000L), FluidAmount.parse("0.18927361293"));
     }
 
     @Test

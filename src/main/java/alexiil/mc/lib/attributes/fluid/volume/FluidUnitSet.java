@@ -10,12 +10,24 @@ package alexiil.mc.lib.attributes.fluid.volume;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+
 public final class FluidUnitSet {
 
     /* package-private */ final NavigableSet<FluidUnit> units;
 
     /* package-private */ FluidUnitSet() {
         this.units = new TreeSet<>();
+    }
+
+    public FluidUnitSet copy() {
+        FluidUnitSet copy = new FluidUnitSet();
+        copy.units.addAll(units);
+        return copy;
+    }
+
+    public void copyFrom(FluidUnitSet other) {
+        units.addAll(other.units);
     }
 
     public boolean addUnit(FluidUnit unit) {
@@ -34,15 +46,27 @@ public final class FluidUnitSet {
         return units.first();
     }
 
+    /** @deprecated Replaced by {@link #localizeAmount(FluidAmount)}. */
+    @Deprecated
     public String localizeAmount(int amount) {
+        return localizeAmount(FluidAmount.of1620(amount));
+    }
+
+    public String localizeAmount(FluidAmount amount) {
         return localizeAmount(amount, false);
     }
 
+    /** @deprecated Replaced by {@link #localizeAmount(FluidAmount, boolean)}. */
+    @Deprecated
     public String localizeAmount(int amount, boolean forceLastSingular) {
+        return localizeAmount(FluidAmount.of1620(amount), forceLastSingular);
+    }
+
+    public String localizeAmount(FluidAmount amount, boolean forceLastSingular) {
         if (units.isEmpty()) {
             // Default to buckets
             return FluidUnit.BUCKET.localizeAmount(amount, forceLastSingular);
-        } else if (amount == 0) {
+        } else if (amount.isZero()) {
             return getSmallestUnit().localizeAmount(amount, forceLastSingular);
         }
         int unitCount = units.size();
@@ -56,9 +80,6 @@ public final class FluidUnitSet {
         boolean[] isUnitSingular = new boolean[unitCount];
 
         for (FluidUnit unit : units) {
-            int div = amount / unit.unitAmount;
-            int rem = amount % unit.unitAmount;
-
             if (unit == units.last()) {
                 usedUnits[usedCount] = unit;
                 perUnitAmounts[usedCount] = unit.format(amount);
@@ -66,15 +87,17 @@ public final class FluidUnitSet {
                 usedCount++;
                 break;
             }
-            if (div == 0) {
+
+            FluidAmount sub = amount.roundedDiv(unit.unitAmount);
+            if (sub.whole == 0) {
                 continue;
             }
             usedUnits[usedCount] = unit;
-            perUnitAmounts[usedCount] = Integer.toString(div);
-            isUnitSingular[usedCount] = div == 1;
-            amount -= div * unit.unitAmount;
+            perUnitAmounts[usedCount] = Long.toString(sub.whole);
+            isUnitSingular[usedCount] = sub.whole == 1;
+            amount = FluidAmount.of(sub.numerator, sub.denominator).checkedMul(unit.unitAmount);
             usedCount++;
-            if (rem == 0) {
+            if (sub.numerator == 0) {
                 break;
             }
         }
@@ -141,34 +164,57 @@ public final class FluidUnitSet {
         }
     }
 
+    /** @deprecated Replaced by {@link #localizeEmptyTank(FluidAmount)}. */
+    @Deprecated
     public String localizeEmptyTank(int capacity) {
+        return localizeEmptyTank(FluidAmount.of1620(capacity));
+    }
+
+    public String localizeEmptyTank(FluidAmount capacity) {
         return FluidUnit.localizeDirect(FluidUnit.KEY_TANK_EMPTY, localizeAmount(capacity, true));
     }
 
+    /** @deprecated Replaced by {@link #localizeFullTank(FluidAmount)}. */
+    @Deprecated
     public String localizeFullTank(int capacity) {
+        return localizeFullTank(FluidAmount.of1620(capacity));
+    }
+
+    public String localizeFullTank(FluidAmount capacity) {
         return FluidUnit.localizeDirect(FluidUnit.KEY_TANK_FULL, localizeAmount(capacity, true));
     }
 
+    /** @deprecated Replaced by {@link #localizeTank(FluidAmount, FluidAmount)} */
+    @Deprecated
     public String localizeTank(int amount, int capacity) {
+        return localizeTank(FluidAmount.of1620(amount), FluidAmount.of1620(capacity));
+    }
+
+    public String localizeTank(FluidAmount amount, FluidAmount capacity) {
         if (units.isEmpty()) {
             // Default to buckets
             return FluidUnit.BUCKET.localizeTank(amount, capacity);
-        } else if ((amount == 0 && capacity == 0) || units.size() == 1) {
+        } else if ((amount.isZero() && capacity.isZero()) || units.size() == 1) {
             return getSmallestUnit().localizeTank(amount, capacity);
         }
 
-        if (amount == 0) {
+        if (amount.isZero()) {
             return localizeEmptyTank(capacity);
-        } else if (amount == capacity) {
+        } else if (amount.equals(capacity)) {
             return localizeFullTank(capacity);
         }
 
-        return FluidUnit.localizeDirect(
-            FluidUnit.KEY_TANK_MULTI_UNIT, localizeAmount(amount), localizeAmount(capacity, true)
-        );
+        return FluidUnit
+            .localizeDirect(FluidUnit.KEY_TANK_MULTI_UNIT, localizeAmount(amount), localizeAmount(capacity, true));
     }
 
+    /** @deprecated Replaced by {@link #localizeFlowRate(FluidAmount)}. */
+    @Deprecated
     public String localizeFlowRate(int amountPerTick) {
+        return localizeFlowRate(FluidAmount.of1620(amountPerTick));
+    }
+
+    public String localizeFlowRate(FluidAmount amountPerTick) {
         // TODO: Replace this with proper!
         return getSmallestUnit().localizeFlowRate(amountPerTick);
     }

@@ -13,6 +13,8 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.biome.Biome;
 
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+
 /* package-private */ final class WaterFluidKey extends BiomeSourcedFluidKey {
 
     public static final Identifier SPRITE_STILL = new Identifier("minecraft", "block/water_still");
@@ -22,9 +24,10 @@ import net.minecraft.world.biome.Biome;
 
     private WaterFluidKey() {
         super(
-            NormalFluidKey.builder(
-                Fluids.WATER, SPRITE_STILL, SPRITE_FLOWING, new TranslatableText("block.minecraft.water")
-            ).addUnit(FluidUnit.BOTTLE)
+            new FluidKeyBuilder(Fluids.WATER)//
+                .setSprites(SPRITE_STILL, SPRITE_FLOWING)//
+                .setName(new TranslatableText("block.minecraft.water"))//
+                .addUnit(FluidUnit.BOTTLE)
         );
     }
 
@@ -34,12 +37,12 @@ import net.minecraft.world.biome.Biome;
     }
 
     @Override
-    public BiomeSourcedFluidVolume withAmount(int amount) {
+    public BiomeSourcedFluidVolume withAmount(FluidAmount amount) {
         return new WaterFluidVolume(amount);
     }
 
     @Override
-    public BiomeSourcedFluidVolume withAmount(Biome source, int amount) {
+    public BiomeSourcedFluidVolume withAmount(Biome source, FluidAmount amount) {
         return new WaterFluidVolume(source, amount);
     }
 }

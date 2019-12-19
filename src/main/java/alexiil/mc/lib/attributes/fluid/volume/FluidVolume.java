@@ -7,6 +7,7 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -19,6 +20,8 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.fluid.BaseFluid;
+import net.minecraft.fluid.EmptyFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.potion.Potion;
@@ -30,6 +33,8 @@ import net.minecraft.util.Identifier;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount.FluidMergeResult;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount.FluidMergeRounding;
 import alexiil.mc.lib.attributes.fluid.render.DefaultFluidVolumeRenderer;
 import alexiil.mc.lib.attributes.fluid.render.FluidRenderFace;
 import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer;
@@ -67,10 +72,20 @@ public abstract class FluidVolume {
     }
 
     public FluidVolume(FluidKey key, FluidAmount amount) {
+        if (key == null) {
+            throw new NullPointerException("key");
+        }
+        Fluid rawFluid = key.getRawFluid();
+        if (rawFluid instanceof EmptyFluid && key != FluidKeys.EMPTY) {
+            throw new IllegalArgumentException("Different empty fluid!");
+        }
+        if (rawFluid instanceof BaseFluid && rawFluid != ((BaseFluid) rawFluid).getStill()) {
+            throw new IllegalArgumentException("Only the still version of fluids are allowed!");
+        }
         this.fluidKey = key;
         this.amount = amount;
 
-        if (key.registryEntry.isEmpty()) {
+        if (key.entry.isEmpty()) {
             if (!amount.isZero()) {
                 throw new IllegalArgumentException("Empty Fluid Volume's must have an amount of 0!");
             }
@@ -80,9 +95,20 @@ public abstract class FluidVolume {
     }
 
     public FluidVolume(FluidKey key, CompoundTag tag) {
+        if (key == null) {
+            throw new NullPointerException("key");
+        }
+        Fluid rawFluid = key.getRawFluid();
+        if (rawFluid instanceof EmptyFluid && key != FluidKeys.EMPTY) {
+            throw new IllegalArgumentException("Different empty fluid!");
+        }
+        if (rawFluid instanceof BaseFluid && rawFluid != ((BaseFluid) rawFluid).getStill()) {
+            throw new IllegalArgumentException("Only the still version of fluids are allowed!");
+        }
+
         this.fluidKey = key;
 
-        if (key.registryEntry.isEmpty()) {
+        if (key.entry.isEmpty()) {
             this.amount = FluidAmount.ZERO;
         } else if (tag.contains(KEY_AMOUNT_1620INT)) {
             int readAmount = tag.getInt(KEY_AMOUNT_1620INT);
@@ -166,7 +192,7 @@ public abstract class FluidVolume {
     }
 
     public String localizeAmount() {
-        return fluidKey.unitSet.localizeAmount(getAmount());
+        return fluidKey.unitSet.localizeAmount(getAmount_F());
     }
 
     /** @deprecated Use {@link Objects#equals(Object)} instead of this. */
@@ -227,15 +253,15 @@ public abstract class FluidVolume {
         return amount;
     }
 
-    /** Protected to allow the implementation of {@link #split(int)} and {@link #merge0(FluidVolume)} to set the
-     * amount. */
+    /** Protected to allow the implementation of {@link #split(int)} and
+     * {@link #merge0(FluidVolume, FluidMergeRounding)} to set the amount. */
     @Deprecated
     protected final void setAmount(int newAmount) {
         setAmount(FluidAmount.of1620(newAmount));
     }
 
-    /** Protected to allow the implementation of {@link #split(int)} and {@link #merge0(FluidVolume)} to set the
-     * amount. */
+    /** Protected to allow the implementation of {@link #split(FluidAmount)} and
+     * {@link #merge0(FluidVolume, FluidMergeRounding)} to set the amount. */
     protected final void setAmount(FluidAmount newAmount) {
         // Note that you can always set the amount to 0 to make this volume empty
         if (newAmount.isNegative()) {
@@ -248,19 +274,40 @@ public abstract class FluidVolume {
      * 
      * @param source The source fluid. This <em>will</em> be modified if any is moved.
      * @param target The destination fluid. This <em>will</em> be modified if any is moved.
-     * @param behaviour
      * @return True if the merge was successful, false otherwise. If either fluid is empty or if they have different
      *         {@link #getFluidKey() keys} then this will return false (and fail). */
-    public static boolean mergeInto(FluidVolume source, FluidVolume target, FluidAmount.FluidMergeRounding behaviour) {
+    public static boolean mergeInto(FluidVolume source, FluidVolume target) {
+        return mergeInto(source, target, FluidMergeRounding.DEFAULT, Simulation.SIMULATE);
+    }
+
+    /** Merges as much fluid as possible from the source into the target, leaving the leftover in the
+     * 
+     * @param source The source fluid. This <em>will</em> be modified if any is moved.
+     * @param target The destination fluid. This <em>will</em> be modified if any is moved.
+     * @param rounding
+     * @return True if the merge was successful, false otherwise. If either fluid is empty or if they have different
+     *         {@link #getFluidKey() keys} then this will return false (and fail). */
+    public static boolean mergeInto(FluidVolume source, FluidVolume target, FluidMergeRounding rounding) {
+        return mergeInto(source, target, rounding, Simulation.SIMULATE);
+    }
+
+    /** Merges as much fluid as possible from the source into the target, leaving the leftover in the source.
+     * 
+     * @param source The source fluid. This <em>will</em> be modified if any is moved.
+     * @param target The destination fluid. This <em>will</em> be modified if any is moved.
+     * @param rounding
+     * @return True if the merge was successful, false otherwise. If either fluid is empty or if they have different
+     *         {@link #getFluidKey() keys} then this will return false (and fail). */
+    public static boolean mergeInto(
+        FluidVolume source, FluidVolume target, FluidMergeRounding rounding, Simulation simulation
+    ) {
         if (source.isEmpty() || target.isEmpty()) {
             return false;
         }
         if (source.getFluidKey() != target.getFluidKey()) {
             return false;
         }
-        // TODO: Implement some method in FluidAmount to handle this!
-        // (also move FluidMergeRounding into FluidAmount, because it will need to have the actual implementation)
-        FluidAmount.SafeAddResult added = source.getAmount_F().safeAdd(target.getAmount_F(), behaviour.rounding);
+        return source.merge(target, rounding, simulation);
     }
 
     /** @param a The merge target. Might be modified and/or returned.
@@ -268,6 +315,14 @@ public abstract class FluidVolume {
      * @return the merged fluid. Might be either a or b depending on */
     @Nullable
     public static FluidVolume merge(FluidVolume a, FluidVolume b) {
+        return merge(a, b, FluidMergeRounding.DEFAULT);
+    }
+
+    /** @param a The merge target. Might be modified and/or returned.
+     * @param b The other fluid. Might be modified, and might be returned.
+     * @return the merged fluid. Might be either a or b depending on */
+    @Nullable
+    public static FluidVolume merge(FluidVolume a, FluidVolume b, FluidMergeRounding rounding) {
         if (a.isEmpty()) {
             if (b.isEmpty()) {
                 return FluidKeys.EMPTY.withAmount(FluidAmount.ZERO);
@@ -277,7 +332,7 @@ public abstract class FluidVolume {
         if (b.isEmpty()) {
             return a;
         }
-        if (a.merge(b, Simulation.ACTION)) {
+        if (a.merge(b, rounding, Simulation.ACTION)) {
             return a;
         }
         return null;
@@ -293,6 +348,10 @@ public abstract class FluidVolume {
     }
 
     public final boolean merge(FluidVolume other, Simulation simulation) {
+        return merge(other, FluidMergeRounding.ROUND_HALF_EVEN, simulation);
+    }
+
+    public final boolean merge(FluidVolume other, FluidMergeRounding rounding, Simulation simulation) {
         if (isEmpty() || other.isEmpty()) {
             throw new IllegalArgumentException("Don't try to merge two empty fluids!");
         }
@@ -300,7 +359,7 @@ public abstract class FluidVolume {
             return false;
         }
         if (simulation == Simulation.ACTION) {
-            merge0(other);
+            merge0(other, rounding);
         }
         return true;
     }
@@ -309,9 +368,10 @@ public abstract class FluidVolume {
      * 
      * @param other The other fluid volume. This will always be the same class as this. This should change the amount of
      *            the other fluid to 0. */
-    protected void merge0(FluidVolume other) {
-        setAmount(getAmount_F().add(other.getAmount_F()));
-        other.setAmount(FluidAmount.ZERO);
+    protected void merge0(FluidVolume other, FluidMergeRounding rounding) {
+        FluidMergeResult result = FluidAmount.merge(getAmount_F(), other.getAmount_F(), rounding);
+        setAmount(result.merged);
+        other.setAmount(result.excess);
     }
 
     /** @deprecated Replaced by {@link #split(FluidAmount)} */
@@ -327,6 +387,16 @@ public abstract class FluidVolume {
      * @param toRemove If zero then the empty fluid is returned.
      * @throws IllegalArgumentException if the given amount is negative. */
     public final FluidVolume split(FluidAmount toRemove) {
+        return split(toRemove, RoundingMode.HALF_EVEN);
+    }
+
+    /** Splits off the given amount of fluid and returns it, reducing this amount as well.<br>
+     * If the given amount is greater than this then the returned {@link FluidVolume} will have an amount equal to this
+     * amount, and not the amount given.
+     * 
+     * @param toRemove If zero then the empty fluid is returned.
+     * @throws IllegalArgumentException if the given amount is negative. */
+    public final FluidVolume split(FluidAmount toRemove, RoundingMode rounding) {
         if (toRemove.isNegative()) {
             throw new IllegalArgumentException("Cannot split off a negative amount!");
         }
@@ -336,18 +406,17 @@ public abstract class FluidVolume {
         if (toRemove.isGreaterThan(amount)) {
             toRemove = amount;
         }
-        return split0(toRemove);
+        return split0(toRemove, rounding);
     }
 
     /** @param toTake A valid subtractable amount.
      * @return A new {@link FluidVolume} with the given amount that has been removed from this. */
-    protected FluidVolume split0(FluidAmount toTake) {
-        setAmount(getAmount_F().sub(toTake));
+    protected FluidVolume split0(FluidAmount toTake, RoundingMode rounding) {
+        setAmount(getAmount_F().roundedSub(toTake, rounding));
         return getFluidKey().withAmount(toTake);
     }
 
-    /** Note: it is recommended that you call {@link #getStillSprite()} instead of this as this method will likely be
-     * removed at some point in the future.
+    /** Fallback for {@link DefaultFluidVolumeRenderer} to use if it can't find one itself.
      * 
      * @return An {@link Identifier} for the still sprite that this fluid volume should render with in gui's and
      *         in-world. */
@@ -355,7 +424,9 @@ public abstract class FluidVolume {
         return getFluidKey().spriteId;
     }
 
-    /** Provided for completeness with {@link #getFlowingSprite()}. As this is final (and so cannot be overridden) it is
+    /** Fallback for {@link DefaultFluidVolumeRenderer} to use if it can't find one itself.
+     * <p>
+     * Provided for completeness with {@link #getFlowingSprite()}. As this is final (and so cannot be overridden) it is
      * always safe to call this instead of {@link #getSprite()}. (If getSprite() is ever deprecated it is recommended to
      * that you call this instead).
      * 
@@ -365,7 +436,9 @@ public abstract class FluidVolume {
         return getSprite();
     }
 
-    /** @return An {@link Identifier} for the flowing sprite that this fluid volume should render with in gui's and
+    /** Fallback for {@link DefaultFluidVolumeRenderer} to use if it can't find one itself.
+     * 
+     * @return An {@link Identifier} for the flowing sprite that this fluid volume should render with in gui's and
      *         in-world when {@link FluidRenderFace#flowing} is true. */
     public Identifier getFlowingSprite() {
         return getFluidKey().flowingSpriteId;
@@ -386,10 +459,9 @@ public abstract class FluidVolume {
         List<Text> list = new ArrayList<>();
         list.add(getName());
         if (ctx.isAdvanced()) {
-            list.add(
-                new LiteralText(FluidRegistryEntry.getName(getFluidKey().registryEntry.backingRegistry).toString()).formatted(Formatting.DARK_GRAY)
-            );
-            list.add(new LiteralText(getFluidKey().registryEntry.getId().toString()).formatted(Formatting.DARK_GRAY));
+            FluidEntry entry = getFluidKey().entry;
+            list.add(new LiteralText(entry.getRegistryInternalName()).formatted(Formatting.DARK_GRAY));
+            list.add(new LiteralText(entry.getId().toString()).formatted(Formatting.DARK_GRAY));
         }
         return list;
     }

@@ -7,6 +7,7 @@
  */
 package alexiil.mc.lib.attributes.fluid.impl;
 
+import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,12 +35,12 @@ public class CombinedGroupedFluidInvView implements GroupedFluidInvView {
         FluidAmount spaceTotal = FluidAmount.ZERO;
         for (GroupedFluidInvView stats : inventories) {
             FluidInvStatistic stat = stats.getStatistics(filter);
-            amount = amount.add(stat.amount_F);
-            spaceAddable = spaceAddable.add(stat.spaceAddable_F);
+            amount = amount.roundedAdd(stat.amount_F);
+            spaceAddable = spaceAddable.roundedAdd(stat.spaceAddable_F);
             if (stat.spaceTotal_F.equals(FluidAmount.NEGATIVE_ONE)) {
                 spaceTotal = FluidAmount.NEGATIVE_ONE;
             } else {
-                spaceTotal = spaceTotal.add(stat.spaceTotal_F);
+                spaceTotal = spaceTotal.roundedAdd(stat.spaceTotal_F);
             }
         }
         return new FluidInvStatistic(filter, amount, spaceAddable, spaceTotal);
@@ -58,7 +59,7 @@ public class CombinedGroupedFluidInvView implements GroupedFluidInvView {
     public FluidAmount getTotalCapacity_F() {
         FluidAmount total = FluidAmount.ZERO;
         for (GroupedFluidInvView inv : inventories) {
-            total = total.add(inv.getTotalCapacity_F());
+            total = total.roundedAdd(inv.getTotalCapacity_F(), RoundingMode.DOWN);
         }
         return total;
     }
@@ -89,7 +90,7 @@ public class CombinedGroupedFluidInvView implements GroupedFluidInvView {
         for (int i = 0; i < tokens.length; i++) {
             tokens[i] = inventories.get(i).addListener_F((inv, fluidKey, previous, current) -> {
                 FluidAmount totalCurrent = this.getAmount_F(fluidKey);
-                listener.onChange(this, fluidKey, totalCurrent.sub(current).add(previous), totalCurrent);
+                listener.onChange(this, fluidKey, totalCurrent.roundedSub(current).roundedAdd(previous), totalCurrent);
             }, ourRemToken);
             if (tokens[i] == null) {
                 for (int j = 0; j < i; j++) {

@@ -7,18 +7,30 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import java.util.Map;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
 
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 
 /* package-private */ final class WaterFluidVolume extends BiomeSourcedFluidVolume {
 
-    public WaterFluidVolume(int amount) {
-        super(WaterFluidKey.INSTANCE, amount);
+    public WaterFluidVolume(FluidAmount amount) {
+        super(WaterFluidKey.INSTANCE, Biomes.OCEAN, amount);
     }
 
+    @Deprecated
+    public WaterFluidVolume(int amount) {
+        super(WaterFluidKey.INSTANCE, Biomes.OCEAN, amount);
+    }
+
+    public WaterFluidVolume(Biome source, FluidAmount amount) {
+        super(WaterFluidKey.INSTANCE, source, amount);
+    }
+
+    @Deprecated
     public WaterFluidVolume(Biome source, int amount) {
         super(WaterFluidKey.INSTANCE, source, amount);
     }
@@ -29,7 +41,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 
     @Override
     public int getRenderColor() {
-        Object2IntMap<Biome> sources = getBiomeSources();
+        Map<Biome, FluidAmount> sources = this.getValues();
         int biomeCount = sources.size();
         switch (biomeCount) {
             case 0: {
@@ -40,13 +52,14 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
                 return sources.keySet().iterator().next().getWaterColor();
             }
             default: {
-                int r = 0;
-                int g = 0;
-                int b = 0;
-                int total = 0;
+                double r = 0;
+                double g = 0;
+                double b = 0;
+                double total = 0;
 
                 for (Biome biome : sources.keySet()) {
-                    int amount = sources.getInt(biome);
+                    FluidAmount flAmount = sources.get(biome);
+                    double amount = flAmount.asInexactDouble();
                     int colour = biome.getWaterColor();
                     r += (colour & 0xFF) * amount;
                     g += ((colour >> 8) & 0xFF) * amount;
@@ -66,7 +79,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
                 assert g < 256;
                 assert b < 256;
 
-                return (r) | (g << 8) | (b << 16);
+                return ((int) r) | ((int) g << 8) | ((int) b << 16);
             }
         }
     }

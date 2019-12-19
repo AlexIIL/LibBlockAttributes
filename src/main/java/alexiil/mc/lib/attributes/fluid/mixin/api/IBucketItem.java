@@ -30,7 +30,7 @@ public interface IBucketItem {
     ItemStack libblockattributes__withFluid(FluidKey fluid);
 
     /** Similar to {@link #libblockattributes__withFluid(FluidKey)}, but can return an empty stack if this bucket should
-     * be lost when drained by a machine that doesn't have special tooling/mechanisms for keeping the container around.
+     * be roundingLoss when drained by a machine that doesn't have special tooling/mechanisms for keeping the container around.
      * (Unlike withFluid this is assumed to always be a valid result). */
     default ItemStack libblockattributes__drainedOfFluid(ItemStack stack) {
         // Most containers use the same logic for both

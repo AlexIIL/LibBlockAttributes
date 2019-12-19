@@ -8,8 +8,13 @@ apply plugin: 'maven-publish' // for uploading to a maven repo
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+repositories {
+    mavenLocal()
+    maven { name="Modmuss50"; url="https://maven.modmuss50.me/" }
+}
+
 archivesBaseName = "libblockatttributes"
-version = "0.6.0-pre.1"
+version = "0.6.0-pre.15"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -20,16 +25,18 @@ minecraft {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${minecraft_version}"
-    mappings "net.fabricmc:yarn:${yarn_mappings}"
-    modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+    minecraft "com.mojang:minecraft:1.15"
+    mappings "net.fabricmc:yarn:1.15+build.1:v2"
+    modCompile "net.fabricmc:fabric-loader:0.7.2+build.174"
 
     //Fabric api
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+    modCompile "net.fabricmc.fabric-api:fabric-api:0.4.23+build.276-1.15"
 
     // Silk API
     modImplementation "io.github.prospector.silk:SilkAPI:${silk_version}"
-    include "io.github.prospector.silk:SilkAPI:${silk_version}"
+
+    // RebornCore
+    modImplementation("RebornCore:RebornCore-1.15:${reborncore_version}") { transitive = false }
 
     // Misc
     compile "com.google.code.findbugs:jsr305:3.0.1"

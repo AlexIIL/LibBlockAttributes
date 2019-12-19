@@ -228,7 +228,7 @@ public final class FluidAttributes {
             }
             IBucketItem bucket = (IBucketItem) stack.getItem();
             FluidAmount perBucket = bucket.libblockattributes__getFluidVolumeAmount();
-            return perBucket.mul(stack.getCount());
+            return perBucket.checkedMul(stack.getCount());
         }
 
         @Override
@@ -244,7 +244,7 @@ public final class FluidAttributes {
             if (current != FluidKeys.EMPTY) {
                 if (filter.matches(current)) {
                     FluidAmount perBucket = bucket.libblockattributes__getFluidVolumeAmount();
-                    FluidAmount amount = perBucket.mul(stack.getCount());
+                    FluidAmount amount = perBucket.checkedMul(stack.getCount());
                     return new FluidInvStatistic(filter, amount, FluidAmount.ZERO, amount);
                 } else {
                     return FluidInvStatistic.emptyOf(filter);
@@ -255,7 +255,7 @@ public final class FluidAttributes {
 
             if (any != null) {
                 FluidAmount perBucket = bucket.libblockattributes__getFluidVolumeAmount();
-                FluidAmount space = perBucket.mul(stack.getCount());
+                FluidAmount space = perBucket.checkedMul(stack.getCount());
                 for (FluidKey key : any) {
                     if (!bucket.libblockattributes__withFluid(key).isEmpty()) {
                         return new FluidInvStatistic(filter, FluidAmount.ZERO, FluidAmount.ZERO, space);
@@ -267,7 +267,7 @@ public final class FluidAttributes {
         }
 
         @Override
-        public ListenerToken addListener(FluidInvAmountChangeListener listener, ListenerRemovalToken removalToken) {
+        public ListenerToken addListener_F(FluidInvAmountChangeListener_F listener, ListenerRemovalToken removalToken) {
             return null;
         }
 

@@ -17,10 +17,7 @@ import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.util.registry.Registry;
 
-public final class FluidRegistryEntry<T> {
-
-    private static final String KEY_REGISTRY_TYPE = "Registry";
-    private static final String KEY_OBJ_IDENTIFIER = "ObjName";
+public final class FluidRegistryEntry<T> extends FluidEntry {
 
     final DefaultedRegistry<T> backingRegistry;
     final T backingObject;
@@ -34,8 +31,10 @@ public final class FluidRegistryEntry<T> {
             throw new NullPointerException("backingObject");
         }
         if (getName(backingRegistry) == null) {
-            throw new IllegalArgumentException("You cannot use the " + backingRegistry
-                + " with this because it's not registered with the main registry!");
+            throw new IllegalArgumentException(
+                "You cannot use the " + backingRegistry
+                    + " with this because it's not registered with the main registry!"
+            );
         }
         this.backingRegistry = backingRegistry;
         this.backingObject = backingObject;
@@ -57,7 +56,7 @@ public final class FluidRegistryEntry<T> {
     }
 
     @Nullable
-    private static DefaultedRegistry<?> fromName(String name) {
+    static DefaultedRegistry<?> fromName(String name) {
         if ("f".equals(name)) {
             return Registry.FLUID;
         } else if ("p".equals(name)) {
@@ -72,21 +71,12 @@ public final class FluidRegistryEntry<T> {
         }
     }
 
-    public static FluidRegistryEntry<?> fromTag(CompoundTag tag) {
-        DefaultedRegistry<?> registry = fromName(tag.getString(KEY_REGISTRY_TYPE));
-        if (registry == null) {
-            // The registry that contains the empty fluid
-            registry = Registry.FLUID;
-        }
-        String name = tag.getString(KEY_OBJ_IDENTIFIER);
-        return fromTag0(registry, name);
-    }
-
-    private static <T> FluidRegistryEntry<T> fromTag0(DefaultedRegistry<T> registry, String name) {
+    static <T> FluidRegistryEntry<T> fromTag0(DefaultedRegistry<T> registry, String name) {
         T obj = registry.get(Identifier.tryParse(name));
         return new FluidRegistryEntry<>(registry, obj);
     }
 
+    @Override
     public void toTag(CompoundTag tag) {
         Identifier objId = backingRegistry.getId(backingObject);
         if (backingRegistry.getDefaultId().equals(objId)) {
@@ -96,6 +86,7 @@ public final class FluidRegistryEntry<T> {
         tag.putString(KEY_OBJ_IDENTIFIER, objId.toString());
     }
 
+    @Override
     public boolean isEmpty() {
         return backingRegistry.get(backingRegistry.getDefaultId()) == backingObject;
     }
@@ -114,10 +105,16 @@ public final class FluidRegistryEntry<T> {
 
     @Override
     public String toString() {
-        return getId().toString();
+        return "{RegistryEntry " + getRegistryInternalName() + " " + getId() + "}";
     }
 
-    Identifier getId() {
+    @Override
+    public String getRegistryInternalName() {
+        return getName(backingRegistry);
+    }
+
+    @Override
+    public Identifier getId() {
         return backingRegistry.getId(backingObject);
     }
 

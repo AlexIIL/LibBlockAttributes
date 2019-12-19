@@ -22,7 +22,11 @@ import net.minecraft.util.registry.Registry;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 
 /** Identical to {@link NormalFluidVolume}, but without an amount and with extra data hidden from public view. As such
- * this is safe to use in normal maps and sets. */
+ * this is safe to use in normal maps and sets.
+ * 
+ * @deprecated Because any {@link FluidKey} can map to a single {@link Fluid}, and {@link SimpleFluidKey} has a much
+ *             better name than this. */
+@Deprecated
 public class NormalFluidKey extends FluidKey {
 
     /** @deprecated As the flowing sprite ID is needed as well. */
@@ -50,7 +54,9 @@ public class NormalFluidKey extends FluidKey {
             setRawFluid(fluid);
         }
 
-        public NormalFluidKeyBuilder(@Nullable Fluid fluid, Identifier spriteId, Identifier flowingSpriteId, Text name) {
+        public NormalFluidKeyBuilder(
+            @Nullable Fluid fluid, Identifier spriteId, Identifier flowingSpriteId, Text name
+        ) {
             super(new FluidRegistryEntry<>(Registry.FLUID, fluid), spriteId, flowingSpriteId, name);
             this.fluid = fluid;
             setRawFluid(fluid);

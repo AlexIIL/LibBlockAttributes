@@ -193,9 +193,8 @@ public interface FluidExtractable {
     public static void validateFluidExtractable(FluidExtractable instance) {
         Class<?> c = instance.getClass();
         try {
-            Method m0 = c.getDeclaredMethod("attemptExtraction", FluidFilter.class, int.class, Simulation.class);
-            Method m1
-                = c.getDeclaredMethod("attemptExtraction", FluidFilter.class, FluidAmount.class, Simulation.class);
+            Method m0 = c.getMethod("attemptExtraction", FluidFilter.class, int.class, Simulation.class);
+            Method m1 = c.getMethod("attemptExtraction", FluidFilter.class, FluidAmount.class, Simulation.class);
             if (m0.getDeclaringClass() == FluidExtractable.class) {
                 if (m1.getDeclaringClass() == FluidExtractable.class) {
                     throw new Error(

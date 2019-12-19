@@ -7,6 +7,7 @@
  */
 package alexiil.mc.lib.attributes.fluid;
 
+import java.math.RoundingMode;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
@@ -106,7 +107,7 @@ public final class FluidVolumeUtil {
 
         // Step 2:
         FluidVolume firstLeftover = to.attemptInsertion(extracted, Simulation.SIMULATE);
-        FluidAmount firstInserted = extracted.getAmount_F().sub(firstLeftover.getAmount_F());
+        FluidAmount firstInserted = extracted.getAmount_F().roundedSub(firstLeftover.getAmount_F());
         if (!firstInserted.isPositive()) {
             return EMPTY;
         }
@@ -332,8 +333,8 @@ public final class FluidVolumeUtil {
         }
         FluidVolume inTank = inv.getInvFluid(tank);
         FluidAmount current = inTank.getAmount_F();
-        FluidAmount max = current.add(toInsert.getAmount_F()).min(inv.getMaxAmount_F(tank));
-        FluidAmount addable = max.sub(current);
+        FluidAmount max = current.roundedAdd(toInsert.getAmount_F(), RoundingMode.DOWN).min(inv.getMaxAmount_F(tank));
+        FluidAmount addable = max.roundedSub(current, RoundingMode.UP);
         if (!addable.isPositive()) {
             return toInsert;
         }
@@ -386,7 +387,6 @@ public final class FluidVolumeUtil {
         FixedFluidInv inv, int tank, @Nullable FluidFilter filter, FluidVolume toAddWith, FluidAmount maxAmount,
         Simulation simulation
     ) {
-
         if (toAddWith == null) {
             toAddWith = EMPTY;
         }

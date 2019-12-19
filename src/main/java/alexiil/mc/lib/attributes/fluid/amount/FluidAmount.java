@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2019 AlexIIL
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
 package alexiil.mc.lib.attributes.fluid.amount;
 
 import java.math.BigInteger;
@@ -47,6 +54,12 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
      * is set to 1. */
     public FluidAmount(long whole) {
         this(whole, 0, 1);
+    }
+
+    /** Creates a new {@link FluidAmount} with the given values. This will reduce the fraction into it's simplest
+     * form. */
+    public static FluidAmount ofWhole(long whole) {
+        return of(whole, 0, 1);
     }
 
     /** Creates a new {@link FluidAmount} with the given values. This will reduce the fraction into it's simplest
@@ -111,10 +124,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
      * <p>
      * The text is parsed according to the following rules:
      * <ol>
-     * <li>If the text is a valid {@link Long} then that is parsed and returned as if from
-     * {@link #FluidAmount(long)}.</li>
-     * <li>If the text is a valid {@link Double} then it is parsed and returned as if from
-     * {@link FluidAmount#fromDouble(double)}</li>
+     * <li>If the text is a valid {@link Long} then that is parsed and returned as if from {@link #ofWhole(long)}.</li>
      * </ol>
      * Otherwise it must contain the following:
      * <ol>
@@ -169,21 +179,10 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         if (text == null) {
             return simpleError(shouldThrow, "The text was null!");
         }
-        // Allow leading or trailing whitespace
-        final String original = text;
-        text = text.trim();
         try {
-            return new FluidAmount(Long.parseLong(text));
+            return ofWhole(Long.parseLong(text.trim()));
         } catch (NumberFormatException ignored) {
             // This is always permissible
-        }
-
-        try {
-            return FluidAmount.fromDouble(Double.parseDouble(text));
-        } catch (NumberFormatException ignored) {
-            // This is always permissible
-        } catch (IllegalArgumentException badDouble) {
-            return simpleError(shouldThrow, badDouble.getMessage());
         }
 
         // Spec copied here
@@ -201,26 +200,326 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
 
         char sign0 = 0;
         char sign1 = 0;
+        boolean bracket0 = false;
+        boolean bracket1 = false;
         long whole = 0;
         long numerator = 0;
         long denominator = 0;
+        boolean isDecimal = false;
+        int decimalLength = -1;
 
+        // 0: looking for -/+
+        // 1: looking for "("
+        // 2: looking for whole
+        // 3: looking for -/+ (->4) or "." (->10) or "/" (->7 and swap{whole, numerator}) or end
+        // 4: looking for "(" or ->5
+        // 5: looking for numerator
+        // 6: looking for "/"
+        // 7: looking for denominator
+        // 8: if bracket1 looking for ")" -> 9
+        // 9: if bracket0 looking for ")" -> end
+        // 10: looking for number (for "number.number" double parsing) -> end
+        // 11: <end>
         int stage = 0;
         int numberStart = -1;
+        int numberEnd = -1;
 
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            switch (c) {
-                case ' ': {
-                    if (numberStart != -1) {
-                        return simpleError(shouldThrow, "");
+        text_loop: for (int i = 0; true; i++) {
+            // This allows us to handle the end alongside everything else
+            final boolean end = i >= text.length();
+            not_a_number: {
+                String badCharDesc = null;
+                good_char: {
+                    if (end) {
+                        if (stage == 3 || ((stage == 7 || stage == 10) && numberStart != -1)) {
+                            numberEnd = i;
+                            break not_a_number;
+                        }
+                        if (stage == 11) {
+                            break text_loop;
+                        } else {
+                            badCharDesc = "the end";
+                            break good_char;
+                        }
                     }
-                    continue;
+                    char c = text.charAt(i);
+                    if (c < '0' || '9' < c) {
+                        if (numberStart != -1) {
+                            numberEnd = i;
+                            i--;
+                            break not_a_number;
+                        }
+                    }
+                    switch (c) {
+                        case ' ': {
+                            numberEnd = i;
+                            break not_a_number;
+                        }
+                        case '/': {
+                            if (stage == 6) {
+                                stage = 7;
+                                continue text_loop;
+                            }
+                            if (stage == 3) {
+                                stage = 7;
+                                numerator = whole;
+                                whole = 0;
+                                sign1 = '+';
+                                if (bracket0) {
+                                    bracket1 = true;
+                                    bracket0 = false;
+                                }
+                                continue text_loop;
+                            }
+                            badCharDesc = "the division symbol '/'";
+                            break good_char;
+                        }
+                        case '-':
+                        case '+': {
+                            if (stage == 0) {
+                                sign0 = c;
+                                stage = 1;
+                                continue text_loop;
+                            }
+                            if (stage == 3) {
+                                sign1 = c;
+                                stage = 4;
+                                continue text_loop;
+                            }
+                            badCharDesc = "the sign '" + c + "'";
+                            break good_char;
+                        }
+                        case '(': {
+                            if (stage == 0) {
+                                sign0 = '+';
+                                stage = 1;
+                            } else if (stage == 3) {
+                                sign1 = '+';
+                                stage = 4;
+                            }
+                            if (stage == 1) {
+                                bracket0 = true;
+                                stage = 2;
+                                continue text_loop;
+                            }
+                            if (stage == 4) {
+                                bracket1 = true;
+                                stage = 5;
+                                continue text_loop;
+                            }
+                            badCharDesc = "the open bracket '('";
+                            break good_char;
+                        }
+                        case ')': {
+                            if (bracket1 && stage == 8) {
+                                if (bracket0) {
+                                    stage = 9;
+                                } else {
+                                    stage = 11;
+                                }
+                                continue text_loop;
+                            }
+                            if (bracket1 && stage == 9) {
+                                stage = 11;
+                                continue text_loop;
+                            }
+                            badCharDesc = "the closing bracket ')'";
+                            break good_char;
+                        }
+                        case '.': {
+                            if (stage == 3) {
+                                stage = 10;
+                                isDecimal = true;
+                                continue text_loop;
+                            }
+                            badCharDesc = "the decimal point '.'";
+                            break good_char;
+                        }
+                        default: {
+                            if ('0' <= c && c <= '9') {
+                                if (stage == 0) {
+                                    sign0 = '+';
+                                    bracket0 = false;
+                                    stage = 2;
+                                } else if (stage == 1) {
+                                    bracket0 = false;
+                                    stage = 2;
+                                } else if (stage == 4) {
+                                    bracket1 = false;
+                                    stage = 5;
+                                }
+
+                                if (stage == 2 || stage == 5 || stage == 7 || stage == 10) {
+                                    if (numberStart == -1) {
+                                        numberStart = i;
+                                    }
+                                    continue text_loop;
+                                } else {
+                                    badCharDesc = "a number '" + c + "'";
+                                    break good_char;
+                                }
+                            } else {
+                                badCharDesc = "an unknown character '" + c + "' (" + Character.getName(c) + ")";
+                                break good_char;
+                            }
+                        }
+                    }
+                } // good_char
+                String expected = null;
+                switch (stage) {
+                    case 0:
+                        expected = "either '+', '-', '(', or a number";
+                        break;
+                    case 1:
+                        expected = "either '(' or a number for the whole";
+                        break;
+                    case 2:
+                        expected = "a number for the whole";
+                        break;
+                    case 3:
+                        expected = "either '+', '-', '.', '/', or a number";
+                        break;
+                    case 4:
+                        expected = "either '(' or a number for the numerator";
+                        break;
+                    case 5:
+                        expected = "a number for the numerator";
+                        break;
+                    case 6:
+                        expected = "the division symbol '/'";
+                        break;
+                    case 7:
+                        expected = "a number for the denominator";
+                        break;
+                    case 8:
+                        if (bracket1) {
+                            expected = "the closing bracket ')'";
+                        } else {
+                            throw new IllegalStateException(
+                                "Bad state: bracket1 is false, but we've been moved to stage 8!"
+                            );
+                        }
+                        break;
+                    case 9:
+                        if (bracket0) {
+                            expected = "the closing bracket ')'";
+                        } else {
+                            throw new IllegalStateException(
+                                "Bad state: bracket0 is false, but we've been moved to stage 9!"
+                            );
+                        }
+                        break;
+                    case 10:
+                        expected = "a number for the decimal";
+                        break;
+                    case 11:
+                        expected = "the end";
+                        break;
+                    default: {
+                        throw new IllegalStateException(
+                            "Bad state: we've been moved to an unknown stage (" + stage + ")"
+                        );
+                    }
                 }
+                return simpleError(
+                    shouldThrow,
+                    "Expected " + expected + ", but got " + badCharDesc + " at index " + i + " for input '" + text + "'"
+                );
+            } // not_a_number
+
+            if (numberStart == -1) {
+                continue text_loop;
+            }
+            long lval = 1;
+            boolean parseFailed = false;
+            String error = null;
+            String sub = text.substring(numberStart, numberEnd);
+            try {
+                lval = Long.parseLong(sub);
+            } catch (NumberFormatException nfe) {
+                parseFailed = true;
+            }
+            numberStart = -1;
+            numberEnd = -1;
+            String name = null;
+            good_number: {
+                switch (stage) {
+                    case 2: {
+                        if (parseFailed) {
+                            name = "whole";
+                            break good_number;
+                        }
+                        whole = lval;
+                        stage = 3;
+                        continue text_loop;
+                    }
+                    case 5: {
+                        if (parseFailed) {
+                            name = "numerator";
+                            break good_number;
+                        }
+                        numerator = lval;
+                        stage = 6;
+                        continue text_loop;
+                    }
+                    case 7: {
+                        if (!parseFailed && lval <= 0) {
+                            error = "non-positive values are not allowed";
+                        }
+                        if (parseFailed) {
+                            name = "denominator";
+                            break good_number;
+                        }
+                        denominator = lval;
+                        if (bracket1) {
+                            stage = 8;
+                        } else if (bracket0) {
+                            stage = 9;
+                        } else {
+                            stage = 11;
+                        }
+                        continue text_loop;
+                    }
+                    case 10: {
+                        if (parseFailed) {
+                            name = "decimal";
+                            break good_number;
+                        }
+                        numerator = lval;
+                        decimalLength = sub.length();
+                        stage = 11;
+                        continue text_loop;
+                    }
+                    default: {
+                        throw new IllegalStateException("One of the stages didn't handle this correctly... " + stage);
+                    }
+                }
+            } // good_number
+            return simpleError(shouldThrow, "Bad " + name + ": '" + sub + "'" + (error == null ? "" : ": " + error));
+        } // text_loop
+
+        assert stage == 11 : "Bad stage " + stage;
+        assert sign0 == '-' || sign0 == '+' : "Missing sign0";
+        if (isDecimal) {
+            assert sign1 == 0 : "Was both decimal and sign1!";
+            assert decimalLength > 0 : "Missing decimal length";
+            sign1 = sign0;
+            bracket0 = false;
+            denominator = LongMath.pow(10, decimalLength);
+        }
+        assert sign1 == '-' || sign1 == '+' : "Missing sign1";
+
+        if (sign0 == '-') {
+            whole = -whole;
+            if (bracket0) {
+                numerator = -numerator;
             }
         }
+        if (sign1 == '-') {
+            numerator = -numerator;
+        }
 
-        return simpleError(shouldThrow, "todo");
+        return of(whole, numerator, denominator);
     }
 
     private static String simpleError(boolean shouldThrow, String error) throws NumberFormatException {
@@ -324,6 +623,15 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
             || numerator == Long.MAX_VALUE || denominator == Long.MAX_VALUE;
     }
 
+    @Override
+    public FluidAmount getDivisor() {
+        if (denominator == 1) {
+            return ONE;
+        } else {
+            return new FluidAmount(0, 1, denominator);
+        }
+    }
+
     /** @return Rounded-up value of this {@link FluidAmount} using a base of 1620. */
     public int as1620() {
         return asInt(1620);
@@ -363,7 +671,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         if (base < 1) {
             throw new IllegalArgumentException("Base (" + base + ") must be greater than 0!");
         }
-        FluidAmount mult = mul(base);
+        FluidAmount mult = saturatedMul(base);
         if (mult.isOverflow()) {
             return mult.isNegative() ? Long.MIN_VALUE : Long.MAX_VALUE;
         }
@@ -441,11 +749,14 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         if (denominator < (1L << 52)) {
             // It should fit into the range of a double
             double fraction = numerator / (double) denominator;
-            int decimalPlaces = Long.toString(denominator - 1).length();
+            int decimalPlaces = 1 + Long.toString(denominator - 1).length();
             int roundingValue = (int) Math.pow(10, decimalPlaces);
             String fractionStr = Long.toString((long) (fraction * roundingValue));
             while (fractionStr.length() < decimalPlaces) {
                 fractionStr = "0" + fractionStr;
+            }
+            while (fractionStr.endsWith("0")) {
+                fractionStr = fractionStr.substring(0, fractionStr.length() - 1);
             }
             return str + "." + fractionStr;
         }
@@ -503,6 +814,11 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
     // return compareTo(other) > 0;
     // }
 
+    @Override
+    public double asInexactDouble() {
+        return whole + numerator / (double) denominator;
+    }
+
     // ###########
     //
     // Operators
@@ -512,6 +828,11 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
     @Override
     public FluidAmount negate() {
         return new FluidAmount(-whole, -numerator, denominator);
+    }
+
+    @Override
+    public FluidAmount lcm(FluidAmount other) {
+        return _bigLcm(other).asLongIntExact();
     }
 
     // --------
@@ -544,7 +865,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
 
         @Override
         public String toString() {
-            return "{SafeAddResult rounded=" + roundedResult + " exact=" + exactValue + " }";
+            return "{SafeAddResult rounded=" + roundedResult + " exact=" + exactValue + " error=" + getError() + " }";
         }
 
         /** @return The difference between the {@link #exactValue} and the {@link #roundedResult}. This will always be
@@ -558,10 +879,13 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
     }
 
     /** Safely adds the given {@link FluidAmount} to this one, returning the merged result. Unlike
-     * {@link #checkedAdd(FluidAmount)} this will never throw an {@link ArithmeticException} if the result is
-     * out-of-range, instead it will round the real answer to the nearest valid {@link FluidAmount} (using
-     * {@link BigFluidAmount#asLongIntRounded(RoundingMode)}) */
-    public SafeAddResult safeAdd(FluidAmount other, RoundingMode rounding) {
+     * {@link #checkedAdd(FluidAmount)} this will only throw an {@link ArithmeticException} if the result is
+     * out-of-range and the rounding mode is {@link RoundingMode#UNNECESSARY}, instead it will round the real answer to
+     * the nearest valid {@link FluidAmount} (using {@link BigFluidAmount#asLongIntRounded(RoundingMode)}) */
+    public SafeAddResult safeAdd(@Nullable FluidAmount other, RoundingMode rounding) {
+        if (other == null) {
+            return new SafeAddResult(this);
+        }
         return new SafeAddResult(bigAdd(other), rounding);
     }
 
@@ -570,18 +894,22 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
      * out-of-range, instead it will round the real answer to the nearest valid {@link FluidAmount} (using
      * {@link BigFluidAmount#asLongIntRounded(RoundingMode)} with a rounding mode of {@link RoundingMode#HALF_EVEN
      * HALF_EVEN}). */
-    public SafeAddResult safeAdd(FluidAmount other) {
+    public SafeAddResult safeAdd(@Nullable FluidAmount other) {
         return safeAdd(other, RoundingMode.HALF_EVEN);
     }
 
     /** @return the result of {@link #safeAdd(FluidAmount, RoundingMode)}.{@link SafeAddResult#roundedResult
      *         roundedResult}. */
-    public FluidAmount roundedAdd(FluidAmount other, RoundingMode rounding) {
+    public FluidAmount roundedAdd(@Nullable FluidAmount other, RoundingMode rounding) {
+        if (other == null) {
+            return this;
+        }
         return safeAdd(other, rounding).roundedResult;
     }
 
     /** @return the result of {@link #safeAdd(FluidAmount)}.{@link SafeAddResult#roundedResult roundedResult}. */
-    public FluidAmount roundedAdd(FluidAmount other) {
+    public FluidAmount roundedAdd(@Nullable FluidAmount other) {
+        if (other == null) return this;
         return safeAdd(other).roundedResult;
     }
 
@@ -600,6 +928,16 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
      * @param by The amount to add. If it's null or zero then "this" will be returned.
      * @throws ArithmeticException if the result doesn't fit into a {@link FluidAmount}. */
     public FluidAmount checkedAdd(@Nullable FluidAmount by) {
+        return add0(by, false);
+    }
+
+    /** Similar to {@link #checkedAdd(FluidAmount)}, but returns either {@link #MAX_VALUE} or {@link #MIN_VALUE} instead
+     * of throwing an exception. */
+    public FluidAmount saturatedAdd(@Nullable FluidAmount by) {
+        return add0(by, true);
+    }
+
+    private FluidAmount add0(FluidAmount by, boolean saturate) {
         if (by == null || by.isZero()) {
             return this;
         } else if (isZero()) {
@@ -613,7 +951,6 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         // W3 = W1+W2
         // N3 = N1*D2+N2*D1
         // D3 = D1*D2
-
         long w = LongMath.checkedAdd(whole, by.whole);
         normal: {
             long d = LongMath.saturatedMultiply(denominator, by.denominator);
@@ -626,8 +963,8 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
             if (didOverflow(n2d1)) break normal;
             return of(w, n, d);
         }
-
-        return _bigAdd(by).asLongIntExact();
+        BigFluidAmount bigResult = _bigAdd(by);
+        return saturate ? bigResult.asLongIntSaturated() : bigResult.asLongIntExact();
     }
 
     /** Directly adds the given {@link FluidAmount} to this one, returning the result as a {@link BigFluidAmount}.
@@ -669,6 +1006,12 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
      * @throws ArithmeticException if the result doesn't fit into a {@link FluidAmount}. */
     public FluidAmount checkedSub(@Nullable FluidAmount by) {
         return by == null ? this : checkedAdd(by.negate());
+    }
+
+    /** @param by Either Null or a value that will be {@link #negate() negated} and then passed to
+     *            {@link #saturatedAdd(FluidAmount)}. */
+    public FluidAmount saturatedSub(@Nullable FluidAmount by) {
+        return by == null ? this : saturatedAdd(by.negate());
     }
 
     /** @param by Either Null or a value that will be {@link #negate() negated} and then passed to
@@ -763,7 +1106,14 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
          * <p>
          * Use {@link FluidAmount#safeAdd(FluidAmount, RoundingMode)} with a {@link RoundingMode} of
          * {@link RoundingMode#HALF_EVEN HALF_EVEN}. */
-        ROUND_HALF_EVEN(RoundingMode.HALF_EVEN);
+        ROUND_HALF_EVEN(RoundingMode.HALF_EVEN),
+
+        /** Throw an {@link ArithmeticException} if the end result needs to be rounded.
+         * <p>
+         * Use {@link FluidAmount#checkedAdd(FluidAmount)}. */
+        ROUND_UNNECESSARY(RoundingMode.UNNECESSARY);
+
+        public static final FluidMergeRounding DEFAULT = ROUND_HALF_EVEN;
 
         /** The rounding mode to use, or null if this requires special handling. */
         @Nullable
@@ -772,14 +1122,97 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         private FluidMergeRounding(@Nullable RoundingMode rounding) {
             this.rounding = rounding;
         }
+
+        public static FluidMergeRounding fromRounding(@Nullable RoundingMode rounding) {
+            if (rounding == null) {
+                return FAIL;
+            }
+            FluidMergeRounding r = values()[rounding.ordinal() + 2];
+            assert r.rounding == rounding;
+            return r;
+        }
     }
 
     public static final class FluidMergeResult {
-        public final FluidAmount merged, excess;
 
-        public FluidMergeResult(FluidAmount merged, FluidAmount excess) {
+        /** The result of the merging. */
+        public final FluidAmount merged;
+
+        /** The leftover from the merging. If the {@link FluidMergeRounding} wasn't
+         * {@link FluidMergeRounding#MAXIMUM_POSSIBLE} or {@link FluidMergeRounding#FAIL} then this will be zero. */
+        public final FluidAmount excess;
+
+        /** The amount that was lost (or gained, if this is positive) due to rounding. */
+        public final BigFluidAmount roundingError;
+
+        /** Constructs a new {@link FluidMergeResult} with the given {@link #merged} value, and with both
+         * {@link #excess} and {@link #roundingError} set to zero. */
+        public FluidMergeResult(FluidAmount merged) {
+            this.merged = merged;
+            this.excess = ZERO;
+            this.roundingError = BigFluidAmount.ZERO;
+        }
+
+        public FluidMergeResult(FluidAmount merged, FluidAmount excess, BigFluidAmount error) {
             this.merged = merged;
             this.excess = excess;
+            this.roundingError = error;
+        }
+    }
+
+    /** Calls {@link FluidAmount#merge(FluidAmount, FluidAmount, FluidMergeRounding)} with a {@link FluidMergeRounding}
+     * of {@link FluidMergeRounding#ROUND_HALF_EVEN ROUND_HALF_EVEN}. */
+    public static FluidMergeResult merge(FluidAmount target, FluidAmount toAdd) {
+        return merge(target, toAdd, FluidMergeRounding.ROUND_HALF_EVEN);
+    }
+
+    /** @param target
+     * @param toAdd
+     * @param rounding The {@link FluidMergeRounding} to use if the addition doesn't result in an exact
+     *            {@link FluidAmount}.
+     * @return */
+    public static FluidMergeResult merge(FluidAmount target, FluidAmount toAdd, FluidMergeRounding rounding) {
+        switch (rounding) {
+            case ROUND_UNNECESSARY: {
+                return new FluidMergeResult(target.checkedAdd(toAdd), ZERO, BigFluidAmount.ZERO);
+            }
+            case MAXIMUM_POSSIBLE: {
+                SafeAddResult result = target.safeAdd(toAdd);
+                if (result.getError().isZero()) {
+                    return new FluidMergeResult(result.roundedResult);
+                }
+
+                FluidAmount d1 = target.getDivisor();
+                FluidAmount d2 = toAdd.getDivisor();
+                FluidAmount movable = d1.lcm(d2);
+                long multiple = toAdd.getCountOf(movable);
+                if (multiple == 0) {
+                    return new FluidMergeResult(target, toAdd, BigFluidAmount.ZERO);
+                }
+                FluidAmount toMove = movable.checkedMul(multiple);
+                SafeAddResult merged = target.safeAdd(toMove);
+                SafeAddResult excess = toAdd.safeSub(toMove);
+                if (merged.roundedResult.isOverflow() || excess.roundedResult.isOverflow()) {
+                    // Technically we could try to move a little bit less, if the multiple is more than 1.
+                    return new FluidMergeResult(target, toAdd, BigFluidAmount.ZERO);
+                }
+                assert merged.getError().isZero() : merged;
+                assert excess.getError().isZero() : excess;
+                return new FluidMergeResult(merged.roundedResult, excess.roundedResult, BigFluidAmount.ZERO);
+            }
+            case FAIL: {
+                SafeAddResult result = target.safeAdd(toAdd);
+                if (result.getError().isZero()) {
+                    return new FluidMergeResult(result.roundedResult);
+                } else {
+                    return new FluidMergeResult(target, toAdd, BigFluidAmount.ZERO);
+                }
+            }
+            default: {
+                assert rounding.rounding != null : "Unknown mode " + rounding;
+                SafeAddResult result = target.safeAdd(toAdd, rounding.rounding);
+                return new FluidMergeResult(result.roundedResult, FluidAmount.ZERO, result.getError());
+            }
         }
     }
 
@@ -829,7 +1262,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         long gcd = LongMath.gcd(denominatorAdd, denominatorTarget);
         if (gcd == 0) {
             // No requirements - just use normal addition
-            return new FluidMergeResult(target.checkedAdd(toAdd), ZERO);
+            return new FluidMergeResult(target.checkedAdd(toAdd), ZERO, BigFluidAmount.ZERO);
         }
 
         throw new AbstractMethodError("// TODO: Implement this!");
@@ -839,7 +1272,37 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
     // Multiplication
     // --------------
 
-    public FluidAmount mul(long by) {
+    public FluidAmount checkedMul(long by) {
+        return roundedMul(by, RoundingMode.UNNECESSARY);
+    }
+
+    public FluidAmount saturatedMul(long by) {
+        if (by == 0 || isZero()) {
+            return ZERO;
+        } else if (by == 1) {
+            return this;
+        } else if (by == -1) {
+            return negate();
+        }
+        long nb = LongMath.saturatedMultiply(numerator, by);
+        long w = LongMath.saturatedMultiply(whole, by);
+        if (didOverflow(nb) || didOverflow(w)) {
+            return isPositive() == (by > 0) ? MAX_VALUE : MIN_VALUE;
+        }
+        long div = nb / denominator;
+        long rem = nb % denominator;
+        w = LongMath.saturatedAdd(w, div);
+        if (didOverflow(w)) {
+            return isPositive() == (by > 0) ? MAX_VALUE : MIN_VALUE;
+        }
+        return of(w, rem, denominator);
+    }
+
+    public FluidAmount roundedMul(long by) {
+        return roundedMul(by, RoundingMode.HALF_EVEN);
+    }
+
+    public FluidAmount roundedMul(long by, RoundingMode rounding) {
         if (by == 0) {
             return ZERO;
         } else if (by == 1) {
@@ -848,18 +1311,30 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
             return negate();
         }
         long nb = LongMath.saturatedMultiply(by, numerator);
-        long w = LongMath.checkedMultiply(whole, by);
-        if (!didOverflow(nb)) {
+        long w = LongMath.saturatedMultiply(whole, by);
+        if (!didOverflow(nb) && !didOverflow(w)) {
             return of(w, nb, denominator);
         }
-        BigInteger NB = BigInteger.valueOf(by).multiply(BigInteger.valueOf(numerator));
-        BigInteger[] divRem = NB.divideAndRemainder(BigInteger.valueOf(denominator));
-        BigInteger div = divRem[0];
-        BigInteger rem = divRem[1];
-        return of(LongMath.checkedAdd(w, div.longValueExact()), rem.longValueExact(), denominator);
+        return _bigMul(ofWhole(by)).asLongIntRounded(rounding);
     }
 
-    public FluidAmount mul(FluidAmount by) {
+    public FluidAmount checkedMul(FluidAmount by) {
+        return mul0(by, RoundingMode.UNNECESSARY);
+    }
+
+    public FluidAmount saturatedMul(FluidAmount by) {
+        return mul0(by, null);
+    }
+
+    public FluidAmount roundedMul(FluidAmount by) {
+        return mul0(by, RoundingMode.HALF_EVEN);
+    }
+
+    public FluidAmount roundedMul(FluidAmount by, RoundingMode rounding) {
+        return mul0(by, rounding);
+    }
+
+    private FluidAmount mul0(FluidAmount by, RoundingMode rounding) {
         if (by.isZero() || isZero()) {
             return ZERO;
         } else if (by.equals(ONE)) {
@@ -918,7 +1393,8 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
             return of(w3, n3, d1d2);
         }
 
-        return _bigMul(by).asLongIntExact();
+        BigFluidAmount result = _bigMul(by);
+        return rounding == null ? result.asLongIntSaturated() : result.asLongIntRounded(rounding);
     }
 
     public BigFluidAmount mul(BigFluidAmount by) {
@@ -941,7 +1417,28 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         return _bigReciprocal();
     }
 
-    public FluidAmount div(long by) {
+    /** @return The {@link FluidAmount#whole} value from {@link #saturatedDiv(FluidAmount)}. */
+    public long getCountOf(FluidAmount by) {
+        return saturatedDiv(by).whole;
+    }
+
+    public FluidAmount checkedDiv(long by) {
+        return divInner(by, RoundingMode.UNNECESSARY);
+    }
+
+    public FluidAmount saturatedDiv(long by) {
+        return divInner(by, null);
+    }
+
+    public FluidAmount roundedDiv(long by) {
+        return divInner(by, RoundingMode.HALF_EVEN);
+    }
+
+    public FluidAmount roundedDiv(long by, RoundingMode rounding) {
+        return divInner(by, rounding);
+    }
+
+    private FluidAmount divInner(long by, RoundingMode rounding) {
         if (by == 1) {
             return this;
         } else if (by == -1) {
@@ -950,24 +1447,42 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
             throw new ArithmeticException("divide by 0");
         }
 
-        // boolean isNegative = by < 0;
-        // if (isNegative) {
-        // by = -by;
-        // }
-        //
-        // // normal: {
-        // // (W+N/D)/B
-        // // W/B + N/(D*B)
-        // // (W*D)/(D*B) + N/(D*B)
-        // // (W*D+N)/(D*B)
-        // // }
-        // if (isNegative) {
-        // by = -by;
-        // }
-        return _bigDiv(FluidAmount.of(by, 0, 1)).asLongIntExact();
+        normal: {
+            long w1 = this.whole;
+            long w2 = by;
+            long n1 = this.numerator;
+            long d1 = this.denominator;
+
+            long w1d1 = LongMath.saturatedMultiply(w1, d1);
+            if (didOverflow(w1d1)) break normal;
+            long n1_w1d1 = LongMath.saturatedAdd(n1, w1d1);
+            if (didOverflow(n1_w1d1)) break normal;
+            long w2d1 = LongMath.saturatedMultiply(w2, d1);
+            if (didOverflow(w2d1)) break normal;
+            return of(n1_w1d1, w2d1);
+        }
+
+        BigFluidAmount result = _bigDiv(FluidAmount.of(by, 0, 1));
+        return rounding == null ? result.asLongIntSaturated() : result.asLongIntRounded(rounding);
     }
 
-    public FluidAmount div(FluidAmount by) {
+    public FluidAmount checkedDiv(FluidAmount by) {
+        return divInner(by, RoundingMode.UNNECESSARY);
+    }
+
+    public FluidAmount saturatedDiv(FluidAmount by) {
+        return divInner(by, null);
+    }
+
+    public FluidAmount roundedDiv(FluidAmount by) {
+        return divInner(by, RoundingMode.HALF_EVEN);
+    }
+
+    public FluidAmount roundedDiv(FluidAmount by, RoundingMode rounding) {
+        return divInner(by, rounding);
+    }
+
+    private FluidAmount divInner(FluidAmount by, @Nullable RoundingMode rounding) {
         if (by.equals(ONE)) {
             return this;
         } else if (by.equals(NEGATIVE_ONE)) {
@@ -977,11 +1492,44 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         }
 
         normal: {
-            // TODO: Implement the non-big division
-            break normal;
+            long w1 = this.whole;
+            long w2 = by.whole;
+
+            long n1 = this.numerator;
+            long n2 = by.numerator;
+
+            long d1 = this.denominator;
+            long d2 = by.denominator;
+
+            long n1d2 = LongMath.saturatedMultiply(n1, d2);
+            if (didOverflow(n1d2)) break normal;
+
+            long w1d1 = LongMath.saturatedMultiply(w1, d1);
+            if (didOverflow(w1d1)) break normal;
+
+            long w1d1d2 = LongMath.saturatedMultiply(w1d1, d2);
+            if (didOverflow(w1d1d2)) break normal;
+
+            long n1d2_w1d1d2 = LongMath.saturatedAdd(n1d2, w1d1d2);
+            if (didOverflow(n1d2_w1d1d2)) break normal;
+
+            long n2d1 = LongMath.saturatedMultiply(n2, d1);
+            if (didOverflow(n2d1)) break normal;
+
+            long w2d1 = LongMath.saturatedMultiply(w2, d1);
+            if (didOverflow(w2d1)) break normal;
+
+            long w2d1d2 = LongMath.saturatedMultiply(w2d1, d2);
+            if (didOverflow(w2d1d2)) break normal;
+
+            long n2d1_w2d1d2 = LongMath.saturatedAdd(n2d1, w2d1d2);
+            if (didOverflow(n2d1_w2d1d2)) break normal;
+
+            return of(n1d2_w1d1d2, n2d1_w2d1d2);
         }
 
-        return bigDiv(by).asLongIntExact();
+        BigFluidAmount result = bigDiv(by);
+        return rounding == null ? result.asLongIntSaturated() : result.asLongIntRounded(rounding);
     }
 
     public BigFluidAmount div(BigFluidAmount by) {
