@@ -5,3 +5,16 @@ Breaking Changes:
       possible to use it as one.
 * Changed the return type of "FluidInsertable.getMinimumAcceptedAmount" from an
   integer to a nullable FluidAmount.
+* Renamed "FixedFluidInv.getView" to "getFixedView",
+  and "GroupedFluidInv.getView" to "getGroupedView".
+    * This is to allow a single class to implement both, without needing
+      to redeclare the method with a custom return type.
+
+Changes:
+
+* Moved over from base-1620 fluids to fully fractional fluids.
+
+Additions:
+
+* Added RebornCore fluid compatibility.
+      

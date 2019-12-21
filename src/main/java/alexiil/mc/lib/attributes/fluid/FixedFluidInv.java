@@ -70,7 +70,7 @@ public interface FixedFluidInv extends FixedFluidInvView {
 
     /** @return A new {@link LimitedFixedFluidInv} that provides a more controllable version of this
      *         {@link FixedFluidInv}. */
-    default LimitedFixedFluidInv createLimitedInv() {
+    default LimitedFixedFluidInv createLimitedFixedInv() {
         return new SimpleLimitedFixedFluidInv(this);
     }
 

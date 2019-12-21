@@ -741,6 +741,8 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
 
     /** @return A string version of this {@link FluidAmount} that should be shown to players. */
     public String toDisplayString() {
+        // TODO: Look into repeating decimals!
+        // (And potentially improvements to how minecraft actually renders combining chars...)
         if (numerator == 0 || denominator == 1) {
             return "" + whole;
         }

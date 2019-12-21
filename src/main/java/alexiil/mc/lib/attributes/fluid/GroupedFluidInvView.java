@@ -172,11 +172,11 @@ public interface GroupedFluidInvView {
     }
 
     /** @return A completely unmodifiable view of this {@link GroupedItemInvView}. */
-    default GroupedFluidInvView getView() {
+    default GroupedFluidInvView getGroupedView() {
         GroupedFluidInvView real = this;
         return new GroupedFluidInvView() {
             @Override
-            public GroupedFluidInvView getView() {
+            public GroupedFluidInvView getGroupedView() {
                 return this;
             }
 

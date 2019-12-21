@@ -27,6 +27,7 @@ import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+import alexiil.mc.lib.attributes.fluid.compat.reborncore.RebornCompatLoader;
 import alexiil.mc.lib.attributes.fluid.compat.silk.SilkFluidCompat;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
@@ -116,6 +117,8 @@ public final class FluidAttributes {
         } catch (ClassNotFoundException cnfe) {
             LibBlockAttributes.LOGGER.info("Silk not found, not loading compatibility for fluids.");
         }
+
+        RebornCompatLoader.load();
     }
 
     public static <T> CombinableAttribute<T> create(

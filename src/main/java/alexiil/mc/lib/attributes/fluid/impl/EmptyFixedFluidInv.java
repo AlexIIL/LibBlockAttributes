@@ -74,7 +74,7 @@ public enum EmptyFixedFluidInv implements FixedFluidInv {
     }
 
     @Override
-    public FixedFluidInvView getView() {
+    public FixedFluidInvView getFixedView() {
         return this;
     }
 

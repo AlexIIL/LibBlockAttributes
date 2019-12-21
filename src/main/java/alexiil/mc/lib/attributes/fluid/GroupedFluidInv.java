@@ -15,7 +15,7 @@ public interface GroupedFluidInv extends GroupedFluidInvView, FluidTransferable 
 
     /** @return A new {@link LimitedGroupedFluidInv} that provides a more controllable version of this
      *         {@link GroupedFluidInv}. */
-    default LimitedGroupedFluidInv createLimitedInv() {
+    default LimitedGroupedFluidInv createLimitedGroupedInv() {
         return new SimpleLimitedGroupedFluidInv(this);
     }
 }

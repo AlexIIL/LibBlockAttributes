@@ -59,7 +59,7 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
             } else {
                 amount = FluidAmount.fromNbt(ctag.getCompound(KEY_AMOUNT_LBA_FRACTION));
             }
-            T value = readValue(tag);
+            T value = readValue(ctag);
             if (value == null) {
                 value = _def;
             }
@@ -158,6 +158,7 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
     protected WeightedFluidVolume<T> split0(FluidAmount toTake, RoundingMode rounding) {
         WeightedFluidVolume<T> split = key.withAmount(toTake);
         setAmount(getAmount_F().roundedSub(toTake, rounding));
+        split.values.clear();
         split.values.putAll(values);
         return split;
     }

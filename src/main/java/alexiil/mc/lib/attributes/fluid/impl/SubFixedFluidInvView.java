@@ -45,11 +45,11 @@ public class SubFixedFluidInvView extends AbstractPartialFixedFluidInvView {
     }
 
     @Override
-    public FixedFluidInvView getView() {
+    public FixedFluidInvView getFixedView() {
         if (getClass() == SubFixedFluidInvView.class) {
             return this;
         }
-        return super.getView();
+        return super.getFixedView();
     }
 
     @Override

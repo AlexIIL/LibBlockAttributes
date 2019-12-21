@@ -241,7 +241,7 @@ public interface FixedFluidInvView extends Convertible {
     /** @return An object that only implements {@link FixedFluidInvView}, and does not expose the modification methods
      *         that {@link FixedFluidInv} does. Implementations that don't expose any modification methods themselves
      *         should override this method to just return themselves. */
-    default FixedFluidInvView getView() {
+    default FixedFluidInvView getFixedView() {
         final FixedFluidInvView real = this;
         return new FixedFluidInvView() {
             @Override

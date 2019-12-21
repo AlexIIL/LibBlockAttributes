@@ -125,6 +125,7 @@ generateJar("items", itemsReq, [], false, [], ["core"]);
 // 2019/09/26 AlexIIL: Add everything (and this changelog)
 // 2019/09/26 AlexIIL: Add an additional section "__buildscript_inherit" to fabric.mod.json, which is applied to everything.
 // 2019/09/26 AlexIIL: Add a new user variable "extra_jar_def__fabric_mod_json_replacements", for replacing additional strings in fabric.mod.json
+// 2019/12/20 AlexIIL: Fix including all versions of the jars (including old versions if "gradle clean" hasn't been run)
 
 // ==========================================================
 // User config - change both of these on a per-project basis
@@ -158,19 +159,19 @@ ext.extra_jar_def__modulesDir = new File(System.getenv("LIBS_DIR") ?: "$projectD
 ext.extra_jar_def__taken = new HashSet<>();
 
 def getFabricModJsonFile(String key) {
-    return new File("$projectDir/build/processing/fabric_jsons/$key/fabric.mod.json");
+    return new File("$projectDir/build/processing/fabric_jsons/$key/${project.version}/fabric.mod.json");
 }
 
 def getNestedJarFile(String key) {
-    return new File("$projectDir/build/processing/nested_jars/$key/$mainName-$key-${project.version}.jar");
+    return new File("$projectDir/build/processing/nested_jars/$key/${project.version}/$mainName-$key-${project.version}.jar");
 }
 
 def getNestedSourceJarFile(String key) {
-    return new File("$projectDir/build/processing/nested_jars/$key-sources/$mainName-$key-$project.version-sources.jar");
+    return new File("$projectDir/build/processing/nested_jars/$key-sources/${project.version}/$mainName-$key-$project.version-sources.jar");
 }
 
 def getIncludedJarFile(String key) {
-    return new File("$projectDir/build/processing/included_jars/${key}.jar");
+    return new File("$projectDir/build/processing/included_jars/${project.version}/${key}.jar");
 }
 
 ext.extra_jar_def__unzippedSourceJar = new File("$projectDir/build/processing/tasks/unzipped_src_jar/unzip")
