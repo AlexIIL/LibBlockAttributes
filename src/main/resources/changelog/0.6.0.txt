@@ -1,8 +1,15 @@
 Breaking Changes:
 
+* Updated to Minecract 1.15.1
+    * A lot of rendering methods changed to take a MatrixStack plus a
+      VertexConsumerProvider for rendering.
 * FluidExtractable is no longer a valid functional interface.
     * While it was never annotated with "@FunctionalInterface" it used to be 
-      possible to use it as one.
+      possible to use it as one, however it no longer is due to the non-breaking
+      change requiring the 1620-based method to still exist, and default-call
+      the FluidAmount based version. (Which calls the 1620-based one for compat).
+    * If debug checks are enabled (which they are by default) then either will throw
+      an exception if the class hasn't overriden at least one of them. 
 * Changed the return type of "FluidInsertable.getMinimumAcceptedAmount" from an
   integer to a nullable FluidAmount.
 * Renamed "FixedFluidInv.getView" to "getFixedView",
@@ -13,8 +20,34 @@ Breaking Changes:
 Changes:
 
 * Moved over from base-1620 fluids to fully fractional fluids.
+    * Added a new class "FluidAmount" which stores the fractions as
+      long + (long/long).
+        * A lot of new methods have been added for operations.
+    * This means that a lot of 1620-based functions have been deprecated
+      and new functions have been added that take or return FluidAmount
+      instead of int.
+    * If you want to display a FluidAmount to the player you should use
+      FluidAmount.toDisplayString(), which returns a string like "1.34712".
+      (as opposed to "toString()", which returns a string like
+      "{FluidAmount 5 + 62/85} for debuging").
+    * You can turn a String into a FluidAmount with FluidAmount.parse() or tryParse().
+* Changed the meaning of Fluid(Key/Volume).get(Still/Flowing)Sprite:
+  now it is no longer recommended that you use them and always use
+  the FluidVolume.getRenderer, because the renderer will handle fluids
+  with special rendering correctly (like the enchanted item glint for potions).
+* Deprecated ImplicitVanillaFluidVolumeRenderer as DefaultFluidVolumeRenderer
+  now includes all of it's logic.   
 
 Additions:
 
 * Added RebornCore fluid compatibility.
-      
+* Allowed defining a fluid key that is only identified in
+  a Map<Identifer, FluidKey> rather than only allowing fluid
+  key definitions to come from a minecraft registry. 
+* Added gaseous, cohesion, viscosity, density, and thermal capacity properties
+  to FluidKey. Everything except gaseous (which is a boolean) is of type FluidAmount.
+    * Water has a value of 1 for all of these properties, and lava is based around that. 
+
+Bug Fixes:
+
+* Fixed block attribute lists not obstructing entries correctly.

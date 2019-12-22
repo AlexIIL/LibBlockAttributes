@@ -108,7 +108,7 @@ public abstract class FluidKey {
      * instead we'll just special-case the nether). */
     public final FluidAmount netherCohesion;
 
-    /** How much this fluid
+    /** How dense this fluid is.
      * <p>
      * This isn't in any particular unit, and is instead relative to minecraft's water (which LBA declares as
      * {@link FluidAmount#ONE}). */
