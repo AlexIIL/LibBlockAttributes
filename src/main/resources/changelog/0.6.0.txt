@@ -1,6 +1,6 @@
 Breaking Changes:
 
-* Updated to Minecract 1.15.1
+* Updated to Minecraft 1.15.1
     * A lot of rendering methods changed to take a MatrixStack plus a
       VertexConsumerProvider for rendering.
 * FluidExtractable is no longer a valid functional interface.

@@ -14,7 +14,7 @@ repositories {
 }
 
 archivesBaseName = "libblockatttributes"
-version = "0.6.0"
+version = "0.6.1"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -108,7 +108,8 @@ def fluidsIncludes = [
     "assets/libblockattributes/lang/**",
     "assets/libblockattributes/textures/fluid/**",
     "assets/libblockattributes/icon_fluids.png",
-    "libblockattributes_fluid.common.json"
+    "libblockattributes_fluid.common.json",
+    "libblockattributes_fluid.client.json"
 ];
 def allIncludes = [
     "assets/libblockattributes/icon_all.png"
