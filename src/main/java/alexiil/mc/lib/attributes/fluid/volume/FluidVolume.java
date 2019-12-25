@@ -173,7 +173,7 @@ public abstract class FluidVolume {
         if (other.isEmpty()) {
             return false;
         }
-        return amount == other.amount//
+        return amount.equals(other.amount)//
             && Objects.equals(fluidKey, other.fluidKey);
     }
 

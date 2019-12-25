@@ -1,0 +1,3 @@
+Bug Fixes:
+
+* Fixed FluidVolume.equals still comparing the amount field with == rather than equals.
