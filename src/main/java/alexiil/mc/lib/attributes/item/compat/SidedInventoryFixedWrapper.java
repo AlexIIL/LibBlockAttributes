@@ -26,12 +26,12 @@ import alexiil.mc.lib.attributes.item.ItemInvUtil;
 public abstract class SidedInventoryFixedWrapper extends InventoryFixedWrapper implements SidedInventory {
 
     /** Unlike the int[][] passed into constructors this is always a length 7 array. */
-    private final int[][] availableSlots;
+    private int[][] availableSlots;
 
     /** Creates a {@link SidedInventoryFixedWrapper} with all of it's slots exposed in every direction. */
     public SidedInventoryFixedWrapper(FixedItemInv inv) {
         super(inv);
-        availableSlots = createFullArray(inv);
+        resetSlotsToAll();
     }
 
     private static int[][] createFullArray(FixedItemInv inv) {
@@ -59,13 +59,36 @@ public abstract class SidedInventoryFixedWrapper extends InventoryFixedWrapper i
      */
     public SidedInventoryFixedWrapper(FixedItemInv inv, int[][] slotMap) {
         super(inv);
+        resetSlotsTo(slotMap);
+    }
+
+    /** Discards the current {@link #availableSlots} array and replaces it with one that exposes all slots in every
+     * direction. */
+    protected void resetSlotsToAll() {
+        availableSlots = createFullArray(inv);
+    }
+
+    /** Discards the current {@link #availableSlots} array and replaces it with the given slot map.
+     * 
+     * @param slotMap The slots to map. There are 3 different possible lengths you can give for this:
+     *            <ol>
+     *            <li>Null or 0: Every slot is available from every direction.</li>
+     *            <li>6: Every slot is available from the null direction, and the other slots are direct maps for a
+     *            Direction.ordinal().</li>
+     *            <li>7: index 0-5 are for their respective {@link Direction#ordinal()}, and index 6 is for the null
+     *            direction.
+     *            </ol>
+     */
+    protected void resetSlotsTo(int[][] slotMap) {
         if (slotMap != null && slotMap.length != 0) {
             if (slotMap.length == 6 || slotMap.length == 7) {
                 for (int[] arr : slotMap) {
                     for (int slot : arr) {
                         if (slot < 0 || slot >= inv.getSlotCount()) {
-                            throw new IllegalArgumentException("Invalid slot index (" + slot + ", max = "
-                                + (inv.getSlotCount() - 1) + ") in the slot map " + Arrays.deepToString(slotMap));
+                            throw new IllegalArgumentException(
+                                "Invalid slot index (" + slot + ", max = " + (inv.getSlotCount() - 1)
+                                    + ") in the slot map " + Arrays.deepToString(slotMap)
+                            );
                         }
                     }
                 }
@@ -76,8 +99,10 @@ public abstract class SidedInventoryFixedWrapper extends InventoryFixedWrapper i
                     availableSlots = slotMap;
                 }
             } else {
-                throw new IllegalArgumentException("The given slot map was of an invalid length (" + slotMap.length
-                    + ")!\n\tIt must be either 0, 6, or 7!");
+                throw new IllegalArgumentException(
+                    "The given slot map was of an invalid length (" + slotMap.length
+                        + ")!\n\tIt must be either 0, 6, or 7!"
+                );
             }
         } else {
             availableSlots = createFullArray(inv);
@@ -113,7 +138,7 @@ public abstract class SidedInventoryFixedWrapper extends InventoryFixedWrapper i
         int[] slots = getSlotsInternal(dir);
         for (int s : slots) {
             if (s == slot) {
-                return !inv.getSubInv(s, s + 1).getExtractable().attemptAnyExtraction(1, Simulation.SIMULATE).isEmpty();
+                return !ItemInvUtil.extractSingle(inv, slot, null, ItemStack.EMPTY, 1, Simulation.SIMULATE).isEmpty();
             }
         }
         return false;
