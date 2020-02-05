@@ -7,11 +7,19 @@
  */
 package alexiil.mc.lib.attributes.item;
 
+import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 import alexiil.mc.lib.attributes.item.impl.SimpleLimitedGroupedItemInv;
 
 /** A modifiable version of {@link GroupedItemInvView}, except that all modification methods are provided by
  * {@link ItemExtractable} and {@link ItemInsertable}. */
 public interface GroupedItemInv extends GroupedItemInvView, ItemTransferable {
+
+    @Override
+    default GroupedItemInv filtered(ItemFilter filter) {
+        LimitedGroupedItemInv limited = createLimitedGroupedInv();
+        limited.getRule(filter.negate()).disallowTransfer();
+        return limited.markFinal();
+    }
 
     /** @return A new {@link LimitedGroupedItemInv} that provides a more controllable version of this
      *         {@link GroupedItemInv}. */

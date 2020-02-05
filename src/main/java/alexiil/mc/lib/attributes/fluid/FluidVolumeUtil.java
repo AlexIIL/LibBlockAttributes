@@ -13,13 +13,9 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.GlassBottleItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.PotionItem;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 
 import alexiil.mc.lib.attributes.Simulation;
@@ -30,7 +26,6 @@ import alexiil.mc.lib.attributes.fluid.filter.ExactFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
-import alexiil.mc.lib.attributes.item.ItemInvUtil;
 import alexiil.mc.lib.attributes.misc.LimitedConsumer;
 import alexiil.mc.lib.attributes.misc.Ref;
 import alexiil.mc.lib.attributes.misc.Reference;
@@ -82,10 +77,15 @@ public final class FluidVolumeUtil {
      * {@link FluidInsertable}, provided they match the given {@link FluidFilter}.
      * 
      * @return A copy of the fluid moved. */
-    public static FluidVolume move(FluidExtractable from, FluidInsertable to, FluidFilter filter, FluidAmount maximum) {
+    public static FluidVolume move(
+        FluidExtractable from, FluidInsertable to, @Nullable FluidFilter filter, @Nullable FluidAmount maximum
+    ) {
         FluidFilter insertionFilter = to.getInsertionFilter();
         if (filter != null && filter != ConstantFluidFilter.ANYTHING) {
             insertionFilter = AggregateFluidFilter.and(insertionFilter, filter);
+        }
+        if (maximum == null) {
+            maximum = FluidAmount.MAX_VALUE;
         }
 
         // 5 steps:
@@ -93,11 +93,11 @@ public final class FluidVolumeUtil {
         // 2: (Simulate) Try to insert as much of the extracted as possible
         // 3: (Simulate) Try to extract the exact amount that was actually inserted
         /* We don't need to simulate inserting the exact amount because it should always be safe to insert the amount
-         * minus the leftover. */
+         * minus the result. */
         // If all of the above steps provide an exact amount > 0:
         // 4: Extract the exact amount
         // 5: Insert the exact fluid.
-        // and assert that there is no leftover.
+        // and assert that there is no result.
 
         // Step 1:
         FluidVolume extracted = from.attemptExtraction(insertionFilter, maximum, Simulation.SIMULATE);
@@ -137,7 +137,7 @@ public final class FluidVolumeUtil {
 
         throw throwBadImplException(
             "A simulated insertion (of A returning B) didn't match the real insertion (of C returning D) into the fluid insertable E!",
-            new String[] { "inserted A", "leftover B", "inserted C", "leftover D", "insertable E" },
+            new String[] { "inserted A", "result B", "inserted C", "result D", "insertable E" },
             new Object[] { extracted, firstLeftover, reallyExtracted, leftover, to }
         );
     }
@@ -149,96 +149,94 @@ public final class FluidVolumeUtil {
     public static FluidInsertable createItemInventoryInsertable(
         Ref<ItemStack> stackRef, Consumer<ItemStack> excessStacks
     ) {
-
         return FluidAttributes.INSERTABLE.get(stackRef, LimitedConsumer.fromConsumer(excessStacks));
     }
 
+    /** @return An {@link FluidExtractable} that will extract fluids from the given stack (overflowing into the given
+     *         {@link Consumer})
+     * @deprecated This has been replaced by the item-based attributes system. */
+    @Deprecated
     public static FluidExtractable createItemInventoryExtractable(
         Ref<ItemStack> stackRef, Consumer<ItemStack> excessStacks
     ) {
-
         return FluidAttributes.EXTRACTABLE.get(stackRef, LimitedConsumer.fromConsumer(excessStacks));
     }
 
+    // #####################################
+    // Various methods moved to FluidInvUtil
+    // #####################################
+
+    /** @deprecated The boolean return has been deprecated, and the main method has been moved to
+     *             {@link FluidInvUtil#interactHandWithTank(FixedFluidInv, PlayerEntity, Hand)} */
+    @Deprecated
     public static boolean interactWithTank(FixedFluidInv inv, PlayerEntity player, Hand hand) {
-        return interactWithTank(inv.getInsertable(), inv.getExtractable(), player, hand);
+        return FluidInvUtil.interactHandWithTank(inv, player, hand).didMoveAny();
     }
 
+    /** @deprecated The boolean return has been deprecated, and the main method has been moved to
+     *             {@link FluidInvUtil#interactHandWithTank(FluidTransferable, PlayerEntity, Hand)} */
+    @Deprecated
     public static boolean interactWithTank(FluidTransferable inv, PlayerEntity player, Hand hand) {
-        return interactWithTank(inv, inv, player, hand);
+        return FluidInvUtil.interactHandWithTank(inv, player, hand).didMoveAny();
     }
 
+    /** @deprecated The boolean return has been deprecated, and the main method has been moved to
+     *             {@link FluidInvUtil#interactHandWithTank(FluidInsertable, FluidExtractable, PlayerEntity, Hand)} */
+    @Deprecated
     public static boolean interactWithTank(
-        FluidInsertable invInsert, FluidExtractable invExtract, PlayerEntity player, Hand hand
+        @Nullable FluidInsertable invInsert, @Nullable FluidExtractable invExtract, PlayerEntity player, Hand hand
     ) {
-
-        return interactWithTank(invInsert, invExtract, player, ItemInvUtil.referenceHand(player, hand));
+        return FluidInvUtil.interactHandWithTank(invInsert, invExtract, player, hand).didMoveAny();
     }
 
+    /** @deprecated The boolean return has been deprecated, and the main method has been moved to
+     *             {@link FluidInvUtil#interactCursorWithTank(FixedFluidInv, ServerPlayerEntity)} */
+    @Deprecated
     public static boolean interactCursorWithTank(FixedFluidInv inv, ServerPlayerEntity player) {
-        return interactCursorWithTank(inv.getInsertable(), inv.getExtractable(), player);
+        return FluidInvUtil.interactCursorWithTank(inv, player).didMoveAny();
     }
 
+    /** @deprecated The boolean return has been deprecated, and the main method has been moved to
+     *             {@link FluidInvUtil#interactCursorWithTank(FluidTransferable, ServerPlayerEntity)} */
+    @Deprecated
     public static boolean interactCursorWithTank(FluidTransferable inv, ServerPlayerEntity player) {
-        return interactCursorWithTank(inv, inv, player);
+        return FluidInvUtil.interactCursorWithTank(inv, player).didMoveAny();
     }
 
-    /** Interacts with a tank from the player's cursor stack when there is a gui open. */
+    /** @deprecated The boolean return has been deprecated, and the main method has been moved to
+     *             {@link FluidInvUtil#interactCursorWithTank(FluidInsertable, FluidExtractable, ServerPlayerEntity)} */
+    @Deprecated
     public static boolean interactCursorWithTank(
         FluidInsertable invInsert, FluidExtractable invExtract, ServerPlayerEntity player
     ) {
-
-        return interactWithTank(invInsert, invExtract, player, ItemInvUtil.referenceGuiCursor(player));
+        return FluidInvUtil.interactCursorWithTank(invInsert, invExtract, player).didMoveAny();
     }
 
+    /** @deprecated The boolean return has been deprecated, and the main method has been moved to
+     *             {@link FluidInvUtil#interactWithTank(FluidInsertable, FluidExtractable, PlayerEntity, Reference)} */
+    @Deprecated
     public static boolean interactWithTank(
-        FluidInsertable invInsert, FluidExtractable invExtract, PlayerEntity player, Reference<ItemStack> mainStackRef
+        @Nullable FluidInsertable invInsert, @Nullable FluidExtractable invExtract, PlayerEntity player,
+        Reference<ItemStack> mainStackRef
     ) {
-
-        ItemStack mainStack = mainStackRef.get();
-        if (mainStack.isEmpty()) {
-            return false;
-        }
-        boolean isSurvival = !player.abilities.creativeMode;
-        Reference<ItemStack> realRef
-            = isSurvival ? mainStackRef : Reference.callable(mainStackRef::get, s -> {}, s -> true);
-        Consumer<ItemStack> stackConsumer = isSurvival ? ItemInvUtil.createPlayerInsertable(player) : s -> {};
-        FluidTankInteraction result
-            = interactWithTank(invInsert, invExtract, realRef, LimitedConsumer.fromConsumer(stackConsumer));
-        if (!result.didMoveAny()) {
-            return false;
-        }
-        final SoundEvent soundEvent;
-        if (result.fluidMoved.fluidKey == FluidKeys.LAVA) {
-            soundEvent = result.intoTank ? SoundEvents.ITEM_BUCKET_EMPTY_LAVA : SoundEvents.ITEM_BUCKET_FILL_LAVA;
-        } else {
-            boolean isBottle
-                = mainStack.getItem() instanceof GlassBottleItem || mainStack.getItem() instanceof PotionItem;
-            if (isBottle) {
-                soundEvent = result.intoTank ? SoundEvents.ITEM_BOTTLE_EMPTY : SoundEvents.ITEM_BOTTLE_FILL;
-            } else {
-                soundEvent = result.intoTank ? SoundEvents.ITEM_BUCKET_EMPTY : SoundEvents.ITEM_BUCKET_FILL;
-            }
-        }
-        player.playSound(soundEvent, SoundCategory.BLOCKS, 1.0f, 1.0f);
-        return true;
+        return FluidInvUtil.interactWithTank(invInsert, invExtract, player, mainStackRef).didMoveAny();
     }
 
-    /** @deprecated This has been replaced by {@link #interactWithTank(FixedFluidInv, Reference, LimitedConsumer)}. */
+    /** @deprecated This has been replaced by
+     *             {@link FluidInvUtil#interactItemWithTank(FixedFluidInv, Reference, LimitedConsumer)}. */
     @Deprecated
     public static FluidTankInteraction interactWithTank(
         FixedFluidInv inv, Ref<ItemStack> stack, Consumer<ItemStack> excessStacks
     ) {
-
         return interactWithTank(inv.getInsertable(), inv.getExtractable(), stack, excessStacks);
     }
 
-    /** @deprecated This has been replaced by {@link #interactWithTank(FixedFluidInv, Reference, LimitedConsumer)}. */
+    /** @deprecated This has been replaced by
+     *             {@link FluidInvUtil#interactItemWithTank(FluidTransferable, Reference, LimitedConsumer)}. */
     @Deprecated
     public static FluidTankInteraction interactWithTank(
         FluidTransferable inv, Ref<ItemStack> stack, Consumer<ItemStack> excessStacks
     ) {
-
         return interactWithTank(inv, inv, stack, excessStacks);
     }
 
@@ -246,65 +244,138 @@ public final class FluidVolumeUtil {
      * @param invExtract The fluid inventory to interact with
      * @param stack The held {@link ItemStack} to interact with.
      * @param excessStacks A {@link Consumer} to take the excess {@link ItemStack}'s.
-     * @deprecated This has been replaced by {@link #interactWithTank(FixedFluidInv, Reference, LimitedConsumer)}. */
+     * @deprecated This has been replaced by
+     *             {@link FluidInvUtil#interactItemWithTank(FluidInsertable, FluidExtractable, Reference, LimitedConsumer)}. */
     public static FluidTankInteraction interactWithTank(
         FluidInsertable invInsert, FluidExtractable invExtract, Ref<ItemStack> stack, Consumer<ItemStack> excessStacks
     ) {
-
-        return interactWithTank(invInsert, invExtract, stack, LimitedConsumer.fromConsumer(excessStacks));
+        return FluidInvUtil
+            .interactItemWithTank(invInsert, invExtract, stack, LimitedConsumer.fromConsumer(excessStacks));
     }
 
-    /** @param inv The fluid inventory to interact with
-     * @param stack The held {@link ItemStack} to interact with.
-     * @param excessStacks A {@link Consumer} to take the excess {@link ItemStack}'s. */
+    /** @deprecated Use {@link FluidInvUtil#interactItemWithTank(FixedFluidInv, Reference, LimitedConsumer)} instead:
+     *             all interactWithTank methods have been moved to {@link FluidInvUtil}. */
+    @Deprecated
     public static FluidTankInteraction interactWithTank(
         FixedFluidInv inv, Reference<ItemStack> stack, LimitedConsumer<ItemStack> excessStacks
     ) {
-
-        return interactWithTank(inv.getInsertable(), inv.getExtractable(), stack, excessStacks);
+        return FluidInvUtil.interactItemWithTank(inv.getInsertable(), inv.getExtractable(), stack, excessStacks);
     }
 
+    /** @deprecated Use {@link FluidInvUtil#interactItemWithTank(FluidTransferable, Reference, LimitedConsumer)}
+     *             instead: all interactWithTank methods have been moved to {@link FluidInvUtil}. */
+    @Deprecated
     public static FluidTankInteraction interactWithTank(
         FluidTransferable inv, Reference<ItemStack> stack, LimitedConsumer<ItemStack> excessStacks
     ) {
-
-        return interactWithTank(inv, inv, stack, excessStacks);
+        return FluidInvUtil.interactItemWithTank(inv, inv, stack, excessStacks);
     }
 
+    /** @deprecated Use
+     *             {@link FluidInvUtil#interactItemWithTank(FluidInsertable, FluidExtractable, Reference, LimitedConsumer)}
+     *             instead: all interactWithTank methods have been moved to {@link FluidInvUtil}. */
+    @Deprecated
     public static FluidTankInteraction interactWithTank(
         FluidInsertable invInsert, FluidExtractable invExtract, Reference<ItemStack> stack,
         LimitedConsumer<ItemStack> excessStacks
     ) {
-
-        FluidVolume fluidMoved = move(invExtract, FluidAttributes.INSERTABLE.get(stack, excessStacks));
-        if (!fluidMoved.isEmpty()) {
-            return FluidTankInteraction.fromTank(fluidMoved);
-        }
-        fluidMoved = move(FluidAttributes.EXTRACTABLE.get(stack, excessStacks), invInsert);
-        return FluidTankInteraction.intoTank(fluidMoved);
+        return FluidInvUtil.interactItemWithTank(invInsert, invExtract, stack, excessStacks);
     }
+
+    // ############################
+    // Normal, non-deprecated stuff
+    // ############################
 
     public static final class FluidTankInteraction {
         public static final FluidTankInteraction NONE = new FluidTankInteraction(EMPTY, false);
 
+        /** A copy of the fluid moved. */
         public final FluidVolume fluidMoved;
+
+        /** If true then the interaction drained fluid from the {@link ItemStack}, and inserted it into the
+         * {@link FluidInsertable} tank. Otherwise this will be false. */
         public final boolean intoTank;
 
+        /** The {@link ItemContainerStatus status} of the {@link FluidExtractable} obtained from the {@link ItemStack},
+         * via */
+        public final ItemContainerStatus intoTankStatus;
+        public final ItemContainerStatus fromTankStatus;
+
+        @Deprecated
         public static FluidTankInteraction intoTank(FluidVolume fluid) {
             return new FluidTankInteraction(fluid, true);
         }
 
+        @Deprecated
         public static FluidTankInteraction fromTank(FluidVolume fluid) {
             return new FluidTankInteraction(fluid, false);
         }
 
+        public static FluidTankInteraction none(
+            ItemContainerStatus intoTankStatus, ItemContainerStatus fromTankStatus
+        ) {
+            return new FluidTankInteraction(EMPTY, false, intoTankStatus, fromTankStatus);
+        }
+
+        @Deprecated
         public FluidTankInteraction(FluidVolume fluidMoved, boolean intoTank) {
             this.fluidMoved = fluidMoved;
             this.intoTank = intoTank;
+            this.intoTankStatus = ItemContainerStatus.NOT_CHECKED;
+            this.fromTankStatus = ItemContainerStatus.NOT_CHECKED;
         }
 
+        /** Constructs a new {@link FluidTankInteraction} object.
+         * <p>
+         * Generally it is not expected that this be called by any method other than
+         * {@link FluidInvUtil#interactItemWithTank(FluidInsertable, FluidExtractable, Reference, LimitedConsumer, FluidAmount)} */
+        public FluidTankInteraction(
+            FluidVolume fluidMoved, boolean intoTank, ItemContainerStatus intoTankStatus,
+            ItemContainerStatus fromTankStatus
+        ) {
+            this.fluidMoved = fluidMoved;
+            this.intoTank = intoTank;
+            this.intoTankStatus = intoTankStatus == null ? ItemContainerStatus.NOT_CHECKED : intoTankStatus;
+            this.fromTankStatus = fromTankStatus == null ? ItemContainerStatus.NOT_CHECKED : fromTankStatus;
+        }
+
+        /** Checks to see if any fluid was moved in the interaction.
+         * 
+         * @return The inverse of {@link #fluidMoved}.{@link FluidVolume#isEmpty() isEmpty()} */
         public boolean didMoveAny() {
             return !fluidMoved.isEmpty();
+        }
+
+        /** @return true if either of {@link #intoTankStatus} or {@link #fromTankStatus} is
+         *         {@link ItemContainerStatus #VALID}. */
+        public boolean wasContainerValid() {
+            return intoTankStatus == ItemContainerStatus.VALID || fromTankStatus == ItemContainerStatus.VALID;
+        }
+
+        /** @return true if either of {@link #intoTankStatus} or {@link #fromTankStatus} is different to
+         *         {@link ItemContainerStatus#NOT_CHECKED}. */
+        public boolean didCheckItemStack() {
+            return intoTankStatus != ItemContainerStatus.NOT_CHECKED
+                || fromTankStatus != ItemContainerStatus.NOT_CHECKED;
+        }
+
+        /** Converts this interaction result into a vanilla minecraft {@link ActionResult}, suitable for normal block or
+         * item "use" methods.
+         * 
+         * @return
+         *         <ol>
+         *         <li>{@link ActionResult#SUCCESS} if {@link #didMoveAny()} returns true.</li>
+         *         <li>{@link ActionResult#FAIL} if {@link #wasContainerValid()} returns true.</li>
+         *         <li>{@link ActionResult#PASS} otherwise.</li>
+         *         </ol>
+         *         (This is based on the principle that attempting to use an empty bucket on an empty tank should return
+         *         {@link ActionResult#FAIL}, but using an unrelated item - such as an iron ingot - should return
+         *         {@link ActionResult#PASS}) */
+        public ActionResult asActionResult() {
+            if (didMoveAny()) {
+                return ActionResult.SUCCESS;
+            }
+            return wasContainerValid() ? ActionResult.FAIL : ActionResult.PASS;
         }
 
         @Deprecated
@@ -315,6 +386,19 @@ public final class FluidVolumeUtil {
         public FluidAmount amountMoved_F() {
             return fluidMoved.getAmount_F();
         }
+    }
+
+    public enum ItemContainerStatus {
+        /** Indicates that the given {@link ItemStack} cannot have fluid inserted/extracted to/from it. */
+        INVALID,
+
+        /** Indicates that we didn't check to see if the given {@link ItemStack} could have fluid inserted/extracted
+         * to/from it. This is only returned if the operation didn't need to be performed, either because the previous
+         * operation succeeded, or the tank passed didn't have an extractable/insertable object. */
+        NOT_CHECKED,
+
+        /** Indicates that the given {@link ItemStack} could have fluid inserted/extracted to/from it. */
+        VALID;
     }
 
     // #######################
@@ -328,29 +412,45 @@ public final class FluidVolumeUtil {
      * @param toInsert The volume to insert. This will not be modified.
      * @return The excess {@link FluidVolume} that wasn't inserted. */
     public static FluidVolume insertSingle(FixedFluidInv inv, int tank, FluidVolume toInsert, Simulation simulation) {
+        FluidTransferResult result = computeInsertion(inv.getInvFluid(tank), inv.getMaxAmount_F(tank), toInsert);
+        if (result.result == toInsert) {
+            return toInsert;
+        }
+
+        if (inv.setInvFluid(tank, result.inTank, simulation)) {
+            return result.result;
+        } else {
+            return toInsert;
+        }
+    }
+
+    /** Computes the result of {@link #insertSingle(FixedFluidInv, int, FluidVolume, Simulation)}, but without actually
+     * modifying an inventory.
+     * 
+     * @return The result of this insertion. If the insertion failed then the fields will be identical (==) to their
+     *         respective {@link FluidVolume}s passed in. */
+    public static FluidTransferResult computeInsertion(
+        FluidVolume current, FluidAmount capacity, FluidVolume toInsert
+    ) {
         if (toInsert.isEmpty()) {
-            return EMPTY;
+            return new FluidTransferResult(toInsert, current);
         }
-        FluidVolume inTank = inv.getInvFluid(tank);
-        FluidAmount current = inTank.getAmount_F();
-        FluidAmount max = current.roundedAdd(toInsert.getAmount_F(), RoundingMode.DOWN).min(inv.getMaxAmount_F(tank));
-        FluidAmount addable = max.roundedSub(current, RoundingMode.UP);
+        FluidAmount currentA = current.getAmount_F();
+        FluidAmount max = currentA.roundedAdd(toInsert.getAmount_F(), RoundingMode.DOWN).min(capacity);
+        FluidAmount addable = max.roundedSub(currentA, RoundingMode.UP);
         if (!addable.isPositive()) {
-            return toInsert;
+            return new FluidTransferResult(toInsert, current);
         }
-        if (current.isPositive() && !inTank.canMerge(toInsert)) {
-            return toInsert;
+        if (currentA.isPositive() && !current.canMerge(toInsert)) {
+            return new FluidTransferResult(toInsert, current);
         }
-        inTank = inTank.copy();
+        current = current.copy();
         FluidVolume insertCopy = toInsert.copy();
-        FluidVolume merged = FluidVolume.merge(inTank, insertCopy.split(addable));
+        FluidVolume merged = FluidVolume.merge(current, insertCopy.split(addable));
         if (merged == null) {
-            return toInsert;
+            return new FluidTransferResult(toInsert, current);
         }
-        if (inv.setInvFluid(tank, merged, simulation)) {
-            return insertCopy.isEmpty() ? EMPTY : insertCopy;
-        }
-        return toInsert;
+        return new FluidTransferResult(insertCopy, merged);
     }
 
     /** Extracts a single {@link FluidVolume} from a {@link FixedFluidInv}, using only
@@ -362,7 +462,7 @@ public final class FluidVolumeUtil {
      *            {@link FluidVolume#isEmpty() empty}.
      * @param maxAmount The maximum amount of fluid to extract. Note that the returned {@link FluidVolume} may have an
      *            amount up to this given amount plus the amount in "toAddWith".
-     * @return The extracted {@link FluidVolume}, merged with "toAddWith".
+     * @return The extracted {@link FluidVolume}, inTank with "toAddWith".
      * @deprecated Replaced by
      *             {@link #extractSingle(FixedFluidInv, int, FluidFilter, FluidVolume, FluidAmount, Simulation)} */
     @Deprecated
@@ -382,7 +482,7 @@ public final class FluidVolumeUtil {
      *            {@link FluidVolume#isEmpty() empty}.
      * @param maxAmount The maximum amount of fluid to extract. Note that the returned {@link FluidVolume} may have an
      *            amount up to this given amount plus the amount in "toAddWith".
-     * @return The extracted {@link FluidVolume}, merged with "toAddWith". */
+     * @return The extracted {@link FluidVolume}, inTank with "toAddWith". */
     public static FluidVolume extractSingle(
         FixedFluidInv inv, int tank, @Nullable FluidFilter filter, FluidVolume toAddWith, FluidAmount maxAmount,
         Simulation simulation
@@ -392,16 +492,63 @@ public final class FluidVolumeUtil {
         }
 
         FluidVolume inTank = inv.getInvFluid(tank);
-        if (inTank.isEmpty() || (filter != null && !filter.matches(inTank.fluidKey))) {
+        FluidTransferResult result = computeExtraction(inTank, filter, toAddWith, maxAmount);
+        if (inv.setInvFluid(tank, result.inTank, simulation)) {
+            return result.result;
+        } else {
             return toAddWith;
+        }
+    }
+
+    /** Computes the result of
+     * {@link #extractSingle(FixedFluidInv, int, FluidFilter, FluidVolume, FluidAmount, Simulation)}, but without
+     * actually modifying an inventory.
+     * 
+     * @return The result of this extraction. If the extraction failed then {@link FluidTransferResult#inTank} will be
+     *         identical (==) to the passed in {@link FluidVolume}. */
+    public static FluidTransferResult computeExtraction(FluidVolume inTank, FluidFilter filter, FluidAmount maxAmount) {
+        return computeExtraction(inTank, filter, EMPTY, maxAmount);
+    }
+
+    /** Computes the result of
+     * {@link #extractSingle(FixedFluidInv, int, FluidFilter, FluidVolume, FluidAmount, Simulation)}, but without
+     * actually modifying an inventory.
+     * 
+     * @return The result of this extraction. If the insertion extraction then the fields will be identical (==) to
+     *         their respective {@link FluidVolume}s passed in. */
+    public static FluidTransferResult computeExtraction(
+        FluidVolume inTank, FluidFilter filter, FluidVolume toAddWith, FluidAmount maxAmount
+    ) {
+        if (inTank.isEmpty() || (filter != null && !filter.matches(inTank.fluidKey))) {
+            return new FluidTransferResult(toAddWith, inTank);
         }
         inTank = inTank.copy();
         FluidVolume addable = inTank.split(maxAmount);
+        if (addable.isEmpty()) {
+            return new FluidTransferResult(toAddWith, inTank);
+        }
+        if (!toAddWith.isEmpty()) {
+            toAddWith = toAddWith.copy();
+        }
         FluidVolume merged = FluidVolume.merge(toAddWith, addable);
-        if (merged != null && inv.setInvFluid(tank, inTank, simulation)) {
+        if (merged != null) {
             toAddWith = merged;
         }
-        return toAddWith;
+        return new FluidTransferResult(toAddWith, inTank);
+    }
+
+    public static final class FluidTransferResult {
+        /** If this is returned from {@link FluidVolumeUtil#computeInsertion(FluidVolume, FluidAmount, FluidVolume)}
+         * then this is the leftover. Otherwise this is the fluid that was extracted from the tank. */
+        public final FluidVolume result;
+
+        /** The {@link FluidVolume} that should be placed into the tank */
+        public final FluidVolume inTank;
+
+        public FluidTransferResult(FluidVolume result, FluidVolume inTank) {
+            this.result = result;
+            this.inTank = inTank;
+        }
     }
 
     // #######################

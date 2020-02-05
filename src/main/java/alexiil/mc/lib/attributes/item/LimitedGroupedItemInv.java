@@ -22,7 +22,8 @@ public interface LimitedGroupedItemInv extends GroupedItemInv {
      * @return this. */
     LimitedGroupedItemInv markFinal();
 
-    /** Creates a copy of this {@link LimitedGroupedItemInv} (with the same backing inventory and the same rules). */
+    /** Creates a copy of this {@link LimitedGroupedItemInv} (with the same backing inventory and the same rules), but
+     * not marked as final. */
     LimitedGroupedItemInv copy();
 
     /** Completely clears all rules currently imposed.

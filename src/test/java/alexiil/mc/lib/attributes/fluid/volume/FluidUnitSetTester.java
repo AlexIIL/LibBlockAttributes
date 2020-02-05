@@ -16,7 +16,6 @@ public class FluidUnitSetTester extends VanillaSetupBaseTester {
 
     @Test
     public void testWaterUnits() {
-
         int b = FluidVolume.BOTTLE;
         System.out.println(FluidKeys.WATER.withAmount(b).localizeAmount());
         System.out.println(FluidKeys.WATER.withAmount(2 * b).localizeAmount());

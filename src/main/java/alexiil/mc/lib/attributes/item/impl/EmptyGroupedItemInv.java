@@ -18,12 +18,15 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.GroupedItemInvView;
 import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
+import alexiil.mc.lib.attributes.item.ItemExtractable;
+import alexiil.mc.lib.attributes.item.ItemInsertable;
 import alexiil.mc.lib.attributes.item.ItemInvAmountChangeListener;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.misc.NullVariant;
 
 /** {@link GroupedItemInvView} for an empty inventory. */
-public enum EmptyGroupedItemInv implements GroupedItemInv {
+public enum EmptyGroupedItemInv implements GroupedItemInv, NullVariant {
     INSTANCE;
 
     @Override
@@ -102,5 +105,25 @@ public enum EmptyGroupedItemInv implements GroupedItemInv {
             // (And we don't need to do anything when the listener is removed)
         };
         // Never call the removal token as it's unnecessary (and saves the caller from re-adding it every tick)
+    }
+
+    @Override
+    public GroupedItemInvView getGroupedView() {
+        return this;
+    }
+
+    @Override
+    public ItemInsertable getPureInsertable() {
+        return RejectingItemInsertable.NULL;
+    }
+
+    @Override
+    public ItemExtractable getPureExtractable() {
+        return EmptyItemExtractable.NULL;
+    }
+
+    @Override
+    public String toString() {
+        return "EmptyGroupedItemInv";
     }
 }

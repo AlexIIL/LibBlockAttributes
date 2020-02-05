@@ -11,7 +11,7 @@
     ]
   },
   "depends": {
-    "minecraft": ">=1.15.1 <1.15.100",
+    "minecraft": ">=1.15.2 <1.15.100",
     "fabricloader": ">=0.4.0",
     "fabric": "*"
   },
@@ -70,6 +70,26 @@
         "+libblockattributes_fluids": ">=$version"
       },
       "+icon": "assets/libblockattributes/icon_all.png"
+    },
+    "basic": {
+      "+id": "libblockattributes_basic"
+    },
+    "api": {
+      "+id": "libblockattributes_api"
+    },
+    "fatjar_devonly": {
+      "+name": "LibBlockAttributes (FatJar - DevOnly!)",
+      "-entrypoints": {},
+      "-mixins": [],
+      "~depends": {
+        "+libblockattributes_core": "=$version",
+        "+libblockattributes_items": "=$version",
+        "+libblockattributes_fluids": "=$version"
+      },
+      "~custom": {
+        "+_x_fabric_loom_dontstripjars": ""
+      },
+      "+icon": "assets/libblockattributes/icon_fat.png"
     }
   }
 }

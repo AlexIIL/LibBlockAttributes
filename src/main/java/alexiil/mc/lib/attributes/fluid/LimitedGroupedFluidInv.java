@@ -7,6 +7,7 @@
  */
 package alexiil.mc.lib.attributes.fluid;
 
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ExactFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
@@ -21,7 +22,8 @@ public interface LimitedGroupedFluidInv extends GroupedFluidInv {
      * @return this. */
     LimitedGroupedFluidInv markFinal();
 
-    /** Creates a copy of this {@link LimitedGroupedFluidInv} (with the same backing inventory and the same rules). */
+    /** Creates a copy of this {@link LimitedGroupedFluidInv} (with the same backing inventory and the same rules), but
+     * not marked as final. */
     LimitedGroupedFluidInv copy();
 
     /** Completely clears all rules currently imposed.
@@ -66,32 +68,42 @@ public interface LimitedGroupedFluidInv extends GroupedFluidInv {
 
         /** Disallows insertion for this {@link FluidLimitRule}. */
         default FluidLimitRule disallowInsertion() {
-            return limitInsertionCount(0);
+            return limitInsertionAmount(FluidAmount.ZERO);
         }
 
         /** Resets any insertion limitations previously imposed by this {@link FluidLimitRule}. */
         default FluidLimitRule allowInsertion() {
-            return limitInsertionCount(-1);
+            return limitInsertionAmount(FluidAmount.NEGATIVE_ONE);
         }
 
-        /** Limits the number of items that can be inserted (in total) to the given count.
+        /** Limits the amount of fluid that can be inserted (in total) to the given amount.
+         * 
+         * @param max The maximum. A value less than 0 will reset this back to no limits.
+         * @return this.
+         * @deprecated Replaced by {@link #limitInsertionAmount(FluidAmount)} */
+        @Deprecated
+        default FluidLimitRule limitInsertionCount(int max) {
+            return limitInsertionAmount(FluidAmount.of1620(max));
+        }
+
+        /** Limits the amount of fluid that can be inserted (in total) to the given amount.
          * 
          * @param max The maximum. A value less than 0 will reset this back to no limits.
          * @return this. */
-        FluidLimitRule limitInsertionCount(int max);
+        FluidLimitRule limitInsertionAmount(FluidAmount max);
 
         /** Completely disallows extraction of fluids.
          * 
          * @return this. */
         default FluidLimitRule disallowExtraction() {
-            return setMinimum(Integer.MAX_VALUE);
+            return setMinimum(FluidAmount.MAX_VALUE);
         }
 
         /** Stops disallowing extraction of fluids.
          * 
          * @return this. */
         default FluidLimitRule allowExtraction() {
-            return setMinimum(0);
+            return setMinimum(FluidAmount.ZERO);
         }
 
         /** Limits the amount of fluid that can be extracted to ensure that the inventory cannot have an amount below
@@ -99,7 +111,19 @@ public interface LimitedGroupedFluidInv extends GroupedFluidInv {
          * underlying inventory to be modified to contain less than the given amount).
          * 
          * @param min The minimum number of items. A value of 0 removes the rule for this {@link FluidFilter}.
+         * @return this.
+         * @deprecated Replaced by {@link #setMinimum(FluidAmount)}. */
+        @Deprecated
+        default FluidLimitRule setMinimum(int min) {
+            return setMinimum(FluidAmount.of1620(min));
+        }
+
+        /** Limits the amount of fluid that can be extracted to ensure that the inventory cannot have an amount below
+         * the given value. (This of course has no effect on the underlying inventory, so it is always possible for the
+         * underlying inventory to be modified to contain less than the given amount).
+         * 
+         * @param min The minimum amount of fluid. A value of 0 removes the rule for this {@link FluidFilter}.
          * @return this. */
-        FluidLimitRule setMinimum(int min);
+        FluidLimitRule setMinimum(FluidAmount min);
     }
 }

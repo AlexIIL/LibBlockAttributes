@@ -9,7 +9,8 @@ package alexiil.mc.lib.attributes.item.filter;
 
 import net.minecraft.item.ItemStack;
 
-/** A {@link ReadableItemFilter} that only matches items of a certain {@link Class}. */
+/** A {@link ReadableItemFilter} that only matches items that are {@link Class#isInstance(Object)} of a certain
+ * {@link Class}, and are NOT {@link ItemStack#isEmpty() empty} . */
 public final class ItemClassFilter implements ReadableItemFilter {
 
     public final Class<?> matchedClass;

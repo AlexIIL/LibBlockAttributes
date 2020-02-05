@@ -9,18 +9,31 @@ package alexiil.mc.lib.attributes.item.filter;
 
 import java.util.function.Predicate;
 
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-/** A general {@link Predicate} interface for {@link ItemStack}s. */
+/** A general {@link Predicate} interface for {@link ItemStack}s. *
+ * <p>
+ * 5 basic implementations are provided:
+ * <ul>
+ * <li>{@link ConstantItemFilter} for filters that always match or never match.</li>
+ * <li>{@link ExactItemFilter} for a filter that matches on a single {@link Item}, and rejects others.</li>
+ * <li>{@link ExactItemStackFilter} for a filter that matches on a single {@link ItemStack} (using .</li>
+ * <li>{@link ItemClassFilter} for a filter that only matches on {@link Item}s whose {@link #getClass()}
+ * {@link Class#isInstance(Object) is an instance} of the class specified by the filter.</li>
+ * <li>{@link AggregateItemFilter} for a filter that either AND's or OR's several other {@link ItemFilter}'s into
+ * one.</li>
+ * </ul>
+ */
 @FunctionalInterface
 public interface ItemFilter {
 
-    /** Checks to see if the given filter matches the given stack. Note that this must not care about
+    /** Checks to see if this filter matches the given stack. Note that this must not care about
      * {@link ItemStack#getCount()}, except in the case where the stack is {@link ItemStack#isEmpty()}. */
     boolean matches(ItemStack stack);
 
     default ItemFilter negate() {
-        return stack -> !this.matches(stack);
+        return new InvertedItemFilter(this);
     }
 
     default ItemFilter and(ItemFilter other) {

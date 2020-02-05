@@ -14,11 +14,17 @@ import net.minecraft.item.ItemStack;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.item.impl.FilteredItemTransferable;
 
 /** Combined interface for {@link ItemInsertable} and {@link ItemExtractable}. (This is provided for simplicity when
  * exposing inventories for modification but when you don't want to implement the full set of methods that
  * {@link GroupedItemInv} provides). */
 public interface ItemTransferable extends ItemInsertable, ItemExtractable {
+
+    @Override
+    default ItemTransferable filtered(ItemFilter filter) {
+        return new FilteredItemTransferable(this, filter);
+    }
 
     /** @return A new {@link ItemTransferable} that will insert into the given insertable, and never return any items
      *         from {@link #attemptExtraction(ItemFilter, int, Simulation)}. */

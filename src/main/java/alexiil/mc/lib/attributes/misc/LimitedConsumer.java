@@ -15,18 +15,27 @@ import alexiil.mc.lib.attributes.Simulation;
 @FunctionalInterface
 public interface LimitedConsumer<T> {
 
-    /** @param object The object to offer.
+    /** @param object The object to offer. This interface makes no guarantees about whether this object will be
+     *            defensively copied or not - so callers should assume that any objects passed to this may be modified
+     *            in any way. Likewise, this has no requirements for what callers may do with the object after it has
+     *            been passed in.
      * @param simulation If {@link Simulation#ACTION} then this will modify state (if accepted).
      * @return True if the object would have been accepted. */
     boolean offer(T object, Simulation simulation);
 
-    /** @param object The object to offer.
+    /** @param object The object to offer. This interface makes no guarantees about whether this object will be
+     *            defensively copied or not - so callers should assume that any objects passed to this may be modified
+     *            in any way. Likewise, this has no requirements for what callers may do with the object after it has
+     *            been passed in
      * @return True if the offer was accepted, or false if nothing happened. */
     default boolean offer(T object) {
         return offer(object, Simulation.ACTION);
     }
 
-    /** @param object The object to test for.
+    /** @param object The object to test for. This interface makes no guarantees about whether this object will be
+     *            defensively copied or not - so callers should assume that any objects passed to this may be modified
+     *            in any way. Likewise, this has no requirements for what callers may do with the object after it has
+     *            been passed in
      * @return True if the offer was accepted, or false if nothing happened. */
     default boolean wouldAccept(T object) {
         return offer(object, Simulation.SIMULATE);

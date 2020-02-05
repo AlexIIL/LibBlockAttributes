@@ -8,14 +8,18 @@
 package alexiil.mc.lib.attributes.item.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.LimitedGroupedItemInv;
+import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ExactItemStackFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 public class SimpleLimitedGroupedItemInv extends DelegatingGroupedItemInv implements LimitedGroupedItemInv {
@@ -58,26 +62,98 @@ public class SimpleLimitedGroupedItemInv extends DelegatingGroupedItemInv implem
 
     @Override
     public ItemStack attemptExtraction(ItemFilter filter, int maxAmount, Simulation simulation) {
-        // TODO Auto-generated method stub
-        throw new AbstractMethodError("// TODO: Implement this!");
+        if (filter == ConstantItemFilter.NOTHING || filter == ConstantItemFilter.ONLY_EMPTY) {
+            return ItemStack.EMPTY;
+        }
+        if (extractionRules.isEmpty()) {
+            return delegate.attemptExtraction(filter, maxAmount, simulation);
+        }
+        Set<ItemStack> stacks = delegate.getStoredStacks();
+        if (stacks.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+
+        if (filter instanceof ExactItemStackFilter) {
+            ItemStack stack = ((ExactItemStackFilter) filter).stack;
+            if (!stacks.contains(stack)) {
+                return ItemStack.EMPTY;
+            }
+            stacks = Collections.singleton(stack);
+        }
+
+        fluids: for (ItemStack stack : stacks) {
+            if (!filter.matches(stack)) {
+                continue;
+            }
+            int current = delegate.getAmount(stack);
+            if (current <= 0) {
+                continue;
+            }
+            int minLeft = 0;
+            for (ExtractionRule rule : extractionRules) {
+                if (!rule.filter.matches(stack)) {
+                    continue;
+                }
+                if (rule.minimumAmount > 0) {
+                    minLeft = Math.max(minLeft, rule.minimumAmount);
+                    if (current <= minLeft/* !current.isGreaterThan(minLeft)*/) {
+                        continue fluids;
+                    }
+                }
+            }
+            int allowed = current - minLeft;
+            return delegate
+                .attemptExtraction(new ExactItemStackFilter(stack), Math.min(maxAmount, allowed), simulation);
+        }
+        return ItemStack.EMPTY;
     }
 
     @Override
     public ItemStack attemptInsertion(ItemStack stack, Simulation simulation) {
-        // TODO Auto-generated method stub
-        throw new AbstractMethodError("// TODO: Implement this!");
+        if (stack.isEmpty()) {
+            return stack;
+        }
+        int current = delegate.getAmount(stack);
+        int maxCount = Integer.MAX_VALUE;
+        for (InsertionRule rule : insertionRules) {
+            if (rule.filter.matches(stack)) {
+                maxCount = Math.min(maxCount, rule.maximumInsertion);
+                if (maxCount <= current) {
+                    return stack;
+                }
+            }
+        }
+
+        int allowed = maxCount - current;
+        assert allowed >= 1;
+
+        if (allowed < stack.getCount()) {
+            ItemStack original = stack;
+            ItemStack offered = original.copy();
+            ItemStack leftover = delegate.attemptInsertion(offered.split(allowed), simulation);
+            if (leftover.getCount() == maxCount) {
+                return original;
+            }
+            offered.increment(leftover.getCount());
+            return offered;
+        } else {
+            return super.attemptInsertion(stack, simulation);
+        }
     }
 
     @Override
     public ItemFilter getInsertionFilter() {
-        // TODO: return a more useful filter!
-        return stack -> {
-            if (stack.isEmpty()) {
-                return true;
+        if (insertionRules.isEmpty()) {
+            return delegate.getInsertionFilter();
+        }
+        List<ItemFilter> disallowed = new ArrayList<>();
+        for (InsertionRule rule : insertionRules) {
+            if (rule.maximumInsertion <= 0) {
+                disallowed.add(rule.filter);
             }
-            ItemStack leftover = attemptInsertion(stack, Simulation.SIMULATE);
-            return leftover.isEmpty() || leftover.getCount() < stack.getCount();
-        };
+        }
+        ItemFilter allowed = AggregateItemFilter.anyOf(disallowed).negate();
+        return allowed.and(delegate.getInsertionFilter());
     }
 
     // Rules

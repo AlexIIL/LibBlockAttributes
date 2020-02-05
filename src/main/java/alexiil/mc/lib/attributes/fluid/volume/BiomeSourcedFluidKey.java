@@ -7,6 +7,9 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldView;
@@ -23,6 +26,11 @@ public class BiomeSourcedFluidKey extends WeightedFluidKey<Biome> {
     @Override
     public BiomeSourcedFluidVolume readVolume(CompoundTag tag) {
         return new BiomeSourcedFluidVolume(this, tag);
+    }
+
+    @Override
+    public BiomeSourcedFluidVolume readVolume(JsonObject json) throws JsonSyntaxException {
+        return new BiomeSourcedFluidVolume(this, json);
     }
 
     @Override

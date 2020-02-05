@@ -7,6 +7,9 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
@@ -22,9 +25,6 @@ public final class PotionFluidKey extends FluidKey {
     public static final Identifier POTION_TEXTURE, FLOWING_POTION_TEXTURE;
 
     static {
-        // potion_glint = FF_80_40_CC
-        // @ -50 around Z
-        // + 10 around Z
         POTION_TEXTURE = LibBlockAttributes.id("fluid/potion");
         FLOWING_POTION_TEXTURE = LibBlockAttributes.id("fluid/potion_flowing");
     }
@@ -32,18 +32,28 @@ public final class PotionFluidKey extends FluidKey {
     public final Potion potion;
 
     /* package-private */ PotionFluidKey(Potion potion) {
-        super(
-            new FluidKeyBuilder(
-                new FluidRegistryEntry<>(Registry.POTION, potion), POTION_TEXTURE, FLOWING_POTION_TEXTURE,
-                new TranslatableText(potion.getName("item.minecraft.potion.effect."))
-            ).setUnit(FluidUnit.BOTTLE).setRenderColor(PotionUtil.getColor(potion))
-        );
+        super(createKeyBuilder(potion));
         this.potion = potion;
+    }
+
+    private static FluidKeyBuilder createKeyBuilder(Potion potion) {
+        FluidKeyBuilder builder = new FluidKeyBuilder();
+        builder.setRegistryEntry(new FluidRegistryEntry<>(Registry.POTION, potion));
+        builder.setSprites(POTION_TEXTURE, FLOWING_POTION_TEXTURE);
+        builder.setName(new TranslatableText(potion.finishTranslationKey("item.minecraft.potion.effect.")));
+        builder.setUnit(FluidUnit.BOTTLE);
+        builder.setRenderColor(PotionUtil.getColor(potion));
+        return builder;
     }
 
     @Override
     public PotionFluidVolume readVolume(CompoundTag tag) {
         return new PotionFluidVolume(this, tag);
+    }
+
+    @Override
+    public PotionFluidVolume readVolume(JsonObject json) throws JsonSyntaxException {
+        return new PotionFluidVolume(this, json);
     }
 
     /** @deprecated Replaced by {@link #withAmount(FluidAmount)}. */

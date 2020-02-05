@@ -22,11 +22,13 @@ import net.minecraft.util.registry.Registry;
 
 import alexiil.mc.lib.attributes.fluid.FluidProviderItem;
 import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
+import alexiil.mc.lib.attributes.fluid.ICustomBucketItem;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
 import alexiil.mc.lib.attributes.misc.Ref;
 
 @Mixin(BucketItem.class)
@@ -35,6 +37,8 @@ public class BucketItemMixin extends Item implements FluidProviderItem, IBucketI
     @Final
     @Shadow
     private Fluid fluid;
+
+    private boolean logged_nonVanillaButNotCustom;
 
     public BucketItemMixin(Item.Settings settings) {
         super(settings);
@@ -102,10 +106,19 @@ public class BucketItemMixin extends Item implements FluidProviderItem, IBucketI
     public ItemStack libblockattributes__withFluid(FluidKey fluid) {
         // TODO: handle other (modded) bucket types? (Like wooden or steel or etc)
         if (fluid == FluidKeys.EMPTY) {
-            return new ItemStack(Items.BUCKET);
+            return new ItemStack(getRecipeRemainder());
         }
         Fluid rawFluid = fluid.getRawFluid();
         if (rawFluid == null) {
+            return ItemStack.EMPTY;
+        }
+        if (this instanceof ICustomBucketItem) {
+            return ((ICustomBucketItem) this).getFilledBucket(rawFluid);
+        } else if (this != Items.BUCKET) {
+            if (!logged_nonVanillaButNotCustom) {
+                logged_nonVanillaButNotCustom = true;
+                LibBlockAttributes.LOGGER.warn("Unknown non-vanilla BucketItem ");
+            }
             return ItemStack.EMPTY;
         }
         return new ItemStack(rawFluid.getBucketItem());

@@ -9,8 +9,11 @@ package alexiil.mc.lib.attributes.fluid.filter;
 
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 
+/** A {@link FluidFilter} that either matches everything ({@link #ANYTHING}) or matches nothing ({@link #NOTHING}) */
 public enum ConstantFluidFilter implements ReadableFluidFilter {
+    /** A {@link FluidFilter} that matches everything. */
     ANYTHING(true),
+    /** A {@link FluidFilter} that matches nothing. */
     NOTHING(false);
 
     private final boolean result;
@@ -26,7 +29,7 @@ public enum ConstantFluidFilter implements ReadableFluidFilter {
     @Override
     public boolean matches(FluidKey fluid) {
         if (fluid.isEmpty()) {
-            throw new IllegalArgumentException("You should never test an IFluidFilter with an empty fluid!");
+            throw new IllegalArgumentException("You should never test a FluidFilter with an empty fluid!");
         }
         return result;
     }

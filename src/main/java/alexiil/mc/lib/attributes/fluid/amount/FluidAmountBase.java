@@ -47,8 +47,18 @@ import javax.annotation.Nullable;
     }
 
     /** Null is treated as zero */
+    public boolean isGreaterThanOrEqual(@Nullable T other) {
+        return compareTo(other) >= 0;
+    }
+
+    /** Null is treated as zero */
     public boolean isLessThan(@Nullable T other) {
         return compareTo(other) < 0;
+    }
+
+    /** Null is treated as zero */
+    public boolean isLessThanOrEqual(@Nullable T other) {
+        return compareTo(other) <= 0;
     }
 
     public abstract double asInexactDouble();

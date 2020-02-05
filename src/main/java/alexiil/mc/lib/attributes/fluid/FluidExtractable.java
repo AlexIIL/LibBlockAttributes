@@ -18,6 +18,7 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ExactFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
+import alexiil.mc.lib.attributes.fluid.impl.FilteredFluidExtractable;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
@@ -206,6 +207,12 @@ public interface FluidExtractable {
         } catch (NoSuchMethodException e) {
             throw new Error(e);
         }
+    }
+
+    /** @return A new {@link FluidExtractable} that has an additional filter applied to limit the fluid extracted from
+     *         it. */
+    default FluidExtractable filtered(FluidFilter filter) {
+        return new FilteredFluidExtractable(this, filter);
     }
 
     /** @return An object that only implements {@link FluidExtractable}, and does not expose any of the other

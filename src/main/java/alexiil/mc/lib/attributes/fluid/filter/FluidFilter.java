@@ -11,7 +11,16 @@ import java.util.function.Predicate;
 
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 
-/** A general {@link Predicate} interface for {@link FluidKey}s. */
+/** A general {@link Predicate} interface for {@link FluidKey}s.
+ * <p>
+ * 3 basic implementations are provided:
+ * <ul>
+ * <li>{@link ConstantFluidFilter} for filters that always match or never match.</li>
+ * <li>{@link ExactFluidFilter} for a filter that matches on a single {@link FluidKey}, and rejects others.</li>
+ * <li>{@link AggregateFluidFilter} for a filter that either AND's or OR's several other {@link FluidFilter}'s into
+ * one.</li>
+ * </ul>
+ */
 @FunctionalInterface
 public interface FluidFilter {
 
@@ -21,7 +30,7 @@ public interface FluidFilter {
     boolean matches(FluidKey fluidKey);
 
     default FluidFilter negate() {
-        return stack -> !this.matches(stack);
+        return new InvertedFluidFilter(this);
     }
 
     default FluidFilter and(FluidFilter other) {

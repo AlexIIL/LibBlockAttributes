@@ -13,6 +13,7 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ExactItemStackFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.item.impl.FilteredItemExtractable;
 
 /** Defines an object that can have items extracted from it. */
 @FunctionalInterface
@@ -67,6 +68,12 @@ public interface ItemExtractable {
      * @return A new, independent {@link ItemStack} that was extracted. */
     default ItemStack extract(int maxAmount) {
         return attemptExtraction(ConstantItemFilter.ANYTHING, maxAmount, Simulation.ACTION);
+    }
+
+    /** @return A new {@link ItemExtractable} that has an additional filter applied to limit the items extracted from
+     *         it. */
+    default ItemExtractable filtered(ItemFilter filter) {
+        return new FilteredItemExtractable(this, filter);
     }
 
     /** @return An object that only implements {@link ItemExtractable}, and does not expose any of the other

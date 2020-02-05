@@ -16,6 +16,10 @@ import alexiil.mc.lib.attributes.Simulation;
 /** A reference to some object. The object can either be obtained ({@link #get()}), or changed ({@link #set(Object)}).
  * Note that changing the object isn't always permitted, and so it may return false if no change happened. */
 public interface Reference<T> {
+
+    /** @return The object referenced. Note that you should generally not modify the returned value directly - instead
+     *         copy it before passing it to {@link #set(Object)} or {@link #isValid(Object)} to see if your
+     *         modifications are permitted. */
     T get();
 
     /** @return True if the new value was accepted, false otherwise. */

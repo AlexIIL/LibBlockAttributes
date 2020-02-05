@@ -14,10 +14,11 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.misc.NullVariant;
 
 /** A {@link FluidExtractable} that never returns any items from
  * {@link #attemptExtraction(FluidFilter, int, Simulation)}. */
-public enum EmptyFluidExtractable implements FluidExtractable {
+public enum EmptyFluidExtractable implements FluidExtractable, NullVariant {
     /** A {@link FluidExtractable} that should be treated as equal to null in all circumstances - that is any checks
      * that depend on an object being extractable should be considered FALSE for this instance. */
     NULL,
@@ -38,5 +39,10 @@ public enum EmptyFluidExtractable implements FluidExtractable {
     @Override
     public FluidVolume attemptExtraction(FluidFilter filter, FluidAmount maxAmount, Simulation simulation) {
         return FluidKeys.EMPTY.withAmount(FluidAmount.ZERO);
+    }
+
+    @Override
+    public FluidExtractable getPureExtractable() {
+        return this;
     }
 }

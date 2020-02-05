@@ -11,7 +11,18 @@ package alexiil.mc.lib.attributes.fluid.filter;
  * read the real contents.
  * <p>
  * NOTE: This can only be implemented by classes <strong>included in LibBlockAttributes!</strong>. (As many
- * implementations must implement direct support for subclasses of this). */
+ * implementations must implement direct support for subclasses of this).
+ * <p>
+ * As such you should pretend that this interface is "sealed", and the only valid subtypes are:
+ * <ol>
+ * <li>{@link ConstantFluidFilter}</li>
+ * <li>{@link ExactFluidFilter}</li>
+ * <li>{@link AggregateFluidFilter}</li>
+ * <li>{@link InvertedFluidFilter}</li>
+ * <li>{@link RawFluidTagFilter}</li>
+ * <li>{@link FluidTagFilter}</li>
+ * </ol>
+ */
 public interface ReadableFluidFilter extends FluidFilter {
 
     public static void checkValidity(ReadableFluidFilter filter) {
@@ -19,9 +30,10 @@ public interface ReadableFluidFilter extends FluidFilter {
         String expectedPackage = clsName.substring(0, clsName.lastIndexOf('.'));
         if (!filter.getClass().getName().startsWith(expectedPackage)) {
             throw new IllegalStateException(
-                "The owner of " + filter.getClass() + " has incorrectly implemented IReadableFluidFilter!\n"
+                "The owner of " + filter.getClass() + " has incorrectly implemented ReadableFluidFilter!\n"
                     + "Note that only LibBlockAttributes should define readable fluid filters, "
-                    + "as otherwise there's no way to guarentee compatibility!");
+                    + "as otherwise there's no way to guarentee compatibility!"
+            );
         }
     }
 }

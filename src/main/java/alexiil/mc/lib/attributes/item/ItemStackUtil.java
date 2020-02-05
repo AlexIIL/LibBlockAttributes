@@ -11,9 +11,10 @@ import java.util.Objects;
 
 import net.minecraft.item.ItemStack;
 
-public enum ItemStackUtil {
-    ;
+public final class ItemStackUtil {
+    private ItemStackUtil() {}
 
+    /** Checks to see if the two {@link ItemStack}'s are equal, but ignoring the {@link ItemStack#getCount() counts}. */
     public static boolean areEqualIgnoreAmounts(ItemStack a, ItemStack b) {
         if (a.isEmpty()) {
             return b.isEmpty();

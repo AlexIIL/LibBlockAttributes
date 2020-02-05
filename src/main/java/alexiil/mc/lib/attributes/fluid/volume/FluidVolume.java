@@ -14,6 +14,10 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
@@ -65,13 +69,7 @@ public abstract class FluidVolume {
 
     private FluidAmount amount;
 
-    /** @param amount The amount, in (amount / 1620) */
-    @Deprecated
-    public FluidVolume(FluidKey key, int amount) {
-        this(key, FluidAmount.of1620(amount));
-    }
-
-    public FluidVolume(FluidKey key, FluidAmount amount) {
+    private FluidVolume(FluidKey key) {
         if (key == null) {
             throw new NullPointerException("key");
         }
@@ -83,6 +81,17 @@ public abstract class FluidVolume {
             throw new IllegalArgumentException("Only the still version of fluids are allowed!");
         }
         this.fluidKey = key;
+        // Leave amount alone as it is required that every other constructor set it
+    }
+
+    /** @param amount The amount, in (amount / 1620) */
+    @Deprecated
+    public FluidVolume(FluidKey key, int amount) {
+        this(key, FluidAmount.of1620(amount));
+    }
+
+    public FluidVolume(FluidKey key, FluidAmount amount) {
+        this(key);
         this.amount = amount;
 
         if (key.entry.isEmpty()) {
@@ -95,19 +104,7 @@ public abstract class FluidVolume {
     }
 
     public FluidVolume(FluidKey key, CompoundTag tag) {
-        if (key == null) {
-            throw new NullPointerException("key");
-        }
-        Fluid rawFluid = key.getRawFluid();
-        if (rawFluid instanceof EmptyFluid && key != FluidKeys.EMPTY) {
-            throw new IllegalArgumentException("Different empty fluid!");
-        }
-        if (rawFluid instanceof BaseFluid && rawFluid != ((BaseFluid) rawFluid).getStill()) {
-            throw new IllegalArgumentException("Only the still version of fluids are allowed!");
-        }
-
-        this.fluidKey = key;
-
+        this(key);
         if (key.entry.isEmpty()) {
             this.amount = FluidAmount.ZERO;
         } else if (tag.contains(KEY_AMOUNT_1620INT)) {
@@ -139,6 +136,57 @@ public abstract class FluidVolume {
         fluidKey.toTag(tag);
         tag.put(KEY_AMOUNT_LBA_FRACTION, amount.toNbt());
         return tag;
+    }
+
+    public FluidVolume(FluidKey key, JsonObject json) throws JsonSyntaxException {
+        this(key);
+
+        if (key.entry.isEmpty()) {
+            amount = FluidAmount.ZERO;
+        } else {
+            JsonElement ja = json.get("amount");
+            if (ja == null) {
+                this.amount = FluidAmount.ZERO;
+            } else {
+                this.amount = parseAmount(ja);
+            }
+        }
+    }
+
+    public static FluidAmount parseAmount(JsonElement elem) throws JsonSyntaxException {
+        if (elem == null) {
+            throw new JsonSyntaxException("Expected 'amount' to be a string, but was missing!");
+        } else {
+            if (!elem.isJsonPrimitive()) {
+                throw new JsonSyntaxException("Expected 'amount' to be a string, but was " + elem);
+            }
+            try {
+                FluidAmount a = FluidAmount.parse(elem.getAsString());
+                if (a.isNegative()) {
+                    throw new JsonSyntaxException("Expected 'amount' to be either positive or zero, but was negative!");
+                }
+                return a;
+            } catch (NumberFormatException nfe) {
+                throw new JsonSyntaxException("Expected 'amount' to be a valid fluid amount!", nfe);
+            }
+        }
+    }
+
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        fluidKey.toJson(json);
+        if (!isEmpty()) {
+            json.addProperty("amount", amount.toParseableString());
+        }
+        return json;
+    }
+
+    public static FluidVolume fromJson(JsonObject json) throws JsonSyntaxException {
+        try {
+            return FluidKey.fromJsonInternal(json).readVolume(json);
+        } catch (JsonSyntaxException jse) {
+            throw new JsonSyntaxException("Not a valid fluid volume: " + json, jse);
+        }
     }
 
     /** Creates a new {@link FluidVolume} from the given fluid, with the given amount stored. This just delegates
@@ -193,6 +241,10 @@ public abstract class FluidVolume {
 
     public String localizeAmount() {
         return fluidKey.unitSet.localizeAmount(getAmount_F());
+    }
+
+    public String localizeInTank(FluidAmount capacity) {
+        return fluidKey.unitSet.localizeTank(getAmount_F(), capacity);
     }
 
     /** @deprecated Use {@link Objects#equals(Object)} instead of this. */
@@ -270,7 +322,22 @@ public abstract class FluidVolume {
         this.amount = newAmount;
     }
 
-    /** Merges as much fluid as possible from the source into the target, leaving the leftover in the
+    /** Creates a copy of this fluid with the given amount. Unlike calling {@link FluidKey#withAmount(FluidAmount)} this
+     * will preserve any extra data that this {@link FluidVolume} contains. */
+    public FluidVolume withAmount(FluidAmount newAmount) {
+        FluidVolume fv = copy();
+        fv.setAmount(newAmount);
+        return fv;
+    }
+
+    /** Returns a new {@link FluidVolume} that is a copy of this one, but with an amount multiplied by the given amount.
+     * 
+     * @see #withAmount(FluidAmount) */
+    public FluidVolume multiplyAmount(int by) {
+        return withAmount(getAmount_F().mul(by));
+    }
+
+    /** Merges as much fluid as possible from the source into the target, leaving the result in the
      * 
      * @param source The source fluid. This <em>will</em> be modified if any is moved.
      * @param target The destination fluid. This <em>will</em> be modified if any is moved.
@@ -280,7 +347,7 @@ public abstract class FluidVolume {
         return mergeInto(source, target, FluidMergeRounding.DEFAULT, Simulation.SIMULATE);
     }
 
-    /** Merges as much fluid as possible from the source into the target, leaving the leftover in the
+    /** Merges as much fluid as possible from the source into the target, leaving the result in the
      * 
      * @param source The source fluid. This <em>will</em> be modified if any is moved.
      * @param target The destination fluid. This <em>will</em> be modified if any is moved.
@@ -291,7 +358,7 @@ public abstract class FluidVolume {
         return mergeInto(source, target, rounding, Simulation.SIMULATE);
     }
 
-    /** Merges as much fluid as possible from the source into the target, leaving the leftover in the source.
+    /** Merges as much fluid as possible from the source into the target, leaving the result in the source.
      * 
      * @param source The source fluid. This <em>will</em> be modified if any is moved.
      * @param target The destination fluid. This <em>will</em> be modified if any is moved.
@@ -312,7 +379,7 @@ public abstract class FluidVolume {
 
     /** @param a The merge target. Might be modified and/or returned.
      * @param b The other fluid. Might be modified, and might be returned.
-     * @return the merged fluid. Might be either a or b depending on */
+     * @return the inTank fluid. Might be either a or b depending on */
     @Nullable
     public static FluidVolume merge(FluidVolume a, FluidVolume b) {
         return merge(a, b, FluidMergeRounding.DEFAULT);
@@ -320,7 +387,7 @@ public abstract class FluidVolume {
 
     /** @param a The merge target. Might be modified and/or returned.
      * @param b The other fluid. Might be modified, and might be returned.
-     * @return the merged fluid. Might be either a or b depending on */
+     * @return the inTank fluid. Might be either a or b depending on */
     @Nullable
     public static FluidVolume merge(FluidVolume a, FluidVolume b, FluidMergeRounding rounding) {
         if (a.isEmpty()) {

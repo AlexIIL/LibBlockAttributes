@@ -7,9 +7,6 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
@@ -19,24 +16,45 @@ public abstract class FluidEntry {
     static final String KEY_REGISTRY_TYPE = "Registry";
     static final String KEY_OBJ_IDENTIFIER = "ObjName";
 
-    private static final Map<Identifier, FloatingEntry> FLOATING = new HashMap<>();
+    protected final int hash;
 
-    /* package-private */ FluidEntry() {}
-
-    public static FluidEntry ofId(Identifier id) {
-        return FLOATING.computeIfAbsent(id, FloatingEntry::new);
+    /* package-private */ FluidEntry(int hash) {
+        this.hash = hash;
     }
+
+    @Override
+    public int hashCode() {
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        FluidEntry other = (FluidEntry) obj;
+        if (hash != other.hash) {
+            return false;
+        }
+        return equals(other);
+    }
+
+    protected abstract boolean equals(FluidEntry other);
 
     public abstract void toTag(CompoundTag tag);
 
+    /** Reads a {@link FluidEntry} from the given tag. Note that the returned entry might not map to a
+     * {@link FluidKey}. */
     public static FluidEntry fromTag(CompoundTag tag) {
         String str = tag.getString(KEY_REGISTRY_TYPE);
         if (str.equals("i")) {
-            FloatingEntry entry = FLOATING.get(Identifier.tryParse(tag.getString(KEY_OBJ_IDENTIFIER)));
-            if (entry == null) {
+            Identifier id = Identifier.tryParse(tag.getString(KEY_OBJ_IDENTIFIER));
+            if (id == null) {
                 return FluidKeys.EMPTY.entry;
             }
-            return entry;
+            return new FluidFloatingEntry(id);
         }
         DefaultedRegistry<?> registry = FluidRegistryEntry.fromName(str);
         if (registry == null) {
@@ -53,26 +71,29 @@ public abstract class FluidEntry {
 
     public abstract Identifier getId();
 
-    /* package-private */ static final class FloatingEntry extends FluidEntry {
+    public static final class FluidFloatingEntry extends FluidEntry {
         public final Identifier id;
 
-        private FloatingEntry(Identifier id) {
+        public FluidFloatingEntry(Identifier id) {
+            super(id.hashCode());
             this.id = id;
         }
 
         @Override
         public int hashCode() {
-            return id.hashCode();
+            // For binary backwards compat
+            return super.hashCode();
         }
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == this) return true;
-            if (obj == null) return false;
-            if (obj instanceof FloatingEntry) {
-                return id.equals(((FloatingEntry) obj).id);
-            }
-            return false;
+            // For binary backwards compat
+            return super.equals(obj);
+        }
+
+        @Override
+        protected boolean equals(FluidEntry other) {
+            return id.equals(((FluidFloatingEntry) other).id);
         }
 
         @Override
@@ -83,7 +104,7 @@ public abstract class FluidEntry {
 
         @Override
         public String toString() {
-            return "{FloatingEntry " + getId() + "}";
+            return "{FluidFloatingEntry " + getId() + "}";
         }
 
         @Override

@@ -35,8 +35,7 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** A view of a fixed inventory for fluids, where the number of tanks never changes, and every tank is "simple":
  * <ul>
- * <li>The amount of every tank will never exceed 64, the normal maximum stack size of minecraft.</li>
- * <li>The stack will stay in the tank until it is removed or changed by something else. (So setting the stack in a tank
+ * <li>The fluid will stay in the tank until it is removed or changed by something else. (So setting the fluid in a tank
  * of an {@link FixedFluidInv} will reflect that change in {@link #getInvFluid(int)}).</li>
  * </ul>
  * <p>

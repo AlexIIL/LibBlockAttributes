@@ -23,6 +23,8 @@ ext.mavenGroupId = "alexiil.mc.lib";
 //   _includes: Everything that should be included in the module
 //   _excludes: Everything that should not be included in this module
 //   hasMixins: If true then the refmap will be included (which is necessary for mixins)
+//   required: A list of every module (that is also defined here) that is required,
+//             but is not nested.
 //   nestedJars: A list of every module (that is also defined here) to nest in this module
 //   requiredJars: A list of every maven jar that this mod requires, but doesn't include.
 //                 (The syntax is the same as "includedJars")
@@ -31,6 +33,11 @@ ext.mavenGroupId = "alexiil.mc.lib";
 //                 the file, except the ".jar" suffix. This should be an array with 3
 //                 sections: ["maven_group", "maven_artifact_id", "file_name"]. Note that
 //                 the "maven_artifact_id" will be prefixed to "file_name".
+//   _manifest: A map to use for the manifest for this jar. If ommitted then this will default
+//              to using "ext.extra_jar_def__common_manifest"
+
+// Alternatively you can call "generateFatJar" which only contains a stripped version of
+// the nestedJars, rather than the full one. Which also only contains stripped dependencies.
 
 // Per-module fabric.mod.json files are generated from "diffs" of the main fabric.mod.json file:
 // these should be in an object called "__buildscript_diff" in the main fabric.mod.json file.
@@ -101,7 +108,7 @@ ext.mavenGroupId = "alexiil.mc.lib";
     "description": "Expanding minecraft with item and fluid transportation!"
 }
 
-*/ 
+*/
 
 // If you want to access a set of all resources included by something else you can use "ext.extra_jar_def__taken"
 
@@ -126,6 +133,7 @@ generateJar("items", itemsReq, [], false, [], ["core"]);
 // 2019/09/26 AlexIIL: Add an additional section "__buildscript_inherit" to fabric.mod.json, which is applied to everything.
 // 2019/09/26 AlexIIL: Add a new user variable "extra_jar_def__fabric_mod_json_replacements", for replacing additional strings in fabric.mod.json
 // 2019/12/20 AlexIIL: Fix including all versions of the jars (including old versions if "gradle clean" hasn't been run)
+// 2020/01/23 AlexIIL: Add "fat" jars and the option for optimised compression.
 
 // ==========================================================
 // User config - change both of these on a per-project basis
@@ -148,7 +156,26 @@ ext.extra_jar_def__fabricModJsonLocation = "src/main/resources/"
 ext.extra_jar_def__clear_implicit_depedencies = true;
 
 // All of the keys changed in fabric.mod.json.
-ext.extra_jar_def__fabric_mod_json_replacements = [["\$version", project.version]]; 
+ext.extra_jar_def__fabric_mod_json_replacements = [["\$version", project.version]];
+
+// Common manifest for all "generateJar" callers to
+// use (if they don't provide their own)
+ext.extra_jar_def__common_manifest = new HashMap<String, Map<String, String>>();
+
+// If true then nested (internally built) jars will not be compressed
+// which tends to make the final (output) jar file smaller.
+// (Only nested jars are not compressed - each module built will
+// have two jars - the compressed one and the non-compressed one)
+// Never enabled by default becuase this can lead to user confusion
+// if they extract the jars and then find they're huge
+// (or different to what they expect)
+ext.extra_jar_def__optimised_compression = false;
+
+// If true then included (externally built) jars will be de-compressed
+// and re-zipped without compression, which tends to make the final
+// (output) jar file smaller.
+// Never enabled by default because of license concerns
+ext.extra_jar_def__decompress_external_included = false;
 
 // ==============================
 // Internals - don't touch this!
@@ -157,21 +184,46 @@ ext.extra_jar_def__fabric_mod_json_replacements = [["\$version", project.version
 ext.extra_jar_def__jarFile = zipTree(jar.archivePath)
 ext.extra_jar_def__modulesDir = new File(System.getenv("LIBS_DIR") ?: "$projectDir/build/libs/", version)
 ext.extra_jar_def__taken = new HashSet<>();
+ext.extra_jar_def__includedJarTasks = new HashSet<String>();
 
 def getFabricModJsonFile(String key) {
     return new File("$projectDir/build/processing/fabric_jsons/$key/${project.version}/fabric.mod.json");
+}
+
+def getFatFabricModJsonFile(String key) {
+    return new File("$projectDir/build/processing/fabric_jsons_fat/$key/${project.version}/fabric.mod.json");
 }
 
 def getNestedJarFile(String key) {
     return new File("$projectDir/build/processing/nested_jars/$key/${project.version}/$mainName-$key-${project.version}.jar");
 }
 
+def getNestedStrippedJarFile(String key) {
+    return new File("$projectDir/build/processing/nested_stripped_jars/$key/${project.version}/$mainName-$key-${project.version}.jar");
+}
+
+def getNestedJarContentsFolder(String key) {
+    return new File("$projectDir/build/processing/nested_jars_decompressed/$key/${project.version}/");
+}
+
+def getNestedStrippedJarContentsFolder(String key) {
+    return new File("$projectDir/build/processing/nested_stripped_jars_decompressed/$key/${project.version}/");
+}
+
 def getNestedSourceJarFile(String key) {
     return new File("$projectDir/build/processing/nested_jars/$key-sources/${project.version}/$mainName-$key-$project.version-sources.jar");
 }
 
-def getIncludedJarFile(String key) {
-    return new File("$projectDir/build/processing/included_jars/${project.version}/${key}.jar");
+def getStrippedJarFile(String key) {
+    return new File("$projectDir/build/processing/stripped_jars/$key/${project.version}/$mainName-$key-stripped-${project.version}.jar");
+}
+
+def getExpandedJarFile(String name) {
+    return new File("$projectDir/build/processing/expanded_jars/$name/${name}.jar");
+}
+
+def getExpandedJarContentsFolder(String name) {
+    return new File("$projectDir/build/processing/expanded_jars_decompressed/$name/");
 }
 
 ext.extra_jar_def__unzippedSourceJar = new File("$projectDir/build/processing/tasks/unzipped_src_jar/unzip")
@@ -206,8 +258,8 @@ def transformJson(json, diff) {
     }
 }
 
-def writeFabricModJsonFile(String key, List<String> addedJars) {
-    File temp = getFabricModJsonFile(key);
+def writeFabricModJsonFile(String key, List<String> addedJars, boolean fat) {
+    File temp = fat ? getFatFabricModJsonFile(key) : getFabricModJsonFile(key);
     def source = new groovy.json.JsonSlurper().parse(file(extra_jar_def__fabricModJsonLocation + "fabric.mod.json"));
     temp.parentFile.mkdirs();
     if (temp.exists()) {
@@ -253,13 +305,99 @@ task extractAllNestedJars(type: Copy, dependsOn: tasks["remapJar"]) {
     into "$projectDir/build/processing/included_jars/"
 }
 
-def generateJar(
+def readAllBytes(InputStream is) throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    byte[] buffer = new byte[4096];
+    int read;
+    while ((read = is.read(buffer)) > 0) {
+        baos.write(buffer, 0, read);
+    }
+    return baos.toByteArray();
+}
+
+def performUnzipRezip(byte[] data) throws IOException {
+    List<String> entryNames = new ArrayList<>();
+    List<byte[]> entryData = new ArrayList<>();
+
+    java.util.zip.ZipInputStream zis = new java.util.zip.ZipInputStream(new ByteArrayInputStream(data));
+    java.util.zip.ZipEntry entry;
+    while ((entry = zis.getNextEntry()) != null) {
+        String name = entry.getName();
+        byte[] read = readAllBytes(zis);
+
+        if (name.endsWith(".jar")) {
+            read = performUnzipRezip(read);
+        }
+
+        entryNames.add(name);
+        entryData.add(read);
+    }
+    zis.close();
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(baos);
+    zos.setLevel(0);
+    for (int i = 0; i < entryNames.size(); i++) {
+        zos.putNextEntry(new java.util.zip.ZipEntry(entryNames.get(i)));
+        zos.write(entryData.get(i));
+        zos.closeEntry();
+    }
+    zos.flush();
+    zos.close();
+    return baos.toByteArray();
+}
+
+def unzipRezip(FileCopyDetails fcd) {
+
+    // Unzip+rezip *in memory*
+    // This makes things a lot simpler
+    // (Plus I think it's unlikely that these files will get very big)
+
+    File file = fcd.getFile();
+    if (file.getName().endsWith(".jar")) {
+        byte[] fd = readAllBytes(new FileInputStream(file));
+        fd = performUnzipRezip(fd);
+        FileOutputStream fos = new FileOutputStream(file);
+        fos.write(fd);
+        fos.flush();
+        fos.close();
+    }
+}
+
+def defineUnzipRezipTasks(
+    String taskName,
+    String reqTaskName,
+    String _outputName,
+    String _from,
+    File workingDir,
+    File _to
+) {
+    task(taskName + "_unzip", type: Copy, dependsOn: tasks[reqTaskName]) {
+        from(zipTree(_from)) {
+            eachFile { fcd ->
+                unzipRezip(fcd);
+            }
+        }
+        into workingDir;
+    }
+    task(taskName, type: Zip, dependsOn: tasks[taskName + "_unzip"]) {
+        archiveName = _outputName;
+        from workingDir;
+        destinationDir _to;
+        entryCompression ZipEntryCompression.STORED;
+    }
+}
+
+def generateJarInternal(
     String key, Collection<String> _includes,
     Collection<String> _excludes, boolean hasMixins,
     List<String> required = [], List<String> nestedJars = [],
     List<List<String>> requiredJars = [],
-    List<List<String>> includedJars = []
+    List<List<String>> includedJars = [], boolean fat = false,
+    Map<String, Map<String, String>> _manifest = null
 ) {
+    if (_manifest == null) {
+        _manifest = ext.extra_jar_def__common_manifest;
+    }
 
     // Sanity check
     for (int i = 0; i < includedJars.size(); i++) {
@@ -275,18 +413,49 @@ def generateJar(
 
     def allRequired = new LinkedHashSet<>();
     allRequired.addAll(required);
-    allRequired.addAll(nestedJars);
+    if (!fat) {
+        allRequired.addAll(nestedJars);
+    }
 
     task("writeFabricModJson_" + key) {
         doLast {
             def finalJarList = new ArrayList<>();
             for (module in nestedJars) {
-               finalJarList.add("$mainName-$module-${version}.jar");
+               finalJarList.add("$mainName-$module" + (fat ? "-stripped" : "") + "-${version}.jar");
             }
             for (included in includedJars) {
                finalJarList.add(included[3]);
             }
-            writeFabricModJsonFile(key, finalJarList);
+            writeFabricModJsonFile(key, finalJarList, false);
+        }
+    }
+
+    task("writeStrippedFabricModJson_" + key) {
+        doLast {
+            def finalJarList = new ArrayList<>();
+            for (module in nestedJars) {
+               finalJarList.add("$mainName-$module-stripped-${version}.jar");
+            }
+            for (included in includedJars) {
+               finalJarList.add(included[3]);
+            }
+            writeFabricModJsonFile(key, finalJarList, true);
+        }
+    }
+
+    if (ext.extra_jar_def__decompress_external_included) {
+        for (nKey in includedJars) {
+            if (!ext.extra_jar_def__includedJarTasks.add(nKey[1] + "-" + nKey[2])) {
+                continue;
+            }
+            defineUnzipRezipTasks(
+                "external_${nKey[1]}-${nKey[2]}",
+                "extractAllNestedJars",
+                "${nKey[1]}-${nKey[2]}.jar",
+                "$projectDir/build/processing/included_jars/META-INF/jars/${nKey[1]}-${nKey[2]}.jar",
+                getExpandedJarContentsFolder("${nKey[1]}-${nKey[2]}"),
+                getExpandedJarFile("${nKey[1]}-${nKey[2]}")
+            );
         }
     }
 
@@ -297,11 +466,15 @@ def generateJar(
 
         from(getFabricModJsonFile(key).parentFile);
         for (nKey in nestedJars) {
-            from(getNestedJarFile(nKey).parentFile);
+            from(fat ? getStrippedJarFile(nKey).parentFile : getNestedJarFile(nKey).parentFile);
         }
         for (nKey in includedJars) {
-            from("$projectDir/build/processing/included_jars/META-INF/jars") {
-                include nKey
+            if (project.ext.extra_jar_def__decompress_external_included) {
+                from(getExpandedJarFile(nKey[1] + "-" + nKey[2]));
+            } else {
+                from("$projectDir/build/processing/included_jars/META-INF/jars") {
+                    include nKey
+                }
             }
         }
         from(project.ext.extra_jar_def__jarFile) {
@@ -310,11 +483,39 @@ def generateJar(
             excludes.addAll(_excludes);
             exclude "META-INF/jars/**"
             if (hasMixins) {
-                includes.add(project.name + "-refmap.json");
+                includes.add(project.name + "-$key-refmap.json");
             } else {
-                excludes.add(project.name + "-refmap.json");
+                excludes.add(project.name + "-$key-refmap.json");
             }
         }
+        manifest {
+            for (Map.Entry<String, Map<String, String>> entry : _manifest.entrySet()) {
+                String name = entry.getKey();
+                if (name == null) {
+                    attributes(entry.getValue());
+                } else {
+                    attributes(entry.getValue(), name);
+                }
+            }
+        }
+    }
+
+    task("createStrippedModJar_" + key, type: Zip, dependsOn: tasks["writeStrippedFabricModJson_" + key]) {
+        from(getFatFabricModJsonFile(key).parentFile);
+        for (nKey in nestedJars) {
+            from(getStrippedJarFile(nKey).parentFile);
+        }
+        for (nKey in includedJars) {
+            if (project.ext.extra_jar_def__decompress_external_included) {
+                from(getExpandedJarFile(nKey[1] + "-" + nKey[2]));
+            } else {
+                from("$projectDir/build/processing/included_jars/META-INF/jars") {
+                    include nKey
+                }
+            }
+        }
+        destinationDir getStrippedJarFile(key).parentFile;
+        archiveName "$mainName-$key-stripped-${project.version}.jar";
     }
 
     task("submod_" + key + "SourcesJar", type: Jar, dependsOn: [unzipSourcesJar, "writeFabricModJson_" + key]) {
@@ -331,11 +532,29 @@ def generateJar(
             excludes.addAll(_excludes);
             exclude "META-INF/jars/**"
         }
+        manifest {
+            for (Map.Entry<String, Map<String, String>> entry : _manifest.entrySet()) {
+                String name = entry.getKey();
+                if (name == null) {
+                    attributes(entry.getValue());
+                } else {
+                    attributes(entry.getValue(), name);
+                }
+            }
+        }
     }
 
     for (nKey in nestedJars) {
-        tasks["submod_" + key + "Jar"].dependsOn(tasks["copySubModJar_" + nKey])
+        tasks["submod_" + key + "Jar"].dependsOn(tasks[(fat ? "createStrippedModJar_": "copySubModJar_") + nKey])
+        tasks["createStrippedModJar_" + key].dependsOn(tasks["copySubModStrippedJar_" + nKey]);
         tasks["submod_" + key + "SourcesJar"].dependsOn(tasks["copySubModSourcesJar_" + nKey])
+    }
+
+    if (ext.extra_jar_def__decompress_external_included) {
+        for (nKey in includedJars) {
+            tasks["submod_" + key + "Jar"].dependsOn("external_${nKey[1]}-${nKey[2]}");
+            tasks["createStrippedModJar_" + key].dependsOn("external_${nKey[1]}-${nKey[2]}");
+        }
     }
 
     if (!includedJars.isEmpty()) {
@@ -351,9 +570,34 @@ def generateJar(
         tasks["submod_" + key + "Jar"].dependsOn(tasks["validateNestedJars"])
     }
 
-    task("copySubModJar_" + key, type: Copy, dependsOn: tasks["submod_" + key + "Jar"]) {
-        from "" + extra_jar_def__modulesDir + "/$mainName-$key-${project.version}.jar";
-        into getNestedJarFile(key).parentFile;
+    if (ext.extra_jar_def__optimised_compression) {
+        defineUnzipRezipTasks(
+            "copySubModJar_" + key,
+            "submod_" + key + "Jar",
+            "$mainName-$key-${project.version}.jar",
+            "" + extra_jar_def__modulesDir + "/$mainName-$key-${project.version}.jar",
+            getNestedJarContentsFolder(key),
+            getNestedJarFile(key).parentFile
+        );
+
+        defineUnzipRezipTasks(
+            "copySubModStrippedJar_" + key,
+            "createStrippedModJar_" + key,
+            "$mainName-$key-${project.version}.jar",
+            "" + getStrippedJarFile(key),
+            getNestedStrippedJarContentsFolder(key),
+            getNestedStrippedJarFile(key).parentFile
+        );
+    } else {
+        task("copySubModJar_" + key, type: Copy, dependsOn: tasks["submod_" + key + "Jar"]) {
+            from "" + extra_jar_def__modulesDir + "/$mainName-$key-${project.version}.jar";
+            into getNestedJarFile(key).parentFile;
+        }
+
+        task("copySubModStrippedJar_" + key, type: Copy, dependsOn: tasks["createStrippedModJar_" + key]) {
+            from getStrippedJarFile(key);
+            into getNestedStrippedJarFile(key).parentFile;
+        }
     }
 
     task("copySubModSourcesJar_" + key, type: Copy, dependsOn: tasks["submod_" + key + "SourcesJar"]) {
@@ -435,7 +679,34 @@ def generateJar(
     }
 }
 
+def generateJar(
+    String key, Collection<String> _includes,
+    Collection<String> _excludes, boolean hasMixins,
+    List<String> required = [], List<String> nestedJars = [],
+    List<List<String>> requiredJars = [],
+    List<List<String>> includedJars = [],
+    Map<String, Map<String, String>> _manifest = null
+) {
+    generateJarInternal(key, _includes, _excludes, hasMixins,
+        required, nestedJars, requiredJars, includedJars,
+        false, _manifest);
+}
+
+def generateFatJar(
+    String key, Collection<String> _includes,
+    Collection<String> _excludes, boolean hasMixins,
+    List<String> required = [], List<String> nestedJars = [],
+    List<List<String>> requiredJars = [],
+    List<List<String>> includedJars = [],
+    Map<String, Map<String, String>> _manifest = null
+) {
+    generateJarInternal(key, _includes, _excludes, hasMixins,
+        required, nestedJars, requiredJars, includedJars,
+        true, _manifest);
+}
+
 tasks.publish.dependsOn(tasks.build)
 tasks.publishToMavenLocal.dependsOn(tasks.build)
 
 ext.generateJar = this.&generateJar
+ext.generateFatJar = this.&generateFatJar

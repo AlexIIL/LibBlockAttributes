@@ -19,11 +19,20 @@ import net.minecraft.util.registry.Registry;
 
 public final class FluidRegistryEntry<T> extends FluidEntry {
 
-    final DefaultedRegistry<T> backingRegistry;
+    final MutableRegistry<T> backingRegistry;
     final T backingObject;
-    final int hash;
+    final Identifier objId;
 
     public FluidRegistryEntry(DefaultedRegistry<T> backingRegistry, T backingObject) {
+        this((MutableRegistry<T>) backingRegistry, backingObject);
+    }
+
+    public FluidRegistryEntry(MutableRegistry<T> backingRegistry, T backingObject) {
+        this(backingRegistry, backingObject, backingRegistry.getId(backingObject));
+    }
+
+    private FluidRegistryEntry(MutableRegistry<T> backingRegistry, T backingObject, Identifier objId) {
+        super(computeHash(backingRegistry, backingObject, objId));
         if (backingRegistry == null) {
             throw new NullPointerException("backingRegistry");
         }
@@ -38,10 +47,20 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
         }
         this.backingRegistry = backingRegistry;
         this.backingObject = backingObject;
-        hash = System.identityHashCode(backingRegistry) * 31 + getId().hashCode();
+        this.objId = objId;
     }
 
-    static String getName(DefaultedRegistry<?> registry) {
+    private static <T> int computeHash(MutableRegistry<T> backingRegistry, T obj, Identifier objId) {
+        if (objId == null) {
+            throw new IllegalArgumentException(
+                "You cannot use " + obj + " with this because it's not registered with " + backingRegistry
+                    + " registry!"
+            );
+        }
+        return System.identityHashCode(backingRegistry) * 31 + objId.hashCode();
+    }
+
+    static String getName(MutableRegistry<?> registry) {
         if (registry == Registry.FLUID) {
             return "f";
         } else if (registry == Registry.POTION) {
@@ -78,9 +97,13 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
 
     @Override
     public void toTag(CompoundTag tag) {
-        Identifier objId = backingRegistry.getId(backingObject);
-        if (backingRegistry.getDefaultId().equals(objId)) {
+        Identifier objId = getId();
+        if (objId == null) {
             return;
+        } else if (backingRegistry instanceof DefaultedRegistry<?>) {
+            if (objId.equals(((DefaultedRegistry<T>) backingRegistry).getDefaultId())) {
+                return;
+            }
         }
         tag.putString(KEY_REGISTRY_TYPE, getName(backingRegistry));
         tag.putString(KEY_OBJ_IDENTIFIER, objId.toString());
@@ -88,19 +111,33 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
 
     @Override
     public boolean isEmpty() {
-        return backingRegistry.get(backingRegistry.getDefaultId()) == backingObject;
+        Identifier objId = getId();
+        if (objId == null) {
+            return true;
+        } else if (backingRegistry instanceof DefaultedRegistry<?>) {
+            if (objId.equals(((DefaultedRegistry<T>) backingRegistry).getDefaultId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        // For binary backwards compat
+        return super.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null) return false;
-        if (obj.getClass() != getClass()) {
-            return false;
-        }
-        FluidRegistryEntry<?> other = (FluidRegistryEntry<?>) obj;
-        return backingRegistry == other.backingRegistry//
-            && Objects.equals(getId(), other.getId());
+        // For binary backwards compat
+        return super.equals(obj);
+    }
+
+    @Override
+    protected boolean equals(FluidEntry other) {
+        FluidRegistryEntry<?> re = (FluidRegistryEntry<?>) other;
+        return backingRegistry == re.backingRegistry && Objects.equals(getId(), other.getId());
     }
 
     @Override
@@ -115,11 +152,6 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
 
     @Override
     public Identifier getId() {
-        return backingRegistry.getId(backingObject);
-    }
-
-    @Override
-    public int hashCode() {
-        return hash;
+        return objId;
     }
 }

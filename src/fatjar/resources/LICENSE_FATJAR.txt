@@ -1,0 +1,6 @@
+FatJar Development Only License
+===============================
+
+Every file under this license, once compiled, may only be used inside of a development environment.
+
+In particular they must not be shared to be used outside of a development environment, nor can they be

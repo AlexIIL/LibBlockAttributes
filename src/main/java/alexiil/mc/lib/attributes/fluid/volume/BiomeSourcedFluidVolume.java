@@ -7,6 +7,11 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSyntaxException;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -38,6 +43,35 @@ public class BiomeSourcedFluidVolume extends WeightedFluidVolume<Biome> {
 
     protected BiomeSourcedFluidVolume(BiomeSourcedFluidKey key, CompoundTag tag) {
         super(key, tag);
+    }
+
+    protected BiomeSourcedFluidVolume(BiomeSourcedFluidKey key, JsonObject json) {
+        super(key, json, BiomeSourcedFluidVolume::biomeFromJson);
+    }
+
+    private static Biome biomeFromJson(String str) {
+        Identifier id = Identifier.tryParse(str);
+        if (id == null || !Registry.BIOME.containsId(id)) {
+            throw new JsonSyntaxException(
+                "Unknown biome '" + id + "', it must be one of these: ["
+                    + Registry.BIOME.getIds().stream().sorted().map(i -> "\n\t - " + i) + "\n]"
+            );
+        }
+        return Registry.BIOME.get(id);
+    }
+
+    @Override
+    protected boolean areJsonValuesCompact() {
+        return true;
+    }
+
+    @Override
+    protected JsonElement toJson(Biome value) {
+        Identifier idFor = Registry.BIOME.getId(value);
+        if (idFor == null) {
+            return new JsonPrimitive("minecraft:ocean");
+        }
+        return new JsonPrimitive(idFor.toString());
     }
 
     @Override

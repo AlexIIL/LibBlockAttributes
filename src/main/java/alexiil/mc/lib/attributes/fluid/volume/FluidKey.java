@@ -8,8 +8,14 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Set;
 
 import javax.annotation.Nullable;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
 import net.minecraft.fluid.BaseFluid;
 import net.minecraft.fluid.EmptyFluid;
@@ -20,11 +26,14 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.DefaultedRegistry;
+import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.WorldView;
 
+import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.render.DefaultFluidVolumeRenderer;
+import alexiil.mc.lib.attributes.fluid.volume.FluidEntry.FluidFloatingEntry;
 
 /** A factory for {@link FluidVolume} instances. Identifying whether two {@link FluidKey}'s are equal is always done via
  * the object identity comparison (== rather than {@link #equals(Object)} - although {@link FluidKey} final-overrides
@@ -194,9 +203,9 @@ public abstract class FluidKey {
         }
 
         /** @param id The floating identifier to use to identify this fluid - this will not be backed by a normal
-         *            {@link DefaultedRegistry}, instead by the map in {@link FluidEntry#ofId(Identifier)}. */
+         *            {@link DefaultedRegistry}, instead these instances will only be . */
         public FluidKeyBuilder setIdEntry(Identifier id) {
-            this.entry = FluidEntry.ofId(id);
+            this.entry = new FluidFloatingEntry(id);
             return this;
         }
 
@@ -324,13 +333,15 @@ public abstract class FluidKey {
 
     public FluidKey(FluidKeyBuilder builder) {
         if (builder.entry == null) {
-            throw new NullPointerException("entry");
+            throw new NullPointerException(
+                "The builder is missing the 'entry' property! Did you forget to call either 'setRegistryEntry' or 'setIdEntry'?"
+            );
         }
         if (builder.unit == null) {
-            throw new NullPointerException("unit");
+            throw new NullPointerException("The builder is missing it's primary unit!");
         }
         if (builder.name == null) {
-            throw new NullPointerException("name");
+            throw new NullPointerException("The builder is missing it's name!");
         }
         this.entry = builder.entry;
         this.unit = builder.unit;
@@ -418,6 +429,196 @@ public abstract class FluidKey {
         return tag;
     }
 
+    public static FluidKey fromJson(JsonObject json) throws JsonSyntaxException {
+        try {
+            return fromJsonInternal(json);
+        } catch (JsonSyntaxException jse) {
+            throw new JsonSyntaxException("Not a valid fluid key: " + json, jse);
+        }
+    }
+
+    /** The inverse of {@link #fromJson(JsonObject)}. */
+    public final JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        toJson(json);
+        return json;
+    }
+
+    /** The inverse of {@link #fromJson(JsonObject)}.
+     * 
+     * @param json The {@link JsonObject} to modify. */
+    public final void toJson(JsonObject json) {
+        if (entry instanceof FluidFloatingEntry) {
+            json.addProperty("floating_fluid", entry.getId().toString());
+        } else {
+            FluidRegistryEntry<?> reg = (FluidRegistryEntry<?>) entry;
+            if (reg.backingRegistry == Registry.FLUID) {
+                json.addProperty("fluid", reg.getId().toString());
+            } else if (reg.backingRegistry == Registry.POTION) {
+                json.addProperty("potion", reg.getId().toString());
+            } else {
+                JsonObject sub = new JsonObject();
+                json.add("fluid", sub);
+                sub.addProperty("registry", reg.getRegistryInternalName());
+                sub.addProperty("id", reg.getId().toString());
+            }
+        }
+        assert this.equals(fromJson(json)) : json.toString();
+    }
+
+    /* package-private */ static FluidKey fromJsonInternal(JsonObject json) throws JsonSyntaxException {
+        if (json.has("floating_fluid")) {
+            if (json.has("potion") || json.has("fluid")) {
+                throw new JsonSyntaxException(
+                    "Expected only one of 'fluid' or 'potion' or 'floating_fluid', but got multiple!"
+                );
+            }
+            JsonElement j = json.get("floating_fluid");
+            if (!j.isJsonPrimitive()) {
+                throw new JsonSyntaxException("Expected 'floating_fluid' to be a string, but got " + j);
+            }
+            Identifier id = getAsIdentifier(json.get("floating_fluid"), "floating_fluid");
+            FluidFloatingEntry entry = new FluidFloatingEntry(id);
+            FluidKey fluidKey = FluidKeys.get(entry);
+            if (fluidKey == null) {
+                throw throwBadEntryException(
+                    "floating_fluid", "floating fluid identifier", "floating fluid identifiers", id.toString(),
+                    FluidKeys.getFloatingFluidIds()
+                );
+            }
+            return fluidKey;
+        } else if (json.has("potion")) {
+            if (json.has("fluid")) {
+                throw new JsonSyntaxException(
+                    "Expected 'fluid' or 'potion' or 'floating_fluid', but got both! You should use one or the other, not both"
+                );
+            }
+            return FluidKeys.get(getRegistryEntry(json.get("potion"), "potion", "potions", Registry.POTION));
+        } else if (json.has("fluid")) {
+            JsonElement jFluid = json.get("fluid");
+            if (!jFluid.isJsonObject()) {
+                return FluidKeys.get(getRegistryEntry(jFluid, "fluid", "fluids", Registry.FLUID));
+            } else {
+                JsonObject obj = jFluid.getAsJsonObject();
+                MutableRegistry<?> reg
+                    = getRegistryEntry(obj.get("registry"), "registry", "registries", Registry.REGISTRIES);
+                return fromRegistry(obj, reg);
+            }
+        } else {
+            throw new JsonSyntaxException(
+                "Expected 'fluid' or 'potion' or 'floating_fluid', but got nothing! (" + json + ")"
+            );
+        }
+    }
+
+    private static <T> FluidKey fromRegistry(JsonObject obj, MutableRegistry<T> reg) {
+        T entry = getRegistryEntry(obj, "id", "ids", reg);
+        FluidRegistryEntry<T> fluidEntry = new FluidRegistryEntry<>(reg, entry);
+        FluidKey fluidKey = FluidKeys.get(fluidEntry);
+        if (fluidKey == null) {
+            throw throwBadEntryException(
+                "id", "ids", "ids", fluidEntry.getId().toString(), FluidKeys.getRegistryFluidIds()
+            );
+        }
+        return fluidKey;
+    }
+
+    private static <T> T getRegistryEntry(JsonElement json, String key, String keys, Registry<T> registry) {
+        if (json == null) {
+            throw new JsonSyntaxException("Expected '" + key + "' to be a string, but got nothing!");
+        }
+        Identifier id = getAsIdentifier(json, key);
+
+        if (registry.containsId(id)) {
+            T value = registry.get(id);
+            if (value != null) {
+                if (registry instanceof DefaultedRegistry<?>) {
+                    if (value != registry.get(((DefaultedRegistry<?>) registry).getDefaultId())) {
+                        return value;
+                    }
+                } else {
+                    return value;
+                }
+            }
+        }
+
+        throw throwBadEntryException(key, key, keys, id.toString(), registry.getIds());
+    }
+
+    private static JsonSyntaxException throwBadEntryException(
+        String key, String name, String keys, String found, Set<?> src
+    ) {
+
+        StringBuilder error = new StringBuilder();
+        error.append("Expected '");
+        error.append(key);
+        error.append("' to be a valid ");
+        error.append(name);
+        error.append(", but got '");
+        error.append(found);
+        int size = src.size();
+        if (size == 0) {
+            error.append("'(");
+            error.append("no valid ");
+            error.append(keys);
+            error.append("!)");
+            throw new JsonSyntaxException(error.toString());
+        }
+        error.append("'!\n\t(");
+        error.append(size);
+        error.append(" valid ");
+        error.append(keys);
+        error.append(":");
+
+        Object[] dest = new Object[size];
+        src.toArray(dest);
+        for (int i = 0; i < dest.length; i++) {
+            if (dest[i] instanceof FluidEntry) {
+                dest[i] = ((FluidEntry) dest[i]).getId();
+            }
+            dest[i] = dest[i].toString();
+        }
+        Arrays.sort(dest);
+
+        for (Object str : dest) {
+            error.append("\n\t - '");
+            error.append(str);
+            error.append("'");
+        }
+        error.append("\n)");
+
+        throw new JsonSyntaxException(error.toString());
+    }
+
+    private static Identifier getAsIdentifier(JsonElement json, String key) {
+        if (!(json.isJsonPrimitive())) {
+            throw new JsonSyntaxException("Expected '" + key + "' to be a string, but got " + json);
+        }
+        String str = json.getAsJsonPrimitive().getAsString();
+        if (!str.contains(":")) {
+            throw new JsonSyntaxException(
+                "Expected '" + key + "' to be a string with the " + key + " identifier, but got '" + str + "'!"
+            );
+        }
+        Identifier id = Identifier.tryParse(str);
+        if (id == null) {
+            throw new JsonSyntaxException("Expected '" + key + "' to be a valid identifier, but got '" + str + "'!");
+        }
+        return id;
+    }
+
+    /** Registers this {@link FluidKey} into the {@link FluidKeys} registry.
+     * <p>
+     * You should only ever register a {@link FluidKey}'s {@link FluidEntry} into the registry once, so it may not be
+     * necessary to call this method. As such you should only call this on {@link FluidKey}s that you have created. */
+    public final void register() {
+        if (entry instanceof FluidFloatingEntry) {
+            FluidKeys.put((FluidFloatingEntry) entry, this);
+        } else {
+            FluidKeys.put((FluidRegistryEntry<?>) entry, this);
+        }
+    }
+
     // TODO: (Somehow) add compatibility with lib network stack
     // to optionally use it's caching mechanism to send network updates
 
@@ -438,6 +639,17 @@ public abstract class FluidKey {
     }
 
     public abstract FluidVolume readVolume(CompoundTag tag);
+
+    public FluidVolume readVolume(JsonObject json) throws JsonSyntaxException {
+        if (isEmpty()) {
+            return FluidVolumeUtil.EMPTY;
+        }
+        JsonElement amount = json.get("amount");
+        if (amount == null) {
+            return FluidVolumeUtil.EMPTY;
+        }
+        return withAmount(FluidVolume.parseAmount(amount));
+    }
 
     public final boolean isEmpty() {
         return this == FluidKeys.EMPTY;

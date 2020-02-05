@@ -93,8 +93,8 @@ import reborncore.common.util.Tank;
 
         @Override
         public FluidVolume attemptInsertion(FluidVolume fluid, Simulation simulation) {
-            int max = base.fluidTransferAmount();
-            if (max <= 0) {
+            FluidValue max = base.fluidTransferAmount();
+            if (max.getRawValue() <= 0) {
                 return fluid;
             }
             // TODO: Filters!
@@ -119,8 +119,8 @@ import reborncore.common.util.Tank;
                 if (offeredAmount > space) {
                     offeredAmount = space;
                 }
-                if (offeredAmount > max) {
-                    offeredAmount = max;
+                if (offeredAmount > max.getRawValue()) {
+                    offeredAmount = max.getRawValue();
                 }
                 FluidVolume ret = fluid.copy();
                 FluidVolume offered = ret.split(FluidAmount.of(offeredAmount, REBORN_UNIT));
@@ -147,8 +147,8 @@ import reborncore.common.util.Tank;
 
         @Override
         public FluidVolume attemptExtraction(FluidFilter filter, FluidAmount maxAmount, Simulation simulation) {
-            int max = base.fluidTransferAmount();
-            if (max <= 0) {
+            FluidValue max = base.fluidTransferAmount();
+            if (max.getRawValue() <= 0) {
                 return FluidVolumeUtil.EMPTY;
             }
             FluidInstance fi = tank.getFluidInstance();
@@ -156,7 +156,7 @@ import reborncore.common.util.Tank;
             if (tankAmount <= 0) {
                 return FluidVolumeUtil.EMPTY;
             }
-            int available = Math.min(tankAmount, Math.min(max, maxAmount.asInt(REBORN_UNIT, RoundingMode.DOWN)));
+            int available = Math.min(tankAmount, Math.min(max.getRawValue(), maxAmount.asInt(REBORN_UNIT, RoundingMode.DOWN)));
             if (available <= 0) {
                 return FluidVolumeUtil.EMPTY;
             }

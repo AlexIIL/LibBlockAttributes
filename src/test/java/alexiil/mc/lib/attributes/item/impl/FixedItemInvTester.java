@@ -13,32 +13,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import net.minecraft.inventory.BasicInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.registry.Registry;
 
-import alexiil.mc.lib.attributes.VanillaSetupBaseTester;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
 import alexiil.mc.lib.attributes.item.compat.FixedInventoryVanillaWrapper;
 
-public class FixedItemInvTester extends VanillaSetupBaseTester {
-
-    private static final Item[] ITEMS;
-
-    static {
-        ITEMS = new Item[50];
-
-        int i = 0;
-        for (Item item : Registry.ITEM) {
-            if (item == Items.AIR) {
-                continue;
-            }
-            ITEMS[i++] = item;
-            if (i == 50) break;
-        }
-    }
+public class FixedItemInvTester extends ItemInvTester {
 
     @Test
     public void testBasics() {
@@ -135,38 +114,7 @@ public class FixedItemInvTester extends VanillaSetupBaseTester {
         assertIdentityEquals(inv2, combined123.getSubInv(3, 27).getSubInv(7, 17));
     }
 
-    private static void assertIdentityEquals(Object expected, Object actual) {
-
-        if (expected == actual) {
-            return;
-        }
-        Assert.fail("Expected \n" + expected + "\n and \n" + actual + "\n to be '==', but they weren't!");
-    }
-
-    private static void assertItem(Item item, ItemStack stack) {
-        Assert.assertFalse(stack.isEmpty());
-        Assert.assertEquals(item, stack.getItem());
-    }
-
-    private static FixedItemInv[] createInventories() {
-        Inventory inv1 = new BasicInventory(10);
-        fillInventory(inv1, ITEMS, 0);
-        FixedInventoryVanillaWrapper wrapper1 = new FixedInventoryVanillaWrapper(inv1);
-
-        Inventory inv2 = new BasicInventory(10);
-        fillInventory(inv2, ITEMS, 10);
-        FixedInventoryVanillaWrapper wrapper2 = new FixedInventoryVanillaWrapper(inv2);
-
-        Inventory inv3 = new BasicInventory(10);
-        fillInventory(inv3, ITEMS, 20);
-        FixedInventoryVanillaWrapper wrapper3 = new FixedInventoryVanillaWrapper(inv3);
-
-        return new FixedItemInv[] { wrapper1, wrapper2, wrapper3 };
-    }
-
-    private static void fillInventory(Inventory dest, Item[] src, int srcIndex) {
-        for (int i = 0; i < dest.getInvSize(); i++) {
-            dest.setInvStack(i, new ItemStack(src[srcIndex + i]));
-        }
+    public static FixedItemInv[] createInventories() {
+        return createInventories(i -> new FixedInventoryVanillaWrapper(new BasicInventory(i)));
     }
 }

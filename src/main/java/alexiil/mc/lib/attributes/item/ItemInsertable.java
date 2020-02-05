@@ -10,7 +10,9 @@ package alexiil.mc.lib.attributes.item;
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.item.filter.ItemInsertableFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.item.impl.FilteredItemInsertable;
 import alexiil.mc.lib.attributes.misc.LimitedConsumer;
 
 /** Defines an object that can have items inserted into it. */
@@ -70,15 +72,11 @@ public interface ItemInsertable extends LimitedConsumer<ItemStack> {
      * @return A filter to determine if {@link #attemptInsertion(ItemStack, Simulation)} will accept the entirety of a
      *         given stack. */
     default ItemFilter getInsertionFilter() {
-        return stack -> {
-            if (stack.isEmpty()) {
-                // Bit strange, because inserting an empty stack will always return
-                // the empty stack, which indicates a successful insertion.
-                return true;
-            }
-            ItemStack leftover = attemptInsertion(stack, Simulation.SIMULATE);
-            return leftover.isEmpty() || leftover.getCount() < stack.getCount();
-        };
+        return new ItemInsertableFilter(this);
+    }
+
+    default ItemInsertable filtered(ItemFilter filter) {
+        return new FilteredItemInsertable(this, filter);
     }
 
     /** @return An object that only implements {@link ItemInsertable}, and does not expose any of the other modification

@@ -24,13 +24,17 @@ public class AggregateFluidFilter implements ReadableFluidFilter, Iterable<Fluid
     private final FluidFilter[] filters;
 
     public AggregateFluidFilter(AggregateFilterType type, FluidFilter... filters) {
+        this(type, filters, true);
+    }
+
+    private AggregateFluidFilter(AggregateFilterType type, FluidFilter[] filters, boolean copy) {
         if (filters.length < 2) {
             throw new IllegalArgumentException(
                 "There's no reason to construct an aggregate stack filter that matches " + filters.length + " filters!"
             );
         }
         this.type = type;
-        this.filters = filters;
+        this.filters = copy ? Arrays.copyOf(filters, filters.length) : filters;
     }
 
     /** @return An {@link AggregateFluidFilter} that contains both of the given filters. This might not return a new
@@ -75,14 +79,14 @@ public class AggregateFluidFilter implements ReadableFluidFilter, Iterable<Fluid
             FluidFilter[] filters = new FluidFilter[from.length + 1];
             System.arraycopy(from, 0, filters, 0, from.length);
             filters[from.length] = filterB;
-            return new AggregateFluidFilter(type, filters);
+            return new AggregateFluidFilter(type, filters, false);
         }
         if (filterB instanceof AggregateFluidFilter && ((AggregateFluidFilter) filterB).type == type) {
             FluidFilter[] from = ((AggregateFluidFilter) filterB).filters;
             FluidFilter[] filters = new FluidFilter[from.length + 1];
             System.arraycopy(from, 0, filters, 0, from.length);
             filters[from.length] = filterA;
-            return new AggregateFluidFilter(type, filters);
+            return new AggregateFluidFilter(type, filters, false);
         }
 
         if (filterA instanceof ExactFluidFilter) {
@@ -102,7 +106,7 @@ public class AggregateFluidFilter implements ReadableFluidFilter, Iterable<Fluid
             }
         }
 
-        return new AggregateFluidFilter(type, filterA, filterB);
+        return new AggregateFluidFilter(type, new FluidFilter[] { filterA, filterB }, false);
     }
 
     public static FluidFilter allOf(FluidFilter... filters) {

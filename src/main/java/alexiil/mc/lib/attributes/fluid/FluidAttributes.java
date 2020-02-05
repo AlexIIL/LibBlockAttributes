@@ -7,11 +7,15 @@
  */
 package alexiil.mc.lib.attributes.fluid;
 
+import java.net.URL;
 import java.util.Collections;
 import java.util.Set;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
+
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.BucketItem;
@@ -19,6 +23,7 @@ import net.minecraft.item.FishBucketItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
+import alexiil.mc.lib.attributes.Attribute;
 import alexiil.mc.lib.attributes.AttributeCombiner;
 import alexiil.mc.lib.attributes.Attributes;
 import alexiil.mc.lib.attributes.CombinableAttribute;
@@ -26,6 +31,7 @@ import alexiil.mc.lib.attributes.ItemAttributeList;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.fatjar.FatJarChecker;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.compat.reborncore.RebornCompatLoader;
 import alexiil.mc.lib.attributes.fluid.compat.silk.SilkFluidCompat;
@@ -47,7 +53,9 @@ import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.misc.AbstractItemBasedAttribute;
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
+import alexiil.mc.lib.attributes.misc.LibBlockAttributes.LbaModule;
 import alexiil.mc.lib.attributes.misc.LimitedConsumer;
 import alexiil.mc.lib.attributes.misc.Reference;
 
@@ -124,7 +132,6 @@ public final class FluidAttributes {
     public static <T> CombinableAttribute<T> create(
         Class<T> clazz, @Nonnull T defaultValue, AttributeCombiner<T> combiner, Function<FixedFluidInv, T> convertor
     ) {
-
         return Attributes.createCombinable(clazz, defaultValue, combiner)//
             .appendItemAdder((stackRef, excess, to) -> appendItemAttributes(convertor, stackRef, excess, to));
     }
@@ -133,7 +140,6 @@ public final class FluidAttributes {
         Function<FixedFluidInv, T> convertor, Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excess,
         ItemAttributeList<T> to
     ) {
-
         ItemStack stack = stackRef.get();
         Item item = stack.getItem();
 
@@ -152,62 +158,13 @@ public final class FluidAttributes {
         return item instanceof IBucketItem && ((IBucketItem) item).libblockattributes__shouldExposeFluid();
     }
 
-    /** A {@link FixedFluidInv} for a {@link BucketItem}. Package-private because this should always be accessed via the
-     * attributes. */
-    static final class BucketItemGroupedFluidInv implements GroupedFluidInv {
+    /** A {@link GroupedFluidInv} for a {@link BucketItem}. Package-private because this should always be accessed via
+     * the attributes. */
+    static final class BucketItemGroupedFluidInv extends AbstractItemBasedAttribute implements GroupedFluidInv {
 
-        private final Reference<ItemStack> stackRef;
-        private final LimitedConsumer<ItemStack> excess;
-
-        public BucketItemGroupedFluidInv(Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excess) {
-            this.stackRef = stackRef;
-            this.excess = excess;
+        BucketItemGroupedFluidInv(Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excessStacks) {
+            super(stackRef, excessStacks);
         }
-
-        // @Override
-        // public int getTankCount() {
-        // return 1;
-        // }
-        //
-        // @Override
-        // public FluidVolume getInvFluid(int tank) {
-        // ItemStack stack = stackRef.get();
-        // if (!isValidBucket(stack)) {
-        // return FluidVolumeUtil.EMPTY;
-        // }
-        // IBucketItem bucket = (IBucketItem) stack.getItem();
-        // FluidKey fluid = bucket.libblockattributes__getFluid(stack);
-        // if (fluid == FluidKeys.EMPTY) {
-        // return FluidVolumeUtil.EMPTY;
-        // } else {
-        // return fluid.withAmount(bucket.libblockattributes__getFluidVolumeAmount() * stack.getCount());
-        // }
-        // }
-        //
-        // @Override
-        // public int getMaxAmount(int tank) {
-        // ItemStack stack = stackRef.get();
-        // if (!isValidBucket(stack)) {
-        // return 0;
-        // }
-        // IBucketItem bucket = (IBucketItem) stack.getItem();
-        // return stack.getCount() * bucket.libblockattributes__getFluidVolumeAmount();
-        // }
-        //
-        // @Override
-        // public boolean isFluidValidForTank(int tank, FluidKey fluid) {
-        // ItemStack stack = stackRef.get();
-        // if (!isValidBucket(stack)) {
-        // return false;
-        // }
-        // IBucketItem bucket = (IBucketItem) stack.getItem();
-        // return !bucket.libblockattributes__withFluid(fluid).isEmpty();
-        // }
-        //
-        // @Override
-        // public ListenerToken addListener(FluidInvTankChangeListener listener, ListenerRemovalToken removalToken) {
-        // return null;
-        // }
 
         @Override
         public Set<FluidKey> getStoredFluids() {
@@ -297,6 +254,7 @@ public final class FluidAttributes {
             stack = stack.copy();
             stack.decrement(1);
 
+            FluidVolume originalFluid = fluid;
             fluid = fluid.copy();
             FluidVolume splitOff = fluid.split(perBucket);
             if (!splitOff.getAmount_F().equals(perBucket)) {
@@ -308,21 +266,7 @@ public final class FluidAttributes {
                 );
             }
 
-            if (stack.isEmpty()) {
-                if (!stackRef.isValid(newStack)) {
-                    if (!stackRef.isValid(ItemStack.EMPTY) || !excess.wouldAccept(newStack)) {
-                        return fluid;
-                    }
-                }
-            } else {
-                if (!stackRef.isValid(stack) || !excess.wouldAccept(newStack)) {
-                    return fluid;
-                }
-            }
-
-            setStacks(simulation, stack, newStack);
-
-            return fluid;
+            return setStacks(simulation, stack, newStack) ? fluid : originalFluid;
         }
 
         @Override
@@ -346,54 +290,72 @@ public final class FluidAttributes {
             stack = stack.copy();
             stack.decrement(1);
 
-            if (stack.isEmpty()) {
-                if (!stackRef.isValid(newStack)) {
-                    if (!stackRef.isValid(ItemStack.EMPTY) || !excess.wouldAccept(newStack)) {
-                        return FluidVolumeUtil.EMPTY;
-                    }
-                }
+            if (setStacks(simulation, stack, newStack)) {
+                return current.withAmount(perBucket);
             } else {
-                if (!stackRef.isValid(stack) || !excess.wouldAccept(newStack)) {
-                    return FluidVolumeUtil.EMPTY;
-                }
-            }
-
-            setStacks(simulation, stack, newStack);
-
-            return current.withAmount(perBucket);
-        }
-
-        private void setStacks(Simulation simulation, ItemStack stack, ItemStack newStack) {
-            if (simulation == Simulation.ACTION) {
-                if (stack.isEmpty()) {
-                    if (!stackRef.set(newStack)) {
-                        boolean s0 = stackRef.set(ItemStack.EMPTY);
-                        boolean s1 = excess.offer(newStack);
-                        if (!s0 | !s1) {
-                            throw new IllegalStateException(
-                                "Failed to set the stack/append items to the excess! (Even though we just checked this up above...)"
-                                    + "\n\tstackRef = " + stackRef//
-                                    + "\n\texcess = " + excess//
-                                    + "\n\tnewStack = " + newStack//
-                                    + "\n\tstatus = " + s0 + " " + s1
-                            );
-                        }
-                    }
-                } else {
-                    boolean s0 = stackRef.set(stack);
-                    boolean s1 = excess.offer(newStack);
-                    if (!s0 | !s1) {
-                        throw new IllegalStateException(
-                            "Failed to set the stack/append items to the excess! (Even though we just checked this up above...)"
-                                + "\n\tstackRef = " + stackRef//
-                                + "\n\texcess = " + excess//
-                                + "\n\toldStack = " + stack//
-                                + "\n\tnewStack = " + newStack//
-                                + "\n\tstatus = " + s0 + " " + s1
-                        );
-                    }
-                }
+                return FluidVolumeUtil.EMPTY;
             }
         }
+    }
+
+    static {
+        validateEnvironment();
+    }
+
+    private static void validateEnvironment() throws Error {
+        // Environments:
+        // 1: self-dev, only "all"
+        // 2: self-dev, junit (not loaded by fabric loader)
+        // 3: other-dev, only valid subsets
+        // 4: other-dev, unit tests (not loaded by fabric loader)
+        // 5: other-dev, fatjar (INVALID)
+        // 6: other-dev, fatjar + others
+        // 7: prod, only valid subsets
+        // 8: prod, fatjar (INVALID)
+        // 9: prod, fatjar + others (INVALID)
+
+        FabricLoader loader = FabricLoader.getInstance();
+        if (loader.getAllMods().isEmpty()) {
+            // Must have been loaded by something *other* than fabric itself
+            // 2,4
+            return;
+        }
+
+        ModContainer allModule = LbaModule.ALL.getModContainer();
+        ModContainer coreModule = LbaModule.CORE.getModContainer();
+        ModContainer fluidsModule = LbaModule.FLUIDS.getModContainer();
+
+        if (fluidsModule == null || coreModule == null) {
+            if (allModule == null) {
+                // Something else, but still obviously wrong
+                throw new Error("(No LBA modules present?)" + FatJarChecker.FATJAR_ERROR);
+            } else {
+                if ("$version".equals(allModule.getMetadata().getVersion().getFriendlyString())) {
+                    // 1
+                    return;
+                }
+                // 5, 8
+                throw new Error("(Only 'all' present!)" + FatJarChecker.FATJAR_ERROR);
+            }
+        }
+
+        if (loader.isDevelopmentEnvironment()) {
+            // Anything else is permitted in a dev environment
+            // 3, 6
+            return;
+        }
+
+        Class<?> fluidsClass = FluidAttributes.class;
+        Class<?> coreClass = Attribute.class;
+        URL fluidsLoc = fluidsClass.getProtectionDomain().getCodeSource().getLocation();
+        URL coreLoc = coreClass.getProtectionDomain().getCodeSource().getLocation();
+
+        if (fluidsLoc.equals(coreLoc)) {
+            // 9
+            throw new Error("(core and fluids have the same path " + fluidsLoc + ")" + FatJarChecker.FATJAR_ERROR);
+        }
+
+        // 7
+        return;
     }
 }

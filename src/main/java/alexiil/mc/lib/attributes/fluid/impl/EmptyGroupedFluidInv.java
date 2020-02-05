@@ -13,6 +13,8 @@ import java.util.Set;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.fluid.FluidExtractable;
+import alexiil.mc.lib.attributes.fluid.FluidInsertable;
 import alexiil.mc.lib.attributes.fluid.FluidInvAmountChangeListener_F;
 import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
@@ -21,9 +23,10 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.misc.NullVariant;
 
 /** {@link GroupedFluidInvView} for an empty inventory. */
-public enum EmptyGroupedFluidInv implements GroupedFluidInv {
+public enum EmptyGroupedFluidInv implements GroupedFluidInv, NullVariant {
     INSTANCE;
 
     @Override
@@ -58,5 +61,20 @@ public enum EmptyGroupedFluidInv implements GroupedFluidInv {
     @Override
     public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
         return FluidVolumeUtil.EMPTY;
+    }
+
+    @Override
+    public GroupedFluidInvView getGroupedView() {
+        return this;
+    }
+
+    @Override
+    public FluidInsertable getPureInsertable() {
+        return RejectingFluidInsertable.NULL;
+    }
+
+    @Override
+    public FluidExtractable getPureExtractable() {
+        return EmptyFluidExtractable.NULL;
     }
 }

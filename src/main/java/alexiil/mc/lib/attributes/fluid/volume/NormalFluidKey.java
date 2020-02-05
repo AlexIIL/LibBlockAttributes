@@ -10,6 +10,9 @@ package alexiil.mc.lib.attributes.fluid.volume;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+
 import net.minecraft.fluid.BaseFluid;
 import net.minecraft.fluid.EmptyFluid;
 import net.minecraft.fluid.Fluid;
@@ -119,5 +122,10 @@ public class NormalFluidKey extends FluidKey {
     @Override
     public NormalFluidVolume readVolume(CompoundTag tag) {
         return new NormalFluidVolume(this, tag);
+    }
+
+    @Override
+    public NormalFluidVolume readVolume(JsonObject json) throws JsonSyntaxException {
+        return new NormalFluidVolume(this, json);
     }
 }

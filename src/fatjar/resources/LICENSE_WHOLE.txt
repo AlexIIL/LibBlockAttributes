@@ -1,0 +1,7 @@
+This "Fat Jar" contains works licensed under two different licenses:
+
+* The majority of the code is licensed under Mozilla Public License Version 2.0
+   (Which is reproduced in the "LICENSE" file). 
+* A small amount of it (in the "alexiil.mc.lib.fatjar" package only) is licensed
+   under a custom license, provided in the "LICENSE_FATJAR.txt" file located next
+   to this one.

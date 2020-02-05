@@ -13,10 +13,11 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.ItemExtractable;
 import alexiil.mc.lib.attributes.item.ItemInsertable;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.misc.NullVariant;
 
 /** An {@link ItemExtractable} that never returns any items from
  * {@link #attemptExtraction(ItemFilter, int, Simulation)}. */
-public enum EmptyItemExtractable implements ItemExtractable {
+public enum EmptyItemExtractable implements ItemExtractable, NullVariant {
     /** An {@link ItemExtractable} that should be treated as equal to null in all circumstances - that is any checks
      * that depend on an object being extractable should be considered FALSE for this instance. */
     NULL,
@@ -29,8 +30,20 @@ public enum EmptyItemExtractable implements ItemExtractable {
      * them. */
     SUPPLIER;
 
+    private final String str = "EmptyItemExtractable." + name();
+
     @Override
     public ItemStack attemptExtraction(ItemFilter filter, int maxCount, Simulation simulation) {
         return ItemStack.EMPTY;
+    }
+
+    @Override
+    public ItemExtractable getPureExtractable() {
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return str;
     }
 }

@@ -113,6 +113,8 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         return new FluidAmount(whole, numerator, denominator);
     }
 
+    /** @deprecated Use {@link #parse(String)} instead. */
+    @Deprecated
     public static FluidAmount fromDouble(double value) {
         if (!Double.isFinite(value)) {
             throw new IllegalArgumentException("Cannot turn infinity or NaN into a FluidAmount!");
@@ -774,6 +776,31 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         return "{FluidAmount " + whole + " + " + numerator + "/" + denominator + "}";
     }
 
+    /** @return This {@link FluidAmount} represented as a string that could be parsed by {@link #parse(String)} to
+     *         return another {@link FluidAmount} equal to itself. */
+    public String toParseableString() {
+        String str = toParseableString0();
+        assert this.equals(parse(str));
+        return str;
+    }
+
+    private String toParseableString0() {
+        if (whole == 0) {
+            if (numerator == 0) {
+                return "0";
+            }
+            return numerator + "/" + denominator;
+        } else {
+            if (numerator == 0) {
+                return Long.toString(whole);
+            }
+            if (numerator < 0) {
+                return whole + " " + numerator + "/" + denominator + ")";
+            }
+            return whole + "+" + numerator + "/" + denominator + ")";
+        }
+    }
+
     // Comparison
 
     /** @return True if the number that this {@link FluidAmount} represents is equal to the number that the given
@@ -878,6 +905,16 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
             }
             return error;
         }
+    }
+
+    /** The recommended method for adding two {@link FluidAmount}'s together if you don't want to think about inexact
+     * answers.
+     * <p>
+     * (Internally this calls {@link FluidAmount#safeAdd(FluidAmount)} if you want to know the details).
+     * 
+     * @param other The other {@link FluidAmount}. Null values will return "this". */
+    public FluidAmount add(@Nullable FluidAmount other) {
+        return roundedAdd(other);
     }
 
     /** Safely adds the given {@link FluidAmount} to this one, returning the merged result. Unlike
@@ -1001,6 +1038,16 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
 
     public FluidAmount sub(long by) {
         return add(-by);
+    }
+
+    /** The recommended method for subtracting another {@link FluidAmount} from this if you don't want to think about
+     * inexact answers.
+     * <p>
+     * (Internally this calls {@link FluidAmount#roundedSub(FluidAmount)} if you want to know the details).
+     * 
+     * @param other The other {@link FluidAmount}. Null values will return "this". */
+    public FluidAmount sub(@Nullable FluidAmount other) {
+        return roundedSub(other);
     }
 
     /** @param by Either Null or a value that will be {@link #negate() negated} and then passed to
@@ -1274,6 +1321,21 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
     // Multiplication
     // --------------
 
+    /** The recommended method for multiplying two {@link FluidAmount}'s together if you don't want to think about
+     * inexact answers.
+     * <p>
+     * (Internally this calls {@link FluidAmount#roundedMul(FluidAmount)} if you want to know the details). */
+    public FluidAmount mul(FluidAmount by) {
+        return roundedMul(by);
+    }
+
+    /** The recommended method for multiplying this by a long if you don't want to think about inexact answers.
+     * <p>
+     * (Internally this calls {@link FluidAmount#roundedMul(long)} if you want to know the details). */
+    public FluidAmount mul(long by) {
+        return roundedMul(by);
+    }
+
     public FluidAmount checkedMul(long by) {
         return roundedMul(by, RoundingMode.UNNECESSARY);
     }
@@ -1419,9 +1481,28 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         return _bigReciprocal();
     }
 
+    // --------------
+    // Division
+    // --------------
+
     /** @return The {@link FluidAmount#whole} value from {@link #saturatedDiv(FluidAmount)}. */
     public long getCountOf(FluidAmount by) {
         return saturatedDiv(by).whole;
+    }
+
+    /** The recommended method for dividing this by a {@link Long} if you don't want to think about inexact answers.
+     * <p>
+     * (Internally this calls {@link FluidAmount#roundedDiv(long)} if you want to know the details). */
+    public FluidAmount div(long other) {
+        return roundedDiv(other);
+    }
+
+    /** The recommended method for dividing this by another {@link FluidAmount} if you don't want to think about inexact
+     * answers.
+     * <p>
+     * (Internally this calls {@link FluidAmount#roundedDiv(FluidAmount)} if you want to know the details). */
+    public FluidAmount div(FluidAmount other) {
+        return roundedDiv(other);
     }
 
     public FluidAmount checkedDiv(long by) {

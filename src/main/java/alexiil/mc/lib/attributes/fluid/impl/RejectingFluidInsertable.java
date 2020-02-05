@@ -12,9 +12,10 @@ import alexiil.mc.lib.attributes.fluid.FluidInsertable;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.misc.NullVariant;
 
 /** An {@link FluidInsertable} that always refuses to accept any inserted {@link FluidVolume}. */
-public enum RejectingFluidInsertable implements FluidInsertable {
+public enum RejectingFluidInsertable implements FluidInsertable, NullVariant {
     NULL,
     EXTRACTOR;
 
@@ -26,5 +27,10 @@ public enum RejectingFluidInsertable implements FluidInsertable {
     @Override
     public FluidFilter getInsertionFilter() {
         return ConstantFluidFilter.NOTHING;
+    }
+
+    @Override
+    public FluidInsertable getPureInsertable() {
+        return this;
     }
 }

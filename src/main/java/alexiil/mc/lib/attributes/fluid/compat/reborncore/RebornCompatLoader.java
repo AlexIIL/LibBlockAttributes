@@ -27,6 +27,11 @@ public final class RebornCompatLoader {
         } catch (ClassNotFoundException cnfe) {
             LibBlockAttributes.LOGGER
                 .info("RebornCore not found, not loading compatibility for fluids. (" + cnfe.getMessage() + ")");
+        } catch (NoSuchMethodException | NoSuchFieldException e) {
+            LibBlockAttributes.LOGGER.info(
+                "A different version of RebornCore was found, not loading compatibility for fluids. (" + e.getMessage()
+                    + ")"
+            );
         } catch (ReflectiveOperationException roe) {
             LibBlockAttributes.LOGGER
                 .warn("A different version of RebornCore was found, not loading compatibility for fluids.", roe);
@@ -43,7 +48,13 @@ public final class RebornCompatLoader {
         Class<?> extractConfig = c("reborncore.common.blockentity.FluidConfiguration$ExtractConfig");
 
         requireMethod(machineBaseBlockEntity, "getTank", new Class[0], tank);
-        requireMethod(machineBaseBlockEntity, "fluidTransferAmount", new Class[0], int.class);
+        if (hasOldMethod(machineBaseBlockEntity, "fluidTransferAmount", new Class[0], fluidValue)) {
+            throw new NoSuchMethodException(
+                "Found the old method 'reborncore.common.blockentity.MachineBaseBlockEntity.fluidTransferAmount()' "
+                    + "returning an int - please update RebornCore to a newer version to get compatibility!"
+            );
+        }
+        requireMethod(machineBaseBlockEntity, "fluidTransferAmount", new Class[0], fluidValue);
         requireField(machineBaseBlockEntity, "fluidConfiguration", fluidCfg);
         requireMethod(tank, "getCapacity", new Class[0], fluidValue);
         requireMethod(fluidValue, "getRawValue", new Class[0], int.class);
@@ -80,6 +91,15 @@ public final class RebornCompatLoader {
         Method m = cls.getMethod(name, args);
         if (!ret.equals(m.getReturnType())) {
             throw new NoSuchMethodException("Needed the method " + m + " to return " + ret);
+        }
+    }
+
+    private static boolean hasOldMethod(Class<?> cls, String name, Class<?>[] args, Class<?> ret) {
+        try {
+            Method m = cls.getMethod(name, args);
+            return ret.equals(m.getReturnType());
+        } catch (NoSuchMethodException ignored) {
+            return false;
         }
     }
 }

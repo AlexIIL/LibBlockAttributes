@@ -19,11 +19,13 @@ import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
 import alexiil.mc.lib.attributes.item.ItemExtractable;
 import alexiil.mc.lib.attributes.item.ItemInsertable;
+import alexiil.mc.lib.attributes.item.ItemTransferable;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.misc.NullVariant;
 
 /** An {@link FixedItemInv} with no slots. Because this inventory is unmodifiable this also doubles as the empty
  * implementation for {@link FixedItemInvView}. */
-public enum EmptyFixedItemInv implements ModifiableFixedItemInv {
+public enum EmptyFixedItemInv implements ModifiableFixedItemInv, NullVariant {
     INSTANCE;
 
     private static IllegalArgumentException throwInvalidSlotException() {
@@ -56,11 +58,6 @@ public enum EmptyFixedItemInv implements ModifiableFixedItemInv {
     }
 
     @Override
-    public GroupedItemInv getGroupedInv() {
-        return EmptyGroupedItemInv.INSTANCE;
-    }
-
-    @Override
     public int getChangeValue() {
         return 0;
     }
@@ -90,6 +87,16 @@ public enum EmptyFixedItemInv implements ModifiableFixedItemInv {
     }
 
     @Override
+    public GroupedItemInv getGroupedInv() {
+        return EmptyGroupedItemInv.INSTANCE;
+    }
+
+    @Override
+    public ItemTransferable getTransferable() {
+        return EmptyItemTransferable.NULL;
+    }
+
+    @Override
     public ItemInsertable getInsertable() {
         return RejectingItemInsertable.NULL;
     }
@@ -97,5 +104,10 @@ public enum EmptyFixedItemInv implements ModifiableFixedItemInv {
     @Override
     public ItemExtractable getExtractable() {
         return EmptyItemExtractable.NULL;
+    }
+
+    @Override
+    public String toString() {
+        return "EmptyFixedItemInv";
     }
 }

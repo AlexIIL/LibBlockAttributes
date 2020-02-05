@@ -29,6 +29,6 @@ public final class UnmodifiableRef<T> implements Reference<T> {
 
     @Override
     public boolean isValid(T value) {
-        return true;
+        return false;
     }
 }

@@ -9,6 +9,9 @@ package alexiil.mc.lib.attributes.fluid.volume;
 
 import java.util.List;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
@@ -38,6 +41,10 @@ public final class PotionFluidVolume extends FluidVolume {
 
     public PotionFluidVolume(PotionFluidKey key, CompoundTag tag) {
         super(key, tag);
+    }
+
+    public PotionFluidVolume(PotionFluidKey key, JsonObject json) throws JsonSyntaxException {
+        super(key, json);
     }
 
     public Potion getPotion() {

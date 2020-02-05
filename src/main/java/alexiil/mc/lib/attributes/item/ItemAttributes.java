@@ -7,9 +7,13 @@
  */
 package alexiil.mc.lib.attributes.item;
 
+import java.net.URL;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
+
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.ChestBlock;
@@ -25,6 +29,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.DefaultedList;
 import net.minecraft.util.math.Direction;
 
+import alexiil.mc.lib.attributes.Attribute;
 import alexiil.mc.lib.attributes.AttributeCombiner;
 import alexiil.mc.lib.attributes.Attributes;
 import alexiil.mc.lib.attributes.CombinableAttribute;
@@ -35,6 +40,8 @@ import alexiil.mc.lib.attributes.ItemAttributeList;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.fatjar.FatJarChecker;
+import alexiil.mc.lib.attributes.fluid.FluidAttributes;
 import alexiil.mc.lib.attributes.item.FixedItemInv.CopyingFixedItemInv;
 import alexiil.mc.lib.attributes.item.compat.FixedInventoryVanillaWrapper;
 import alexiil.mc.lib.attributes.item.compat.FixedSidedInventoryVanillaWrapper;
@@ -51,6 +58,7 @@ import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.EmptyGroupedItemInv;
 import alexiil.mc.lib.attributes.item.impl.EmptyItemExtractable;
 import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
+import alexiil.mc.lib.attributes.misc.LibBlockAttributes.LbaModule;
 import alexiil.mc.lib.attributes.misc.LimitedConsumer;
 import alexiil.mc.lib.attributes.misc.Reference;
 
@@ -290,5 +298,66 @@ public final class ItemAttributes {
             Inventories.toTag(tag, list);
             return ref.set(stack, simulation);
         }
+    }
+
+    static {
+        validateEnvironment();
+    }
+
+    private static void validateEnvironment() throws Error {
+        // Environments:
+        // 1: self-dev, only "all"
+        // 2: self-dev, junit (not loaded by fabric loader)
+        // 3: other-dev, only valid subsets
+        // 4: other-dev, unit tests (not loaded by fabric loader)
+        // 5: other-dev, fatjar (INVALID)
+        // 6: other-dev, fatjar + others
+        // 7: prod, only valid subsets
+        // 8: prod, fatjar (INVALID)
+        // 9: prod, fatjar + others (INVALID)
+
+        FabricLoader loader = FabricLoader.getInstance();
+        if (loader.getAllMods().isEmpty()) {
+            // Must have been loaded by something *other* than fabric itself
+            // 2,4
+            return;
+        }
+
+        ModContainer allModule = LbaModule.ALL.getModContainer();
+        ModContainer coreModule = LbaModule.CORE.getModContainer();
+        ModContainer itemsModule = LbaModule.ITEMS.getModContainer();
+
+        if (itemsModule == null || coreModule == null) {
+            if (allModule == null) {
+                // Something else, but still obviously wrong
+                throw new Error("(No LBA modules present?)" + FatJarChecker.FATJAR_ERROR);
+            } else {
+                if ("$version".equals(allModule.getMetadata().getVersion().getFriendlyString())) {
+                    // 1
+                    return;
+                }
+                // 5, 8
+                throw new Error("(Only 'all' present!)" + FatJarChecker.FATJAR_ERROR);
+            }
+        }
+
+        if (loader.isDevelopmentEnvironment()) {
+            // Anything else is permitted in a dev environment
+            // 3, 6
+            return;
+        }
+
+        Class<?> itemsClass = FluidAttributes.class;
+        Class<?> coreClass = Attribute.class;
+        URL itemsLoc = itemsClass.getProtectionDomain().getCodeSource().getLocation();
+        URL coreLoc = coreClass.getProtectionDomain().getCodeSource().getLocation();
+
+        if (itemsLoc.equals(coreLoc)) {
+            // 9
+            throw new Error("(core and items have the same path " + itemsLoc + ")" + FatJarChecker.FATJAR_ERROR);
+        }
+
+        // 7
+        return;
     }
 }

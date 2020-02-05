@@ -278,7 +278,7 @@ public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemIn
 
     /** Tries to insert the given stack into the given slot.
      * 
-     * @return The leftover that couldn't be inserted. */
+     * @return The result that couldn't be inserted. */
     public ItemStack insert(int slot, ItemStack stack) {
         // TODO: Optimise this!
         return ItemInvUtil.insertSingle(this, slot, stack, Simulation.ACTION);

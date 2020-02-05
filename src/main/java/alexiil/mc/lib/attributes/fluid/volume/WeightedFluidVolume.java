@@ -16,6 +16,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSyntaxException;
+
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -73,6 +81,117 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
         normalize();
     }
 
+    @FunctionalInterface
+    public interface WeightedStringGetter<T> {
+        /** @return Null if the given value wasn't recognised. */
+        @Nullable
+        T get(String key);
+    }
+
+    @FunctionalInterface
+    public interface WeightedJsonGetter<T> {
+        T fromJson(JsonElement element) throws JsonSyntaxException;
+    }
+
+    /** Json deserialiser that assumes the values are simple and require just a string to deserialise. It is only ever
+     * necessary for subclasses to call one of these constructors.
+     * 
+     * @see #WeightedFluidVolume(WeightedFluidKey, JsonObject, WeightedJsonGetter) */
+    public WeightedFluidVolume(WeightedFluidKey<T> key, JsonObject json, WeightedStringGetter<T> keyGetter)
+        throws JsonSyntaxException {
+        super(key, json);
+        this.key = key;
+
+        assert areJsonValuesCompact() : "areJsonValuesCompact is false! (wrong constructor)";
+
+        JsonElement weights = json.get(saveName());
+        if (weights != null) {
+            if (!weights.isJsonObject()) {
+                throw new JsonSyntaxException("Expected '" + saveName() + "' to be an object, but was " + weights);
+            }
+
+            for (Entry<String, JsonElement> entry : weights.getAsJsonObject().entrySet()) {
+                T value = keyGetter.get(entry.getKey());
+                if (value == null) {
+                    throw new JsonSyntaxException("Unknown value '" + entry.getKey() + "'");
+                }
+                FluidAmount amount = FluidVolume.parseAmount(entry.getValue());
+                if (values.containsKey(value)) {
+                    throw new JsonSyntaxException("Duplicate values for " + entry.getKey());
+                }
+                values.put(value, amount);
+            }
+            normalize();
+        }
+    }
+
+    /** Json deserialiser that assumes the values are complicated, and so need a more complex json element than just a
+     * string to deserialise. It is only ever necessary for subclasses to call one of these constructors.
+     * 
+     * @see #WeightedFluidVolume(WeightedFluidKey, JsonObject, WeightedStringGetter) */
+    public WeightedFluidVolume(WeightedFluidKey<T> key, JsonObject json, WeightedJsonGetter<T> keyGetter)
+        throws JsonSyntaxException {
+        super(key, json);
+        this.key = key;
+
+        assert !areJsonValuesCompact() : "areJsonValuesCompact is true! (wrong constructor)";
+
+        JsonElement weights = json.get(saveName());
+        if (weights != null) {
+            if (!weights.isJsonArray()) {
+                throw new JsonSyntaxException(
+                    "Expected '" + saveName() + "' to be an array of objects, but was " + weights
+                );
+            }
+            for (JsonElement elem : weights.getAsJsonArray()) {
+                if (!elem.isJsonObject()) {
+                    throw new JsonSyntaxException(
+                        "Expected '" + saveName() + "' to be an array of objects, but found " + elem + " in the array!"
+                    );
+                }
+                JsonObject obj = elem.getAsJsonObject();
+                JsonElement value = obj.get("value");
+                if (value == null) {
+                    throw new JsonSyntaxException("Expected 'value', but got nothing!");
+                }
+                T val = keyGetter.fromJson(value);
+                FluidAmount fa = FluidVolume.parseAmount(obj.get("amount"));
+                if (values.containsKey(val)) {
+                    throw new JsonSyntaxException("Duplicate values for " + value);
+                }
+                values.put(val, fa);
+            }
+
+            normalize();
+        }
+    }
+
+    @Override
+    public JsonObject toJson() {
+        JsonObject json = super.toJson();
+        if (!values.isEmpty()) {
+            if (values.size() != 1 || values.keySet().iterator().next() != defaultValue()) {
+                if (areJsonValuesCompact()) {
+                    JsonObject weights = new JsonObject();
+                    json.add(saveName(), weights);
+                    for (Entry<T, FluidAmount> entry : values.entrySet()) {
+                        weights.addProperty(toJson(entry.getKey()).getAsString(), entry.getValue().toParseableString());
+                    }
+                } else {
+                    JsonArray weights = new JsonArray();
+                    json.add(saveName(), weights);
+                    for (Entry<T, FluidAmount> entry : values.entrySet()) {
+                        JsonObject obj = new JsonObject();
+                        obj.addProperty("amount", entry.getValue().toParseableString());
+                        obj.add("value", toJson(entry.getKey()));
+                        weights.add(obj);
+                    }
+                }
+            }
+        }
+        return json;
+    }
+
     protected final void normalize() {
         FluidAmount total = FluidAmount.ZERO;
         for (FluidAmount amount : values.values()) {
@@ -115,8 +234,10 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
     }
 
     /** @return The name to use when saving/loading the {@link #values} map to/from disk. This is only used in
-     *         {@link #toTag(CompoundTag)} and {@link #WeightedFluidVolume(WeightedFluidKey, CompoundTag)}, so you can
-     *         move things around before these are called. */
+     *         {@link #toTag(CompoundTag)}, {@link #WeightedFluidVolume(WeightedFluidKey, CompoundTag)},
+     *         {@link #toJson()}, {@link #WeightedFluidVolume(WeightedFluidKey, JsonObject, WeightedStringGetter)}, and
+     *         {@link #WeightedFluidVolume(WeightedFluidKey, JsonObject, WeightedJsonGetter)}, so you can move things
+     *         around before these are called. */
     protected abstract String saveName();
 
     /** @return The default value to use if none is present. */
@@ -131,6 +252,19 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
      *            this class. (If in doubt it is better to use an embedded compound to store all of the data, using a
      *            key like "Name" or "Value"). */
     protected abstract void writeValue(CompoundTag holder, T value);
+
+    /** @return True if the weights should be serialised to json in "compact" form (where the value is serialised into a
+     *         single string, and read back with {@link WeightedStringGetter}), or "full" form (and read back with
+     *         {@link WeightedJsonGetter}). */
+    protected abstract boolean areJsonValuesCompact();
+
+    /** @return The value, turned into a {@link JsonElement}. If the subclass calls
+     *         {@link #WeightedFluidVolume(WeightedFluidKey, JsonObject, WeightedStringGetter)} (and thus returns true
+     *         from {@link #areJsonValuesCompact()}) then this must be a {@link JsonPrimitive} with a string, that can
+     *         read back with the {@link WeightedStringGetter}. Otherwise there are no limits on what this can return,
+     *         other than that the {@link WeightedJsonGetter} should be able to read back the given value from the
+     *         returned json. */
+    protected abstract JsonElement toJson(T value);
 
     protected Text getTextFor(T value) {
         return new LiteralText(Objects.toString(value));

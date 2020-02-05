@@ -20,6 +20,7 @@ import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.render.VertexConsumer;
@@ -173,6 +174,7 @@ public abstract class FluidVolumeRenderer {
         vc.vertex(matrices.peek().getModel(), (float) x, (float) y, (float) z);
         vc.color(r, g, b, 0xFF);
         vc.texture(u, v);
+        vc.overlay(OverlayTexture.DEFAULT_UV);
         vc.light(light);
         vc.normal(matrices.peek().getNormal(), nx, ny, nz);
         vc.next();

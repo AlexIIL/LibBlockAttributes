@@ -49,7 +49,7 @@ public class GroupedFluidInvFixedWrapper extends GroupedFluidInvViewFixedWrapper
                 return inv().getFilterForTank(0);
             }
             case 2: {
-                return inv().getFilterForTank(0).and(inv().getFilterForTank(1));
+                return inv().getFilterForTank(0).or(inv().getFilterForTank(1));
             }
             default: {
                 List<FluidFilter> filters = new ArrayList<>(tankCount);
@@ -63,29 +63,14 @@ public class GroupedFluidInvFixedWrapper extends GroupedFluidInvViewFixedWrapper
 
     @Override
     public FluidVolume attemptInsertion(FluidVolume fluid, Simulation simulation) {
-        return simpleDumbBadInsertionToBeRemoved(fluid, simulation);
-    }
-
-    private FluidVolume simpleDumbBadInsertionToBeRemoved(FluidVolume fluid, Simulation simulation) {
+        if (fluid.isEmpty()) {
+            return FluidVolumeUtil.EMPTY;
+        }
         fluid = fluid.copy();
         for (int t = 0; t < inv().getTankCount(); t++) {
-            FluidVolume inTank = inv().getInvFluid(t);
-            FluidAmount current = inTank.getAmount_F();
-            FluidAmount max = current.roundedAdd(fluid.getAmount_F(), RoundingMode.DOWN).min(inv().getMaxAmount_F(t));
-            FluidAmount addable = max.roundedSub(current, RoundingMode.DOWN);
-            if (!addable.isPositive()) {
-                continue;
-            }
-            inTank = inTank.copy();
-            FluidVolume fluidCopy = fluid.copy();
-            FluidVolume fluidAddable = fluidCopy.split(addable);
-            FluidVolume merged = FluidVolume.merge(inTank, fluidAddable);
-
-            if (merged != null && inv().setInvFluid(t, merged, simulation)) {
-                fluid = fluidCopy;
-                if (fluid.isEmpty()) {
-                    return FluidVolumeUtil.EMPTY;
-                }
+            fluid = FluidVolumeUtil.insertSingle(inv(), t, fluid, simulation);
+            if (fluid.isEmpty()) {
+                return FluidVolumeUtil.EMPTY;
             }
         }
         return fluid;

@@ -14,6 +14,7 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
+import alexiil.mc.lib.attributes.fluid.impl.FilteredFluidTransferable;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
@@ -21,6 +22,13 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
  * exposing inventories for modification but when you don't want to implement the full set of methods that
  * {@link GroupedFluidInv} provides). */
 public interface FluidTransferable extends FluidInsertable, FluidExtractable {
+
+    /** @return A new {@link FluidTransferable} that has an additional filter applied to the fluid extracted from it or
+     *         inserted into it. */
+    @Override
+    default FluidTransferable filtered(FluidFilter filter) {
+        return new FilteredFluidTransferable(this, filter);
+    }
 
     /** @return A new {@link FluidTransferable} that will insert into the given insertable, and never return any Fluids
      *         from {@link #attemptExtraction(FluidFilter, int, Simulation)}. */

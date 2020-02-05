@@ -21,6 +21,7 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.misc.PlayerInvUtil;
 import alexiil.mc.lib.attributes.misc.Reference;
 
 /** Various hooks and methods for dealing with pairs of {@link FixedItemInv}, {@link FixedItemInvView},
@@ -32,33 +33,40 @@ public final class ItemInvUtil {
     // Direct utility methods
     // #######################
 
-    /** Returns a {@link Consumer} that will call {@link #insertItemIntoPlayerInventory(PlayerEntity, ItemStack)} for
-     * every {@link ItemStack} passed to it. */
+    /** Returns a {@link Consumer} that will call
+     * {@link PlayerInvUtil#insertItemIntoPlayerInventory(PlayerEntity, ItemStack)} for every {@link ItemStack} passed
+     * to it.
+     * 
+     * @deprecated Use {@link PlayerInvUtil#createPlayerInsertable(PlayerEntity)} instead */
+    @Deprecated
     public static Consumer<ItemStack> createPlayerInsertable(PlayerEntity player) {
-        return stack -> insertItemIntoPlayerInventory(player, stack);
+        return PlayerInvUtil.createPlayerInsertable(player);
     }
 
-    /** Creates a {@link Reference} to the what the player is currently holding in the given {@link Hand}. */
+    /** Creates a {@link Reference} to the what the player is currently holding in the given {@link Hand}.
+     * 
+     * @deprecated Use {@link PlayerInvUtil#referenceHand(PlayerEntity,Hand)} instead */
+    @Deprecated
     public static Reference<ItemStack> referenceHand(PlayerEntity player, Hand hand) {
-        return Reference.callable(() -> player.getStackInHand(hand), s -> player.setStackInHand(hand, s), s -> true);
+        return PlayerInvUtil.referenceHand(player, hand);
     }
 
     /** Creates a {@link Reference} to the given player's {@link PlayerInventory#getCursorStack() cursor stack}, that
-     * updates the client whenever it is changed. */
+     * updates the client whenever it is changed.
+     * 
+     * @deprecated Use {@link PlayerInvUtil#referenceGuiCursor(ServerPlayerEntity)} instead */
+    @Deprecated
     public static Reference<ItemStack> referenceGuiCursor(ServerPlayerEntity player) {
-        return Reference.callable(player.inventory::getCursorStack, s -> {
-            player.inventory.setCursorStack(s);
-            player.method_14241();
-        }, s -> true);
+        return PlayerInvUtil.referenceGuiCursor(player);
     }
 
     /** Either inserts the given item into the player's inventory or drops it in front of them. Note that this will
-     * always keep a reference to the passed stack (and might modify it!) */
+     * always keep a reference to the passed stack (and might modify it!)
+     * 
+     * @deprecated Use {@link PlayerInvUtil#insertItemIntoPlayerInventory(PlayerEntity,ItemStack)} instead */
+    @Deprecated
     public static void insertItemIntoPlayerInventory(PlayerEntity player, ItemStack stack) {
-        if (player.inventory.insertStack(stack) && stack.isEmpty()) {
-            return;
-        }
-        player.dropItem(stack, /* PreventPlayerQuickPickup = */ false);
+        PlayerInvUtil.insertItemIntoPlayerInventory(player, stack);
     }
 
     /** Attempts to move up to the given maximum number of items from the {@link ItemExtractable} to the
@@ -98,9 +106,9 @@ public final class ItemInvUtil {
         if (reallyExtracted.getCount() != insertedAmount) {
             throw throwBadImplException(
                 "Tried to extract " + insertedAmount + " but we actually extracted " + reallyExtracted.getCount()
-                    + "!\nThe inventory is now in an invalid (duped) state!", new String[] { "from A", "to B",
-                        "filter C", "originally extracted", "really extracted" }, new Object[] { from, to,
-                            insertionFilter, extracted, reallyExtracted }
+                    + "!\nThe inventory is now in an invalid (duped) state!",
+                new String[] { "from A", "to B", "filter C", "originally extracted", "really extracted" },
+                new Object[] { from, to, insertionFilter, extracted, reallyExtracted }
             );
         }
         return insertedAmount;
@@ -156,8 +164,10 @@ public final class ItemInvUtil {
      * @param maxAmount The maximum number of items to extract. Note that the returned {@link ItemStack} may have a
      *            higher amount than this if the given {@link ItemStack} isn't empty.
      * @return The extracted ItemStack, plus the parameter "toAddWith". */
-    public static ItemStack extractSingle(FixedItemInv inv, int slot, @Nullable ItemFilter filter, ItemStack toAddWith,
-        int maxAmount, Simulation simulation) {
+    public static ItemStack extractSingle(
+        FixedItemInv inv, int slot, @Nullable ItemFilter filter, ItemStack toAddWith, int maxAmount,
+        Simulation simulation
+    ) {
         ItemStack inSlot = inv.getInvStack(slot);
         if (inSlot.isEmpty() || (filter != null && !filter.matches(inSlot))) {
             return toAddWith;

@@ -7,6 +7,9 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+
 import net.minecraft.nbt.CompoundTag;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
@@ -21,6 +24,11 @@ public class SimpleFluidKey extends FluidKey {
     @Override
     public FluidVolume readVolume(CompoundTag tag) {
         return new SimpleFluidVolume(this, tag);
+    }
+
+    @Override
+    public FluidVolume readVolume(JsonObject json) throws JsonSyntaxException {
+        return new SimpleFluidVolume(this, json);
     }
 
     @Override

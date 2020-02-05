@@ -7,6 +7,8 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import com.google.gson.JsonObject;
+
 import net.minecraft.nbt.CompoundTag;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
@@ -25,5 +27,9 @@ public class SimpleFluidVolume extends FluidVolume {
 
     protected SimpleFluidVolume(SimpleFluidKey key, CompoundTag tag) {
         super(key, tag);
+    }
+
+    protected SimpleFluidVolume(SimpleFluidKey key, JsonObject json) {
+        super(key, json);
     }
 }

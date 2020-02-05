@@ -1,0 +1,56 @@
+Breaking Changes:
+
+* Changed the return value of Item/FluidInsertable.getInsertionFilter to be what might
+   ever be accepted, rather than only what might be accepted right now. As such the
+   default return value is now Constant*Filter.ANYTHING, rather than a filter that calls 
+   attemptInsertion().
+    * This was done to make the definition more closely match that of FixedItem/FluidInv,
+       and what minecraft's own inventories do.
+    * If you still need a filter that calls attemptInsertion then you can use either
+       FluidInsertableFilter or ItemInsertableFilter.
+* The new methods ItemInsertable.filtered and ItemExtractable.filtered overlap - so any
+   subclasses that implement both should implement ItemTransferable as well to fix any
+   compile errors.
+
+Changes:
+
+* Added a new marker interface "NullVariant" that all of the null versions of various
+   inventories implement (like EmptyFluidExtractable or RejectingItemInsertable).
+* Clarified the javadoc in LimitedConsumer to explain that implementations may modify
+   the passed object in any way.
+* Exposed floating fluid entries properly, so you can actually register fluids to them.
+* Added various methods to FluidVolume and FluidKey for going to/from JsonObject's
+* Added "withAmount" for FluidVolume, which is very similar to FluidKey.withAmount except
+   that it also copies over all of the stored data.
+* Added ItemInserterable.filtered(ItemFilter) and ItemExtractable.filtered(ItemFilter)
+   (and the fluid variants too).
+* Added "AbstractItemBasedAttribute" which is a base class for creating items that
+   store attributes.
+    * Also added "ItemBasedSingleFluidInv" for storing fluids in a single tank in an item. 
+* Added a new utility class FluidInvUtil, which is for interacting items with a
+   fluid inventory. The four base methods are:
+    * interactItemWithTank (which is the base method).
+    * interactWithTank (which interacts *something* that the player holds with a tank).
+    * interactHandWithTank (which interacts one of the players hands with a tank).
+    * interactCursorWithTank (which interacts the players GUI cursor with a tank).
+* Moved all of the interaction methods from FluidVolumeUtil to FluidInvUtil.
+* Added item container status's to the return value of all the FluidInvUtil methods.
+* Added ICustomBucketItem, for custom buckets (which also extend BucketItem) to allow
+   the LBA mixins to expose the bucket correctly.
+* Added 4 base math methods to FluidAmount: add, sub, mul, div
+    * These all delegate to "roundedOperation()" internally.
+    * These are intended to be used if you don't want to think about overflow.
+* Updated RebornCore fluid compat.
+* The "-all" jar is now 25% smaller (~350 KB rather than 480KB)
+    This is due to an alternative approach to compression:
+    now we decompress the jar-in-jar and just store them, which
+    allows the containing jar to do a better job of compressing
+    the contents.
+* There is now a "flattened fat jar" (for development IDE's only) that make it a bit quicker to
+   navigate between the different packages.
+
+Bug Fixes:
+
+* Fixed the fluids module having a dependency on the items module by moving a
+   few methods from attributes.item.ItemInvUtil to attributes.misc.PlayerInvUtil
+* Implemented SimpleLimitedGroupedItemInv and SimpleLimitedGroupedFluidInv properly.

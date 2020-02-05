@@ -11,7 +11,9 @@ import javax.annotation.Nullable;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
+import alexiil.mc.lib.attributes.fluid.impl.FilteredFluidInsertable;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.misc.LimitedConsumer;
 
@@ -87,18 +89,18 @@ public interface FluidInsertable extends LimitedConsumer<FluidVolume> {
         return null;
     }
 
-    /** Returns an {@link FluidFilter} to determine if {@link #attemptInsertion(FluidVolume, Simulation)} will accept a
-     * stack. The default implementation is a call to {@link #attemptInsertion(FluidVolume, Simulation)
-     * attemptInsertion}(stack, {@link Simulation#SIMULATE}), and it is only useful to override this if the resulting
-     * filter contains information that might be usable by the caller.
+    /** Returns an {@link FluidFilter} to determine if {@link #attemptInsertion(FluidVolume, Simulation)} could ever
+     * accept a fluid. The default implementation is to return {@link ConstantFluidFilter#ANYTHING}, and so it is
+     * recommended that custom insertables override this to return a more accurate filter.
      * 
-     * @return A filter to determine if {@link #attemptInsertion(FluidVolume, Simulation)} will accept the entirety of a
-     *         given stack. */
+     * @return A filter to determine if the given fluid could ever be inserted. */
     default FluidFilter getInsertionFilter() {
-        return fluid -> {
-            FluidVolume volume = fluid.withAmount(FluidAmount.A_MILLION);
-            return attemptInsertion(volume, Simulation.SIMULATE).getAmount_F().isLessThan(FluidAmount.A_MILLION);
-        };
+        return ConstantFluidFilter.ANYTHING;
+    }
+
+    /** @return A new {@link FluidInsertable} that has an additional filter applied to the fluid inserted into it. */
+    default FluidInsertable filtered(FluidFilter filter) {
+        return new FilteredFluidInsertable(this, filter);
     }
 
     /** @return An object that only implements {@link FluidInsertable}, and does not expose any of the other

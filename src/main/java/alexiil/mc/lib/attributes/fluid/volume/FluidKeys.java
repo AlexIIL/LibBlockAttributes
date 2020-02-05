@@ -8,8 +8,10 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -45,9 +47,13 @@ import net.minecraft.world.dimension.TheNetherDimension;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.mixin.impl.BaseFluidAccessor;
+import alexiil.mc.lib.attributes.fluid.volume.FluidEntry.FluidFloatingEntry;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey.FluidKeyBuilder;
 
-public class FluidKeys {
+/** The central registry for storing {@link FluidKey} instances, and mapping {@link Fluid} and {@link Potion} instances
+ * to them. */
+public final class FluidKeys {
+    private FluidKeys() {}
 
     public static final Identifier MISSING_SPRITE = new Identifier("minecraft", "missingno");
 
@@ -58,10 +64,22 @@ public class FluidKeys {
     public static final FluidKey LAVA;
     public static final BiomeSourcedFluidKey WATER;
 
-    private static final Map<FluidEntry, FluidKey> MASTER_MAP = new HashMap<>();
-
     private static final Map<Fluid, FluidKey> FLUIDS = new IdentityHashMap<>();
     private static final Map<Potion, FluidKey> POTIONS = new IdentityHashMap<>();
+    private static final Map<FluidRegistryEntry<?>, FluidKey> OTHERS = new HashMap<>();
+    private static final Map<FluidFloatingEntry, FluidKey> FLOATING = new HashMap<>();
+
+    /*
+     * Synchronisation notes:
+     *
+     * In theory this should use a ReadWriteLock to allow all of the
+     * readers to read without blocking each other. However in practice
+     * there's only going to be 2 threads accessing this (client and
+     * server) so there's probably no point.
+     *
+     * (In addition the only operations that is performed is HashMap.get
+     *  anyway, so we would probably only loose performance).  
+     */
 
     static {
         // Empty doesn't have a proper sprite or text component because it doesn't ever make sense to use it.
@@ -79,30 +97,42 @@ public class FluidKeys {
         put(Potions.WATER, WATER);
     }
 
-    public static void put(Fluid fluid, FluidKey fluidKey) {
+    public static synchronized void put(Fluid fluid, FluidKey fluidKey) {
         FLUIDS.put(fluid, fluidKey);
-        MASTER_MAP.put(fluidKey.entry, fluidKey);
         if (fluid instanceof BaseFluid) {
             FLUIDS.put(((BaseFluid) fluid).getStill(), fluidKey);
             FLUIDS.put(((BaseFluid) fluid).getFlowing(), fluidKey);
         }
     }
 
-    public static void put(Potion potion, FluidKey fluidKey) {
+    public static synchronized void put(Potion potion, FluidKey fluidKey) {
         POTIONS.put(potion, fluidKey);
-        MASTER_MAP.put(fluidKey.entry, fluidKey);
+    }
+
+    public static synchronized void put(FluidRegistryEntry<?> entry, FluidKey fluidKey) {
+        if (entry.backingRegistry == Registry.FLUID) {
+            put((Fluid) entry.backingObject, fluidKey);
+        } else if (entry.backingObject == Registry.POTION) {
+            put((Potion) entry.backingObject, fluidKey);
+        } else {
+            OTHERS.put(entry, fluidKey);
+        }
+    }
+
+    public static synchronized void put(FluidFloatingEntry entry, FluidKey fluidKey) {
+        FLOATING.put(entry, fluidKey);
     }
 
     /** Removes a fluid entry from this map.
      * 
      * @deprecated Because I think fluids are meant to be all statically created? */
     @Deprecated
-    public static void remove(Fluid fluid) {
+    public static synchronized void remove(Fluid fluid) {
         FLUIDS.remove(fluid);
     }
 
     /** @return Null if the passed fluid is null, or a non-null {@link FluidKey}. */
-    public static FluidKey get(Fluid fluid) {
+    public static synchronized FluidKey get(Fluid fluid) {
         if (fluid == null) {
             return null;
         }
@@ -152,21 +182,19 @@ public class FluidKeys {
         return new SimpleFluidKey(builder);
     }
 
-    public static FluidKey get(Potion potion) {
+    public static synchronized FluidKey get(Potion potion) {
         FluidKey fluidKey = POTIONS.get(potion);
         if (fluidKey == null) {
             fluidKey = new PotionFluidKey(potion);
-            POTIONS.put(potion, fluidKey);
-            MASTER_MAP.put(fluidKey.entry, fluidKey);
+            put(potion, fluidKey);
         }
         return fluidKey;
     }
 
     @Nullable
-    static FluidKey get(FluidEntry entry) {
-        FluidKey fluidKey = MASTER_MAP.get(entry);
-        if (fluidKey != null) {
-            return fluidKey;
+    public static synchronized FluidKey get(FluidEntry entry) {
+        if (entry instanceof FluidFloatingEntry) {
+            return FLOATING.get(entry);
         }
         if (entry instanceof FluidRegistryEntry<?>) {
             FluidRegistryEntry<?> re = (FluidRegistryEntry<?>) entry;
@@ -181,8 +209,19 @@ public class FluidKeys {
                 Fluid fluid = (Fluid) re.backingObject;
                 return get(fluid);
             }
+            return OTHERS.get(re);
         }
-        return fluidKey;
+        throw new IllegalArgumentException("Unknown FluidEntry " + entry.getClass());
+    }
+
+    /** @return A copy of all the {@link FluidRegistryEntry}s registered. */
+    public static synchronized Set<FluidRegistryEntry<?>> getRegistryFluidIds() {
+        return new HashSet<>(OTHERS.keySet());
+    }
+
+    /** @return A copy of all the {@link FluidFloatingEntry}s registered. */
+    public static synchronized Set<FluidFloatingEntry> getFloatingFluidIds() {
+        return new HashSet<>(FLOATING.keySet());
     }
 
     /** Private helper for determining the viscosity and cohesion of fluids. */

@@ -12,6 +12,9 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -22,6 +25,8 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
 
+import alexiil.mc.lib.attributes.fatjar.FatJarChecker;
+import alexiil.mc.lib.attributes.misc.LibBlockAttributes.LbaModule;
 import alexiil.mc.lib.attributes.misc.LimitedConsumer;
 import alexiil.mc.lib.attributes.misc.Reference;
 import alexiil.mc.lib.attributes.misc.UnmodifiableRef;
@@ -255,8 +260,9 @@ public class Attribute<T> {
      *            accepting them into the list. A null value equals no filter, which will not block any values.
      * @return A complete {@link AttributeList} of every attribute instance that can be found in the given
      *         {@link ItemStack}. */
-    public final ItemAttributeList<T> getAll(Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excess,
-        @Nullable Predicate<T> filter) {
+    public final ItemAttributeList<T> getAll(
+        Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excess, @Nullable Predicate<T> filter
+    ) {
 
         if (excess == null) {
             excess = LimitedConsumer.rejecting();
@@ -340,8 +346,59 @@ public class Attribute<T> {
      * @return The first attribute instance found by {@link #getAll(Reference, LimitedConsumer, Predicate)}, or null if
      *         none were found in the given {@link ItemStack}. */
     @Nullable
-    public final T getFirstOrNull(Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excess, @Nullable Predicate<
-        T> filter) {
+    public final T getFirstOrNull(
+        Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excess, @Nullable Predicate<T> filter
+    ) {
         return getAll(stackRef, excess, filter).getFirstOrNull();
+    }
+
+    static {
+        validateEnvironment();
+    }
+
+    private static void validateEnvironment() throws Error {
+        // Environments:
+        // 1: self-dev, only "all"
+        // 2: self-dev, junit (not loaded by fabric loader)
+        // 3: other-dev, only valid subsets
+        // 4: other-dev, unit tests (not loaded by fabric loader)
+        // 5: other-dev, fatjar (INVALID)
+        // 6: other-dev, fatjar + others
+        // 7: prod, only valid subsets
+        // 8: prod, fatjar (INVALID)
+        // 9: prod, fatjar + others (INVALID)
+
+        FabricLoader loader = FabricLoader.getInstance();
+        if (loader.getAllMods().isEmpty()) {
+            // Must have been loaded by something *other* than fabric itself
+            // 2,4
+            return;
+        }
+
+        ModContainer allModule = LbaModule.ALL.getModContainer();
+        ModContainer coreModule = LbaModule.CORE.getModContainer();
+
+        if (coreModule == null) {
+            if (allModule == null) {
+                // Something else, but still obviously wrong
+                throw new Error("(No LBA modules present?)" + FatJarChecker.FATJAR_ERROR);
+            } else {
+                if ("$version".equals(allModule.getMetadata().getVersion().getFriendlyString())) {
+                    // 1
+                    return;
+                }
+                // 5, 8
+                throw new Error("(Only 'all' present!)" + FatJarChecker.FATJAR_ERROR);
+            }
+        }
+
+        if (loader.isDevelopmentEnvironment()) {
+            // Anything else is permitted in a dev environment
+            // 3, 6
+            return;
+        }
+        // 7
+        // 9 (impossible to check here - let items and fluids validate this)
+        return;
     }
 }

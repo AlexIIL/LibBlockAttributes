@@ -9,6 +9,8 @@ package alexiil.mc.lib.attributes.fluid.volume;
 
 import javax.annotation.Nonnull;
 
+import com.google.gson.JsonObject;
+
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
@@ -16,7 +18,11 @@ import net.minecraft.nbt.CompoundTag;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 
 /** {@link ItemStack} equivalent for {@link Fluid fluids}. Instances must be constructed via
- * {@link FluidKeys#get(Fluid)}.{@link FluidKey#withAmount(FluidAmount) withAmount(FluidAmount)}. */
+ * {@link FluidKeys#get(Fluid)}.{@link FluidKey#withAmount(FluidAmount) withAmount(FluidAmount)}.
+ * 
+ * @deprecated Because any {@link FluidKey} can map to a single {@link Fluid}, and {@link SimpleFluidVolume} has a much
+ *             better name than this. */
+@Deprecated
 public class NormalFluidVolume extends FluidVolume {
 
     @Deprecated
@@ -30,6 +36,10 @@ public class NormalFluidVolume extends FluidVolume {
 
     NormalFluidVolume(NormalFluidKey fluid, CompoundTag tag) {
         super(fluid, tag);
+    }
+
+    NormalFluidVolume(NormalFluidKey fluid, JsonObject json) {
+        super(fluid, json);
     }
 
     @Override

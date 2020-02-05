@@ -62,7 +62,7 @@ public final class SimpleFixedItemInvInsertable implements ItemInsertable {
 
     @Override
     public ItemStack attemptInsertion(ItemStack stack, Simulation simulation) {
-        // ItemStack leftover = stack.copy();
+        // ItemStack result = stack.copy();
         //
         // // First: scan the available slots to see if we can add to an existing stack
         //
@@ -70,11 +70,11 @@ public final class SimpleFixedItemInvInsertable implements ItemInsertable {
         //
         // if (slots == null) {
         // for (int s = 0; s < inv.getInvSize(); s++) {
-        // attemptAddToExisting(slotsModified, s, leftover, simulation);
+        // attemptAddToExisting(slotsModified, s, result, simulation);
         // }
         // } else {
         // for (int s : slots) {
-        // attemptAddToExisting(slotsModified, s, leftover, simulation);
+        // attemptAddToExisting(slotsModified, s, result, simulation);
         // }
         // }
 

@@ -15,14 +15,16 @@ import alexiil.mc.lib.attributes.fluid.FixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.FluidExtractable;
 import alexiil.mc.lib.attributes.fluid.FluidInsertable;
 import alexiil.mc.lib.attributes.fluid.FluidInvTankChangeListener;
+import alexiil.mc.lib.attributes.fluid.FluidTransferable;
 import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.misc.NullVariant;
 
 /** An {@link FixedFluidInv} with no tanks. Because this inventory is unmodifiable this also doubles as the empty
  * implementation for {@link FixedFluidInvView}. */
-public enum EmptyFixedFluidInv implements FixedFluidInv {
+public enum EmptyFixedFluidInv implements FixedFluidInv, NullVariant {
     INSTANCE;
 
     private static IllegalArgumentException throwInvalidTankException() {
@@ -55,11 +57,6 @@ public enum EmptyFixedFluidInv implements FixedFluidInv {
     }
 
     @Override
-    public GroupedFluidInv getGroupedInv() {
-        return EmptyGroupedFluidInv.INSTANCE;
-    }
-
-    @Override
     public ListenerToken addListener(FluidInvTankChangeListener listener, ListenerRemovalToken removalToken) {
         // We don't need to keep track of the listener because this empty inventory never changes.
         return () -> {
@@ -79,6 +76,16 @@ public enum EmptyFixedFluidInv implements FixedFluidInv {
     }
 
     @Override
+    public GroupedFluidInv getGroupedInv() {
+        return EmptyGroupedFluidInv.INSTANCE;
+    }
+
+    @Override
+    public FluidTransferable getTransferable() {
+        return EmptyFluidTransferable.NULL;
+    }
+
+    @Override
     public FluidInsertable getInsertable() {
         return RejectingFluidInsertable.NULL;
     }
@@ -86,5 +93,10 @@ public enum EmptyFixedFluidInv implements FixedFluidInv {
     @Override
     public FluidExtractable getExtractable() {
         return EmptyFluidExtractable.NULL;
+    }
+
+    @Override
+    public String toString() {
+        return "EmptyFixedFluidInv";
     }
 }

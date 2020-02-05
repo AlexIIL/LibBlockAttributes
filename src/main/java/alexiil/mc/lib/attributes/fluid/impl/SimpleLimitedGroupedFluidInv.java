@@ -8,20 +8,25 @@
 package alexiil.mc.lib.attributes.fluid.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
 import alexiil.mc.lib.attributes.fluid.LimitedGroupedFluidInv;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
+import alexiil.mc.lib.attributes.fluid.filter.ExactFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 public class SimpleLimitedGroupedFluidInv extends DelegatingGroupedFluidInv implements LimitedGroupedFluidInv {
 
     private boolean isImmutable = false;
-
-    // private final Map<FluidKey, ExactRule> exactRules = new HashMap<>();
 
     private final List<InsertionRule> insertionRules = new ArrayList<>();
     private final List<ExtractionRule> extractionRules = new ArrayList<>();
@@ -55,21 +60,97 @@ public class SimpleLimitedGroupedFluidInv extends DelegatingGroupedFluidInv impl
     // Overrides
 
     @Override
-    public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
-        // TODO Auto-generated method stub
-        throw new AbstractMethodError("// TODO: Implement this!");
+    public FluidVolume attemptExtraction(FluidFilter filter, FluidAmount maxAmount, Simulation simulation) {
+        if (filter == ConstantFluidFilter.NOTHING) {
+            return FluidVolumeUtil.EMPTY;
+        }
+        if (extractionRules.isEmpty()) {
+            return delegate.attemptExtraction(filter, maxAmount, simulation);
+        }
+        Set<FluidKey> keys = delegate.getStoredFluids();
+        if (keys.isEmpty()) {
+            return FluidVolumeUtil.EMPTY;
+        }
+
+        if (filter instanceof ExactFluidFilter) {
+            FluidKey key = ((ExactFluidFilter) filter).fluid;
+            if (!keys.contains(key)) {
+                return FluidVolumeUtil.EMPTY;
+            }
+            keys = Collections.singleton(key);
+        }
+
+        fluids: for (FluidKey key : keys) {
+            if (!filter.matches(key)) {
+                continue;
+            }
+            FluidAmount current = delegate.getAmount_F(key);
+            if (!current.isPositive()) {
+                continue;
+            }
+            FluidAmount minLeft = FluidAmount.ZERO;
+            for (ExtractionRule rule : extractionRules) {
+                if (!rule.filter.matches(key)) {
+                    continue;
+                }
+                if (rule.minimumAmount.isPositive()) {
+                    minLeft = minLeft.max(rule.minimumAmount);
+                    if (!current.isGreaterThan(minLeft)) {
+                        continue fluids;
+                    }
+                }
+            }
+            FluidAmount allowed = current.sub(minLeft);
+            return delegate.attemptExtraction(new ExactFluidFilter(key), maxAmount.min(allowed), simulation);
+        }
+        return FluidVolumeUtil.EMPTY;
     }
 
     @Override
     public FluidVolume attemptInsertion(FluidVolume fluid, Simulation simulation) {
-        // TODO Auto-generated method stub
-        throw new AbstractMethodError("// TODO: Implement this!");
+        if (fluid.isEmpty()) {
+            return fluid;
+        }
+        FluidAmount current = delegate.getAmount_F(fluid.fluidKey);
+        FluidAmount maxAmount = FluidAmount.MAX_VALUE;
+        for (InsertionRule rule : insertionRules) {
+            if (rule.filter.matches(fluid.fluidKey)) {
+                maxAmount = maxAmount.min(rule.maximumInsertion);
+                if (maxAmount.isLessThanOrEqual(current)) {
+                    return fluid;
+                }
+            }
+        }
+
+        FluidAmount allowed = maxAmount.sub(current);
+        assert allowed.isPositive();
+
+        if (allowed.isLessThan(fluid.getAmount_F())) {
+            FluidVolume original = fluid;
+            FluidVolume offered = original.copy();
+            FluidVolume leftover = delegate.attemptInsertion(offered.split(allowed), simulation);
+            if (leftover.getAmount_F().equals(maxAmount)) {
+                return original;
+            }
+            return FluidVolume.merge(offered, leftover);
+        } else {
+            return super.attemptInsertion(fluid, simulation);
+        }
     }
 
     @Override
     public FluidFilter getInsertionFilter() {
-        // TODO Auto-generated method stub
-        throw new AbstractMethodError("// TODO: Implement this!");
+        if (insertionRules.isEmpty()) {
+            return delegate.getInsertionFilter();
+        }
+        List<FluidFilter> disallowed = new ArrayList<>();
+        for (InsertionRule rule : insertionRules) {
+            if (!rule.maximumInsertion.isPositive()) {
+                disallowed.add(rule.filter);
+            }
+        }
+        FluidFilter allowed = AggregateFluidFilter.anyOf(disallowed).negate();
+        return allowed.and(delegate.getInsertionFilter());
     }
 
     // Rules
@@ -80,12 +161,12 @@ public class SimpleLimitedGroupedFluidInv extends DelegatingGroupedFluidInv impl
             return new FluidLimitRule() {
                 // This filter affects nothing (why was it even called?)
                 @Override
-                public FluidLimitRule setMinimum(int min) {
+                public FluidLimitRule setMinimum(FluidAmount min) {
                     return this;
                 }
 
                 @Override
-                public FluidLimitRule limitInsertionCount(int max) {
+                public FluidLimitRule limitInsertionAmount(FluidAmount max) {
                     return this;
                 }
             };
@@ -93,18 +174,18 @@ public class SimpleLimitedGroupedFluidInv extends DelegatingGroupedFluidInv impl
             return new FluidLimitRule() {
 
                 @Override
-                public FluidLimitRule setMinimum(int min) {
+                public FluidLimitRule setMinimum(FluidAmount min) {
                     extractionRules.clear();
-                    if (min > 0) {
+                    if (min.isPositive()) {
                         extractionRules.add(new ExtractionRule(filter, min));
                     }
                     return this;
                 }
 
                 @Override
-                public FluidLimitRule limitInsertionCount(int max) {
+                public FluidLimitRule limitInsertionAmount(FluidAmount max) {
                     insertionRules.clear();
-                    if (max >= 0) {
+                    if (!max.isNegative()) {
                         insertionRules.add(new InsertionRule(filter, max));
                     }
                     return this;
@@ -114,13 +195,13 @@ public class SimpleLimitedGroupedFluidInv extends DelegatingGroupedFluidInv impl
         // TODO: (Maybe?) Add filter decomposition for fluids
         return new FluidLimitRule() {
             @Override
-            public FluidLimitRule setMinimum(int min) {
+            public FluidLimitRule setMinimum(FluidAmount min) {
                 extractionRules.add(new ExtractionRule(filter, min));
                 return this;
             }
 
             @Override
-            public FluidLimitRule limitInsertionCount(int max) {
+            public FluidLimitRule limitInsertionAmount(FluidAmount max) {
                 insertionRules.add(new InsertionRule(filter, max));
                 return this;
             }
@@ -139,9 +220,9 @@ public class SimpleLimitedGroupedFluidInv extends DelegatingGroupedFluidInv impl
 
     static final class InsertionRule {
         final FluidFilter filter;
-        final int maximumInsertion;
+        final FluidAmount maximumInsertion;
 
-        public InsertionRule(FluidFilter filter, int maximumInsertion) {
+        public InsertionRule(FluidFilter filter, FluidAmount maximumInsertion) {
             this.filter = filter;
             this.maximumInsertion = maximumInsertion;
         }
@@ -149,9 +230,9 @@ public class SimpleLimitedGroupedFluidInv extends DelegatingGroupedFluidInv impl
 
     static final class ExtractionRule {
         final FluidFilter filter;
-        final int minimumAmount;
+        final FluidAmount minimumAmount;
 
-        public ExtractionRule(FluidFilter filter, int minimumAmount) {
+        public ExtractionRule(FluidFilter filter, FluidAmount minimumAmount) {
             this.filter = filter;
             this.minimumAmount = minimumAmount;
         }
