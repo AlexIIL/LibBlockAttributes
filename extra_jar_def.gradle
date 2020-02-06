@@ -303,6 +303,7 @@ task extractAllNestedJars(type: Copy, dependsOn: tasks["remapJar"]) {
         include "META-INF/jars/*.jar"
     }
     into "$projectDir/build/processing/included_jars/"
+    outputs.upToDateWhen { false }
 }
 
 def readAllBytes(InputStream is) throws IOException {

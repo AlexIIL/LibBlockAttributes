@@ -140,7 +140,7 @@ repositories {
 }
 
 dependencies {
-    modCompile "alexiil.mc.lib:libblockattributes-all:0.6.3"
+    modCompile "alexiil.mc.lib:libblockattributes-all:0.6.4"
 }
 ```
 And depending on "libblockattributes" in your fabric.mod.json. Note that this won't quite work correctly if all 3 of the modules are present, but the encompassing "all" is not. As such it's better to depend on both "libblockattributes\_items" and "libblockattributes\_fluids" if you need all 3. (You don't need to explicitly depend on "core" because both "items" and "fluids" depend on it).
@@ -159,9 +159,33 @@ dependencies {
     // Uncomment out items and/or fluids to depend on either of them.
     // If you do then you can comment out core because items and fluids depend on it.
     // (Both items and fluids depend on core) 
-    modCompile "alexiil.mc.lib:libblockattributes-core:0.6.3"
-    // modCompile "alexiil.mc.lib:libblockattributes-items:0.6.3"
-    // modCompile "alexiil.mc.lib:libblockattributes-fluids:0.6.3"
+    modCompile "alexiil.mc.lib:libblockattributes-core:0.6.4"
+    // modCompile "alexiil.mc.lib:libblockattributes-items:0.6.4"
+    // modCompile "alexiil.mc.lib:libblockattributes-fluids:0.6.4"
 }
 ```
 And depend on "libblockattributes\_core", "libblockattributes\_items", and "libblockattributes\_fluids" in your fabric.mod.json.
+
+Alternatively you can depend on the single fatjar, however that requires depending on a different version of fabricloom to make it work properly:
+
+```groovy
+// In settings.gradle
+repositories {
+    // Add this maven repoitory
+    maven {
+        name = "BuildCraft"
+        url = "https://mod-buildcraft.com/maven"
+    }
+}
+
+// In build.gradle
+// Change
+id 'fabric-loom' version '0.2.6-SNAPSHOT'
+// to
+id 'fabric-loom' version '0.2.6-nonstrippedjars.10'
+
+// And add
+modApi "alexiil.mc.lib:libblockattributes-fatjar_devonly:0.6.4"
+// You will also need to add "include" to include the "-all" jar normally.
+include "alexiil.mc.lib:libblockattributes-all:0.6.4"
+```
