@@ -189,3 +189,5 @@ modApi "alexiil.mc.lib:libblockattributes-fatjar_devonly:0.6.4"
 // You will also need to add "include" to include the "-all" jar normally.
 include "alexiil.mc.lib:libblockattributes-all:0.6.4"
 ```
+
+If you do this then you *must* make sure that libblockattributes isn't transitively required by another library, otherwise you will run into the issues that makes fatjars such a bad idea in the first place.
