@@ -12,10 +12,14 @@ import net.minecraft.world.World;
 
 import alexiil.mc.lib.attributes.AttributeList;
 import alexiil.mc.lib.attributes.AttributeProvider;
+import alexiil.mc.lib.attributes.ListenerRemovalToken;
+import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.fluid.FixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.FluidAttributes;
-import alexiil.mc.lib.attributes.fluid.FluidTransferable;
+import alexiil.mc.lib.attributes.fluid.FluidInvTankChangeListener;
 import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
+import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
@@ -83,7 +87,7 @@ import grondag.fluidity.api.storage.Store;
         list.add(new FluidityStoreWrapper(store));
     }
 
-    static final class FluidityStoreWrapper implements FluidTransferable {
+    static final class FluidityStoreWrapper implements GroupedFluidInv, FixedFluidInv {
         final Store store;
 
         public FluidityStoreWrapper(Store store) {
@@ -139,7 +143,71 @@ import grondag.fluidity.api.storage.Store;
 
         @Override
         public FluidVolume attemptAnyExtraction(FluidAmount maxAmount, Simulation simulation) {
-            store.getSupplier().apply(article, volume, simulate)
+            // TODO Auto-generated method stub
+            throw new AbstractMethodError("// TODO: Implement this!");
+        }
+
+        // GroupedFluidInv
+
+        @Override
+        public Set<FluidKey> getStoredFluids() {
+            // TODO Auto-generated method stub
+            throw new AbstractMethodError("// TODO: Implement this!");
+        }
+
+        @Override
+        public FluidInvStatistic getStatistics(FluidFilter filter) {
+            // TODO Auto-generated method stub
+            throw new AbstractMethodError("// TODO: Implement this!");
+        }
+
+        @Override
+        public FluidAmount getAmount_F(FluidKey fluid) {
+            Article article = article(fluid);
+            if (article == null) {
+                return FluidAmount.ZERO;
+            }
+            return convert(store.amountOf(article));
+        }
+
+        @Override
+        public FluidAmount getCapacity_F(FluidKey fluid) {
+            Article article = article(fluid);
+            if (article == null) {
+                return FluidAmount.ZERO;
+            }
+            return FluidAmount.ofWhole(store.capacity());
+        }
+
+        // FixedFluidInv
+
+        @Override
+        public int getTankCount() {
+            return Math.max(0, store.handleCount());
+        }
+
+        @Override
+        public FluidVolume getInvFluid(int tank) {
+            // TODO Auto-generated method stub
+            throw new AbstractMethodError("// TODO: Implement this!");
+        }
+
+        @Override
+        public boolean isFluidValidForTank(int tank, FluidKey fluid) {
+            // TODO Auto-generated method stub
+            throw new AbstractMethodError("// TODO: Implement this!");
+        }
+
+        @Override
+        public ListenerToken addListener(FluidInvTankChangeListener listener, ListenerRemovalToken removalToken) {
+            // TODO Auto-generated method stub
+            throw new AbstractMethodError("// TODO: Implement this!");
+        }
+
+        @Override
+        public boolean setInvFluid(int tank, FluidVolume to, Simulation simulation) {
+            // TODO Auto-generated method stub
+            throw new AbstractMethodError("// TODO: Implement this!");
         }
     }
 }
