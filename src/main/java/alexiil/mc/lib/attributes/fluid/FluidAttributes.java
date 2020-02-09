@@ -33,6 +33,7 @@ import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fatjar.FatJarChecker;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+import alexiil.mc.lib.attributes.fluid.compat.fluidity.FluidityFluidCompatLoader;
 import alexiil.mc.lib.attributes.fluid.compat.reborncore.RebornCompatLoader;
 import alexiil.mc.lib.attributes.fluid.compat.silk.SilkFluidCompat;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
@@ -127,6 +128,7 @@ public final class FluidAttributes {
         }
 
         RebornCompatLoader.load();
+        FluidityFluidCompatLoader.load();
     }
 
     public static <T> CombinableAttribute<T> create(

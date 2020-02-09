@@ -48,7 +48,7 @@ public final class RebornCompatLoader {
         Class<?> extractConfig = c("reborncore.common.blockentity.FluidConfiguration$ExtractConfig");
 
         requireMethod(machineBaseBlockEntity, "getTank", new Class[0], tank);
-        if (hasOldMethod(machineBaseBlockEntity, "fluidTransferAmount", new Class[0], fluidValue)) {
+        if (hasOldMethod(machineBaseBlockEntity, "fluidTransferAmount", new Class[0], int.class)) {
             throw new NoSuchMethodException(
                 "Found the old method 'reborncore.common.blockentity.MachineBaseBlockEntity.fluidTransferAmount()' "
                     + "returning an int - please update RebornCore to a newer version to get compatibility!"
