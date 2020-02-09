@@ -1,3 +1,7 @@
+Changes:
+
+* Allowed LBA to be loaded in 20w06a.
+
 Bug Fixes:
 
 * Fixed RebornCore fluid compat not working.
