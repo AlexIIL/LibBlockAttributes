@@ -11,6 +11,14 @@ targetCompatibility = 1.8
 repositories {
     mavenLocal()
     maven { name="Modmuss50"; url="https://maven.modmuss50.me/" }
+    maven {
+        name = "grondag"
+        url = "https://grondag-repo.appspot.com"
+        credentials {
+            username "guest"
+            password ""
+        }
+    }
 }
 
 archivesBaseName = "libblockatttributes"
@@ -37,6 +45,10 @@ dependencies {
 
     // RebornCore
     modImplementation("RebornCore:RebornCore-1.15:${reborncore_version}") { transitive = false }
+
+    // Fluidity
+    compileOnly "org.apiguardian:apiguardian-api:1.0.0"
+    modImplementation ("grondag:fluidity-mc115:${fluidity_version}.+") { transitive = false }
 
     // Misc
     compile "com.google.code.findbugs:jsr305:3.0.1"
