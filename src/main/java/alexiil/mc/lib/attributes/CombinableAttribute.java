@@ -215,8 +215,9 @@ public class CombinableAttribute<T> extends DefaultedAttribute<T> {
      * @return The combined attribute instance found by {@link #getAll(Reference, LimitedConsumer, Predicate)}, or the
      *         {@link #defaultValue} if none were found in the given {@link ItemStack}. */
     @Nonnull
-    public final T get(Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excess, @Nullable Predicate<
-        T> filter) {
+    public final T get(
+        Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excess, @Nullable Predicate<T> filter
+    ) {
         return getAll(stackRef, excess, filter).combine(this);
     }
 }
