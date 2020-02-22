@@ -134,6 +134,7 @@ generateJar("items", itemsReq, [], false, [], ["core"]);
 // 2019/09/26 AlexIIL: Add a new user variable "extra_jar_def__fabric_mod_json_replacements", for replacing additional strings in fabric.mod.json
 // 2019/12/20 AlexIIL: Fix including all versions of the jars (including old versions if "gradle clean" hasn't been run)
 // 2020/01/23 AlexIIL: Add "fat" jars and the option for optimised compression.
+// 2020/02/22 AlexIIL: Added better error handling when generating fabric.mod.json files.
 
 // ==========================================================
 // User config - change both of these on a per-project basis
@@ -274,6 +275,9 @@ def writeFabricModJsonFile(String key, List<String> addedJars, boolean fat) {
     }
 
     def diff = source.remove("__buildscript_diff")[key];
+    if (diff == null) {
+        throw new Error("Missing buildscript diff for '" + key + "' in fabric.mod.json!");
+    }
     transformJson(source, diff);
 
     if (!addedJars.isEmpty()) {
