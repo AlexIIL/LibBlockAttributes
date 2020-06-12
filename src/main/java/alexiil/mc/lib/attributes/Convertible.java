@@ -44,4 +44,18 @@ public interface Convertible {
         }
         return null;
     }
+
+    /** Helper method for testing if the object is already an instance of the given class (if so returning it
+     * immediately), or if it is an instance of {@link Convertible} (if so returning
+     * {@link Convertible#convertTo(Class)}), otherwise returning null. */
+    @Nullable
+    public static <T> T getAs(Object obj, Class<T> clazz) {
+        if (clazz.isInstance(obj)) {
+            return clazz.cast(obj);
+        }
+        if (obj instanceof Convertible) {
+            return ((Convertible) obj).convertTo(clazz);
+        }
+        return null;
+    }
 }

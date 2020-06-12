@@ -12,7 +12,7 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 
-import net.minecraft.inventory.BasicInventory;
+import net.minecraft.inventory.SimpleInventory;
 
 import alexiil.mc.lib.attributes.item.FixedItemInv;
 import alexiil.mc.lib.attributes.item.compat.FixedInventoryVanillaWrapper;
@@ -115,6 +115,6 @@ public class FixedItemInvTester extends ItemInvTester {
     }
 
     public static FixedItemInv[] createInventories() {
-        return createInventories(i -> new FixedInventoryVanillaWrapper(new BasicInventory(i)));
+        return createInventories(i -> new FixedInventoryVanillaWrapper(new SimpleInventory(i)));
     }
 }

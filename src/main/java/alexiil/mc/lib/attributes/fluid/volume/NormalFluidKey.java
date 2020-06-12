@@ -13,8 +13,8 @@ import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
-import net.minecraft.fluid.BaseFluid;
 import net.minecraft.fluid.EmptyFluid;
+import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.CompoundTag;
@@ -97,7 +97,7 @@ public class NormalFluidKey extends FluidKey {
         if (fl instanceof EmptyFluid && fl != Fluids.EMPTY) {
             throw new IllegalArgumentException("Different empty fluid!");
         }
-        if (fl instanceof BaseFluid && fl != ((BaseFluid) fl).getStill()) {
+        if (fl instanceof FlowableFluid && fl != ((FlowableFluid) fl).getStill()) {
             throw new IllegalArgumentException("Only the still version of fluids are allowed!");
         }
         this.fluid = fl;

@@ -22,6 +22,8 @@ import alexiil.mc.lib.attributes.misc.LimitedConsumer;
 import alexiil.mc.lib.attributes.misc.Reference;
 import alexiil.mc.lib.attributes.misc.UnmodifiableRef;
 
+/** An {@link Attribute} which offers "getFirst" which returns a non-null default value rather than the null default
+ * that {@link Attribute} provides. */
 public class DefaultedAttribute<T> extends Attribute<T> {
 
     /** A non-null default value that can be used as a no-op value if searching failed to find any normal instances. */
@@ -166,8 +168,9 @@ public class DefaultedAttribute<T> extends Attribute<T> {
      * @return The first attribute instance found by {@link #getAll(Reference, LimitedConsumer, Predicate)}, or the
      *         {@link #defaultValue} if none were found in the given {@link ItemStack}. */
     @Nonnull
-    public final T getFirst(Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excess, @Nullable Predicate<
-        T> filter) {
+    public final T getFirst(
+        Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excess, @Nullable Predicate<T> filter
+    ) {
         return getAll(stackRef, excess, filter).getFirst(this);
     }
 }

@@ -17,7 +17,7 @@ import net.minecraft.block.FluidBlock;
 import net.minecraft.block.Waterloggable;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorld;
+import net.minecraft.world.WorldAccess;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
@@ -25,8 +25,7 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
-public enum FluidWorldUtil {
-    ;
+public final class FluidWorldUtil {
 
     private static final Map<Block, IFluidVolumeDrainable> customDrainables = new IdentityHashMap<>();
 
@@ -35,7 +34,7 @@ public enum FluidWorldUtil {
     }
 
     /** Attempts to drain the given block of it's fluid. */
-    public static FluidVolume drain(IWorld world, BlockPos pos, Simulation simulation) {
+    public static FluidVolume drain(WorldAccess world, BlockPos pos, Simulation simulation) {
         BlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
         if (block instanceof IFluidVolumeDrainable) {

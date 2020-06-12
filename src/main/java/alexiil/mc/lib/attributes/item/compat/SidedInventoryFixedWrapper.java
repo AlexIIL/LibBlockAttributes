@@ -22,7 +22,7 @@ import alexiil.mc.lib.attributes.item.ItemInvUtil;
 /** A {@link SidedInventory} that wraps an {@link FixedItemInv}.
  * <p>
  * One of the {@link Inventory} methods must be overridden by subclasses however:
- * {@link Inventory#canPlayerUseInv(PlayerEntity)}. */
+ * {@link Inventory#canPlayerUse(PlayerEntity)}. */
 public abstract class SidedInventoryFixedWrapper extends InventoryFixedWrapper implements SidedInventory {
 
     /** Unlike the int[][] passed into constructors this is always a length 7 array. */
@@ -110,7 +110,7 @@ public abstract class SidedInventoryFixedWrapper extends InventoryFixedWrapper i
     }
 
     @Override
-    public int[] getInvAvailableSlots(Direction dir) {
+    public int[] getAvailableSlots(Direction dir) {
         return copy(getSlotsInternal(dir));
     }
 
@@ -123,7 +123,7 @@ public abstract class SidedInventoryFixedWrapper extends InventoryFixedWrapper i
     }
 
     @Override
-    public boolean canInsertInvStack(int slot, ItemStack stack, Direction dir) {
+    public boolean canInsert(int slot, ItemStack stack, Direction dir) {
         int[] slots = getSlotsInternal(dir);
         for (int s : slots) {
             if (s == slot) {
@@ -134,7 +134,7 @@ public abstract class SidedInventoryFixedWrapper extends InventoryFixedWrapper i
     }
 
     @Override
-    public boolean canExtractInvStack(int slot, ItemStack stack, Direction dir) {
+    public boolean canExtract(int slot, ItemStack stack, Direction dir) {
         int[] slots = getSlotsInternal(dir);
         for (int s : slots) {
             if (s == slot) {

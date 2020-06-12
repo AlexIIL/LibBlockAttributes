@@ -31,12 +31,12 @@ public class FixedInventoryViewVanillaWrapper implements FixedItemInvView {
 
     @Override
     public int getSlotCount() {
-        return inv.getInvSize();
+        return inv.size();
     }
 
     @Override
     public ItemStack getInvStack(int slot) {
-        ItemStack stack = inv.getInvStack(slot);
+        ItemStack stack = inv.getStack(slot);
         // FixedItemInv mandates that the returned stack is never modified.
         // However Inventory definitely doesn't, so we have to copy.
         return stack.isEmpty() ? ItemStack.EMPTY : stack.copy();
@@ -44,12 +44,12 @@ public class FixedInventoryViewVanillaWrapper implements FixedItemInvView {
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack item) {
-        return inv.isValidInvStack(slot, item);
+        return inv.isValid(slot, item);
     }
 
     @Override
     public int getMaxAmount(int slot, ItemStack stack) {
-        return Math.min(inv.getInvMaxStackAmount(), stack.getMaxCount());
+        return Math.min(inv.getMaxCountPerStack(), stack.getMaxCount());
     }
 
     @Override

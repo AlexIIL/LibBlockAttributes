@@ -13,8 +13,9 @@ import java.util.function.Supplier;
 
 import alexiil.mc.lib.attributes.Simulation;
 
-/** A reference to some object. The object can either be obtained ({@link #get()}), or changed ({@link #set(Object)}).
- * Note that changing the object isn't always permitted, and so it may return false if no change happened. */
+/** A reference to some object. The object can either be obtained from ({@link #get()}), or changed with
+ * ({@link #set(Object)}). Note that changing the object isn't always permitted, and so it may return false if no change
+ * happened. */
 public interface Reference<T> {
 
     /** @return The object referenced. Note that you should generally not modify the returned value directly - instead
@@ -38,7 +39,8 @@ public interface Reference<T> {
         }
     }
 
-    /** @return A {@link DestroyableRef} version of this reference. */
+    /** @return A {@link DestroyableRef} that can be modified until {@link DestroyableRef#destroy()} is called, after
+     *         which all calls to {@link #set(Object)} and {@link #isValid(Object)} will return false. */
     default DestroyableRef<T> asDestroyable() {
         return new DestroyableRef<>(this);
     }

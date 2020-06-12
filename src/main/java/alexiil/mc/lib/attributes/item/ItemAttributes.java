@@ -20,23 +20,20 @@ import net.minecraft.block.ChestBlock;
 import net.minecraft.block.InventoryProvider;
 import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.DefaultedList;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Direction;
 
 import alexiil.mc.lib.attributes.Attribute;
 import alexiil.mc.lib.attributes.AttributeCombiner;
+import alexiil.mc.lib.attributes.AttributeSourceType;
 import alexiil.mc.lib.attributes.Attributes;
 import alexiil.mc.lib.attributes.CombinableAttribute;
-import alexiil.mc.lib.attributes.CustomAttributeAdder;
-import alexiil.mc.lib.attributes.DefaultedAttribute;
-import alexiil.mc.lib.attributes.ItemAttributeAdder;
-import alexiil.mc.lib.attributes.ItemAttributeList;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
@@ -45,6 +42,7 @@ import alexiil.mc.lib.attributes.fluid.FluidAttributes;
 import alexiil.mc.lib.attributes.item.FixedItemInv.CopyingFixedItemInv;
 import alexiil.mc.lib.attributes.item.compat.FixedInventoryVanillaWrapper;
 import alexiil.mc.lib.attributes.item.compat.FixedSidedInventoryVanillaWrapper;
+import alexiil.mc.lib.attributes.item.compat.mod.LbaItemModCompat;
 import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
@@ -59,7 +57,6 @@ import alexiil.mc.lib.attributes.item.impl.EmptyGroupedItemInv;
 import alexiil.mc.lib.attributes.item.impl.EmptyItemExtractable;
 import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable;
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes.LbaModule;
-import alexiil.mc.lib.attributes.misc.LimitedConsumer;
 import alexiil.mc.lib.attributes.misc.Reference;
 
 public final class ItemAttributes {
@@ -119,86 +116,78 @@ public final class ItemAttributes {
             ConstantItemFilter.NOTHING, //
             list -> AggregateItemFilter.allOf(list)//
         );
+
+        LbaItemModCompat.load();
     }
 
     private static <T> CombinableAttribute<T> create(
         Class<T> clazz, @Nonnull T defaultValue, AttributeCombiner<T> combiner, Function<FixedItemInv, T> convertor
     ) {
+        CombinableAttribute<T> attribute = Attributes.createCombinable(clazz, defaultValue, combiner);
 
-        return Attributes.createCombinable(clazz, defaultValue, combiner)//
-            .appendBlockAdder(createBlockAdder(convertor))//
-            .appendItemAdder(createItemAdder(convertor))//
-        ;
-    }
+        AttributeSourceType srcType = AttributeSourceType.COMPAT_WRAPPER;
+        attribute.putBlockClassAdder(srcType, InventoryProvider.class, true, (w, p, s, l) -> {
+            InventoryProvider provider = (InventoryProvider) s.getBlock();
+            SidedInventory inventory = provider.getInventory(s, w, p);
+            if (inventory != null) {
+                if (inventory.size() > 0) {
+                    Direction direction = l.getSearchDirection();
+                    Direction blockSide = direction == null ? null : direction.getOpposite();
 
-    private static <T> CustomAttributeAdder<T> createBlockAdder(Function<FixedItemInv, T> convertor) {
-        return (world, pos, state, list) -> {
-            Block block = state.getBlock();
-            Direction direction = list.getSearchDirection();
-            Direction blockSide = direction == null ? null : direction.getOpposite();
-
-            if (block instanceof InventoryProvider) {
-                InventoryProvider provider = (InventoryProvider) block;
-                SidedInventory inventory = provider.getInventory(state, world, pos);
-                if (inventory != null) {
-                    if (inventory.getInvSize() > 0) {
-                        final FixedItemInv wrapper;
-                        if (direction != null) {
-                            wrapper = FixedSidedInventoryVanillaWrapper.create(inventory, blockSide);
-                        } else {
-                            wrapper = new FixedInventoryVanillaWrapper(inventory);
-                        }
-                        list.add(convertor.apply(wrapper));
-                    } else {
-                        list.add(((DefaultedAttribute<T>) list.attribute).defaultValue);
-                    }
-                }
-            } else if (block.hasBlockEntity()) {
-                BlockEntity be = world.getBlockEntity(pos);
-                if (be instanceof ChestBlockEntity && state.getBlock() instanceof ChestBlock) {
-                    // Special case chests here, rather than through a mixin because it just simplifies
-                    // everything
-
-                    boolean checkForBlockingCats = false;
-                    Inventory chestInv = ChestBlock
-                        .getInventory((ChestBlock) state.getBlock(), state, world, pos, checkForBlockingCats);
-                    if (chestInv != null) {
-                        list.add(convertor.apply(new FixedInventoryVanillaWrapper(chestInv)));
-                    }
-                } else if (be instanceof SidedInventory) {
-                    SidedInventory sidedInv = (SidedInventory) be;
                     final FixedItemInv wrapper;
                     if (direction != null) {
-                        wrapper = FixedSidedInventoryVanillaWrapper.create(sidedInv, blockSide);
+                        wrapper = FixedSidedInventoryVanillaWrapper.create(inventory, blockSide);
                     } else {
-                        wrapper = new FixedInventoryVanillaWrapper(sidedInv);
+                        wrapper = new FixedInventoryVanillaWrapper(inventory);
                     }
-                    list.add(convertor.apply(wrapper));
-                } else if (be instanceof Inventory) {
-                    list.add(convertor.apply(new FixedInventoryVanillaWrapper((Inventory) be)));
+                    l.add(convertor.apply(wrapper));
+                } else {
+                    l.add(attribute.defaultValue);
                 }
             }
-        };
-    }
+        });
 
-    private static <T> ItemAttributeAdder<T> createItemAdder(Function<FixedItemInv, T> convertor) {
-        return (ref, excess, list) -> appendItemAttributes(ref, excess, list, convertor);
-    }
+        attribute.putBlockClassAdder(srcType, ChestBlock.class, true, (w, p, s, l) -> {
+            boolean checkForBlockingCats = false;
+            ChestBlock chest = (ChestBlock) s.getBlock();
+            Inventory chestInv = ChestBlock.getInventory(chest, s, w, p, checkForBlockingCats);
+            if (chestInv != null) {
+                l.add(convertor.apply(new FixedInventoryVanillaWrapper(chestInv)));
+            }
+        });
 
-    private static <T> void appendItemAttributes(
-        Reference<ItemStack> ref, LimitedConsumer<ItemStack> excess, ItemAttributeList<T> list,
-        Function<FixedItemInv, T> convertor
-    ) {
+        attribute.appendBlockAdder((w, p, s, l) -> {
+            Block block = s.getBlock();
+            if (!block.hasBlockEntity()) {
+                return;
+            }
+            Direction direction = l.getSearchDirection();
+            Direction blockSide = direction == null ? null : direction.getOpposite();
+            BlockEntity be = w.getBlockEntity(p);
 
-        ItemStack stack = ref.get();
+            if (be instanceof SidedInventory) {
+                SidedInventory sidedInv = (SidedInventory) be;
+                final FixedItemInv wrapper;
+                if (direction != null) {
+                    wrapper = FixedSidedInventoryVanillaWrapper.create(sidedInv, blockSide);
+                } else {
+                    wrapper = new FixedInventoryVanillaWrapper(sidedInv);
+                }
+                l.add(convertor.apply(wrapper));
+            } else if (be instanceof Inventory) {
+                l.add(convertor.apply(new FixedInventoryVanillaWrapper((Inventory) be)));
+            }
+        });
 
-        if (isShulkerBox(stack)) {
+        attribute.addItemPredicateAdder(srcType, true, ItemAttributes::isShulkerBox, (ref, excess, list) -> {
             list.add(convertor.apply(new ShulkerBoxItemInv(ref)));
-        }
+        });
+
+        return attribute;
     }
 
-    static boolean isShulkerBox(ItemStack stack) {
-        return Block.getBlockFromItem(stack.getItem()) instanceof ShulkerBoxBlock;
+    static boolean isShulkerBox(Item item) {
+        return Block.getBlockFromItem(item) instanceof ShulkerBoxBlock;
     }
 
     static final class ShulkerBoxItemInv implements CopyingFixedItemInv {
@@ -220,7 +209,7 @@ public final class ItemAttributes {
 
             ItemStack stack = ref.get();
             CompoundTag tag = stack.getSubTag("BlockEntityTag");
-            if (tag == null || stack.isEmpty() || stack.getCount() != 1 || !isShulkerBox(stack)) {
+            if (tag == null || stack.isEmpty() || stack.getCount() != 1 || !isShulkerBox(stack.getItem())) {
                 return ItemStack.EMPTY;
             }
 
@@ -268,7 +257,7 @@ public final class ItemAttributes {
             }
 
             ItemStack stack = ref.get();
-            if (!stack.isEmpty() || stack.getCount() != 1 || !isShulkerBox(stack)) {
+            if (!stack.isEmpty() || stack.getCount() != 1 || !isShulkerBox(stack.getItem())) {
                 return false;
             }
 

@@ -3,7 +3,7 @@
   "package": "alexiil.mc.lib.attributes.fluid.mixin.impl",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "BaseFluidAccessor",
+    "FlowableFluidAccessor",
     "BucketItemMixin",
     "GlassBottleItemMixin",
     "PotionItemMixin",

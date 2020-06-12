@@ -7,12 +7,19 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import java.util.List;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -40,9 +47,11 @@ public final class PotionFluidKey extends FluidKey {
         FluidKeyBuilder builder = new FluidKeyBuilder();
         builder.setRegistryEntry(new FluidRegistryEntry<>(Registry.POTION, potion));
         builder.setSprites(POTION_TEXTURE, FLOWING_POTION_TEXTURE);
-        builder.setName(new TranslatableText(potion.finishTranslationKey("item.minecraft.potion.effect.")));
         builder.setUnit(FluidUnit.BOTTLE);
-        builder.setRenderColor(PotionUtil.getColor(potion));
+        int colour = PotionUtil.getColor(potion);
+        TranslatableText text = new TranslatableText(potion.finishTranslationKey("item.minecraft.potion.effect."));
+        builder.setName(text.setStyle(Style.EMPTY.withColor(TextColor.fromRgb(colour))));
+        builder.setRenderColor(colour);
         return builder;
     }
 
@@ -66,5 +75,11 @@ public final class PotionFluidKey extends FluidKey {
     @Override
     public PotionFluidVolume withAmount(FluidAmount amount) {
         return new PotionFluidVolume(this, amount);
+    }
+
+    @Override
+    public void addTooltipExtras(FluidTooltipContext context, List<Text> tooltip) {
+        super.addTooltipExtras(context, tooltip);
+        PotionUtil.buildTooltip(PotionUtil.setPotion(new ItemStack(Items.POTION), potion), tooltip, 1.0F);
     }
 }

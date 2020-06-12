@@ -6,6 +6,10 @@ pluginManagement {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
         }
+        maven {
+            name = "BuildCraft"
+            url = "https://mod-buildcraft.com/maven"
+        }
         gradlePluginPortal()
     }
 }

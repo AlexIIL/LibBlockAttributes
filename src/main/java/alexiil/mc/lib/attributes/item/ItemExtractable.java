@@ -70,6 +70,12 @@ public interface ItemExtractable {
         return attemptExtraction(ConstantItemFilter.ANYTHING, maxAmount, Simulation.ACTION);
     }
 
+    /** @return True if {@link #attemptAnyExtraction(int, Simulation) attemptAnyExtraction}(1, SIMULATE) returns a
+     *         non-empty {@link ItemStack}. */
+    default boolean couldExtractAnything() {
+        return !attemptAnyExtraction(1, Simulation.SIMULATE).isEmpty();
+    }
+
     /** @return A new {@link ItemExtractable} that has an additional filter applied to limit the items extracted from
      *         it. */
     default ItemExtractable filtered(ItemFilter filter) {

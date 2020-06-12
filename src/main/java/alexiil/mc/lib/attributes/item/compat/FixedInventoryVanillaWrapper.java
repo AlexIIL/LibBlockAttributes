@@ -46,7 +46,7 @@ public class FixedInventoryVanillaWrapper extends FixedInventoryViewVanillaWrapp
         }
         if (allowed) {
             if (simulation == Simulation.ACTION) {
-                inv.setInvStack(slot, to);
+                inv.setStack(slot, to);
             }
             return true;
         }

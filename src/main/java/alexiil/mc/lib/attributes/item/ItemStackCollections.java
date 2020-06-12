@@ -52,7 +52,8 @@ public enum ItemStackCollections {
                 return 0;
             }
             return Arrays.hashCode(
-                new int[] { o.getCount(), System.identityHashCode(o.getItem()), Objects.hashCode(o.getTag()) });
+                new int[] { o.getCount(), System.identityHashCode(o.getItem()), Objects.hashCode(o.getTag()) }
+            );
         }
 
         @Override
@@ -60,7 +61,7 @@ public enum ItemStackCollections {
             if (a == null || b == null) {
                 return a == b;
             }
-            return ItemStack.areEqualIgnoreDamage(a, b);
+            return ItemStack.areEqual(a, b);
         }
     };
 
@@ -90,8 +91,8 @@ public enum ItemStackCollections {
 
     /** A {@link Comparator} that compares {@link ItemStack}'s by their Registry {@link Identifier}, then
      * {@link ItemStack#getTag()}. */
-    public static final Comparator<ItemStack> COMPARATOR_IGNORE_AMOUNT =
-        ItemStackCollections::compareItemStacksIgnoreAmounts;
+    public static final Comparator<ItemStack> COMPARATOR_IGNORE_AMOUNT
+        = ItemStackCollections::compareItemStacksIgnoreAmounts;
 
     private static int compareItemStacksExact(ItemStack a, ItemStack b) {
         if (a == null) a = ItemStack.EMPTY;

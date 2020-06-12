@@ -18,6 +18,7 @@ package alexiil.mc.lib.attributes.fluid.filter;
  * <li>{@link ConstantFluidFilter}</li>
  * <li>{@link ExactFluidFilter}</li>
  * <li>{@link AggregateFluidFilter}</li>
+ * <li>{@link FluidSetFilter}</li>
  * <li>{@link InvertedFluidFilter}</li>
  * <li>{@link RawFluidTagFilter}</li>
  * <li>{@link FluidTagFilter}</li>

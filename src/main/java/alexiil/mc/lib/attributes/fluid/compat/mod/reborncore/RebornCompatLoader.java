@@ -5,18 +5,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-package alexiil.mc.lib.attributes.fluid.compat.reborncore;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+package alexiil.mc.lib.attributes.fluid.compat.mod.reborncore;
 
 import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.math.Direction;
 
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
+import alexiil.mc.lib.attributes.misc.compat.mod.LbaModCompatLoader;
 
-public final class RebornCompatLoader {
+public final class RebornCompatLoader extends LbaModCompatLoader {
     private RebornCompatLoader() {}
 
     public static void load() {
@@ -72,34 +70,5 @@ public final class RebornCompatLoader {
         requireMethod(extractConfig, "isExtact", new Class[0], boolean.class);
         requireMethod(extractConfig, "isInsert", new Class[0], boolean.class);
         requireMethod(extractConfig, "isEnabled", new Class[0], boolean.class);
-    }
-
-    private static Class<?> c(String name) throws ClassNotFoundException {
-        return Class.forName(name, false, RebornCompatLoader.class.getClassLoader());
-    }
-
-    private static void requireField(Class<?> cls, String name, Class<?> type) throws ReflectiveOperationException {
-        Field f = cls.getField(name);
-        if (!type.equals(f.getType())) {
-            throw new NoSuchFieldException("Needed the field " + f + " to be of type " + type);
-        }
-    }
-
-    private static void requireMethod(Class<?> cls, String name, Class<?>[] args, Class<?> ret)
-        throws ReflectiveOperationException {
-
-        Method m = cls.getMethod(name, args);
-        if (!ret.equals(m.getReturnType())) {
-            throw new NoSuchMethodException("Needed the method " + m + " to return " + ret);
-        }
-    }
-
-    private static boolean hasOldMethod(Class<?> cls, String name, Class<?>[] args, Class<?> ret) {
-        try {
-            Method m = cls.getMethod(name, args);
-            return ret.equals(m.getReturnType());
-        } catch (NoSuchMethodException ignored) {
-            return false;
-        }
     }
 }

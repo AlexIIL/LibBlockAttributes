@@ -24,6 +24,8 @@ import alexiil.mc.lib.attributes.misc.LimitedConsumer;
 import alexiil.mc.lib.attributes.misc.Reference;
 import alexiil.mc.lib.attributes.misc.UnmodifiableRef;
 
+/** A {@link DefaultedAttribute} that also provides a "get" method to combine every found attribute into a single one,
+ * using an {@link AttributeCombiner}. */
 public class CombinableAttribute<T> extends DefaultedAttribute<T> {
 
     private final AttributeCombiner<T> combiner;

@@ -7,6 +7,7 @@
  */
 package alexiil.mc.lib.attributes;
 
+/** Placeholder class until caches are worked out. */
 public final class CacheInfo {
 
     public static final CacheInfo NOT_CACHABLE = new CacheInfo();

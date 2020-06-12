@@ -27,16 +27,16 @@ public class FixedSidedInventoryVanillaWrapper extends FixedInventoryVanillaWrap
 
     public static FixedItemInv create(SidedInventory inventory, Direction side) {
         FixedSidedInventoryVanillaWrapper wrapper = new FixedSidedInventoryVanillaWrapper(inventory, side);
-        return wrapper.getMappedInv(inventory.getInvAvailableSlots(side));
+        return wrapper.getMappedInv(inventory.getAvailableSlots(side));
     }
 
     @Override
     protected boolean canExtract(int slot, ItemStack extractedStack) {
-        return sidedInv.canExtractInvStack(slot, extractedStack, side);
+        return sidedInv.canExtract(slot, extractedStack, side);
     }
 
     @Override
     protected boolean canInsert(int slot, ItemStack newStack) {
-        return isItemValidForSlot(slot, newStack) && sidedInv.canInsertInvStack(slot, newStack, side);
+        return isItemValidForSlot(slot, newStack) && sidedInv.canInsert(slot, newStack, side);
     }
 }

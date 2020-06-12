@@ -8,8 +8,12 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 
 import javax.annotation.Nullable;
 
@@ -17,16 +21,17 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
-import net.minecraft.fluid.BaseFluid;
 import net.minecraft.fluid.EmptyFluid;
+import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.DefaultedRegistry;
-import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.WorldView;
 
@@ -34,6 +39,9 @@ import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.render.DefaultFluidVolumeRenderer;
 import alexiil.mc.lib.attributes.fluid.volume.FluidEntry.FluidFloatingEntry;
+
+import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
+import it.unimi.dsi.fastutil.objects.Object2IntSortedMap;
 
 /** A factory for {@link FluidVolume} instances. Identifying whether two {@link FluidKey}'s are equal is always done via
  * the object identity comparison (== rather than {@link #equals(Object)} - although {@link FluidKey} final-overrides
@@ -51,7 +59,8 @@ public abstract class FluidKey {
 
     private static final Identifier MISSING_SPRITE = new Identifier("minecraft", "missingno");
 
-    /* package-private */ final FluidEntry entry;
+    // TODO: DOCUMENT
+    public final FluidEntry entry;
 
     /** The singular (main) unit to use when displaying amounts, capacities, and flow rates to the player.
      * 
@@ -132,8 +141,22 @@ public abstract class FluidKey {
      * {@link FluidAmount#ONE}). */
     public final FluidAmount thermalCapacity;
 
+    /** The temperature that applies to this {@link FluidKey}. This is updated if a {@link FluidProperty} is added which
+     * contains a {@link FluidTemperature}. */
+    @Nullable
+    private FluidTemperature temperature;
+
     @Nullable
     private final Fluid rawFluid;
+
+    /** Map of int index -> property. Ordered by the order that the properties were registered to
+     * {@link #tryRegisterProperty(FluidProperty)}, so this might be different on the client and server. */
+    /* package-private */ final List<FluidProperty<?>> properties = new ArrayList<>();
+
+    /** Stable map of property -> int index. Ordered by {@link FluidProperty#COMPARATOR}, which ensures it should be the
+     * same on the client and server. */
+    /* package-private */ final Object2IntSortedMap<FluidProperty<?>> propertyKeys
+        = new Object2IntAVLTreeMap<>(FluidProperty.COMPARATOR);
 
     public static class FluidKeyBuilder {
         /* package-private */ FluidEntry entry;
@@ -149,6 +172,7 @@ public abstract class FluidKey {
         /* package-private */ FluidAmount cohesion, netherCohesion;
         /* package-private */ FluidAmount density;
         /* package-private */ FluidAmount thermalCapacity;
+        /* package-private */ FluidTemperature.DiscreteFluidTemperature temperature;
 
         /** @deprecated As the flowing sprite ID is needed as well. */
         @Deprecated
@@ -329,6 +353,15 @@ public abstract class FluidKey {
             this.thermalCapacity = to;
             return this;
         }
+
+        /** Sets the {@link FluidKey#thermalCapacity} property to the given {@link FluidAmount}, or null to allow
+         * {@link FluidProperty}s to provide the fluid for this fluid.
+         * 
+         * @return this. */
+        public FluidKeyBuilder setTemperature(FluidTemperature.DiscreteFluidTemperature temperature) {
+            this.temperature = temperature;
+            return this;
+        }
     }
 
     public FluidKey(FluidKeyBuilder builder) {
@@ -356,7 +389,7 @@ public abstract class FluidKey {
             if (rawFluid instanceof EmptyFluid && rawFluid != Fluids.EMPTY) {
                 throw new IllegalArgumentException("Different empty fluid!");
             }
-            if (rawFluid instanceof BaseFluid && rawFluid != ((BaseFluid) rawFluid).getStill()) {
+            if (rawFluid instanceof FlowableFluid && rawFluid != ((FlowableFluid) rawFluid).getStill()) {
                 throw new IllegalArgumentException("Only the still version of fluids are allowed!");
             }
         }
@@ -402,6 +435,7 @@ public abstract class FluidKey {
         if (thermalCapacity.isNegative()) {
             throw new IllegalArgumentException("Negative thermal capacity is not allowed (" + thermalCapacity + ")");
         }
+        this.temperature = builder.temperature;
 
         validateClass(getClass());
     }
@@ -500,8 +534,7 @@ public abstract class FluidKey {
                 return FluidKeys.get(getRegistryEntry(jFluid, "fluid", "fluids", Registry.FLUID));
             } else {
                 JsonObject obj = jFluid.getAsJsonObject();
-                MutableRegistry<?> reg
-                    = getRegistryEntry(obj.get("registry"), "registry", "registries", Registry.REGISTRIES);
+                Registry<?> reg = getRegistryEntry(obj.get("registry"), "registry", "registries", Registry.REGISTRIES);
                 return fromRegistry(obj, reg);
             }
         } else {
@@ -511,7 +544,7 @@ public abstract class FluidKey {
         }
     }
 
-    private static <T> FluidKey fromRegistry(JsonObject obj, MutableRegistry<T> reg) {
+    private static <T> FluidKey fromRegistry(JsonObject obj, Registry<T> reg) {
         T entry = getRegistryEntry(obj, "id", "ids", reg);
         FluidRegistryEntry<T> fluidEntry = new FluidRegistryEntry<>(reg, entry);
         FluidKey fluidKey = FluidKeys.get(fluidEntry);
@@ -548,7 +581,6 @@ public abstract class FluidKey {
     private static JsonSyntaxException throwBadEntryException(
         String key, String name, String keys, String found, Set<?> src
     ) {
-
         StringBuilder error = new StringBuilder();
         error.append("Expected '");
         error.append(key);
@@ -638,6 +670,49 @@ public abstract class FluidKey {
         return entry.toString();
     }
 
+    /** @return The {@link FluidTemperature} for this fluid, or null if neither this fluid nor any of it's properties
+     *         provide the temperature. */
+    public final FluidTemperature getTemperature() {
+        return temperature;
+    }
+
+    /** @return Null if the {@link FluidProperty} was registered successfully, or a non-null error message containing
+     *         the reason why it couldn't be added. */
+    @Nullable
+    public final String tryRegisterProperty(FluidProperty<?> property) {
+        if (temperature != null && property.temperature != null) {
+            return "Cannot have multiple temperature sources for this fluid! (\n\tFluidKey = " + this
+                + ",\n\tFluidKey.temperature = " + temperature + ",\n\tFluidProperty = " + property
+                + ",\n\tFluidProperty.temperature = " + property.temperature;
+        }
+        for (FluidProperty<?> existing : properties) {
+            if (existing.id.equals(property.id)) {
+                return "Tried to register multiple properties with an ID of " + existing.id + "!";
+            }
+        }
+        propertyKeys.put(property, properties.size());
+        properties.add(property);
+        if (temperature != null) {
+            temperature = property.temperature;
+        }
+        return null;
+    }
+
+    /** Forcibly attempts to register the given property, throwing an exception if the registration fails. */
+    public final void forceRegisterProperty(FluidProperty<?> property) {
+        String error = tryRegisterProperty(property);
+        if (error != null) {
+            throw new IllegalStateException(error);
+        }
+    }
+
+    /** @return Every {@link FluidProperty} that as been {@link #tryRegisterProperty(FluidProperty) registered} to this
+     *         {@link FluidKey}. The returned set is ordered by {@link FluidProperty#id}.{@link Identifier#toString()
+     *         toString()}, to allow server-client sync to happen correctly. */
+    public final SortedSet<FluidProperty<?>> getProperties() {
+        return Collections.unmodifiableSortedSet(propertyKeys.keySet());
+    }
+
     public abstract FluidVolume readVolume(CompoundTag tag);
 
     public FluidVolume readVolume(JsonObject json) throws JsonSyntaxException {
@@ -650,6 +725,9 @@ public abstract class FluidKey {
         }
         return withAmount(FluidVolume.parseAmount(amount));
     }
+
+    // TODO: Add write/read with PacketBuffers!
+    // TODO: Add LNS support!
 
     public final boolean isEmpty() {
         return this == FluidKeys.EMPTY;
@@ -669,6 +747,61 @@ public abstract class FluidKey {
     /** Called when this is pumped out from the world. */
     public FluidVolume fromWorld(WorldView world, BlockPos pos) {
         return withAmount(FluidAmount.BUCKET);
+    }
+
+    /** @return The full tooltip for this {@link FluidKey}. This returns an empty list if this is the empty fluid, or
+     *         the name and then the extra data from {@link #addTooltipExtras(List)}. */
+    public final List<Text> getFullTooltip() {
+        return getFullTooltip(FluidTooltipContext.USE_CONFIG);
+    }
+
+    /** @return The full tooltip for this {@link FluidKey}. This returns an empty list if this is the empty fluid, or
+     *         the name and then the extra data from {@link #addTooltipExtras(FluidTooltipContext, List)}. */
+    public final List<Text> getFullTooltip(FluidTooltipContext context) {
+        if (isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Text> tooltip = new ArrayList<>();
+        addFullTooltip(tooltip, context);
+        return tooltip;
+    }
+
+    public final void addFullTooltip(List<Text> tooltip, FluidTooltipContext context) {
+        if (!isEmpty()) {
+            tooltip.add(context.stripFluidColours(name));
+            addTooltipExtras(context, tooltip);
+            addTooltipTemperature(context, tooltip);
+            addTooltipProperties(context, tooltip);
+        }
+    }
+
+    /** Add extra data to the tooltip. */
+    public final void addTooltipExtras(List<Text> tooltip) {
+        addTooltipExtras(FluidTooltipContext.USE_CONFIG, tooltip);
+    }
+
+    /** Add extra data to the tooltip. */
+    public void addTooltipExtras(FluidTooltipContext context, List<Text> tooltip) {
+        if (context.isAdvanced()) {
+            tooltip.add(new LiteralText(entry.getRegistryInternalName()).formatted(Formatting.DARK_GRAY));
+            tooltip.add(new LiteralText(entry.getId().toString()).formatted(Formatting.DARK_GRAY));
+        }
+    }
+
+    public final void addTooltipTemperature(FluidTooltipContext context, List<Text> tooltip) {
+        if (temperature != null) {
+            temperature.addTemperatueToTooltip(this, context, tooltip);
+        }
+    }
+
+    public final void addTooltipProperties(List<Text> tooltip) {
+        addTooltipProperties(FluidTooltipContext.USE_CONFIG, tooltip);
+    }
+
+    public final void addTooltipProperties(FluidTooltipContext context, List<Text> tooltip) {
+        for (FluidProperty<?> prop : properties) {
+            prop.addTooltipExtras(this, context, tooltip);
+        }
     }
 
     @Override

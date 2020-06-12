@@ -13,8 +13,8 @@ import java.util.Map;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.util.DefaultedList;
 import net.minecraft.util.Util;
+import net.minecraft.util.collection.DefaultedList;
 
 import alexiil.mc.lib.attributes.AttributeUtil;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
@@ -135,7 +135,7 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable, Sa
 
     @Override
     public boolean setInvFluid(int tank, FluidVolume to, Simulation simulation) {
-        if (isFluidValidForTank(tank, to.fluidKey) && !to.getAmount_F().isGreaterThan(getMaxAmount_F(tank))) {
+        if (isFluidValidForTank(tank, to.fluidKey) && !to.amount().isGreaterThan(getMaxAmount_F(tank))) {
             if (simulation == Simulation.ACTION) {
                 FluidVolume before = tanks.get(tank);
                 tanks.set(tank, to);

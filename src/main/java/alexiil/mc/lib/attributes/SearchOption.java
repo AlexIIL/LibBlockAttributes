@@ -12,6 +12,9 @@ import java.util.function.Predicate;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 
+/** The base class for block search options. This only contains filtration for objects that are added to the attribute
+ * list via a {@link Predicate}. Instances can be constructed/obtained from {@link SearchOptions}, and all javadoc for
+ * the various implementations is on those static factories. */
 public class SearchOption<T> {
 
     /** Use {@link SearchOptions#ALL}. */
@@ -27,11 +30,14 @@ public class SearchOption<T> {
         this.searchMatcher = searchMatcher;
     }
 
+    /** Checks to see if the given object matches this {@link #searchMatcher}. This method will normally be called by
+     * LBA automatically, so users are discouraged from calling this. */
     public final boolean matches(T obj) {
         return searchMatcher != null ? searchMatcher.test(obj) : true;
     }
 
-    /** @return The {@link VoxelShape} to use */
+    /** Returns the {@link VoxelShape} to use for bounds checking. This defaults to a full block, but custom search
+     * options (like {@link SearchOptionInVoxel}) override this. */
     public VoxelShape getShape() {
         return VoxelShapes.fullCube();
     }

@@ -13,10 +13,10 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
-import alexiil.mc.lib.attributes.misc.Reference;
+import alexiil.mc.lib.attributes.misc.StackReference;
 
 /** A delegating accessor of a single slot in a {@link FixedItemInv}. */
-public class SingleItemSlot extends SingleItemSlotView implements ItemTransferable, Reference<ItemStack> {
+public class SingleItemSlot extends SingleItemSlotView implements ItemTransferable, StackReference {
 
     SingleItemSlot(FixedItemInv backingView, int slot) {
         super(backingView, slot);

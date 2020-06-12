@@ -9,7 +9,10 @@ package alexiil.mc.lib.attributes;
 
 import javax.annotation.Nonnull;
 
-public class Attributes {
+/** Static factories for {@link Attribute} instances. */
+public final class Attributes {
+    private Attributes() {}
+
     public static <T> Attribute<T> create(Class<T> clazz) {
         return new Attribute<>(clazz);
     }
@@ -22,18 +25,21 @@ public class Attributes {
         return new DefaultedAttribute<>(clazz, defaultValue);
     }
 
-    public static <T> DefaultedAttribute<T> createDefaulted(Class<T> clazz, @Nonnull T defaultValue,
-        CustomAttributeAdder<T> customAdder) {
+    public static <T> DefaultedAttribute<T> createDefaulted(
+        Class<T> clazz, @Nonnull T defaultValue, CustomAttributeAdder<T> customAdder
+    ) {
         return createDefaulted(clazz, defaultValue).appendBlockAdder(customAdder);
     }
 
-    public static <T> CombinableAttribute<T> createCombinable(Class<T> clazz, @Nonnull T defaultValue,
-        AttributeCombiner<T> combiner) {
+    public static <T> CombinableAttribute<T> createCombinable(
+        Class<T> clazz, @Nonnull T defaultValue, AttributeCombiner<T> combiner
+    ) {
         return new CombinableAttribute<>(clazz, defaultValue, combiner);
     }
 
-    public static <T> CombinableAttribute<T> createCombinable(Class<T> clazz, @Nonnull T defaultValue,
-        AttributeCombiner<T> combiner, CustomAttributeAdder<T> customAdder) {
+    public static <T> CombinableAttribute<T> createCombinable(
+        Class<T> clazz, @Nonnull T defaultValue, AttributeCombiner<T> combiner, CustomAttributeAdder<T> customAdder
+    ) {
         return createCombinable(clazz, defaultValue, combiner).appendBlockAdder(customAdder);
     }
 }

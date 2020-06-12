@@ -28,6 +28,7 @@ import net.minecraft.client.item.TooltipContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -298,10 +299,8 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
     }
 
     @Override
-    protected void merge0(FluidVolume vol, FluidMergeRounding rounding) {
+    protected void mergeInternal(FluidVolume vol, FluidMergeResult result) {
         WeightedFluidVolume<?> other = (WeightedFluidVolume<?>) vol;
-
-        FluidMergeResult result = FluidAmount.merge(getAmount_F(), other.getAmount_F(), rounding);
 
         for (Map.Entry<T, FluidAmount> entry : values.entrySet()) {
             entry.setValue(entry.getValue().roundedMul(getAmount_F()));
@@ -355,7 +354,7 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
         List<Text> list = super.getTooltipText(ctx);
         if (ctx.isAdvanced()) {
             for (Entry<T, FluidAmount> entry : values.entrySet()) {
-                Text text = new LiteralText(entry.getKey() + " of ");
+                MutableText text = new LiteralText(entry.getKey() + " of ");
                 list.add(text.append(getTextFor(entry.getKey())).formatted(Formatting.GRAY));
             }
         }

@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
-import net.minecraft.client.gui.screen.ingame.ContainerScreen;
+import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.GlassBottleItem;
@@ -56,7 +56,7 @@ import alexiil.mc.lib.attributes.misc.Reference;
  * item. (This is the first method that doesn't require the caller to create a {@link Reference} themselves).</li>
  * <li>{@link #interactCursorWithTank(FluidInsertable, FluidExtractable, ServerPlayerEntity, FluidFilter, FluidAmount)
  * interactCursorWithTank(...)}: Which uses interactWithTank internally, and interacts with the player's cursor stack
- * (what the player has while they have a {@link ContainerScreen} open). (This is the second method that doesn't require
+ * (what the player has while they have a {@link HandledScreen} open). (This is the second method that doesn't require
  * the caller to create a {@link Reference} themselves).</li>
  * </ol>
  */

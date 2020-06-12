@@ -14,6 +14,7 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
+import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ExactItemStackFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
@@ -72,6 +73,12 @@ public interface GroupedItemInvView extends AbstractItemInvView {
     /** @return A count of all the {@link ItemStack}'s that match the given filter. */
     default int getAmount(ItemFilter filter) {
         return getStatistics(filter).amount;
+    }
+
+    /** @return True if {@link #getAmount(ItemFilter) getAmount}(ConstantItemFilter.ANYTHING) returns a value greater
+     *         than 0. */
+    default boolean isEmpty() {
+        return getAmount(ConstantItemFilter.ANYTHING) > 0;
     }
 
     @Override

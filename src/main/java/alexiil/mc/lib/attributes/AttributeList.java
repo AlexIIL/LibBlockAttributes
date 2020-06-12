@@ -13,8 +13,8 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import net.minecraft.util.BooleanBiFunction;
-import net.minecraft.util.DefaultedList;
+import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.function.BooleanBiFunction;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Direction.AxisDirection;
@@ -22,6 +22,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 
+/** Search result for block attributes. */
 public class AttributeList<T> extends AbstractAttributeList<T> {
     public final SearchOption<? super T> searchParam;
 
@@ -38,6 +39,9 @@ public class AttributeList<T> extends AbstractAttributeList<T> {
     /** Only used if the {@link #getSearchDirection()} is a non-null value (as otherwise it's impossible to know which
      * direction should be blocked from). */
     VoxelShape obstructingShape;
+
+    /** The number of calls to {@link #add(Object)}. */
+    private int offeredCount;
 
     AttributeList(Attribute<T> attribute, @Nullable SearchOption<? super T> searchOption, VoxelShape defaultShape) {
         super(attribute);
@@ -117,6 +121,7 @@ public class AttributeList<T> extends AbstractAttributeList<T> {
         if (shape == null) {
             shape = defaultShape;
         }
+        offeredCount++;
         if (!searchParam.matches(object)) {
             return;
         }
@@ -176,13 +181,8 @@ public class AttributeList<T> extends AbstractAttributeList<T> {
     public void offer(Object object, @Nullable CacheInfo cacheInfo, @Nullable VoxelShape shape) {
         // Always check before to throw the error as early as possible
         assertAdding();
-        if (attribute.isInstance(object)) {
-            add(attribute.cast(object), cacheInfo, shape);
-        } else if (object instanceof Convertible) {
-            T converted = ((Convertible) object).convertTo(attribute.clazz);
-            if (converted == null) {
-                return;
-            }
+        T converted = Convertible.getAs(object, attribute.clazz);
+        if (converted != null) {
             add(converted, cacheInfo, shape);
         }
     }
@@ -228,13 +228,13 @@ public class AttributeList<T> extends AbstractAttributeList<T> {
         VoxelShape combined = VoxelShapes.empty();
         for (Box box : shape.getBoundingBoxes()) {
             // Offset it a tiny bit to allow an obstacle to return attributes (as otherwise it would block itself)
-            box = box.offset(new Vec3d(direction.getVector()).multiply(1 / 32.0));
-            double minX = box.x1;
-            double minY = box.y1;
-            double minZ = box.z1;
-            double maxX = box.x2;
-            double maxY = box.y2;
-            double maxZ = box.z2;
+            box = box.offset(Vec3d.of(direction.getVector()).multiply(1 / 32.0));
+            double minX = box.minX;
+            double minY = box.minY;
+            double minZ = box.minZ;
+            double maxX = box.maxX;
+            double maxY = box.maxY;
+            double maxZ = box.maxZ;
             switch (direction) {
                 // @formatter:off
                 case DOWN: minY = 0; break;
@@ -279,10 +279,21 @@ public class AttributeList<T> extends AbstractAttributeList<T> {
 
         VoxelShape leftover = VoxelShapes.combine(searchShape, obstructingShape, BooleanBiFunction.ONLY_FIRST);
         if (dir.getDirection() == AxisDirection.POSITIVE) {
-            return searchShape.getMaximum(dir.getAxis()) == leftover.getMaximum(dir.getAxis());
+            return searchShape.getMax(dir.getAxis()) == leftover.getMax(dir.getAxis());
         } else {
-            return searchShape.getMinimum(dir.getAxis()) == leftover.getMinimum(dir.getAxis());
+            return searchShape.getMin(dir.getAxis()) == leftover.getMin(dir.getAxis());
         }
+    }
+
+    /** @return True if any calls to {@link #add(Object, CacheInfo, VoxelShape)} have been made. */
+    public boolean hasOfferedAny() {
+        return offeredCount > 0;
+    }
+
+    /** @return The number of calls to {@link #add(Object, CacheInfo, VoxelShape)} (including calls to
+     *         {@link #offer(Object)} and it's variants). */
+    public int getOfferedCount() {
+        return offeredCount;
     }
 
     /** @return A combined version of this list and then the second given list, or the attribute's default value if both

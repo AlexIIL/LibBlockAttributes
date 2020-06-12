@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
  * <p>
  * All names are nonstandard to ensure that we don't expose them unnecessarily to consumers. */
 /* package-private */ abstract class FluidAmountBase<T extends FluidAmountBase<T>> implements Comparable<T> {
+    FluidAmountBase() {}
 
     // ################
     // Properties

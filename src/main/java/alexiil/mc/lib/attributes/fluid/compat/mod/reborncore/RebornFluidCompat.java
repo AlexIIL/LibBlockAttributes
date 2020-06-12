@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-package alexiil.mc.lib.attributes.fluid.compat.reborncore;
+package alexiil.mc.lib.attributes.fluid.compat.mod.reborncore;
 
 import java.math.RoundingMode;
 import java.util.Collections;
@@ -44,6 +44,8 @@ import reborncore.common.util.Tank;
     private RebornFluidCompat() {}
 
     static void load() {
+        // Unfortunately nothing about reborn core's blocks tells us if we can get a tank from them
+        // so instead we have to register last, using the old methods.
         FluidAttributes.INSERTABLE.appendBlockAdder(RebornFluidCompat::add);
         FluidAttributes.EXTRACTABLE.appendBlockAdder(RebornFluidCompat::add);
         FluidAttributes.GROUPED_INV_VIEW.appendBlockAdder(RebornFluidCompat::add);
@@ -156,7 +158,8 @@ import reborncore.common.util.Tank;
             if (tankAmount <= 0) {
                 return FluidVolumeUtil.EMPTY;
             }
-            int available = Math.min(tankAmount, Math.min(max.getRawValue(), maxAmount.asInt(REBORN_UNIT, RoundingMode.DOWN)));
+            int available
+                = Math.min(tankAmount, Math.min(max.getRawValue(), maxAmount.asInt(REBORN_UNIT, RoundingMode.DOWN)));
             if (available <= 0) {
                 return FluidVolumeUtil.EMPTY;
             }

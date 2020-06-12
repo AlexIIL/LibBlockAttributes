@@ -56,12 +56,14 @@ public final class PotionFluidVolume extends FluidVolume {
         return (PotionFluidKey) fluidKey;
     }
 
+    /** @deprecated Replaced by {@link #getFullTooltip()}. */
     @Override
     @Environment(EnvType.CLIENT)
+    @Deprecated
     public List<Text> getTooltipText(TooltipContext ctx) {
-        List<Text> list = super.getTooltipText(ctx);
-        PotionUtil.buildTooltip(PotionUtil.setPotion(new ItemStack(Items.POTION), getPotion()), list, 1.0F);
-        return list;
+        List<Text> tooltip = super.getTooltipText(ctx);
+        PotionUtil.buildTooltip(PotionUtil.setPotion(new ItemStack(Items.POTION), getPotion()), tooltip, 1.0F);
+        return tooltip;
     }
 
     @Override

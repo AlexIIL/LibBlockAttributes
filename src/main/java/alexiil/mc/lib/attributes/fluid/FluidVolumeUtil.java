@@ -77,6 +77,14 @@ public final class FluidVolumeUtil {
      * {@link FluidInsertable}, provided they match the given {@link FluidFilter}.
      * 
      * @return A copy of the fluid moved. */
+    public static FluidVolume move(FluidExtractable from, FluidInsertable to, FluidFilter filter) {
+        return move(from, to, filter, null);
+    }
+
+    /** Attempts to move up to the given maximum amount of fluids from the {@link FluidExtractable} to the
+     * {@link FluidInsertable}, provided they match the given {@link FluidFilter}.
+     * 
+     * @return A copy of the fluid moved. */
     public static FluidVolume move(
         FluidExtractable from, FluidInsertable to, @Nullable FluidFilter filter, @Nullable FluidAmount maximum
     ) {
@@ -356,7 +364,7 @@ public final class FluidVolumeUtil {
          *         {@link ItemContainerStatus#NOT_CHECKED}. */
         public boolean didCheckItemStack() {
             return intoTankStatus != ItemContainerStatus.NOT_CHECKED
-                || fromTankStatus != ItemContainerStatus.NOT_CHECKED;
+            || fromTankStatus != ItemContainerStatus.NOT_CHECKED;
         }
 
         /** Converts this interaction result into a vanilla minecraft {@link ActionResult}, suitable for normal block or

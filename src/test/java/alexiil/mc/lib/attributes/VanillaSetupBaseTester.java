@@ -41,23 +41,36 @@ public class VanillaSetupBaseTester {
 
         // For testing purposes, copied from en_us.json
         map.put("libblockattributes.fluid.amount", "%1$s %2$s");
-        map.put("libblockattributes.fluid.flow_rate", "%2$s per %1$s");
-        map.put("libblockattributes.fluid.tank_empty", "Empty %s Tank");
-        map.put("libblockattributes.fluid.tank_full", "Full %s Tank");
-        map.put("libblockattributes.fluid.tank_partial", "%2$s / %3$s %1$s Tank");
-        map.put("libblockattributes.fluid.tank_multi_unit", "%2$s in a %1s Tank");
+        map.put("libblockattributes.fluid.name", "%1$s of %2$s");
+        map.put("libblockattributes.fluid.tank_empty.short", "0/%1$s");
+        map.put("libblockattributes.fluid.tank_empty.long", "Empty %s Tank");
+        map.put("libblockattributes.fluid.tank_full.short", "%1$s/%1$s");
+        map.put("libblockattributes.fluid.tank_full.long", "Full %1$s Tank");
+        map.put("libblockattributes.fluid.tank_partial.short", "%1$s/%2$s");
+        map.put("libblockattributes.fluid.tank_partial.long", "%1$s in a %2$s Tank");
+        map.put("libblockattributes.fluid.tank_multi_unit.short", "%1$s/%2$s");
+        map.put("libblockattributes.fluid.tank_multi_unit.long", "%1$s in a %2$s Tank");
         map.put("libblockattributes.fluid.multi_unit.2", "%1$s %2$s and %3$s %4$s");
         map.put("libblockattributes.fluid.multi_unit.3", "%1$s %2$s, %3$s %4$s, and %5$s %6$s");
         map.put("libblockattributes.fluid.multi_unit.4", "%1$s %2$s, %3$s %4$s, %5$s %6$s, and %7$s %8$s");
-        map.put("libblockattributes.fluid.multi_unit.combiner", "%1$s, %2$s %3$s");
-        map.put("libblockattributes.fluid.multi_unit.end", "%1$s, and %2$s %3$s");
-        map.put("libblockattributes.time_unit.tick", "Tick");
-        map.put("libblockattributes.time_unit.second", "Second");
-        map.put("libblockattributes.time_unit.minute", "Minute");
+        map.put("libblockattributes.fluid.multi_unit.combiner", "%1$s %2$s %3$s");
+        map.put("libblockattributes.fluid.multi_unit.end", "%1$s and %2$s %3$s");
+        map.put("libblockattributes.fluid.flow_rate.short", "%1$s/%2$s");
+        map.put("libblockattributes.fluid.flow_rate.long", "%1$s per %2$s");
+        map.put("libblockattributes.time_unit.tick.singular", "Tick");
+        map.put("libblockattributes.time_unit.tick.plural", "Ticks");
+        map.put("libblockattributes.time_unit.tick.symbol", "t");
+        map.put("libblockattributes.time_unit.second.singular", "Second");
+        map.put("libblockattributes.time_unit.second.plural", "Seconds");
+        map.put("libblockattributes.time_unit.second.symbol", "s");
         map.put("libblockattributes.fluid_unit.bucket.singular", "Bucket");
         map.put("libblockattributes.fluid_unit.bucket.plural", "Buckets");
+        map.put("libblockattributes.fluid_unit.bucket.symbol", "B");
         map.put("libblockattributes.fluid_unit.bottle.singular", "Bottle");
         map.put("libblockattributes.fluid_unit.bottle.plural", "Bottles");
+        map.put("libblockattributes.fluid_unit.bottle.symbol", "b");
+        map.put("libblockattributes.fluid_property.advanced_prefix_key", "Property, %1$s");
+        map.put("libblockattributes.fluid_property.advanced_prefix_value", "Value, %1$s");
 
         // And some custom ones
 
@@ -68,6 +81,26 @@ public class VanillaSetupBaseTester {
         map.put("libblockattributes.fluid_unit.nugget.singular", "Nugget");
         map.put("libblockattributes.fluid_unit.nugget.plural", "Nuggets");
 
-        Language.load(map);
+        Language.setInstance(new Language() {
+            @Override
+            public boolean isRightToLeft() {
+                return false;
+            }
+
+            @Override
+            public String reorder(String string, boolean bl) {
+                return string;
+            }
+
+            @Override
+            public boolean hasTranslation(String key) {
+                return map.containsKey(key);
+            }
+
+            @Override
+            public String get(String key) {
+                return map.getOrDefault(key, key);
+            }
+        });
     }
 }

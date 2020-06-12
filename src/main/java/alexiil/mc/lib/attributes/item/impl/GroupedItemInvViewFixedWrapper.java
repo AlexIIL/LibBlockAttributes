@@ -119,7 +119,7 @@ public class GroupedItemInvViewFixedWrapper implements GroupedItemInvView {
                     int previousAmount = this.getAmount(previous);
                     listener.onChange(this, previous, previousAmount + previous.getCount(), previousAmount);
                 } else {
-                    if (ItemStack.areEqualIgnoreDamage(previous, current)) {
+                    if (ItemStack.areEqual(previous, current)) {
                         int currentAmount = this.getAmount(current);
                         int diff = current.getCount() - previous.getCount();
                         listener.onChange(this, current, currentAmount - diff, currentAmount);

@@ -17,7 +17,6 @@ import net.minecraft.world.World;
 
 /** Various methods for creating {@link SearchOption} instances. */
 public final class SearchOptions {
-
     private SearchOptions() {}
 
     /** A {@link SearchOption} that has no constraints, and will get every attribute instance that is obtainable without
@@ -79,8 +78,9 @@ public final class SearchOptions {
      *         <li>Pass the given {@link Predicate} {@link Predicate#test(Object) test}, and which</li>
      *         </ul>
      */
-    public static <T> SearchOptionDirectionalVoxel<T> inDirectionalVoxelMatching(Direction direction, VoxelShape shape,
-        Predicate<T> matcher) {
+    public static <T> SearchOptionDirectionalVoxel<T> inDirectionalVoxelMatching(
+        Direction direction, VoxelShape shape, Predicate<T> matcher
+    ) {
         return new SearchOptionDirectionalVoxel<>(direction, false, shape, matcher);
     }
 
@@ -93,8 +93,9 @@ public final class SearchOptions {
      *         In addition this will sort the resulting {@link AttributeList} that are returned from methods like
      *         {@link Attribute#getAll(World, BlockPos, SearchOption)} in the order that their {@link VoxelShape} will
      *         be encountered by the directional search. */
-    public static SearchOptionDirectionalVoxel<Object> inOrderedDirectionalVoxel(Direction direction,
-        VoxelShape shape) {
+    public static SearchOptionDirectionalVoxel<Object> inOrderedDirectionalVoxel(
+        Direction direction, VoxelShape shape
+    ) {
         return new SearchOptionDirectionalVoxel<>(direction, true, shape);
     }
 
@@ -109,8 +110,9 @@ public final class SearchOptions {
      *         In addition this will sort the resulting {@link AttributeList} that are returned from methods like
      *         {@link Attribute#getAll(World, BlockPos, SearchOption)} in the order that their {@link VoxelShape} will
      *         be encountered by the search. */
-    public static <T> SearchOptionDirectionalVoxel<T> inOrderedDirectionalVoxelMatching(Direction direction,
-        VoxelShape shape, Predicate<T> matcher) {
+    public static <T> SearchOptionDirectionalVoxel<T> inOrderedDirectionalVoxelMatching(
+        Direction direction, VoxelShape shape, Predicate<T> matcher
+    ) {
         return new SearchOptionDirectionalVoxel<>(direction, true, shape, matcher);
     }
 }

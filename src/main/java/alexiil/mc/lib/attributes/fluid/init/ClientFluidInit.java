@@ -10,6 +10,7 @@ package alexiil.mc.lib.attributes.fluid.init;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.SpriteAtlasTexture;
 
 import alexiil.mc.lib.attributes.fluid.volume.PotionFluidKey;
@@ -20,5 +21,13 @@ public class ClientFluidInit implements ClientModInitializer {
         ClientSpriteRegistryCallback.event(SpriteAtlasTexture.BLOCK_ATLAS_TEX).register((atlasTexture, registry) -> {
             registry.register(PotionFluidKey.POTION_TEXTURE);
         });
+
+        LbaFluidProxy.MC_TOOLTIPS_ADVANCED = () -> {
+            MinecraftClient mc = MinecraftClient.getInstance();
+            if (mc == null) {
+                return false;
+            }
+            return mc.options == null ? false : mc.options.advancedItemTooltips;
+        };
     }
 }

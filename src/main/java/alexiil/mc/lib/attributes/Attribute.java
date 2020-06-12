@@ -20,32 +20,104 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
 
 import alexiil.mc.lib.attributes.fatjar.FatJarChecker;
+import alexiil.mc.lib.attributes.misc.AbstractItemBasedAttribute;
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes.LbaModule;
 import alexiil.mc.lib.attributes.misc.LimitedConsumer;
 import alexiil.mc.lib.attributes.misc.Reference;
 import alexiil.mc.lib.attributes.misc.UnmodifiableRef;
 
+/** The central holding class for all attribute instances.
+ * <p>
+ * An {@link Attribute} can be of a single {@link Class} that should be accessible from blocks or items. Instances can
+ * be created from the various static factory methods in {@link Attributes}. Due to the different subclasses no registry
+ * is provided, so instances should be stored in a public static final field somewhere near the target class.
+ * <p>
+ * <h1>Usage</h1> All attributes offer "getAll" and "getFirstOrNull" methods.
+ * <p>
+ * <h1>Blocks</h1> Instances can be obtained from blocks with the {@link #getAll(World, BlockPos, SearchOption)} or
+ * {@link #getFirstOrNull(World, BlockPos, SearchOption)} methods, although the {@link SearchOption} can be omitted (or
+ * passed as null) if you don't wish to restrict what attributes are returned to you.<br>
+ * For convenience there is also a "getAllFromNeighbour" (and getFirstOrNullFromNeighbour) which takes a
+ * {@link BlockEntity} to search from, and a {@link Direction} to search in.
+ * <p>
+ * <h1>Items</h1> Instances can be obtained from items with the {@link #getAll(Reference, LimitedConsumer, Predicate)}
+ * or {@link #getFirstOrNull(Reference, LimitedConsumer, Predicate)} methods, however the predicate may be omitted (or
+ * passed as null) if you f you don't wish to restrict what attributes are returned to you.<br>
+ * <br>
+ * {@link ItemStack}s don't inherently have any information about what they are stored in (unlike blocks) so instead of
+ * a world and block position we use a {@link Reference} for the current stack, and a {@link LimitedConsumer} for the
+ * excess. The {@link Reference} may contain an item with any count, although generally only the uppermost item on the
+ * stack will be used by attributes. Attribute instances which modify the {@link ItemStack} are highly encouraged to
+ * extend {@link AbstractItemBasedAttribute} to help manage returning the modified {@link ItemStack} to the reference
+ * and limited consumer.
+ * <p>
+ * <h1>Entities</h1> Currently LBA doesn't offer support for entities, although it is planned.
+ * <p>
+ * <h1>Subclasses</h1> There are 2 provided subclasses of {@link Attribute}: {@link DefaultedAttribute} and
+ * {@link CombinableAttribute}.
+ * <p>
+ * <h1>Custom Adders</h1> If the target block or item doesn't implement {@link AttributeProvider} or
+ * {@link AttributeProviderItem} (or those methods don't offer the attribute instance that you need) then you can create
+ * a custom adder for each block or item that you need. The old (deprecated) method of adding custom attribute adders
+ * called every single one in the order that they were added. The new method however only matches a single one (per
+ * attribute), and has the following order:
+ * <ol>
+ * <li>If the block or item implements {@link AttributeProvider} or {@link AttributeProviderItem} directly then is is
+ * used first. If that adder didn't add anything then the next steps aren't skipped (so it will exit early if the
+ * block/item provided any implementations itself, otherwise it will try to find one).</li>
+ * <li>{@link AttributeSourceType#INSTANCE} implementations are considered:
+ * <ol>
+ * <li>If the block/item has an exact mapping registered in
+ * {@link #setBlockAdder(AttributeSourceType, Block, CustomAttributeAdder)} then it is used.</li>
+ * <li>Next, any predicate adders
+ * ({@link #addBlockPredicateAdder(AttributeSourceType, boolean, Predicate, CustomAttributeAdder)}) are considered (if
+ * they passed "true" for "specific").</li>
+ * <li>The exact class mapped by
+ * ({@link #putBlockClassAdder(AttributeSourceType, Class, boolean, CustomAttributeAdder)}) is considered (if they
+ * passed "false" for "matchSubclasses").</li>
+ * <li>Any super-classes or interfaces mapped by
+ * ({@link #putBlockClassAdder(AttributeSourceType, Class, boolean, CustomAttributeAdder)}) is considered (if they
+ * passed "true" for "matchSubclasses").</li>
+ * <li>Finally, any predicate adders
+ * ({@link #addBlockPredicateAdder(AttributeSourceType, boolean, Predicate, CustomAttributeAdder)}) are considered (if
+ * they passed "false" for "specific").</li>
+ * </ol>
+ * </li>
+ * <li>{@link AttributeSourceType#COMPAT_WRAPPER} implementations are considered, in the same order as
+ * {@link AttributeSourceType#INSTANCE} above.</li>
+ * <li>Finally everything registered to {@link #appendBlockAdder(CustomAttributeAdder)} is called. (Unlike every other
+ * adder above, every single one is called).</li>
+ * </ol>
+ */
 public class Attribute<T> {
     public final Class<T> clazz;
 
-    private final ArrayList<CustomAttributeAdder<T>> blockAdders = new ArrayList<>();
-    private final ArrayList<ItemAttributeAdder<T>> itemAdders = new ArrayList<>();
+    // TODO: Rename AdderList!
+    private final AdderList<Block, CustomAttributeAdder<T>> customBlockList;
+    private final AdderList<Item, ItemAttributeAdder<T>> customItemList;
+
+    private final ArrayList<CustomAttributeAdder<T>> fallbackBlockAdders = new ArrayList<>();
+    private final ArrayList<ItemAttributeAdder<T>> fallbackItemAdders = new ArrayList<>();
 
     protected Attribute(Class<T> clazz) {
         this.clazz = clazz;
+        customBlockList = new AdderList<>(clazz.getName(), Block.class, NullAttributeAdder.get(), Attribute::getName);
+        customItemList = new AdderList<>(clazz.getName(), Item.class, NullAttributeAdder.get(), Attribute::getName);
     }
 
     /** @deprecated Kept for backwards compatibility, instead you should call {@link #Attribute(Class)} followed by
      *             {@link #appendBlockAdder(CustomAttributeAdder)}. */
     @Deprecated
     protected Attribute(Class<T> clazz, CustomAttributeAdder<T> customAdder) {
-        this.clazz = clazz;
+        this(clazz);
         appendBlockAdder(customAdder);
     }
 
@@ -71,7 +143,59 @@ public class Attribute<T> {
 
     // ##########################
     //
-    // Custom Adders
+    // Custom Adders (Specific)
+    //
+    // ##########################
+
+    /** Sets the {@link CustomAttributeAdder} for the given block, which is only used if the block in question doesn't
+     * implement {@link AttributeProvider}. Only one {@link CustomAttributeAdder} may respond to a singular block. */
+    public final void setBlockAdder(AttributeSourceType sourceType, Block block, CustomAttributeAdder<T> adder) {
+        customBlockList.putExact(sourceType, block, adder);
+    }
+
+    /** Sets the {@link ItemAttributeAdder} for the given item, which is only used if the item in question doesn't
+     * implement {@link AttributeProviderItem}. Only one {@link CustomAttributeAdder} may respond to a singular item. */
+    public final void setItemAdder(AttributeSourceType sourceType, Item item, ItemAttributeAdder<T> adder) {
+        customItemList.putExact(sourceType, item, adder);
+    }
+
+    /** {@link Predicate}-based block attribute adder. If "specific" is true then these are called directly after
+     * {@link #setBlockAdder(AttributeSourceType, Block, CustomAttributeAdder)}, otherwise they are called after the
+     * class-based mappings have been called. */
+    public final void addBlockPredicateAdder(
+        AttributeSourceType sourceType, boolean specific, Predicate<Block> filter, CustomAttributeAdder<T> adder
+    ) {
+        customBlockList.addPredicateBased(sourceType, specific, filter, adder);
+    }
+
+    /** {@link Predicate}-based item attribute adder. If "specific" is true then these are called directly after
+     * {@link #setItemAdder(AttributeSourceType, Item, ItemAttributeAdder)}, otherwise they are called after the
+     * class-based mappings have been called. */
+    public final void addItemPredicateAdder(
+        AttributeSourceType sourceType, boolean specific, Predicate<Item> filter, ItemAttributeAdder<T> adder
+    ) {
+        customItemList.addPredicateBased(sourceType, specific, filter, adder);
+    }
+
+    /** {@link Class}-based block attribute adder. If no specific predicate adder has been registered then this checks
+     * for an exact class match, and then for a super-type match. Only one adder may be present for any given class. */
+    public final void putBlockClassAdder(
+        AttributeSourceType sourceType, Class<?> clazz, boolean matchSubclasses, CustomAttributeAdder<T> adder
+    ) {
+        customBlockList.putClassBased(sourceType, clazz, matchSubclasses, adder);
+    }
+
+    /** {@link Class}-based item attribute adder. If no specific predicate adder has been registered then this checks
+     * for an exact class match, and then for a super-type match. */
+    public final void putItemClassAdder(
+        AttributeSourceType sourceType, Class<?> clazz, boolean matchSubclasses, ItemAttributeAdder<T> adder
+    ) {
+        customItemList.putClassBased(sourceType, clazz, matchSubclasses, adder);
+    }
+
+    // ##########################
+    //
+    // Custom Adders (List)
     //
     // ##########################
 
@@ -83,20 +207,22 @@ public class Attribute<T> {
     }
 
     /** Appends a single {@link CustomAttributeAdder} to the list of custom block adders. These are called only for
-     * blocks that don't implement {@link AttributeProvider}.
+     * blocks that don't implement {@link AttributeProvider}, or have an existing registration in one of the more
+     * specific methods above.
      * 
      * @return This. */
     public Attribute<T> appendBlockAdder(CustomAttributeAdder<T> blockAdder) {
-        blockAdders.add(blockAdder);
+        fallbackBlockAdders.add(blockAdder);
         return this;
     }
 
     /** Appends a single {@link ItemAttributeAdder} to the list of custom item adders. These are called only for items
-     * that don't implement {@link AttributeProviderItem}.
+     * that don't implement {@link AttributeProviderItem}, or have an existing registration in one of the more specific
+     * methods above.
      * 
      * @return This. */
     public Attribute<T> appendItemAdder(ItemAttributeAdder<T> itemAdder) {
-        itemAdders.add(itemAdder);
+        fallbackItemAdders.add(itemAdder);
         return this;
     }
 
@@ -111,12 +237,21 @@ public class Attribute<T> {
         Block block = state.getBlock();
 
         if (block instanceof AttributeProvider) {
+            int offeredBefore = list.getOfferedCount();
             AttributeProvider attributeBlock = (AttributeProvider) block;
             attributeBlock.addAllAttributes(world, pos, state, list);
-        } else {
-            for (CustomAttributeAdder<T> custom : blockAdders) {
-                custom.addAll(world, pos, state, list);
+            if (offeredBefore < list.getOfferedCount()) {
+                return;
             }
+        }
+
+        CustomAttributeAdder<T> c = customBlockList.get(block);
+        if (c != null) {
+            c.addAll(world, pos, state, list);
+            return;
+        }
+        for (CustomAttributeAdder<T> custom : fallbackBlockAdders) {
+            custom.addAll(world, pos, state, list);
         }
     }
 
@@ -189,12 +324,20 @@ public class Attribute<T> {
         Item item = stack.getItem();
 
         if (item instanceof AttributeProviderItem) {
+            int offeredBefore = list.getOfferedCount();
             AttributeProviderItem attributeItem = (AttributeProviderItem) item;
             attributeItem.addAllAttributes(stackRef, excess, list);
-        } else {
-            for (ItemAttributeAdder<T> custom : itemAdders) {
-                custom.addAll(stackRef, excess, list);
+            if (offeredBefore < list.getOfferedCount()) {
+                return;
             }
+        }
+        ItemAttributeAdder<T> c = customItemList.get(item);
+        if (c != null) {
+            c.addAll(stackRef, excess, list);
+            return;
+        }
+        for (ItemAttributeAdder<T> custom : fallbackItemAdders) {
+            custom.addAll(stackRef, excess, list);
         }
     }
 
@@ -350,6 +493,25 @@ public class Attribute<T> {
         Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excess, @Nullable Predicate<T> filter
     ) {
         return getAll(stackRef, excess, filter).getFirstOrNull();
+    }
+
+    private static String getName(Block block) {
+        Identifier id = Registry.BLOCK.getId(block);
+        if (!Registry.BLOCK.getDefaultId().equals(id)) {
+            return id.toString();
+        } else {
+            return "UnknownBlock{" + block.getClass() + " @" + Integer.toHexString(System.identityHashCode(block))
+                + "}";
+        }
+    }
+
+    private static String getName(Item item) {
+        Identifier id = Registry.ITEM.getId(item);
+        if (!Registry.ITEM.getDefaultId().equals(id)) {
+            return id.toString();
+        } else {
+            return "UnknownItem{" + item.getClass() + " @" + Integer.toHexString(System.identityHashCode(item)) + "}";
+        }
     }
 
     static {

@@ -80,7 +80,7 @@ public class BucketItemMixin extends Item implements FluidProviderItem, IBucketI
             if (amount.isGreaterThan(with.obj.getAmount_F())) {
                 continue;
             }
-            if (!ItemStack.areEqualIgnoreDamage(stackRef.obj, stack.obj)) {
+            if (!ItemStack.areEqual(stackRef.obj, stack.obj)) {
                 continue;
             }
             with.obj = with.obj.copy();
@@ -117,7 +117,7 @@ public class BucketItemMixin extends Item implements FluidProviderItem, IBucketI
         } else if (this != Items.BUCKET) {
             if (!logged_nonVanillaButNotCustom) {
                 logged_nonVanillaButNotCustom = true;
-                LibBlockAttributes.LOGGER.warn("Unknown non-vanilla BucketItem ");
+                LibBlockAttributes.LOGGER.warn("Unknown non-vanilla BucketItem " + Registry.ITEM.getId(this));
             }
             return ItemStack.EMPTY;
         }

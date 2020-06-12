@@ -22,8 +22,8 @@ public final class ItemInvModificationTracker {
     private ItemInvModificationTracker() {}
 
     private static final boolean ENABLED = AttributeUtil.EXPENSIVE_DEBUG_CHECKS;
-    private static final Map<ItemStack, TrackedItemStackState> stacks =
-        Collections.synchronizedMap(new WeakHashMap<>());
+    private static final Map<ItemStack, TrackedItemStackState> stacks
+        = Collections.synchronizedMap(new WeakHashMap<>());
 
     /** Tracks the given ItemStack to ensure that it hasn't changed by the time it is garbage collected. */
     public static void trackNeverChanging(ItemStack stack) {
@@ -48,11 +48,12 @@ public final class ItemInvModificationTracker {
         }
 
         void check(ItemStack current) {
-            if (ItemStack.areEqualIgnoreDamage(current, copy)) {
+            if (ItemStack.areEqual(current, copy)) {
                 return;
             }
-            throw new IllegalStateException("The ItemStack that is stored has been changed! (\n\tOriginal = "
-                + stackToFullString(copy) + ", \n\tChanged = " + stackToFullString(current) + ")", stack);
+            throw new IllegalStateException(
+                "The ItemStack that is stored has been changed! (\n\tOriginal = " + stackToFullString(copy) + ", \n\tChanged = " + stackToFullString(current) + ")", stack
+            );
         }
     }
 

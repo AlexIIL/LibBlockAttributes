@@ -14,24 +14,23 @@ import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
-import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.util.registry.Registry;
 
 public final class FluidRegistryEntry<T> extends FluidEntry {
 
-    final MutableRegistry<T> backingRegistry;
+    final Registry<T> backingRegistry;
     final T backingObject;
     final Identifier objId;
 
     public FluidRegistryEntry(DefaultedRegistry<T> backingRegistry, T backingObject) {
-        this((MutableRegistry<T>) backingRegistry, backingObject);
+        this((Registry<T>) backingRegistry, backingObject);
     }
 
-    public FluidRegistryEntry(MutableRegistry<T> backingRegistry, T backingObject) {
+    public FluidRegistryEntry(Registry<T> backingRegistry, T backingObject) {
         this(backingRegistry, backingObject, backingRegistry.getId(backingObject));
     }
 
-    private FluidRegistryEntry(MutableRegistry<T> backingRegistry, T backingObject, Identifier objId) {
+    private FluidRegistryEntry(Registry<T> backingRegistry, T backingObject, Identifier objId) {
         super(computeHash(backingRegistry, backingObject, objId));
         if (backingRegistry == null) {
             throw new NullPointerException("backingRegistry");
@@ -50,7 +49,7 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
         this.objId = objId;
     }
 
-    private static <T> int computeHash(MutableRegistry<T> backingRegistry, T obj, Identifier objId) {
+    private static <T> int computeHash(Registry<T> backingRegistry, T obj, Identifier objId) {
         if (objId == null) {
             throw new IllegalArgumentException(
                 "You cannot use " + obj + " with this because it's not registered with " + backingRegistry
@@ -60,13 +59,13 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
         return System.identityHashCode(backingRegistry) * 31 + objId.hashCode();
     }
 
-    static String getName(MutableRegistry<?> registry) {
+    static String getName(Registry<?> registry) {
         if (registry == Registry.FLUID) {
             return "f";
         } else if (registry == Registry.POTION) {
             return "p";
         } else {
-            Identifier id = Registry.REGISTRIES.getId(registry);
+            Identifier id = ((Registry<Registry<?>>) Registry.REGISTRIES).getId(registry);
             if (id == null) {
                 throw new IllegalArgumentException("Unregistered registry: " + registry);
             }
@@ -82,7 +81,7 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
             return Registry.POTION;
         } else {
             Identifier id = Identifier.tryParse(name);
-            MutableRegistry<?> registry = Registry.REGISTRIES.get(id);
+            Registry<?> registry = Registry.REGISTRIES.get(id);
             if (registry instanceof DefaultedRegistry<?>) {
                 return (DefaultedRegistry<?>) registry;
             }

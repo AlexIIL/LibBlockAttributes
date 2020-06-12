@@ -191,6 +191,12 @@ public interface FluidExtractable {
         return attemptExtraction(ConstantFluidFilter.ANYTHING, maxAmount, Simulation.ACTION);
     }
 
+    /** @return True if {@link #attemptAnyExtraction(FluidAmount, Simulation) attemptAnyExtraction}(FluidAmount.ONE,
+     *         SIMULATE) returns a non-empty {@link FluidVolume}. */
+    default boolean couldExtractAnything() {
+        return !attemptAnyExtraction(FluidAmount.ONE, Simulation.SIMULATE).isEmpty();
+    }
+
     public static void validateFluidExtractable(FluidExtractable instance) {
         Class<?> c = instance.getClass();
         try {

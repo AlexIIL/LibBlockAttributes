@@ -25,16 +25,15 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Attribute;
 import alexiil.mc.lib.attributes.AttributeCombiner;
+import alexiil.mc.lib.attributes.AttributeSourceType;
 import alexiil.mc.lib.attributes.Attributes;
 import alexiil.mc.lib.attributes.CombinableAttribute;
-import alexiil.mc.lib.attributes.ItemAttributeList;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fatjar.FatJarChecker;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
-import alexiil.mc.lib.attributes.fluid.compat.reborncore.RebornCompatLoader;
-import alexiil.mc.lib.attributes.fluid.compat.silk.SilkFluidCompat;
+import alexiil.mc.lib.attributes.fluid.compat.mod.LbaFluidModCompatLoader;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
@@ -54,7 +53,6 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.misc.AbstractItemBasedAttribute;
-import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes.LbaModule;
 import alexiil.mc.lib.attributes.misc.LimitedConsumer;
 import alexiil.mc.lib.attributes.misc.Reference;
@@ -118,43 +116,28 @@ public final class FluidAttributes {
             list -> AggregateFluidFilter.allOf(list)//
         );
 
-        try {
-            Class.forName("io.github.prospector.silk.fluid.FluidContainerProvider");
-            LibBlockAttributes.LOGGER.info("Silk found, loading compatibility for fluids.");
-            SilkFluidCompat.load();
-        } catch (ClassNotFoundException cnfe) {
-            LibBlockAttributes.LOGGER.info("Silk not found, not loading compatibility for fluids.");
-        }
-
-        RebornCompatLoader.load();
+        LbaFluidModCompatLoader.load();
     }
 
     public static <T> CombinableAttribute<T> create(
         Class<T> clazz, @Nonnull T defaultValue, AttributeCombiner<T> combiner, Function<FixedFluidInv, T> convertor
     ) {
-        return Attributes.createCombinable(clazz, defaultValue, combiner)//
-            .appendItemAdder((stackRef, excess, to) -> appendItemAttributes(convertor, stackRef, excess, to));
-    }
-
-    private static <T> void appendItemAttributes(
-        Function<FixedFluidInv, T> convertor, Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excess,
-        ItemAttributeList<T> to
-    ) {
-        ItemStack stack = stackRef.get();
-        Item item = stack.getItem();
-
-        if (item instanceof FishBucketItem) {
-            return;
-        }
-
-        if (isValidBucket(stack)) {
-            to.offer(new BucketItemGroupedFluidInv(stackRef, excess));
-            return;
-        }
+        CombinableAttribute<T> attribute = Attributes.createCombinable(clazz, defaultValue, combiner);
+        AttributeSourceType srcType = AttributeSourceType.COMPAT_WRAPPER;
+        attribute.addItemPredicateAdder(srcType, true, FluidAttributes::isValidBucket, (ref, excess, list) -> {
+            list.offer(new BucketItemGroupedFluidInv(ref, excess));
+        });
+        return attribute;
     }
 
     private static boolean isValidBucket(ItemStack stack) {
-        Item item = stack.getItem();
+        return isValidBucket(stack.getItem());
+    }
+
+    private static boolean isValidBucket(Item item) {
+        if (item instanceof FishBucketItem) {
+            return false;
+        }
         return item instanceof IBucketItem && ((IBucketItem) item).libblockattributes__shouldExposeFluid();
     }
 

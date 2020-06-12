@@ -7,6 +7,8 @@
  */
 package alexiil.mc.lib.attributes;
 
+/** Misleadingly named class: this only stores the boolean checker {@link #EXPENSIVE_DEBUG_CHECKS}, and doesn't actually
+ * have any other utility methods. */
 public final class AttributeUtil {
     private AttributeUtil() {}
 

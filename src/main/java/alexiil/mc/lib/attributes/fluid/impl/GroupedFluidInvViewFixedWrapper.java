@@ -85,28 +85,26 @@ public class GroupedFluidInvViewFixedWrapper implements GroupedFluidInvView {
                     // No changes: don't propagate
                 } else {
                     FluidAmount currentAmount = this.getAmount_F(current.fluidKey);
-                    listener.onChange(
-                        this, current.fluidKey, currentAmount.roundedSub(current.getAmount_F()), currentAmount
-                    );
+                    listener.onChange(this, current.fluidKey, currentAmount.sub(current.amount()), currentAmount);
                 }
             } else {
                 if (current.isEmpty()) {
                     FluidAmount previousAmount = this.getAmount_F(previous.fluidKey);
-                    FluidAmount prev = previousAmount.roundedAdd(previous.getAmount_F());
+                    FluidAmount prev = previousAmount.add(previous.amount());
                     listener.onChange(this, previous.fluidKey, prev, previousAmount);
                 } else {
                     if (previous.fluidKey == current.fluidKey) {
                         FluidAmount currentAmount = this.getAmount_F(current.fluidKey);
-                        FluidAmount diff = current.getAmount_F().roundedSub(previous.getAmount_F());
-                        listener.onChange(this, current.fluidKey, currentAmount.roundedSub(diff), currentAmount);
+                        FluidAmount diff = current.amount().sub(previous.amount());
+                        listener.onChange(this, current.fluidKey, currentAmount.sub(diff), currentAmount);
                     } else {
                         FluidAmount currentAmount = this.getAmount_F(current.fluidKey);
                         FluidAmount previousAmount = this.getAmount_F(previous.fluidKey);
 
-                        FluidAmount newPrev = currentAmount.roundedSub(current.getAmount_F());
+                        FluidAmount newPrev = currentAmount.sub(current.amount());
                         listener.onChange(this, current.fluidKey, newPrev, currentAmount);
 
-                        FluidAmount oldPrev = previousAmount.roundedAdd(previous.getAmount_F());
+                        FluidAmount oldPrev = previousAmount.add(previous.amount());
                         listener.onChange(this, previous.fluidKey, oldPrev, previousAmount);
                     }
                 }

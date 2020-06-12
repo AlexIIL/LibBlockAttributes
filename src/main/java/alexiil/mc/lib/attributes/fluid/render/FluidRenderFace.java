@@ -161,17 +161,17 @@ public final class FluidRenderFace {
         if (positive) {
             return new FluidRenderFace(
                 x1, y0, z0, z0 * s, y0 * s, //
-                x1, y1, z0, z1 * s, y0 * s, //
+                x1, y1, z0, z0 * s, y1 * s, //
                 x1, y1, z1, z1 * s, y1 * s, //
-                x1, y0, z1, z0 * s, y1 * s, //
+                x1, y0, z1, z1 * s, y0 * s, //
                 FULL_LIGHT, +1, 0, 0, flowing
             );
         } else {
             return new FluidRenderFace(
                 x0, y0, z0, z0 * s, y0 * s, //
-                x0, y0, z1, z0 * s, y1 * s, //
+                x0, y0, z1, z1 * s, y0 * s, //
                 x0, y1, z1, z1 * s, y1 * s, //
-                x0, y1, z0, z1 * s, y0 * s, //
+                x0, y1, z0, z0 * s, y1 * s, //
                 FULL_LIGHT, -1, 0, 0, flowing
             );
         }

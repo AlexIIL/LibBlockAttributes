@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.2.7-alex.8'
+    id 'fabric-loom' version '0.2.7-SNAPSHOT'
     id 'net.minecrell.licenser' version '0.4.1'
 }
 
@@ -11,10 +11,11 @@ targetCompatibility = 1.8
 repositories {
     mavenLocal()
     maven { name="Modmuss50"; url="https://maven.modmuss50.me/" }
+    maven { name="Jitpack"; url = "https://jitpack.io" }
 }
 
 archivesBaseName = "libblockatttributes"
-version = "0.6.6"
+version = "0.7.0"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -25,18 +26,21 @@ minecraft {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:1.15.2"
-    mappings "net.fabricmc:yarn:1.15.2+build.7:v2"
-    modCompile "net.fabricmc:fabric-loader:0.7.6+build.179"
+    minecraft "com.mojang:minecraft:1.16-pre4"
+    mappings "net.fabricmc:yarn:1.16-pre4+build.1:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.8.7+build.201"
 
     //Fabric api
-    modCompile "net.fabricmc.fabric-api:fabric-api:0.4.29+build.290-1.15"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.12.0+build.360-1.16"
 
     // Silk API
-    modImplementation "io.github.prospector.silk:SilkAPI:${silk_version}"
+    modImplementation("io.github.prospector.silk:SilkAPI:${silk_version}") { transitive = false }
 
     // RebornCore
     modImplementation("RebornCore:RebornCore-1.15:${reborncore_version}") { transitive = false }
+
+    // Item-inventory
+    modImplementation("com.github.emilyploszaj:item-inventory:v1.1.0") { transitive = false }
 
     // Misc
     compile "com.google.code.findbugs:jsr305:3.0.1"

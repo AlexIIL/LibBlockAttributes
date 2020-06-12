@@ -67,7 +67,7 @@ public abstract class ItemInvTester extends VanillaSetupBaseTester {
     }
 
     public static void assertEquals(ItemStack expected, ItemStack actual) {
-        if (!ItemStack.areEqualIgnoreDamage(expected, actual)) {
+        if (!ItemStack.areEqual(expected, actual)) {
             Assert.fail("Expected <" + expected + "> but got <" + actual + ">");
         }
     }

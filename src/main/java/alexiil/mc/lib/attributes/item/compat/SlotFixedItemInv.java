@@ -7,31 +7,54 @@
  */
 package alexiil.mc.lib.attributes.item.compat;
 
-import net.minecraft.container.Container;
-import net.minecraft.container.Slot;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.slot.Slot;
 
+import alexiil.mc.lib.attributes.Convertible;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.misc.StackReference;
 
-public class SlotFixedItemInv extends Slot {
+public class SlotFixedItemInv extends Slot implements Convertible {
 
     public final FixedItemInv inv;
     public final int slotIndex;
-    private final InventoryFixedWrapper wrapper;
+    public final boolean server;
+    private final InventoryFixedWrapper serverWrapper;
+    private StackReference realRef;
 
-    private ItemStack forcedClientStackOverride = ItemStack.EMPTY;
-
-    public SlotFixedItemInv(Container container, FixedItemInv inv, int slotIndex, int x, int y) {
-        super(new InventoryFixedWrapper(inv) {
-            @Override
-            public boolean canPlayerUseInv(PlayerEntity player) {
-                return container.canUse(player);
-            }
-        }, slotIndex, x, y);
+    public SlotFixedItemInv(ScreenHandler container, FixedItemInv inv, boolean server, int slotIndex, int x, int y) {
+        super(createInv(container, inv, server), server ? 0 : slotIndex, x, y);
         this.inv = inv;
         this.slotIndex = slotIndex;
-        this.wrapper = (InventoryFixedWrapper) this.inventory;
+        this.server = server;
+        if (server) {
+            this.serverWrapper = (InventoryFixedWrapper) this.inventory;
+            this.realRef = inv.getSlot(slotIndex);
+        } else {
+            this.serverWrapper = null;
+        }
+    }
+
+    private static Inventory createInv(ScreenHandler container, FixedItemInv inv, boolean server) {
+        if (server) {
+            return new InventoryFixedWrapper(inv) {
+                @Override
+                public boolean canPlayerUse(PlayerEntity player) {
+                    return container.canUse(player);
+                }
+            };
+        } else {
+            return new SimpleInventory(1) {
+                @Override
+                public boolean canPlayerUse(PlayerEntity player) {
+                    return container.canUse(player);
+                }
+            };
+        }
     }
 
     @Override
@@ -46,39 +69,43 @@ public class SlotFixedItemInv extends Slot {
 
     @Override
     public void setStack(ItemStack stack) {
-        if (wrapper.softSetInvStack(slotIndex, stack)) {
-            markDirty();
-            if (isClient()) {
-                forcedClientStackOverride = stack;
+        if (server) {
+            if (serverWrapper.softSetInvStack(slotIndex, stack)) {
+                markDirty();
             }
         } else {
-            if (isClient()) {
-                forcedClientStackOverride = stack;
-            } else {
-                throw new IllegalStateException("You cannot set ");
+            super.setStack(stack);
+        }
+    }
+
+    @Override
+    public <T> T convertTo(Class<T> otherType) {
+        if (StackReference.class.isAssignableFrom(otherType)) {
+            if (realRef == null) {
+                realRef = new StackReference() {
+                    @Override
+                    public boolean set(ItemStack stack) {
+                        if (isValid(stack)) {
+                            SlotFixedItemInv.super.setStack(stack);
+                            return false;
+                        } else {
+                            return false;
+                        }
+                    }
+
+                    @Override
+                    public boolean isValid(ItemStack stack) {
+                        return inv.isItemValidForSlot(slotIndex, stack);
+                    }
+
+                    @Override
+                    public ItemStack get() {
+                        return getStack();
+                    }
+                };
             }
+            return otherType.cast(realRef);
         }
-    }
-
-    @Override
-    public ItemStack takeStack(int amount) {
-        ItemStack taken = super.takeStack(amount);
-        if (isClient()) {
-            forcedClientStackOverride = wrapper.getInvStack(slotIndex);
-        }
-        return taken;
-    }
-
-    private static boolean isClient() {
-        // TODO: A more useful test to determine if this slot really is on the client and not the server.
-        return true;
-    }
-
-    @Override
-    public ItemStack getStack() {
-        if (!forcedClientStackOverride.isEmpty()) {
-            return forcedClientStackOverride;
-        }
-        return super.getStack();
+        return null;
     }
 }

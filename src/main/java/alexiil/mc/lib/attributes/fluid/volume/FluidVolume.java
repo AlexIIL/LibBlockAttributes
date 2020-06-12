@@ -9,6 +9,7 @@ package alexiil.mc.lib.attributes.fluid.volume;
 
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -24,10 +25,11 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.fluid.BaseFluid;
 import net.minecraft.fluid.EmptyFluid;
+import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.potion.Potion;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -43,6 +45,20 @@ import alexiil.mc.lib.attributes.fluid.render.DefaultFluidVolumeRenderer;
 import alexiil.mc.lib.attributes.fluid.render.FluidRenderFace;
 import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer;
 
+/** An amount of a {@link FluidKey}, analogous to forge's FluidStack class or RebornCore's FluidInstance class. However
+ * there are a few key differences:
+ * <ol>
+ * <li>FluidVolume is abstract, and it's subclasses must be defined by the {@link FluidKey} rather than anyone else. As
+ * such you should always use the factory methods in {@link FluidKey}.</li>
+ * <li>LBA doesn't have any direct way to store arbitrary data in a {@link CompoundTag}/NBT, so instead all custom data
+ * must be stored in a way that's defined by the {@link FluidKey}, or a FluidProperty that's already been registered
+ * with the {@link FluidKey}.</li>
+ * <li>The amount field cannot be modified directly - instead you should either split or merge with any of the public
+ * split or merge/mergeInto methods in this class. That way the custom data can handle splitting and merging properly.
+ * Note that the only requirement for merging two {@link FluidVolume}s is that they have identical keys. (And are of the
+ * same class, but that's implied by having the same key).</li>
+ * </ol>
+ */
 public abstract class FluidVolume {
 
     /** The base unit for all fluids. This is arbitrarily chosen to be 1 / 1620 of a bucket. NOTE: You should
@@ -69,6 +85,12 @@ public abstract class FluidVolume {
 
     private FluidAmount amount;
 
+    /** Property value array. If this is null (or any of it's entries are null) then it indicates that the property is
+     * using it's default value, and hasn't explicitly been changed yet. Property keys are indicated in
+     * {@link FluidKey#properties}. */
+    private Object[] propertyValues;
+
+    /** Internal constructor that validates the fluid key, leaving the amount to a different constructor. */
     private FluidVolume(FluidKey key) {
         if (key == null) {
             throw new NullPointerException("key");
@@ -77,7 +99,7 @@ public abstract class FluidVolume {
         if (rawFluid instanceof EmptyFluid && key != FluidKeys.EMPTY) {
             throw new IllegalArgumentException("Different empty fluid!");
         }
-        if (rawFluid instanceof BaseFluid && rawFluid != ((BaseFluid) rawFluid).getStill()) {
+        if (rawFluid instanceof FlowableFluid && rawFluid != ((FlowableFluid) rawFluid).getStill()) {
             throw new IllegalArgumentException("Only the still version of fluids are allowed!");
         }
         this.fluidKey = key;
@@ -107,13 +129,31 @@ public abstract class FluidVolume {
         this(key);
         if (key.entry.isEmpty()) {
             this.amount = FluidAmount.ZERO;
-        } else if (tag.contains(KEY_AMOUNT_1620INT)) {
-            int readAmount = tag.getInt(KEY_AMOUNT_1620INT);
-            this.amount = FluidAmount.of1620(Math.max(1, readAmount));
         } else {
-            this.amount = FluidAmount.fromNbt(tag.getCompound(KEY_AMOUNT_LBA_FRACTION));
-            if (amount.isNegative()) {
-                amount = amount.negate();
+            if (tag.contains(KEY_AMOUNT_1620INT)) {
+                int readAmount = tag.getInt(KEY_AMOUNT_1620INT);
+                this.amount = FluidAmount.of1620(Math.max(1, readAmount));
+            } else {
+                this.amount = FluidAmount.fromNbt(tag.getCompound(KEY_AMOUNT_LBA_FRACTION));
+                if (amount.isNegative()) {
+                    amount = amount.negate();
+                }
+            }
+            if (!key.properties.isEmpty()) {
+                CompoundTag properties = tag.getCompound("Properties");
+                // End to Start so we only allocate the values array once.
+                for (int index = key.properties.size() - 1; index >= 0; index--) {
+                    FluidProperty<?> property = key.properties.get(index);
+                    Tag propTag = properties.get(property.nbtKey);
+                    if (propTag == null) {
+                        continue;
+                    }
+                    Object value = property.fromTag(propTag);
+                    if (value == null || value == property.defaultValue) {
+                        continue;
+                    }
+                    putPropertyValue(property, value);
+                }
             }
         }
     }
@@ -135,7 +175,30 @@ public abstract class FluidVolume {
         }
         fluidKey.toTag(tag);
         tag.put(KEY_AMOUNT_LBA_FRACTION, amount.toNbt());
+        if (propertyValues != null) {
+            CompoundTag properties = new CompoundTag();
+
+            for (int index = propertyValues.length - 1; index >= 0; index--) {
+                Object value = propertyValues[index];
+                if (value == null) {
+                    continue;
+                }
+                FluidProperty<?> property = fluidKey.properties.get(index);
+                Tag propTag = propToTag(property, value);
+                if (propTag != null) {
+                    properties.put(property.nbtKey, propTag);
+                }
+            }
+
+            if (!properties.isEmpty()) {
+                tag.put("Properties", properties);
+            }
+        }
         return tag;
+    }
+
+    private static <T> Tag propToTag(FluidProperty<T> property, Object value) {
+        return property.toTag(property.type.cast(value));
     }
 
     public FluidVolume(FluidKey key, JsonObject json) throws JsonSyntaxException {
@@ -222,7 +285,7 @@ public abstract class FluidVolume {
             return false;
         }
         return amount.equals(other.amount)//
-            && Objects.equals(fluidKey, other.fluidKey);
+        && Objects.equals(fluidKey, other.fluidKey);
     }
 
     @Override
@@ -278,29 +341,55 @@ public abstract class FluidVolume {
     }
 
     public final FluidVolume copy() {
-        return isEmpty() ? FluidKeys.EMPTY.withAmount(FluidAmount.ZERO) : copy0();
+        if (isEmpty()) {
+            return FluidKeys.EMPTY.withAmount(FluidAmount.ZERO);
+        }
+        FluidVolume copy = copy0();
+        copyPropertiesInto(copy);
+        return copy;
     }
 
     protected FluidVolume copy0() {
         return getFluidKey().withAmount(amount);
     }
 
-    /** @deprecated Replaced by {@link #getAmount_F()} instead. */
+    private final void copyPropertiesInto(FluidVolume dest) {
+        dest.propertyValues = propertyValues == null ? null : Arrays.copyOf(propertyValues, propertyValues.length);
+    }
+
+    /** @deprecated Replaced by {@link #getAmount_F()} and {@link #amount()}. */
     @Deprecated
     public final int getAmount() {
         return isEmpty() ? 0 : getRawAmount();
     }
 
+    /** Note: due to LBA's backwards compatibility with when it used to use a 1620-based fixed fraction integers this
+     * cannot use the name "getAmount", so instead this has "_F" added to the end. Alternatively you can use
+     * {@link #amount()} if you prefer a more reasonable name.
+     * 
+     * @return {@link FluidAmount#ZERO} if this {@link #isEmpty()}, otherwise this returns the fractional amount
+     *         stored. */
     public final FluidAmount getAmount_F() {
+        return amount();
+    }
+
+    /** An alternate name for {@link #getAmount_F()}.
+     * 
+     * @return {@link FluidAmount#ZERO} if this {@link #isEmpty()}, otherwise this returns the fractional amount
+     *         stored. */
+    public FluidAmount amount() {
         return isEmpty() ? FluidAmount.ZERO : getRawAmount_F();
     }
 
-    /** @return The raw amount value, which might not be 0 if this is {@link #isEmpty() empty}. */
+    /** @return The raw amount value, which might not be 0 if this is {@link #isEmpty() empty}.
+     * @deprecated Replaced by {@link #getRawAmount_F()}. */
     @Deprecated
     protected final int getRawAmount() {
         return amount.as1620();
     }
 
+    /** @return The fractional amount of fluid that this holds. This might not be {@link FluidAmount#isZero()} if this
+     *         {@link #isEmpty()}. */
     protected final FluidAmount getRawAmount_F() {
         return amount;
     }
@@ -426,19 +515,77 @@ public abstract class FluidVolume {
             return false;
         }
         if (simulation == Simulation.ACTION) {
+            FluidMergeResult merged = FluidAmount.merge(getAmount_F(), other.getAmount_F(), rounding);
+
+            Object[] result = null;
+
+            if (propertyValues != null || other.propertyValues != null) {
+
+                int count = fluidKey.properties.size();
+                for (int index = 0; index < count; index++) {
+                    FluidProperty<?> prop = fluidKey.properties.get(index);
+
+                    Object value = propertyValues != null ? propertyValues[index] : null;
+                    if (value == null) {
+                        value = prop.defaultValue;
+                    }
+                    Object valueOther = other.propertyValues != null ? other.propertyValues[index] : null;
+                    if (valueOther == null) {
+                        valueOther = prop.defaultValue;
+                    }
+
+                    if (value != valueOther) {
+                        value = mergeGenericBypass(other, merged, prop, value, valueOther);
+                    }
+
+                    if (value != prop.defaultValue) {
+                        if (result == null) {
+                            result = new Object[count];
+                        }
+                        result[index] = value;
+                    }
+                }
+            }
+            propertyValues = result;
             merge0(other, rounding);
         }
         return true;
     }
 
-    /** Actually merges two {@link FluidVolume}'s together.
+    private <T> T mergeGenericBypass(
+        FluidVolume other, FluidMergeResult merged, FluidProperty<T> prop, Object value, Object valueOther
+    ) {
+        T valA = prop.type.cast(value);
+        T valB = prop.type.cast(valueOther);
+        return prop.merge(this, other, merged.merged, valA, valB);
+    }
+
+    /** Actually merges two {@link FluidVolume}'s together. Only
+     * {@link #merge(FluidVolume, FluidMergeRounding, Simulation)} should call this. (Except for subclasses that
+     * override this method).
      * 
      * @param other The other fluid volume. This will always be the same class as this. This should change the amount of
-     *            the other fluid to 0. */
+     *            the other fluid to 0.
+     * @deprecated because {@link #mergeInternal(FluidVolume, FluidMergeResult)} allows every method to share the same
+     *             {@link FluidMergeResult} object, which reduces the chance to make a mistake when merging the two
+     *             amounts. In addition it's a bit wasteful to re-compute the same value more than once.
+     *             <p>
+     *             So instead of overriding this it's recommended that you <em>only</em> override
+     *             {@link #mergeInternal(FluidVolume, FluidMergeResult)}. */
+    @Deprecated
     protected void merge0(FluidVolume other, FluidMergeRounding rounding) {
-        FluidMergeResult result = FluidAmount.merge(getAmount_F(), other.getAmount_F(), rounding);
-        setAmount(result.merged);
-        other.setAmount(result.excess);
+        mergeInternal(other, FluidAmount.merge(getAmount_F(), other.getAmount_F(), rounding));
+    }
+
+    /** Actually merges two {@link FluidVolume}'s together. Only
+     * {@link #merge(FluidVolume, FluidMergeRounding, Simulation)} should call this. (Except for subclasses that
+     * override this method).
+     * 
+     * @param other The other fluid volume. This will always be the same class as this. This should change the amount of
+     *            the other fluid to {@link FluidMergeResult#excess}. */
+    protected void mergeInternal(FluidVolume other, FluidMergeResult mergedAmounts) {
+        setAmount(mergedAmounts.merged);
+        other.setAmount(mergedAmounts.excess);
     }
 
     /** @deprecated Replaced by {@link #split(FluidAmount)} */
@@ -473,7 +620,9 @@ public abstract class FluidVolume {
         if (toRemove.isGreaterThan(amount)) {
             toRemove = amount;
         }
-        return split0(toRemove, rounding);
+        FluidVolume split = split0(toRemove, rounding);
+        copyPropertiesInto(split);
+        return split;
     }
 
     /** @param toTake A valid subtractable amount.
@@ -481,6 +630,56 @@ public abstract class FluidVolume {
     protected FluidVolume split0(FluidAmount toTake, RoundingMode rounding) {
         setAmount(getAmount_F().roundedSub(toTake, rounding));
         return getFluidKey().withAmount(toTake);
+    }
+
+    /** @throws IllegalArgumentException if the given property hasn't been registered to the {@link FluidKey}. */
+    public final <T> T getProperty(FluidProperty<T> property) {
+        int index = fluidKey.propertyKeys.getOrDefault(property, -1);
+        if (index < 0) {
+            throw new IllegalArgumentException("Unknown/unregistered property " + property + " for key " + fluidKey);
+        }
+        if (propertyValues == null || propertyValues.length <= index) {
+            return property.defaultValue;
+        }
+        Object value = propertyValues[index];
+        if (value == null) {
+            return property.defaultValue;
+        }
+        if (property.type.isInstance(value)) {
+            return property.type.cast(value);
+        } else {
+            throw new IllegalStateException(
+                "The value in the propertyValues array (" + value.getClass() + " wasn't an instance of the required "
+                    + property.type + ")"
+            );
+        }
+    }
+
+    private final <T> void putPropertyValue(FluidProperty<T> property, Object value) {
+        setProperty(property, property.type.cast(value));
+    }
+
+    public final <T> void setProperty(FluidProperty<T> property, T value) {
+        int index = fluidKey.propertyKeys.getOrDefault(property, -1);
+        if (index < 0) {
+            throw new IllegalArgumentException("Unknown/unregistered property " + property + " for key " + fluidKey);
+        }
+        if (value == null || value == property.defaultValue) {
+            // Don't do an explicit equals() because this is just an optimisation.
+            value = null;
+            if (propertyValues == null) {
+                return;
+            } else if (propertyValues.length < index + 1) {
+                return;
+            }
+        } else {
+            if (propertyValues == null) {
+                propertyValues = new Object[index + 1];
+            } else if (propertyValues.length < index + 1) {
+                propertyValues = Arrays.copyOf(propertyValues, index + 1);
+            }
+        }
+        propertyValues[index] = value;
     }
 
     /** Fallback for {@link DefaultFluidVolumeRenderer} to use if it can't find one itself.
@@ -521,6 +720,10 @@ public abstract class FluidVolume {
         return getFluidKey().name;
     }
 
+    // Tooltips
+
+    /** @deprecated Replaced by {@link #getFullTooltip()}. */
+    @Deprecated
     @Environment(EnvType.CLIENT)
     public List<Text> getTooltipText(TooltipContext ctx) {
         List<Text> list = new ArrayList<>();
@@ -532,6 +735,96 @@ public abstract class FluidVolume {
         }
         return list;
     }
+
+    /** Simple getter for retrieving the entire fluid tooltip, instead of adding it to an already-existing list.
+     * 
+     * @see #addFullTooltip(List)
+     * @see #addFullTooltip(FluidAmount, FluidTooltipContext, List) */
+    public final List<Text> getFullTooltip() {
+        return getFullTooltip(null, FluidTooltipContext.USE_CONFIG);
+    }
+
+    /** Adds the entire tooltip for this fluid (by itself, not in a tank) to the given list.
+     * 
+     * @see #addFullTooltip(FluidAmount, FluidTooltipContext, List) */
+    public final void addFullTooltip(List<Text> tooltip) {
+        addFullTooltip(null, FluidTooltipContext.USE_CONFIG, tooltip);
+    }
+
+    /** Simple getter for retrieving the entire fluid tooltip, instead of adding it to an already-existing list.
+     * 
+     * @param capacity If non-null then this will display as if this was in a tank, rather than by itself. */
+    public final List<Text> getFullTooltip(@Nullable FluidAmount capacity) {
+        return getFullTooltip(capacity, FluidTooltipContext.USE_CONFIG);
+    }
+
+    /** Adds the complete tooltip for this {@link FluidVolume} to the given tooltip.
+     * 
+     * @param capacity If non-null then this will display as if this was in a tank, rather than by itself. */
+    public final void addFullTooltip(@Nullable FluidAmount capacity, List<Text> tooltip) {
+        addFullTooltip(capacity, FluidTooltipContext.USE_CONFIG, tooltip);
+    }
+
+    /** Simple getter for retrieving the entire fluid tooltip, instead of adding it to an already-existing list.
+     * 
+     * @param capacity If non-null then this will display as if this was in a tank, rather than by itself. */
+    public final List<Text> getFullTooltip(@Nullable FluidAmount capacity, FluidTooltipContext context) {
+        List<Text> tooltip = new ArrayList<>();
+        addFullTooltip(capacity, context, tooltip);
+        return tooltip;
+    }
+
+    /** Adds the complete tooltip for this {@link FluidVolume} to the given tooltip.
+     * 
+     * @param capacity If non-null then this will display as if this was in a tank, rather than by itself. */
+    public final void addFullTooltip(@Nullable FluidAmount capacity, FluidTooltipContext context, List<Text> tooltip) {
+        addTooltipNameAmount(capacity, context, tooltip);
+        addTooltipExtras(context, tooltip);
+        addTooltipTemperature(context, tooltip);
+        addTooltipProperties(context, tooltip);
+    }
+
+    /** Adds the name and amount to the given tooltip. This is only provided so that custom tooltip implementations
+     * can */
+    public final void addTooltipNameAmount(
+        @Nullable FluidAmount capacity, FluidTooltipContext context, List<Text> tooltip
+    ) {
+        Text name = context.stripFluidColours(getName());
+        if (context.shouldJoinNameWithAmount()) {
+            if (capacity != null) {
+                tooltip.add(fluidKey.unitSet.getTank(amount, capacity, name, context));
+            } else {
+                tooltip.add(fluidKey.unitSet.getAmount(amount, name, context));
+            }
+        } else {
+            tooltip.add(name);
+            if (capacity != null) {
+                tooltip.add(fluidKey.unitSet.getTank(amount, capacity, context));
+            } else {
+                tooltip.add(fluidKey.unitSet.getAmount(amount, context));
+            }
+        }
+    }
+
+    /** Adds any additional data that this {@link FluidVolume} has. */
+    public void addTooltipExtras(FluidTooltipContext context, List<Text> tooltip) {
+        fluidKey.addTooltipExtras(context, tooltip);
+    }
+
+    public final void addTooltipTemperature(FluidTooltipContext context, List<Text> tooltip) {
+        FluidTemperature temp = fluidKey.getTemperature();
+        if (temp != null) {
+            temp.addTemperatueToTooltip(this, context, tooltip);
+        }
+    }
+
+    public final void addTooltipProperties(FluidTooltipContext context, List<Text> tooltip) {
+        for (FluidProperty<?> prop : fluidKey.properties) {
+            prop.addTooltipExtras(this, context, tooltip);
+        }
+    }
+
+    // Rendering
 
     /** Returns the {@link FluidVolumeRenderer} to use for rendering this fluid. */
     @Environment(EnvType.CLIENT)

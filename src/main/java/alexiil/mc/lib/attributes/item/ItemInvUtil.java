@@ -70,7 +70,8 @@ public final class ItemInvUtil {
     }
 
     /** Attempts to move up to the given maximum number of items from the {@link ItemExtractable} to the
-     * {@link ItemInsertable}.
+     * {@link ItemInsertable}. Note that this only ever moves a single stack, unlike
+     * {@link #moveMultiple(ItemExtractable, ItemInsertable, ItemFilter, int, int)}.
      * 
      * @return The number of items moved.
      * @see #move(ItemExtractable, ItemInsertable, ItemFilter, int) */
@@ -79,10 +80,25 @@ public final class ItemInvUtil {
     }
 
     /** Attempts to move up to the given maximum number of items from the {@link ItemExtractable} to the
-     * {@link ItemInsertable}, provided they match the given {@link ItemFilter}.
+     * {@link ItemInsertable}, provided they match the given {@link ItemFilter}. Note that this only ever moves a single
+     * stack, unlike {@link #moveMultiple(ItemExtractable, ItemInsertable, ItemFilter, int, int)}.
      * 
      * @return The number of items moved. */
     public static int move(ItemExtractable from, ItemInsertable to, ItemFilter filter, int maximum) {
+        return move(from, to, filter, maximum, Simulation.ACTION);
+    }
+
+    /** Attempts to move up to the given maximum number of items from the {@link ItemExtractable} to the
+     * {@link ItemInsertable}, provided they match the given {@link ItemFilter}. Note that this only ever moves a single
+     * stack, unlike {@link #moveMultiple(ItemExtractable, ItemInsertable, ItemFilter, int, int)}.
+     * 
+     * @return The number of items moved. */
+    public static int move(
+        ItemExtractable from, ItemInsertable to, ItemFilter filter, int maximum, Simulation simulation
+    ) {
+        if (maximum <= 0) {
+            return 0;
+        }
         ItemFilter insertionFilter = to.getInsertionFilter();
         if (filter != null && filter != ConstantItemFilter.ANYTHING) {
             insertionFilter = AggregateItemFilter.and(insertionFilter, filter);
@@ -92,9 +108,9 @@ public final class ItemInvUtil {
         if (extracted.isEmpty()) {
             return 0;
         }
-        ItemStack leftover = to.attemptInsertion(extracted, Simulation.ACTION);
+        ItemStack leftover = to.attemptInsertion(extracted, simulation);
         int insertedAmount = extracted.getCount() - (leftover.isEmpty() ? 0 : leftover.getCount());
-        ItemStack reallyExtracted = from.attemptExtraction(insertionFilter, insertedAmount, Simulation.ACTION);
+        ItemStack reallyExtracted = from.attemptExtraction(insertionFilter, insertedAmount, simulation);
 
         if (reallyExtracted.isEmpty()) {
             throw throwBadImplException(
@@ -112,6 +128,59 @@ public final class ItemInvUtil {
             );
         }
         return insertedAmount;
+    }
+
+    /** Attempts to move as much as possible from the {@link ItemExtractable} to the {@link ItemInsertable}. Internally
+     * this calls {@link #moveMultiple(ItemExtractable, ItemInsertable, int, int)} with {@link Integer#MAX_VALUE} as the
+     * maximum value for both arguments.
+     * 
+     * @return The {@link MultiMoveResult} */
+    public static MultiMoveResult moveMultiple(ItemExtractable from, ItemInsertable to) {
+        return moveMultiple(from, to, ConstantItemFilter.ANYTHING, Integer.MAX_VALUE, Integer.MAX_VALUE);
+    }
+
+    /** Attempts to move a given number of stacks from the {@link ItemExtractable} to the {@link ItemInsertable}.
+     * Internally this calls {@link #move(ItemExtractable, ItemInsertable, int)} in a loop from 1 to maxStacks.
+     * 
+     * @return The {@link MultiMoveResult} */
+    public static MultiMoveResult moveMultiple(ItemExtractable from, ItemInsertable to, int maxStacks, int maxTotal) {
+        return moveMultiple(from, to, ConstantItemFilter.ANYTHING, maxStacks, maxTotal);
+    }
+
+    /** Attempts to move a given number of stacks from the {@link ItemExtractable} to the {@link ItemInsertable}.
+     * Internally this calls {@link #move(ItemExtractable, ItemInsertable, int)} in a loop from 1 to maxStacks.
+     * 
+     * @return The {@link MultiMoveResult} */
+    public static MultiMoveResult moveMultiple(
+        ItemExtractable from, ItemInsertable to, ItemFilter filter, int maxStacks, int maxTotal
+    ) {
+        int itemsMoved = 0;
+        int stacks;
+        for (stacks = 0; stacks < maxStacks; stacks++) {
+            int moved = move(from, to, filter, maxTotal - itemsMoved);
+            if (moved <= 0) {
+                break;
+            }
+            itemsMoved += moved;
+        }
+        return new MultiMoveResult(stacks, itemsMoved);
+    }
+
+    /** A pair of ints, representing both the total number of stacks and the total number of items moved by
+     * {@link ItemInvUtil#moveMultiple(ItemExtractable, ItemInsertable, ItemFilter, int, int)}. */
+    public static final class MultiMoveResult {
+        public final int stacksMoved;
+        public final int itemsMoved;
+
+        public MultiMoveResult(int stacksMoved, int itemsMoved) {
+            this.stacksMoved = stacksMoved;
+            this.itemsMoved = itemsMoved;
+        }
+
+        /** @return True if {@link #itemsMoved} is greater than 0. */
+        public boolean didMoveAny() {
+            return itemsMoved > 0;
+        }
     }
 
     // #######################

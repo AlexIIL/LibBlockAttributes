@@ -18,6 +18,7 @@ public final class DestroyableRef<T> implements Reference<T> {
         this.ref = ref;
     }
 
+    /** Prevents {@link #set(Object)} from returning true in the future. */
     public void destroy() {
         isAlive = false;
     }

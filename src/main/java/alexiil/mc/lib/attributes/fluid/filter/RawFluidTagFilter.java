@@ -27,6 +27,6 @@ public final class RawFluidTagFilter implements ReadableFluidFilter {
         if (raw == null) {
             return false;
         }
-        return raw.matches(tag);
+        return raw.isIn(tag);
     }
 }

@@ -18,6 +18,9 @@ import net.minecraft.item.Item;
 public class ItemAttributeList<T> extends AbstractAttributeList<T> {
     private final Predicate<T> searchMatcher;
 
+    /** The number of calls to {@link #add(Object)}. */
+    private int offeredCount;
+
     public ItemAttributeList(Attribute<T> attribute) {
         super(attribute);
         this.searchMatcher = null;
@@ -36,6 +39,7 @@ public class ItemAttributeList<T> extends AbstractAttributeList<T> {
      * @param object The object to add. */
     public void add(T object) {
         assertAdding();
+        offeredCount++;
         if (searchMatcher != null && !searchMatcher.test(object)) {
             return;
         }
@@ -50,15 +54,22 @@ public class ItemAttributeList<T> extends AbstractAttributeList<T> {
     public void offer(Object object) {
         // Always check before to throw the error as early as possible
         assertAdding();
-        if (attribute.isInstance(object)) {
-            add(attribute.cast(object));
-        } else if (object instanceof Convertible) {
-            T converted = ((Convertible) object).convertTo(attribute.clazz);
-            if (converted == null) {
-                return;
-            }
+        T converted = Convertible.getAs(object, attribute.clazz);
+        if (converted != null) {
             add(converted);
         }
+    }
+
+    /** @return True if any calls to {@link #add(Object)} have been made. (Including calls to {@link #offer(Object)} and
+     *         it's variants). */
+    public boolean hasOfferedAny() {
+        return offeredCount > 0;
+    }
+
+    /** @return The number of calls to {@link #add(Object)} (including calls to {@link #offer(Object)} and it's
+     *         variants). */
+    public int getOfferedCount() {
+        return offeredCount;
     }
 
     /** @return A combined version of this list and then the second given list, or the attribute's default value if both

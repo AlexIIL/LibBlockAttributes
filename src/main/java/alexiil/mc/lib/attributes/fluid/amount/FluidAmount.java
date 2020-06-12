@@ -18,7 +18,7 @@ import com.google.common.math.LongMath;
 import io.netty.buffer.ByteBuf;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 
 /** A simple mixed fraction. The value represented by this can be calculated with this: "{@link #whole} +
  * ({@link #numerator} / {@link #denominator})". Negative values are indicated with both {@link #whole} and
@@ -35,7 +35,10 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
      * overflow into {@link BigFluidAmount}). */
     public static final FluidAmount A_MILLION = new FluidAmount(1_000_000);
 
+    /** One bucket of fluid - which is always {@link #ONE}. */
     public static final FluidAmount BUCKET = ONE;
+
+    /** One bottle is equal to a third of a bucket. */
     public static final FluidAmount BOTTLE = of(1, 3);
 
     /** The maximum possible value that a {@link FluidAmount} can hold. */
@@ -622,7 +625,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
      *         {@link #denominator} is {@link Long#MAX_VALUE}. */
     public boolean isOverflow() {
         return whole == Long.MIN_VALUE || whole == Long.MAX_VALUE || numerator == Long.MIN_VALUE
-            || numerator == Long.MAX_VALUE || denominator == Long.MAX_VALUE;
+        || numerator == Long.MAX_VALUE || denominator == Long.MAX_VALUE;
     }
 
     @Override
@@ -795,9 +798,9 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
                 return Long.toString(whole);
             }
             if (numerator < 0) {
-                return whole + " " + numerator + "/" + denominator + ")";
+                return whole + " " + numerator + "/" + denominator;
             }
-            return whole + "+" + numerator + "/" + denominator + ")";
+            return whole + "+" + numerator + "/" + denominator;
         }
     }
 
