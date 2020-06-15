@@ -58,6 +58,8 @@ public abstract class FluidProperty<T> {
     public final Class<T> type;
     public final T defaultValue;
 
+    /** The temperature scale, if this fluid property provides one, or implements {@link ContinuousFluidTemperature}
+     * directly. */
     @Nullable
     public final ContinuousFluidTemperature temperature;
 
@@ -69,9 +71,9 @@ public abstract class FluidProperty<T> {
         this(id, type, defaultValue, null);
     }
 
-    public FluidProperty(
-        Identifier id, Class<T> type, T defaultValue, FluidTemperature.ContinuousFluidTemperature temperature
-    ) {
+    /** @param temperature The temperature property to use for this property. Must be null if this implements
+     *            {@link ContinuousFluidTemperature} directly. */
+    public FluidProperty(Identifier id, Class<T> type, T defaultValue, ContinuousFluidTemperature temperature) {
         Objects.requireNonNull(id, "The identifier must not be null!");
         Objects.requireNonNull(type, "The type must not be null!");
         Objects.requireNonNull(defaultValue, "The default value shouldn't be null!");
@@ -88,12 +90,12 @@ public abstract class FluidProperty<T> {
             }
             if (!(this instanceof ContinuousFluidTemperature)) {
                 throw new IllegalStateException(
-                    "The FluidProperty " + getClass() + " should implement FluidTemperature.Continuous!"
+                    "The FluidProperty " + getClass() + " should implement ContinuousFluidTemperature!"
                 );
             }
-            if (!(this instanceof DiscreteFluidTemperature)) {
+            if (this instanceof DiscreteFluidTemperature) {
                 throw new IllegalStateException(
-                    "The FluidProperty " + getClass() + " must not implement FluidTemperature.Discrete!"
+                    "The FluidProperty " + getClass() + " must not implement DiscreteFluidTemperature!"
                 );
             }
             this.temperature = (ContinuousFluidTemperature) this;
@@ -108,12 +110,15 @@ public abstract class FluidProperty<T> {
 
     /** Helper method to obtain this property from the given fluid.
      * 
-     * @see FluidVolume#getProperty(FluidProperty) */
+     * @see FluidVolume#getProperty(FluidProperty)
+     * @throws IllegalArgumentException if the given property hasn't been registered to the {@link FluidKey}. */
     public final T get(FluidVolume volume) {
         return volume.getProperty(this);
     }
 
-    /** Helper method to set a value for this property to the given fluid. */
+    /** Helper method to set a value for this property to the given fluid.
+     * 
+     * @throws IllegalArgumentException if the given property hasn't been registered to the {@link FluidKey}. */
     public final void set(FluidVolume volume, T value) {
         volume.setProperty(this, value);
     }
@@ -194,9 +199,10 @@ public abstract class FluidProperty<T> {
      * 
      * @param volumeA One of the volumes that will be merged.
      * @param volumeB The other volume that will be merged.
-     * @param amount The new (merged) amount. This will always be
-     * @param valueA The value in volumeA.
-     * @param valueB The value in volumeB.
+     * @param amount The new (merged) amount. This might not be exactly equal to
+     *            volumeA.getAmount_F().add(volumeB.getAmount_F()) due to rounding.
+     * @param valueA The value in volumeA, provided for convenience.
+     * @param valueB The value in volumeB, provided for convenience.
      * @return The merged value. */
     protected abstract T merge(FluidVolume volumeA, FluidVolume volumeB, FluidAmount amount, T valueA, T valueB);
 

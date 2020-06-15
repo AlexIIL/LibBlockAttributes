@@ -16,6 +16,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
 
+/** {@link FluidEntry} that is backed by a {@link Registry}. */
 public final class FluidRegistryEntry<T> extends FluidEntry {
 
     final Registry<T> backingRegistry;
@@ -110,11 +111,11 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
 
     @Override
     public boolean isEmpty() {
-        Identifier objId = getId();
-        if (objId == null) {
+        Identifier id = getId();
+        if (id == null) {
             return true;
         } else if (backingRegistry instanceof DefaultedRegistry<?>) {
-            if (objId.equals(((DefaultedRegistry<T>) backingRegistry).getDefaultId())) {
+            if (id.equals(((DefaultedRegistry<T>) backingRegistry).getDefaultId())) {
                 return true;
             }
         }
@@ -152,5 +153,9 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
     @Override
     public Identifier getId() {
         return objId;
+    }
+
+    public T getBackingObject() {
+        return backingObject;
     }
 }

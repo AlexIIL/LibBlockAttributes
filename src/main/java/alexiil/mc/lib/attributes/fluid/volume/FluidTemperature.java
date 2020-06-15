@@ -19,12 +19,13 @@ import net.minecraft.text.Text;
  * It is considered an error to implement this interface without implementing one of these two subinterfaces!
  * <p>
  * Note that LibNetworkStack doesn't (yet) provide a way to heat or cool fluids directly. As such this is provided for
- * informational purposes only. */
+ * informational purposes only, and to ensure that each {@link FluidKey} only has a single temperature. */
 public interface FluidTemperature {
+    // TODO: Fluid temperature transference using FluidKey.thermalCapacity
 
     /** @return The temperature of the fluid, in degrees C.
-     * @throws IllegalArgumentException if this temperature scale doesn't apply to the given {@link FluidVolume} */
-    float getTemperature(FluidVolume fluid);
+     * @throws IllegalArgumentException if this temperature scale doesn't apply to the given {@link FluidVolume}. */
+    double getTemperature(FluidVolume fluid);
 
     default void addTemperatueToTooltip(FluidKey fluid, FluidTooltipContext context, List<Text> tooltip) {}
 
@@ -36,10 +37,10 @@ public interface FluidTemperature {
     public interface DiscreteFluidTemperature extends FluidTemperature {
 
         /** @throws IllegalArgumentException if this temperature scale doesn't apply to the given {@link FluidKey}. */
-        float getTemperature(FluidKey fluidKey);
+        double getTemperature(FluidKey fluidKey);
 
         @Override
-        default float getTemperature(FluidVolume fluid) {
+        default double getTemperature(FluidVolume fluid) {
             return getTemperature(fluid.fluidKey);
         }
     }
@@ -47,6 +48,6 @@ public interface FluidTemperature {
     /** A Continuous {@link FluidTemperature} can have a range of temperatures for a single fluid. */
     public interface ContinuousFluidTemperature extends FluidTemperature {
         @Override
-        float getTemperature(FluidVolume fluid);
+        double getTemperature(FluidVolume fluid);
     }
 }

@@ -7,11 +7,21 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.potion.Potion;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
 
+/** {@link Identifier} equivalent for {@link FluidKey}. The only two permitted sub-types are:
+ * <ol>
+ * <li>{@link FluidRegistryEntry}: for fluids that are based on a minecraft object that's registered in a
+ * {@link Registry}.</li>
+ * <li>{@link FluidFloatingEntry}: for fluids that aren't based an a minecraft object, and so are identified by a
+ * string/identifier.</li>
+ * </ol>
+ * All {@link FluidEntry} to {@link FluidKey} mappings are stored in {@link FluidKeys}. */
 public abstract class FluidEntry {
     static final String KEY_REGISTRY_TYPE = "Registry";
     static final String KEY_OBJ_IDENTIFIER = "ObjName";
@@ -65,10 +75,16 @@ public abstract class FluidEntry {
         return FluidRegistryEntry.fromTag0(registry, name);
     }
 
+    /** @return True if this corresponds to the default value in the backing registry. (No floating entries are
+     *         empty). */
     public abstract boolean isEmpty();
 
+    /** @return The LBA-internal name used to serialise this entry. Floating entries return "i", {@link Fluid}-based
+     *         registry entries return "f", {@link Potion}-based registry entries return "p", and any other registry
+     *         entry returns the ID of that registry. */
     public abstract String getRegistryInternalName();
 
+    /** @return The {@link Identifier} that the backing object uses. */
     public abstract Identifier getId();
 
     public static final class FluidFloatingEntry extends FluidEntry {

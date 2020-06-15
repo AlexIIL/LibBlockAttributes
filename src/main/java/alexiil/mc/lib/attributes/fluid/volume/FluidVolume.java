@@ -329,6 +329,8 @@ public abstract class FluidVolume {
         return fluidKey == FluidKeys.EMPTY || amount.isZero();
     }
 
+    /** @return The {@link FluidKey} for this volume. Subclasses may override this to use a return type for their key
+     *         class. */
     public FluidKey getFluidKey() {
         return fluidKey;
     }
@@ -664,8 +666,9 @@ public abstract class FluidVolume {
         if (index < 0) {
             throw new IllegalArgumentException("Unknown/unregistered property " + property + " for key " + fluidKey);
         }
+
+        // Don't do an explicit equals() because this is just an optimisation.
         if (value == null || value == property.defaultValue) {
-            // Don't do an explicit equals() because this is just an optimisation.
             value = null;
             if (propertyValues == null) {
                 return;

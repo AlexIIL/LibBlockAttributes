@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 
 import com.google.gson.JsonElement;
@@ -59,7 +60,7 @@ public abstract class FluidKey {
 
     private static final Identifier MISSING_SPRITE = new Identifier("minecraft", "missingno");
 
-    // TODO: DOCUMENT
+    /** The identifier for this {@link FluidKey}. Primarily used during serialisation. */
     public final FluidEntry entry;
 
     /** The singular (main) unit to use when displaying amounts, capacities, and flow rates to the player.
@@ -153,8 +154,8 @@ public abstract class FluidKey {
      * {@link #tryRegisterProperty(FluidProperty)}, so this might be different on the client and server. */
     /* package-private */ final List<FluidProperty<?>> properties = new ArrayList<>();
 
-    /** Stable map of property -> int index. Ordered by {@link FluidProperty#COMPARATOR}, which ensures it should be the
-     * same on the client and server. */
+    /** Stable map of property -> int index. Ordered by {@link FluidProperty#COMPARATOR}, which ensures the key set
+     * should be the same on the client and server. */
     /* package-private */ final Object2IntSortedMap<FluidProperty<?>> propertyKeys
         = new Object2IntAVLTreeMap<>(FluidProperty.COMPARATOR);
 
@@ -227,7 +228,8 @@ public abstract class FluidKey {
         }
 
         /** @param id The floating identifier to use to identify this fluid - this will not be backed by a normal
-         *            {@link DefaultedRegistry}, instead these instances will only be . */
+         *            {@link DefaultedRegistry}, instead these instances will only be backed by a floating
+         *            {@link Identifier}. */
         public FluidKeyBuilder setIdEntry(Identifier id) {
             this.entry = new FluidFloatingEntry(id);
             return this;
@@ -679,6 +681,7 @@ public abstract class FluidKey {
     /** @return Null if the {@link FluidProperty} was registered successfully, or a non-null error message containing
      *         the reason why it couldn't be added. */
     @Nullable
+    @CheckReturnValue
     public final String tryRegisterProperty(FluidProperty<?> property) {
         if (temperature != null && property.temperature != null) {
             return "Cannot have multiple temperature sources for this fluid! (\n\tFluidKey = " + this

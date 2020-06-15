@@ -1,15 +1,18 @@
 Breaking Changes:
 
 * Added a "boolean server" parameter to SlotFixedItemInv's constructor.
-    * SlotFixedItemInv didn't work properly before as 
+    * (This was needed to fix #11)
 
 Changes:
 
-* Updated LBA to 1.16-pre.2.
-* Allowed this version of LBA to be loaded in any version of 1.16.
+* Updated LBA to 1.16-pre.4.
+* Allowed this version of LBA to be loaded in any version of 1.16 after 1.16-pre.4.
 * Added fluid properties.
+    * See alexiil.mc.lib.attributes.fluid.volume.FluidProperty for details.
 * Added much better support for fluid tooltips - see FluidVolume and FluidKey
    for the new add/get*Tooltip methods.
+    * This also adds configs, for tweaking how the resultant tooltips display.
+    * For code-based control you can create a custom "FluidTooltipContext" object.
 * Added much more control when registering custom adders for blocks and items
     * See the new javadoc for Attribute for more details. 
 * Added compatibility with emi's item inventory API.
@@ -17,3 +20,4 @@ Changes:
 Bug Fixes:
 
 * Fixed X fluid faces using swapped UV co-ordinates.
+* [#11] SlotFixedItemInv doesn't work properly.
