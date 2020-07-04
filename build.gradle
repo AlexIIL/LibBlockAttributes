@@ -11,7 +11,8 @@ targetCompatibility = 1.8
 repositories {
     mavenLocal()
     maven { name="Modmuss50"; url="https://maven.modmuss50.me/" }
-    maven { name="Jitpack"; url = "https://jitpack.io" }
+    maven { name="BuildCraft"; url="https://mod-buildcraft.com/maven/" }
+    //maven { name="Jitpack"; url = "https://jitpack.io" }
 }
 
 archivesBaseName = "libblockatttributes"
