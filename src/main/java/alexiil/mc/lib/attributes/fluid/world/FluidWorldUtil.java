@@ -7,14 +7,14 @@
  */
 package alexiil.mc.lib.attributes.fluid.world;
 
+import java.math.RoundingMode;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.FluidBlock;
-import net.minecraft.block.Waterloggable;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+import net.minecraft.block.*;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldAccess;
@@ -66,5 +66,60 @@ public final class FluidWorldUtil {
             return drainer.tryDrainFluid(world, pos, state, simulation);
         }
         return FluidVolumeUtil.EMPTY;
+    }
+
+    /**
+     * Attempts to fill the given block with a bucket's worth of fluid
+     * @return The remainder of the given fluid volume after placing a bucket
+     */
+    public static FluidVolume fill(WorldAccess world, BlockPos pos, FluidVolume volume, Simulation simulation) {
+
+        if (volume.getAmount_F().isLessThan(FluidAmount.BUCKET)) {
+            return volume; // Need at least a buckets worth
+        }
+
+        Fluid fluid = volume.getRawFluid();
+        if (fluid == null) {
+            return volume; // Can't be placed if it doesn't have an associated vanilla fluid
+        }
+
+        // This code assumes that placing a fluid in the world will always consume a bucket's worth
+        boolean success = false;
+
+        BlockState state = world.getBlockState(pos);
+        Block block = state.getBlock();
+        if (state.isAir()) {
+            // The easiest case, probably
+            if (simulation == Simulation.ACTION) {
+                BlockState fluidStillState = fluid.getDefaultState().getBlockState();
+                world.setBlockState(pos, fluidStillState, 3);
+            }
+            success = true;
+
+        } else if (block instanceof FluidFillable) {
+            // FluidFillable includes waterloggable blocks, but not cauldrons, etc.
+            FluidFillable fillable = (FluidFillable) block;
+            if (simulation == Simulation.SIMULATE) {
+                success = fillable.canFillWithFluid(world, pos, state, fluid);
+            } else {
+                success = fillable.tryFillWithFluid(world, pos, state, fluid.getDefaultState());
+            }
+        } else if (block instanceof FluidBlock) {
+            FluidState fluidState = world.getFluidState(pos);
+            // Top up a non-still fluid block, but this consumes a full bucket regardless of the level
+            if (!fluidState.isStill() && fluidState.getFluid() == fluid) {
+                if (simulation == Simulation.ACTION) {
+                    world.setBlockState(pos, fluid.getDefaultState().getBlockState(), 3);
+                }
+                success = true;
+            }
+        }
+
+        if (success) {
+            // Reduce by one bucket
+            return volume.copy().withAmount(volume.getAmount_F().roundedSub(FluidAmount.ONE, RoundingMode.DOWN));
+        } else {
+            return volume;
+        }
     }
 }
