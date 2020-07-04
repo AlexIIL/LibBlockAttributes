@@ -73,8 +73,8 @@ public final class FluidWorldUtil {
     }
 
     /**
-     * Attempts to fill the given block with a bucket's worth of fluid
-     * @return The remainder of the given fluid volume after placing a bucket
+     * Attempts to place the given fluid volume into the given block position. 
+     * @return The leftover amount of fluid after placing, or the original volume if it was unable to be placed.
      */
     public static FluidVolume fill(WorldAccess world, BlockPos pos, FluidVolume volume, Simulation simulation) {
 
