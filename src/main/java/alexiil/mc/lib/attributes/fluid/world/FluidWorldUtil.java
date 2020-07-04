@@ -7,7 +7,6 @@
  */
 package alexiil.mc.lib.attributes.fluid.world;
 
-import java.math.RoundingMode;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
