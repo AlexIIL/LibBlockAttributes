@@ -121,8 +121,9 @@ public final class FluidWorldUtil {
         }
 
         if (success) {
-            // Reduce by one bucket
-            return volume.copy().withAmount(volume.getAmount_F().roundedSub(FluidAmount.ONE, RoundingMode.DOWN));
+            volume = volume.copy();
+            volume.split(FluidAmount.BUCKET);
+            return volume;
         } else {
             return volume;
         }
