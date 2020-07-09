@@ -16,7 +16,7 @@ repositories {
 }
 
 archivesBaseName = "libblockatttributes"
-version = "0.7.1-pre.1"
+version = "0.7.1-pre.3"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -91,6 +91,10 @@ tasks.withType(JavaCompile) {
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.allSource
+}
+
+test {
+    workingDir = "run/"
 }
 
 publishing {

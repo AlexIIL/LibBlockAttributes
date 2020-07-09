@@ -19,6 +19,7 @@ package alexiil.mc.lib.attributes.item.filter;
  * <li>{@link ExactItemFilter}</li>
  * <li>{@link ExactItemStackFilter}</li>
  * <li>{@link ItemClassFilter}</li>
+ * <li>{@link ExactItemSetFilter}</li>
  * <li>{@link AggregateItemFilter}</li>
  * </ol>
  */

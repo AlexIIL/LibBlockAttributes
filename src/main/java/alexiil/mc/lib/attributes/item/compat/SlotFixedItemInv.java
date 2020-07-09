@@ -27,7 +27,7 @@ public class SlotFixedItemInv extends Slot implements Convertible {
     private StackReference realRef;
 
     public SlotFixedItemInv(ScreenHandler container, FixedItemInv inv, boolean server, int slotIndex, int x, int y) {
-        super(createInv(container, inv, server), server ? 0 : slotIndex, x, y);
+        super(createInv(container, inv, server), server ? slotIndex : 0, x, y);
         this.inv = inv;
         this.slotIndex = slotIndex;
         this.server = server;
