@@ -93,6 +93,8 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
+new File("run/").mkdirs();
+
 test {
     workingDir = "run/"
 }
