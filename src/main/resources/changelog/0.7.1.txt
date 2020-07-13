@@ -1,3 +1,7 @@
 Changes:
 
 * Added FluidWorldUtil.fill, for placing fluid volumes into the world. (Shartte).
+
+Bug Fixes:
+
+* [#22] Fix a crash on dedicated servers.

@@ -249,7 +249,7 @@ public final class FluidKeys {
             Biome biome = nether ? Biomes.NETHER_WASTES : Biomes.PLAINS;
             BiomeAccessType biomeType = (a, b, c, d, e) -> biome;
             biomeAccess = new BiomeAccess((x, y, z) -> biome, 42, biomeType);
-            dim = RegistryTracker.create().getDimensionTypeRegistry()
+            dim = RegistryTracker.create().get(Registry.DIMENSION_TYPE_KEY).get()
                 .get(nether ? DimensionType.THE_NETHER_REGISTRY_KEY : DimensionType.OVERWORLD_REGISTRY_KEY);
         }
 
