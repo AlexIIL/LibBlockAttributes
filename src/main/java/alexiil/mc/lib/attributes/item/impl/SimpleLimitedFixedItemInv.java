@@ -115,7 +115,7 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
         } else {
             inv = new SimpleLimitedFixedItemInv(delegate);
         }
-        inv.isImmutable = isImmutable; 
+        inv.isImmutable = isImmutable;
         for (int i = 0; i < inv.getSlotCount(); i++) {
             inv.insertionFilters[i] = insertionFilters[i];
             inv.maxInsertionAmounts[i] = maxInsertionAmounts[i];
@@ -133,7 +133,7 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        return getFilterForSlot(slot).matches(stack);
+        return (stack.isEmpty() || getFilterForSlot(slot).matches(stack)) && delegate.isItemValidForSlot(slot, stack);
     }
 
     @Override

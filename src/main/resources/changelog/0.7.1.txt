@@ -1,7 +1,10 @@
 Changes:
 
 * Added FluidWorldUtil.fill, for placing fluid volumes into the world. (Shartte).
+* Added FluidAmount.MAX_NORMAL and MIN_NORMAL, which have a whole of Long.MAX_VALUE and MIN_VALUE, but a numerator of 0.
+* Changed FluidAmount.saturated* to return MAX_NORMAL and MIN_NORMAL instead of MAX_VALUE as that's much more useful.
 
 Bug Fixes:
 
 * [#22] Fix a crash on dedicated servers.
+* [#23] Fluids don't render in GUIs when using fabulous graphics mode.

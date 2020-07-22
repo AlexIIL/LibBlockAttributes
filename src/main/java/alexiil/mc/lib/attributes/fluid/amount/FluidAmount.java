@@ -41,9 +41,37 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
     /** One bottle is equal to a third of a bucket. */
     public static final FluidAmount BOTTLE = of(1, 3);
 
-    /** The maximum possible value that a {@link FluidAmount} can hold. */
-    public static final FluidAmount MAX_VALUE = new FluidAmount(Long.MAX_VALUE, Long.MAX_VALUE - 1, Long.MAX_VALUE);
-    public static final FluidAmount MIN_VALUE = new FluidAmount(Long.MIN_VALUE, -1 - Long.MAX_VALUE, Long.MAX_VALUE);
+    /** {@link Long#MAX_VALUE} of buckets. */
+    public static final FluidAmount MAX_BUCKETS = new FluidAmount(Long.MAX_VALUE, 0, 1);
+
+    /** {@link Long#MIN_VALUE} of buckets. */
+    public static final FluidAmount MIN_BUCKETS = new FluidAmount(Long.MIN_VALUE, 0, 1);
+
+    /** The maximum possible value that a valid {@link FluidAmount} can hold. It's not recommended to use this as it can
+     * cause headaches when adding or subtracting values from this. */
+    public static final FluidAmount ABSOLUTE_MAXIMUM
+        = new FluidAmount(Long.MAX_VALUE, Long.MAX_VALUE - 1, Long.MAX_VALUE);
+
+    /** The minimum possible value that a valid {@link FluidAmount} can hold. It's not recommended to use this as it can
+     * cause headaches when adding or subtracting values from this. */
+    public static final FluidAmount ABSOLUTE_MINIMUM
+        = new FluidAmount(Long.MIN_VALUE, -Long.MAX_VALUE + 1, Long.MAX_VALUE);
+
+    /** The maximum possible value that a valid {@link FluidAmount} can hold. It's not recommended to use this as it can
+     * cause headaches when adding or subtracting values from this.
+     * 
+     * @deprecated As {@link #MAX_BUCKETS} should generally be used instead, however if you really need the absolute m
+     *             value then you can use {@link #ABSOLUTE_MAXIMUM}. */
+    @Deprecated
+    public static final FluidAmount MAX_VALUE = ABSOLUTE_MAXIMUM;
+
+    /** The minimum possible value that a valid {@link FluidAmount} can hold. It's not recommended to use this as it can
+     * cause headaches when adding or subtracting values from this.
+     * 
+     * @deprecated As {@link #MIN_BUCKETS} should generally be used instead, however if you really need the absolute
+     *             minimum value then you can use {@link #ABSOLUTE_MINIMUM}. */
+    @Deprecated
+    public static final FluidAmount MIN_VALUE = ABSOLUTE_MINIMUM;
 
     public final long whole;
     public final long numerator;
@@ -973,8 +1001,8 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         return add0(by, false);
     }
 
-    /** Similar to {@link #checkedAdd(FluidAmount)}, but returns either {@link #MAX_VALUE} or {@link #MIN_VALUE} instead
-     * of throwing an exception. */
+    /** Similar to {@link #checkedAdd(FluidAmount)}, but returns either {@link #MAX_BUCKETS} or {@link #MIN_BUCKETS}
+     * instead of throwing an exception. */
     public FluidAmount saturatedAdd(@Nullable FluidAmount by) {
         return add0(by, true);
     }
@@ -1354,13 +1382,13 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         long nb = LongMath.saturatedMultiply(numerator, by);
         long w = LongMath.saturatedMultiply(whole, by);
         if (didOverflow(nb) || didOverflow(w)) {
-            return isPositive() == (by > 0) ? MAX_VALUE : MIN_VALUE;
+            return isPositive() == (by > 0) ? MAX_BUCKETS : MIN_BUCKETS;
         }
         long div = nb / denominator;
         long rem = nb % denominator;
         w = LongMath.saturatedAdd(w, div);
         if (didOverflow(w)) {
-            return isPositive() == (by > 0) ? MAX_VALUE : MIN_VALUE;
+            return isPositive() == (by > 0) ? MAX_BUCKETS : MIN_BUCKETS;
         }
         return of(w, rem, denominator);
     }
@@ -1430,8 +1458,15 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         long d1 = denominator;
         long d2 = by.denominator;
 
-        // If w is too big then there's nothing we can do about it.
-        long w3 = LongMath.checkedMultiply(w1, w2);
+        final long w3;
+        if (rounding == RoundingMode.UNNECESSARY) {
+            w3 = LongMath.checkedMultiply(w1, w2);
+        } else {
+            w3 = LongMath.saturatedMultiply(w1, w2);
+            if (didOverflow(w3)) {
+                return w3 < 0 ? MIN_BUCKETS : MAX_BUCKETS;
+            }
+        }
 
         normal: {
             // Just check to see if we will fit in long's all the way...
@@ -1476,8 +1511,9 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         return value == Long.MIN_VALUE || value == Long.MAX_VALUE;
     }
 
+    @Override
     public FluidAmount reciprocal() {
-        return _bigReciprocal().asLongIntExact();
+        return ONE.div(this);
     }
 
     public BigFluidAmount bigReciprocal() {

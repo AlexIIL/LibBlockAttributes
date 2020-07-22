@@ -112,7 +112,7 @@ public class SimpleLimitedGroupedFluidInv extends DelegatingGroupedFluidInv impl
             return fluid;
         }
         FluidAmount current = delegate.getAmount_F(fluid.fluidKey);
-        FluidAmount maxAmount = FluidAmount.MAX_VALUE;
+        FluidAmount maxAmount = FluidAmount.MAX_BUCKETS;
         for (InsertionRule rule : insertionRules) {
             if (rule.filter.matches(fluid.fluidKey)) {
                 maxAmount = maxAmount.min(rule.maximumInsertion);

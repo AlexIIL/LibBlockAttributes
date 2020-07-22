@@ -67,7 +67,7 @@ public interface LimitedFixedFluidInv extends FixedFluidInv {
          * 
          * @return this. */
         default FluidTankLimitRule disallowExtraction() {
-            return setMinimum(FluidAmount.MAX_VALUE);
+            return setMinimum(FluidAmount.MAX_BUCKETS);
         }
 
         /** Stops disallowing extraction of fluids.

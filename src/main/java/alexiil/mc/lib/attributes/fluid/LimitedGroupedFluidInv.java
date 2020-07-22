@@ -96,7 +96,7 @@ public interface LimitedGroupedFluidInv extends GroupedFluidInv {
          * 
          * @return this. */
         default FluidLimitRule disallowExtraction() {
-            return setMinimum(FluidAmount.MAX_VALUE);
+            return setMinimum(FluidAmount.MAX_BUCKETS);
         }
 
         /** Stops disallowing extraction of fluids.

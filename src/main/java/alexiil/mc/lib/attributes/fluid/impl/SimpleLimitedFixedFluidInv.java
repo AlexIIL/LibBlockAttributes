@@ -165,7 +165,7 @@ public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implemen
             @Override
             public FluidTankLimitRule limitInsertionAmount(FluidAmount max) {
                 if (max != null && !max.isPositive()) {
-                    max = FluidAmount.MAX_VALUE;
+                    max = FluidAmount.MAX_BUCKETS;
                 }
                 maxInsertionAmounts[tank] = max;
                 return this;
@@ -198,7 +198,7 @@ public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implemen
             @Override
             public FluidTankLimitRule limitInsertionAmount(FluidAmount max) {
                 if (max != null && !max.isPositive()) {
-                    max = FluidAmount.MAX_VALUE;
+                    max = FluidAmount.MAX_BUCKETS;
                 }
                 Arrays.fill(maxInsertionAmounts, max);
                 return this;

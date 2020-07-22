@@ -83,6 +83,9 @@ import javax.annotation.Nullable;
 
     public abstract T negate();
 
+    /** @return This fraction, but inverted. (With the numerator and denominator swapped). */
+    public abstract T reciprocal();
+
     public BigFluidAmount gcd(FluidAmount other) {
         return _bigGcd(other);
     }

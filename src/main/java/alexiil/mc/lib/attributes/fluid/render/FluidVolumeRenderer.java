@@ -14,11 +14,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.options.GraphicsMode;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
@@ -259,7 +262,17 @@ public abstract class FluidVolumeRenderer {
             return buffer;
         }
 
+        /** Draws every buffer in this VCP, explicitly not using the {@link GraphicsMode#FABULOUS} mode's alternate
+         * framebuffer, so this is safe to use in GUIs.
+         * 
+         * @see #drawDirectly() */
         public void draw() {
+            RenderSystem.runAsFancy(this::drawDirectly);
+        }
+
+        /** Directly draws every buffer in this VCP. NOTE: in GUIs this won't work correctly when
+         * {@link GraphicsMode#FABULOUS} is used: instead you should use {@link #draw()}. */
+        public void drawDirectly() {
             draw(before);
             draw(solid);
             draw(middle);

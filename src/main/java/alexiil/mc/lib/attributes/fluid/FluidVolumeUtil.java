@@ -40,7 +40,7 @@ public final class FluidVolumeUtil {
      * @return A copy of the fluid moved.
      * @see #move(FluidExtractable, FluidInsertable, FluidFilter, int) */
     public static FluidVolume move(FluidExtractable from, FluidInsertable to) {
-        return move(from, to, null, FluidAmount.MAX_VALUE);
+        return move(from, to, null, FluidAmount.MAX_BUCKETS);
     }
 
     /** Attempts to move up to the given amount of fluid from the {@link FluidExtractable} to the
@@ -93,7 +93,7 @@ public final class FluidVolumeUtil {
             insertionFilter = AggregateFluidFilter.and(insertionFilter, filter);
         }
         if (maximum == null) {
-            maximum = FluidAmount.MAX_VALUE;
+            maximum = FluidAmount.MAX_BUCKETS;
         }
 
         // 5 steps:

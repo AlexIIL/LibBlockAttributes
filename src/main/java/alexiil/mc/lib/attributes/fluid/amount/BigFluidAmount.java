@@ -141,6 +141,7 @@ public final class BigFluidAmount extends FluidAmountBase<BigFluidAmount> {
         return new BigFluidAmount(whole.negate(), numerator.negate(), denominator);
     }
 
+    @Override
     public BigFluidAmount reciprocal() {
         return _bigReciprocal();
     }
@@ -159,19 +160,19 @@ public final class BigFluidAmount extends FluidAmountBase<BigFluidAmount> {
     }
 
     /** Converts this into a normal long-based {@link FluidAmount}. If this is too big to fit then this returns either
-     * {@link FluidAmount#MIN_VALUE} or {@link FluidAmount#MAX_VALUE} according this the {@link #sign()}. */
+     * {@link FluidAmount#MIN_BUCKETS} or {@link FluidAmount#MAX_BUCKETS} according this the {@link #sign()}. */
     public FluidAmount asLongIntSaturated() {
         if (fitsInLongInt()) {
             return asLongIntExact();
         } else {
-            return isNegative() ? FluidAmount.MIN_VALUE : FluidAmount.MAX_VALUE;
+            return isNegative() ? FluidAmount.MIN_BUCKETS : FluidAmount.MAX_BUCKETS;
         }
     }
 
     /** Converts this into a normal long-based {@link FluidAmount}.
      * <p>
-     * If {@link #whole} is too large to fit in a long then either {@link FluidAmount#MIN_VALUE} or
-     * {@link FluidAmount#MAX_VALUE} is returned (depending on this sign).
+     * If {@link #whole} is too large to fit in a long then either {@link FluidAmount#MIN_BUCKETS} or
+     * {@link FluidAmount#MAX_BUCKETS} is returned (depending on this sign).
      * <p>
      * Otherwise this is approximately rounded to a valid value. */
     public FluidAmount asLongIntRounded() {
@@ -180,8 +181,8 @@ public final class BigFluidAmount extends FluidAmountBase<BigFluidAmount> {
 
     /** Converts this into a normal long-based {@link FluidAmount}.
      * <p>
-     * If {@link #whole} is too large to fit in a long then either {@link FluidAmount#MIN_VALUE} or
-     * {@link FluidAmount#MAX_VALUE} is returned (depending on this sign).
+     * If {@link #whole} is too large to fit in a long then either {@link FluidAmount#MIN_BUCKETS} or
+     * {@link FluidAmount#MAX_BUCKETS} is returned (depending on this sign).
      * <p>
      * Otherwise this is approximately rounded to a valid value. */
     public FluidAmount asLongIntRounded(RoundingMode rounding) {
@@ -200,7 +201,7 @@ public final class BigFluidAmount extends FluidAmountBase<BigFluidAmount> {
         }
 
         if (whole.bitLength() >= 64) {
-            return isNegative() ? FluidAmount.MIN_VALUE : FluidAmount.MAX_VALUE;
+            return isNegative() ? FluidAmount.MIN_BUCKETS : FluidAmount.MAX_BUCKETS;
         }
 
         long w = whole.longValue();
