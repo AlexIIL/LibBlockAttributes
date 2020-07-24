@@ -16,6 +16,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.block.FluidFillable;
 import net.minecraft.block.Waterloggable;
+import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.state.property.Properties;
@@ -73,7 +74,7 @@ public final class FluidWorldUtil {
     }
 
     /**
-     * Attempts to place the given fluid volume into the given block position. 
+     * Attempts to place the given fluid volume into the given block position.
      * @return The leftover amount of fluid after placing, or the original volume if it was unable to be placed.
      */
     public static FluidVolume fill(WorldAccess world, BlockPos pos, FluidVolume volume, Simulation simulation) {
@@ -111,7 +112,7 @@ public final class FluidWorldUtil {
         } else if (block instanceof FluidBlock) {
             FluidState fluidState = world.getFluidState(pos);
             // Top up a non-still fluid block, but this consumes a full bucket regardless of the level
-            if (!fluidState.isStill() && fluidState.getFluid() == fluid) {
+            if (!fluidState.isStill() && getStillFluid(fluidState.getFluid()) == fluid) {
                 if (simulation == Simulation.ACTION) {
                     world.setBlockState(pos, fluid.getDefaultState().getBlockState(), 3);
                 }
@@ -127,4 +128,12 @@ public final class FluidWorldUtil {
             return volume;
         }
     }
+
+    private static Fluid getStillFluid(Fluid fluid) {
+        if (fluid instanceof FlowableFluid) {
+            return ((FlowableFluid) fluid).getStill();
+        }
+        return fluid;
+    }
+
 }
