@@ -110,6 +110,9 @@ public final class ItemInvUtil {
         }
         ItemStack leftover = to.attemptInsertion(extracted, simulation);
         int insertedAmount = extracted.getCount() - (leftover.isEmpty() ? 0 : leftover.getCount());
+        if (insertedAmount == 0) {
+            return 0; // Nothing was accepted by the target
+        }
         ItemStack reallyExtracted = from.attemptExtraction(insertionFilter, insertedAmount, simulation);
 
         if (reallyExtracted.isEmpty()) {
