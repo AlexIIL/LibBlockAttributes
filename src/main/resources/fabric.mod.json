@@ -16,6 +16,7 @@
     "fabric": "*"
   },
   "mixins": [
+    "libblockattributes_item.common.json",
     "libblockattributes_fluid.common.json",
     "libblockattributes_fluid.client.json"
   ],
