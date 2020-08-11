@@ -11,12 +11,10 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 
 public abstract class WeightedFluidKey<T> extends FluidKey {
 
-    public final Class<T> valueClass;
     public final T defaultValue;
 
-    public WeightedFluidKey(FluidKeyBuilder builder, Class<T> valueClass, T defaultValue) {
+    public WeightedFluidKey(FluidKeyBuilder builder, T defaultValue) {
         super(builder);
-        this.valueClass = valueClass;
         this.defaultValue = defaultValue;
     }
 

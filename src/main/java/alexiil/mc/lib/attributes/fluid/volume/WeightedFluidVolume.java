@@ -18,6 +18,7 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.Preconditions;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -300,14 +301,17 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
 
     @Override
     protected void mergeInternal(FluidVolume vol, FluidMergeResult result) {
-        WeightedFluidVolume<?> other = (WeightedFluidVolume<?>) vol;
+        Preconditions.checkArgument(vol.getClass() == getClass());
+        // The unchecked cast is justified because we are of the _same_ class
+        @SuppressWarnings("unchecked")
+        WeightedFluidVolume<T> other = (WeightedFluidVolume<T>) vol;
 
         for (Map.Entry<T, FluidAmount> entry : values.entrySet()) {
             entry.setValue(entry.getValue().roundedMul(getAmount_F()));
         }
 
-        for (Map.Entry<?, FluidAmount> entry : other.values.entrySet()) {
-            T oKey = key.valueClass.cast(entry.getKey());
+        for (Map.Entry<T, FluidAmount> entry : other.values.entrySet()) {
+            T oKey = entry.getKey();
             values.put(oKey, entry.getValue().roundedMul(other.getAmount_F()).roundedAdd(values.get(oKey)));
         }
 

@@ -11,7 +11,12 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
+import net.minecraft.client.font.TextVisitFactory;
+import net.minecraft.text.OrderedText;
+import net.minecraft.text.StringVisitable;
+import net.minecraft.text.Style;
 import org.junit.BeforeClass;
 
 import net.minecraft.Bootstrap;
@@ -88,8 +93,12 @@ public class VanillaSetupBaseTester {
             }
 
             @Override
-            public String reorder(String string, boolean bl) {
-                return string;
+            public OrderedText reorder(StringVisitable text) {
+                return (visitor) -> {
+                    return text.visit((style, string) -> {
+                        return TextVisitFactory.visitFormatted(string, style, visitor) ? Optional.empty() : StringVisitable.TERMINATE_VISIT;
+                    }, Style.EMPTY).isPresent();
+                };
             }
 
             @Override

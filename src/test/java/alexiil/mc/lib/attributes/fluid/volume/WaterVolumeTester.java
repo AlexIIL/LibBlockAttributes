@@ -7,6 +7,7 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import net.minecraft.world.biome.BuiltInBiomes;
 import org.junit.Assert;
 
 import net.minecraft.world.biome.Biomes;
@@ -21,8 +22,8 @@ public class WaterVolumeTester {
     }
 
     private static void testWaterVolumeSplitting() {
-        WaterFluidVolume waterVolume = new WaterFluidVolume(Biomes.OCEAN, 10);
-        Assert.assertTrue(waterVolume.merge(new WaterFluidVolume(Biomes.DARK_FOREST, 10), Simulation.ACTION));
+        WaterFluidVolume waterVolume = new WaterFluidVolume(BuiltInBiomes.OCEAN, 10);
+        Assert.assertTrue(waterVolume.merge(new WaterFluidVolume(BuiltInBiomes.DARK_FOREST, 10), Simulation.ACTION));
 
         FluidVolume split1 = waterVolume.split(1);
         FluidVolume split2 = waterVolume.split(2);
@@ -39,8 +40,8 @@ public class WaterVolumeTester {
     }
 
     private static void testWaterVolumeSplittingSmall() {
-        WaterFluidVolume waterVolume = new WaterFluidVolume(Biomes.OCEAN, 1);
-        Assert.assertTrue(waterVolume.merge(new WaterFluidVolume(Biomes.DARK_FOREST, 1), Simulation.ACTION));
+        WaterFluidVolume waterVolume = new WaterFluidVolume(BuiltInBiomes.OCEAN, 1);
+        Assert.assertTrue(waterVolume.merge(new WaterFluidVolume(BuiltInBiomes.DARK_FOREST, 1), Simulation.ACTION));
 
         FluidVolume split1 = waterVolume.split(1);
 

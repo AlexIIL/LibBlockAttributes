@@ -7,38 +7,38 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSyntaxException;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.Biomes;
+import net.minecraft.world.biome.BuiltInBiomes;
 
-import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+/**
+ * A fluid that changes it's makup based on the {@link Biome}s that it is taken from.
+ */
+public class BiomeSourcedFluidVolume extends WeightedFluidVolume<RegistryKey<Biome>> {
 
-/** A fluid that changes it's makup based on the {@link Biome}s that it is taken from. */
-public class BiomeSourcedFluidVolume extends WeightedFluidVolume<Biome> {
-
-    protected BiomeSourcedFluidVolume(BiomeSourcedFluidKey key, Biome value, FluidAmount amount) {
+    protected BiomeSourcedFluidVolume(BiomeSourcedFluidKey key, RegistryKey<Biome> value, FluidAmount amount) {
         super(key, value, amount);
     }
 
     @Deprecated
-    protected BiomeSourcedFluidVolume(BiomeSourcedFluidKey key, Biome value, int amount) {
+    protected BiomeSourcedFluidVolume(BiomeSourcedFluidKey key, RegistryKey<Biome> value, int amount) {
         super(key, value, amount);
     }
 
     protected BiomeSourcedFluidVolume(BiomeSourcedFluidKey key, FluidAmount amount) {
-        super(key, Biomes.DEFAULT, amount);
+        super(key, BuiltInBiomes.OCEAN, amount);
     }
 
     @Deprecated
     protected BiomeSourcedFluidVolume(BiomeSourcedFluidKey key, int amount) {
-        super(key, Biomes.DEFAULT, amount);
+        super(key, BuiltInBiomes.OCEAN, amount);
     }
 
     protected BiomeSourcedFluidVolume(BiomeSourcedFluidKey key, CompoundTag tag) {
@@ -49,15 +49,8 @@ public class BiomeSourcedFluidVolume extends WeightedFluidVolume<Biome> {
         super(key, json, BiomeSourcedFluidVolume::biomeFromJson);
     }
 
-    private static Biome biomeFromJson(String str) {
-        Identifier id = Identifier.tryParse(str);
-        if (id == null || !Registry.BIOME.containsId(id)) {
-            throw new JsonSyntaxException(
-                "Unknown biome '" + id + "', it must be one of these: ["
-                    + Registry.BIOME.getIds().stream().sorted().map(i -> "\n\t - " + i) + "\n]"
-            );
-        }
-        return Registry.BIOME.get(id);
+    private static RegistryKey<Biome> biomeFromJson(String str) {
+        return RegistryKey.of(Registry.BIOME_KEY, new Identifier(str));
     }
 
     @Override
@@ -66,12 +59,8 @@ public class BiomeSourcedFluidVolume extends WeightedFluidVolume<Biome> {
     }
 
     @Override
-    protected JsonElement toJson(Biome value) {
-        Identifier idFor = Registry.BIOME.getId(value);
-        if (idFor == null) {
-            return new JsonPrimitive("minecraft:ocean");
-        }
-        return new JsonPrimitive(idFor.toString());
+    protected JsonElement toJson(RegistryKey<Biome> value) {
+        return new JsonPrimitive(value.getValue().toString());
     }
 
     @Override
@@ -85,15 +74,12 @@ public class BiomeSourcedFluidVolume extends WeightedFluidVolume<Biome> {
     }
 
     @Override
-    protected Biome readValue(CompoundTag holder) {
-        return Registry.BIOME.get(Identifier.tryParse(holder.getString("Name")));
+    protected RegistryKey<Biome> readValue(CompoundTag holder) {
+        return RegistryKey.of(Registry.BIOME_KEY, Identifier.tryParse(holder.getString("Name")));
     }
 
     @Override
-    protected void writeValue(CompoundTag holder, Biome value) {
-        Identifier id = Registry.BIOME.getId(value);
-        if (id != null) {
-            holder.putString("Name", id.toString());
-        }
+    protected void writeValue(CompoundTag holder, RegistryKey<Biome> value) {
+        holder.putString("Name", value.getValue().toString());
     }
 }

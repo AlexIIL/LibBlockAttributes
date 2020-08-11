@@ -11,6 +11,7 @@ import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.biome.Biome;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
@@ -42,7 +43,7 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
     }
 
     @Override
-    public BiomeSourcedFluidVolume withAmount(Biome source, FluidAmount amount) {
+    public BiomeSourcedFluidVolume withAmount(RegistryKey<Biome> source, FluidAmount amount) {
         return new WaterFluidVolume(source, amount);
     }
 }

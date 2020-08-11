@@ -19,7 +19,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
-
+import alexiil.mc.lib.attributes.AdderList.PredicateEntry;
+import alexiil.mc.lib.attributes.AdderList.PriorityEntry;
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
 
 /** Used by {@link Attribute} to manage the custom adder list. */

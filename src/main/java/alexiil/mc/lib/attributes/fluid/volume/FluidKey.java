@@ -22,6 +22,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
+import net.minecraft.class_5423;
 import net.minecraft.fluid.EmptyFluid;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
@@ -748,7 +749,7 @@ public abstract class FluidKey {
     }
 
     /** Called when this is pumped out from the world. */
-    public FluidVolume fromWorld(WorldView world, BlockPos pos) {
+    public FluidVolume fromWorld(class_5423 world, BlockPos pos) {
         return withAmount(FluidAmount.BUCKET);
     }
 

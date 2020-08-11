@@ -12,15 +12,18 @@ import com.google.gson.JsonSyntaxException;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.WorldView;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.Biomes;
-
+import net.minecraft.world.biome.BuiltInBiomes;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+import net.minecraft.class_5423;
 
-public class BiomeSourcedFluidKey extends WeightedFluidKey<Biome> {
+public class BiomeSourcedFluidKey extends WeightedFluidKey<RegistryKey<Biome>> {
+
+    private static final RegistryKey<Biome> DEFAULT_BIOME_ID = BuiltInBiomes.OCEAN;
+
     public BiomeSourcedFluidKey(FluidKeyBuilder builder) {
-        super(builder, Biome.class, Biomes.OCEAN);
+        super(builder, DEFAULT_BIOME_ID);
     }
 
     @Override
@@ -39,12 +42,14 @@ public class BiomeSourcedFluidKey extends WeightedFluidKey<Biome> {
     }
 
     @Override
-    public BiomeSourcedFluidVolume withAmount(Biome source, FluidAmount amount) {
+    public BiomeSourcedFluidVolume withAmount(RegistryKey<Biome> source, FluidAmount amount) {
         return new BiomeSourcedFluidVolume(this, source, amount);
     }
 
     @Override
-    public FluidVolume fromWorld(WorldView world, BlockPos pos) {
-        return withAmount(world.getBiome(pos), FluidAmount.BUCKET);
+    public FluidVolume fromWorld(class_5423 world, BlockPos pos) {
+        RegistryKey<Biome> biomeId = world.method_31081(pos).orElse(DEFAULT_BIOME_ID);
+
+        return withAmount(biomeId, FluidAmount.BUCKET);
     }
 }

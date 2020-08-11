@@ -9,29 +9,34 @@ package alexiil.mc.lib.attributes.fluid.volume;
 
 import java.util.Map;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.Biomes;
-
+import net.minecraft.world.biome.BuiltInBiomes;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 
 /* package-private */ final class WaterFluidVolume extends BiomeSourcedFluidVolume {
 
     public WaterFluidVolume(FluidAmount amount) {
-        super(WaterFluidKey.INSTANCE, Biomes.OCEAN, amount);
+        super(WaterFluidKey.INSTANCE, BuiltInBiomes.OCEAN, amount);
     }
 
     @Deprecated
     public WaterFluidVolume(int amount) {
-        super(WaterFluidKey.INSTANCE, Biomes.OCEAN, amount);
+        super(WaterFluidKey.INSTANCE, BuiltInBiomes.OCEAN, amount);
     }
 
-    public WaterFluidVolume(Biome source, FluidAmount amount) {
+    public WaterFluidVolume(RegistryKey<Biome> source, FluidAmount amount) {
         super(WaterFluidKey.INSTANCE, source, amount);
     }
 
     @Deprecated
-    public WaterFluidVolume(Biome source, int amount) {
+    public WaterFluidVolume(RegistryKey<Biome> source, int amount) {
         super(WaterFluidKey.INSTANCE, source, amount);
     }
 
@@ -39,17 +44,34 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
         super(WaterFluidKey.INSTANCE, tag);
     }
 
+    @Environment(EnvType.CLIENT)
     @Override
     public int getRenderColor() {
-        Map<Biome, FluidAmount> sources = this.getValues();
+        ClientWorld world = MinecraftClient.getInstance().world;
+        // We need a registry manager...
+        if (world == null) {
+            return super.getRenderColor(); // Use the fluid default
+        }
+
+        Registry<Biome> biomes = world.getRegistryManager().get(Registry.BIOME_KEY);
+
+        Map<RegistryKey<Biome>, FluidAmount> sources = this.getValues();
         int biomeCount = sources.size();
         switch (biomeCount) {
             case 0: {
                 // Um, what?
-                return Biomes.DEFAULT.getWaterColor();
+                Biome biome = biomes.get(BuiltInBiomes.PLAINS);
+                if (biome == null) {
+                    return super.getRenderColor();
+                }
+                return biome.getWaterColor();
             }
             case 1: {
-                return sources.keySet().iterator().next().getWaterColor();
+                Biome biome = biomes.get(sources.keySet().iterator().next());
+                if (biome == null) {
+                    return super.getRenderColor();
+                }
+                return biome.getWaterColor();
             }
             default: {
                 double r = 0;
@@ -57,10 +79,17 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
                 double b = 0;
                 double total = 0;
 
-                for (Biome biome : sources.keySet()) {
-                    FluidAmount flAmount = sources.get(biome);
+                for (RegistryKey<Biome> biomeId : sources.keySet()) {
+                    FluidAmount flAmount = sources.get(biomeId);
                     double amount = flAmount.asInexactDouble();
-                    int colour = biome.getWaterColor();
+
+                    Biome biome = biomes.get(biomeId);
+                    int colour;
+                    if (biome == null) {
+                        colour = super.getRenderColor();
+                    } else {
+                        colour = biome.getWaterColor();
+                    }
                     r += (colour & 0xFF) * amount;
                     g += ((colour >> 8) & 0xFF) * amount;
                     b += ((colour >> 16) & 0xFF) * amount;

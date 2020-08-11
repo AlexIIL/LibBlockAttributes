@@ -10,6 +10,7 @@ package alexiil.mc.lib.attributes.fluid.volume;
 import java.util.List;
 import java.util.Objects;
 
+import alexiil.mc.lib.attributes.VanillaSetupBaseTester;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -22,7 +23,7 @@ import net.minecraft.util.Identifier;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey.FluidKeyBuilder;
 
-public class FluidPropertyTester {
+public class FluidPropertyTester extends VanillaSetupBaseTester {
 
     @Test
     public void testFluidProperty() {

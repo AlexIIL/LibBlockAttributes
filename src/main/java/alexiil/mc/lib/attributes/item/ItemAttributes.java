@@ -40,6 +40,7 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fatjar.FatJarChecker;
 import alexiil.mc.lib.attributes.fluid.FluidAttributes;
 import alexiil.mc.lib.attributes.item.FixedItemInv.CopyingFixedItemInv;
+import alexiil.mc.lib.attributes.item.ItemAttributes.ShulkerBoxItemInv;
 import alexiil.mc.lib.attributes.item.compat.FixedInventoryVanillaWrapper;
 import alexiil.mc.lib.attributes.item.compat.FixedSidedInventoryVanillaWrapper;
 import alexiil.mc.lib.attributes.item.compat.mod.LbaItemModCompat;

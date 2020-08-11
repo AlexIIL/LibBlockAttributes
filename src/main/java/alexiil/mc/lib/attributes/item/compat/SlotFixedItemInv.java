@@ -63,7 +63,7 @@ public class SlotFixedItemInv extends Slot implements Convertible {
     }
 
     @Override
-    public int getMaxStackAmount(ItemStack stack) {
+    public int getMaxItemCount(ItemStack stack) {
         return inv.getMaxAmount(slotIndex, stack);
     }
 
