@@ -27,10 +27,35 @@ public interface FluidTemperature {
      * @throws IllegalArgumentException if this temperature scale doesn't apply to the given {@link FluidVolume}. */
     double getTemperature(FluidVolume fluid);
 
-    default void addTemperatueToTooltip(FluidKey fluid, FluidTooltipContext context, List<Text> tooltip) {}
+    default void addTemperatureToTooltip(FluidKey fluid, FluidTooltipContext context, List<Text> tooltip) {}
 
-    default void addTemperatueToTooltip(FluidVolume fluid, FluidTooltipContext context, List<Text> tooltip) {
-        addTemperatueToTooltip(fluid.fluidKey, context, tooltip);
+    default void addTemperatureToTooltip(FluidVolume fluid, FluidTooltipContext context, List<Text> tooltip) {
+        addTemperatureToTooltip(fluid.fluidKey, context, tooltip);
+    }
+
+    /** Validates that the given temperature is either null or implements exactly 1 of {@link DiscreteFluidTemperature}
+     * or {@link ContinuousFluidTemperature}. */
+    public static void validate(FluidTemperature temperature) {
+        if (temperature == null) {
+            return;
+        }
+
+        boolean discrete = temperature instanceof DiscreteFluidTemperature;
+        boolean cont = temperature instanceof ContinuousFluidTemperature;
+
+        if (discrete & cont) {
+            throw new IllegalStateException(
+                "The temperature " + temperature.getClass()
+                    + " implements both DiscreteFluidTemperature and ContinuousFluidTemperature, which it should only implement one!"
+            );
+        }
+
+        if (discrete == cont) {
+            throw new IllegalStateException(
+                "The temperature " + temperature.getClass()
+                    + " must implement one of DiscreteFluidTemperature or ContinuousFluidTemperature, but it implements neither!"
+            );
+        }
     }
 
     /** A Discrete {@link FluidTemperature} has a single temperature per {@link FluidKey}. */

@@ -18,6 +18,7 @@ import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
@@ -27,6 +28,8 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
 
+import alexiil.mc.lib.attributes.AdderList.ValueEntry;
+import alexiil.mc.lib.attributes.BlockEntityAttributeAdder.BlockEntityAttributeAdderFN;
 import alexiil.mc.lib.attributes.fatjar.FatJarChecker;
 import alexiil.mc.lib.attributes.misc.AbstractItemBasedAttribute;
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes.LbaModule;
@@ -72,7 +75,11 @@ import alexiil.mc.lib.attributes.misc.UnmodifiableRef;
  * <ol>
  * <li>If the block or item implements {@link AttributeProvider} or {@link AttributeProviderItem} directly then is is
  * used first. If that adder didn't add anything then the next steps aren't skipped (so it will exit early if the
- * block/item provided any implementations itself, otherwise it will try to find one).</li>
+ * block/item provided any implementations itself, otherwise it will continue to try to find one).</li>
+ * <li>If the block is meant to have a {@link BlockEntity} ({@link Block#hasBlockEntity()}), and a {@link BlockEntity}
+ * is present in the world, and it implements {@link AttributeProviderBlockEntity} then it is checked second. If that
+ * adder didn't add anything then the next steps aren't skipped (so it will exit early if the block entity provided any
+ * implementations itself, otherwise it will continue to try to find one).</li>
  * <li>{@link AttributeSourceType#INSTANCE} implementations are considered:
  * <ol>
  * <li>If the block/item has an exact mapping registered in
@@ -101,9 +108,10 @@ public class Attribute<T> {
     public final Class<T> clazz;
 
     // TODO: Rename AdderList!
-    private final AdderList<Block, CustomAttributeAdder<T>> customBlockList;
-    private final AdderList<Item, ItemAttributeAdder<T>> customItemList;
-
+    private final AdderList<Block, Block, CustomAttributeAdder<T>> customBlockList;
+    private final AdderList<Item, Item, ItemAttributeAdder<T>> customItemList;
+    private final AdderList<BlockEntityType<?>, BlockEntity, BlockEntityAttributeAdder<T, ?>> customBlockEntityList;
+    // FIXME: Add Caching!
     private final ArrayList<CustomAttributeAdder<T>> fallbackBlockAdders = new ArrayList<>();
     private final ArrayList<ItemAttributeAdder<T>> fallbackItemAdders = new ArrayList<>();
 
@@ -111,6 +119,13 @@ public class Attribute<T> {
         this.clazz = clazz;
         customBlockList = new AdderList<>(clazz.getName(), Block.class, NullAttributeAdder.get(), Attribute::getName);
         customItemList = new AdderList<>(clazz.getName(), Item.class, NullAttributeAdder.get(), Attribute::getName);
+        customBlockEntityList
+            = new AdderList<>(clazz.getName(), BlockEntity.class, NullAttributeAdder.get(), Attribute::getName);
+
+        customBlockList.baseOffset = 0;
+        customBlockList.priorityMultiplier = 2;
+        customBlockEntityList.baseOffset = 1;
+        customBlockEntityList.priorityMultiplier = 2;
     }
 
     /** @deprecated Kept for backwards compatibility, instead you should call {@link #Attribute(Class)} followed by
@@ -153,6 +168,35 @@ public class Attribute<T> {
         customBlockList.putExact(sourceType, block, adder);
     }
 
+    /** Sets the {@link BlockEntityAttributeAdder} for the given block entity type, which is only used if the block
+     * entity in question doesn't implement {@link AttributeProviderBlockEntity}. Only one
+     * {@link BlockEntityAttributeAdder} may respond to a singular block. */
+    public final <BE extends BlockEntity> void setBlockEntityAdder(
+        AttributeSourceType sourceType, BlockEntityType<BE> type, BlockEntityAttributeAdder<T, BE> adder
+    ) {
+        customBlockEntityList.putExact(sourceType, type, adder);
+    }
+
+    /** Sets the {@link BlockEntityAttributeAdder} for the given block entity type, which is only used if the block
+     * entity in question doesn't implement {@link AttributeProviderBlockEntity}. Only one
+     * {@link BlockEntityAttributeAdder} may respond to a singular block. */
+    public final <BE extends BlockEntity> void setBlockEntityAdder(
+        AttributeSourceType sourceType, BlockEntityType<BE> type, Class<BE> clazz,
+        BlockEntityAttributeAdderFN<T, BE> adder
+    ) {
+        BlockEntityAttributeAdder<T, BE> real = BlockEntityAttributeAdder.ofTyped(clazz, adder);
+        customBlockEntityList.putExact(sourceType, type, real);
+    }
+
+    /** Sets the {@link BlockEntityAttributeAdder} for the given block entity type, which is only used if the block
+     * entity in question doesn't implement {@link AttributeProviderBlockEntity}. Only one
+     * {@link BlockEntityAttributeAdder} may respond to a singular block. */
+    public final void setBlockEntityAdderFN(
+        AttributeSourceType sourceType, BlockEntityType<?> type, BlockEntityAttributeAdderFN<T, BlockEntity> adder
+    ) {
+        customBlockEntityList.putExact(sourceType, type, BlockEntityAttributeAdder.ofBasic(adder));
+    }
+
     /** Sets the {@link ItemAttributeAdder} for the given item, which is only used if the item in question doesn't
      * implement {@link AttributeProviderItem}. Only one {@link CustomAttributeAdder} may respond to a singular item. */
     public final void setItemAdder(AttributeSourceType sourceType, Item item, ItemAttributeAdder<T> adder) {
@@ -166,6 +210,16 @@ public class Attribute<T> {
         AttributeSourceType sourceType, boolean specific, Predicate<Block> filter, CustomAttributeAdder<T> adder
     ) {
         customBlockList.addPredicateBased(sourceType, specific, filter, adder);
+    }
+
+    /** {@link Predicate}-based block entity attribute adder. If "specific" is true then these are called directly after
+     * {@link #setBlockEntityAdder(AttributeSourceType, BlockEntityType, BlockEntityAttributeAdder)}, otherwise they are
+     * called after the class-based mappings have been called. */
+    public final void addBlockEntityPredicateAdder(
+        AttributeSourceType sourceType, boolean specific, Predicate<BlockEntityType<?>> filter,
+        BlockEntityAttributeAdderFN<T, BlockEntity> adder
+    ) {
+        customBlockEntityList.addPredicateBased(sourceType, specific, filter, BlockEntityAttributeAdder.ofBasic(adder));
     }
 
     /** {@link Predicate}-based item attribute adder. If "specific" is true then these are called directly after
@@ -183,6 +237,17 @@ public class Attribute<T> {
         AttributeSourceType sourceType, Class<?> clazz, boolean matchSubclasses, CustomAttributeAdder<T> adder
     ) {
         customBlockList.putClassBased(sourceType, clazz, matchSubclasses, adder);
+    }
+
+    /** {@link Class}-based block entity attribute adder. If no specific predicate adder has been registered then this
+     * checks for an exact class match, and then for a super-type match. Only one adder may be present for any given
+     * class. */
+    public final <BE> void putBlockEntityClassAdder(
+        AttributeSourceType sourceType, Class<BE> clazz, boolean matchSubclasses,
+        BlockEntityAttributeAdderFN<T, BE> adder
+    ) {
+        BlockEntityAttributeAdder<T, BE> real = BlockEntityAttributeAdder.ofTyped(clazz, adder);
+        customBlockEntityList.putClassBased(sourceType, clazz, matchSubclasses, real);
     }
 
     /** {@link Class}-based item attribute adder. If no specific predicate adder has been registered then this checks
@@ -237,22 +302,53 @@ public class Attribute<T> {
         Block block = state.getBlock();
 
         if (block instanceof AttributeProvider) {
-            int offeredBefore = list.getOfferedCount();
-            AttributeProvider attributeBlock = (AttributeProvider) block;
-            attributeBlock.addAllAttributes(world, pos, state, list);
-            if (offeredBefore < list.getOfferedCount()) {
+            ((AttributeProvider) block).addAllAttributes(world, pos, state, list);
+            if (list.hasOfferedAny()) {
                 return;
             }
         }
 
-        CustomAttributeAdder<T> c = customBlockList.get(block);
-        if (c != null) {
-            c.addAll(world, pos, state, list);
+        BlockEntity be = block.hasBlockEntity() ? world.getBlockEntity(pos) : null;
+        if (be instanceof AttributeProviderBlockEntity) {
+            ((AttributeProviderBlockEntity) be).addAllAttributes(list);
+            if (list.hasOfferedAny()) {
+                return;
+            }
+        }
+
+        ValueEntry<CustomAttributeAdder<T>> customBlock = customBlockList.getEntry(block, block.getClass());
+        if (customBlock.priority < 8) {
+            customBlock.value.addAll(world, pos, state, list);
             return;
         }
+
+        if (be == null) {
+            if (customBlock.priority < AdderList.NULL_PRIORITY) {
+                customBlock.value.addAll(world, pos, state, list);
+                return;
+            }
+        } else {
+            ValueEntry<BlockEntityAttributeAdder<T, ?>> customEntity
+                = customBlockEntityList.getEntry(be.getType(), be.getClass());
+
+            if (customEntity.priority < customBlock.priority) {
+                addAll(customEntity.value, be, list);
+                return;
+            }
+
+            if (customBlock.priority < AdderList.NULL_PRIORITY) {
+                customBlock.value.addAll(world, pos, state, list);
+                return;
+            }
+        }
+
         for (CustomAttributeAdder<T> custom : fallbackBlockAdders) {
             custom.addAll(world, pos, state, list);
         }
+    }
+
+    private <BE> void addAll(BlockEntityAttributeAdder<T, BE> value, BlockEntity be, AttributeList<T> to) {
+        value.addAll(value.getBlockEntityClass().cast(be), to);
     }
 
     /** @return A complete {@link AttributeList} of every attribute instance that can be found. */
@@ -331,7 +427,7 @@ public class Attribute<T> {
                 return;
             }
         }
-        ItemAttributeAdder<T> c = customItemList.get(item);
+        ItemAttributeAdder<T> c = customItemList.get(item, item.getClass());
         if (c != null) {
             c.addAll(stackRef, excess, list);
             return;
@@ -501,6 +597,16 @@ public class Attribute<T> {
             return id.toString();
         } else {
             return "UnknownBlock{" + block.getClass() + " @" + Integer.toHexString(System.identityHashCode(block))
+                + "}";
+        }
+    }
+
+    private static String getName(BlockEntityType<?> type) {
+        Identifier id = Registry.BLOCK_ENTITY_TYPE.getId(type);
+        if (id != null) {
+            return id.toString();
+        } else {
+            return "UnknownBlockEntity{" + type.getClass() + " @" + Integer.toHexString(System.identityHashCode(type))
                 + "}";
         }
     }

@@ -8,9 +8,11 @@
 package alexiil.mc.lib.attributes.fluid.filter;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.RandomAccess;
+import java.util.Set;
 
 import com.google.common.collect.Iterators;
 
@@ -93,16 +95,37 @@ public class AggregateFluidFilter implements ReadableFluidFilter, Iterable<Fluid
             FluidKey exactA = ((ExactFluidFilter) filterA).fluid;
             if (filterB.matches(exactA)) {
                 return filterA;
-            } else {
+            } else if (all) {
                 return ConstantFluidFilter.NOTHING;
+            }
+
+            if (filterB instanceof ExactFluidFilter) {
+                Set<FluidKey> set = new HashSet<>();
+                set.add(exactA);
+                set.add(((ExactFluidFilter) filterB).fluid);
+                return new FluidSetFilter(set);
+            }
+
+            if (filterB instanceof FluidSetFilter) {
+                Set<FluidKey> set = new HashSet<>();
+                set.add(exactA);
+                set.addAll(((FluidSetFilter) filterB).getFluids());
+                return new FluidSetFilter(set);
             }
         }
         if (filterB instanceof ExactFluidFilter) {
             FluidKey exactB = ((ExactFluidFilter) filterB).fluid;
             if (filterA.matches(exactB)) {
                 return filterB;
-            } else {
+            } else if (all) {
                 return ConstantFluidFilter.NOTHING;
+            }
+
+            if (filterA instanceof FluidSetFilter) {
+                Set<FluidKey> set = new HashSet<>();
+                set.add(exactB);
+                set.addAll(((FluidSetFilter) filterA).getFluids());
+                return new FluidSetFilter(set);
             }
         }
 

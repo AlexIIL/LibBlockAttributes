@@ -116,8 +116,8 @@ public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implemen
     public boolean setInvFluid(int tank, FluidVolume to, Simulation simulation) {
         FluidVolume current = getInvFluid(tank);
         boolean same = current.getFluidKey().equals(to.fluidKey);
-        boolean isExtracting = !same || to.getAmount_F().isLessThan(current.getAmount_F());
-        boolean isInserting = !same || to.getAmount_F().isGreaterThan(current.getAmount_F());
+        boolean isExtracting = !current.isEmpty() && (!same || to.getAmount_F().isLessThan(current.getAmount_F()));
+        boolean isInserting = !to.isEmpty() && (!same || to.getAmount_F().isGreaterThan(current.getAmount_F()));
 
         if (isExtracting) {
             if (same) {

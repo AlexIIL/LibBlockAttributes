@@ -12,9 +12,8 @@ import net.minecraft.item.ItemStack;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.ItemInsertable;
 
-/** An {@link ItemFilter} that checks to see if the given {@link ItemInsertable} could have the fluid inserted into it,
- * right now. (Note that this doesn't match the definition of {@link ItemInsertable#getInsertionFilter()}, so you should
- * never use it a return value from that). */
+/** An {@link ItemFilter} that checks to see if the given {@link ItemInsertable} could have the stack inserted into it,
+ * right now. */
 public final class ItemInsertableFilter implements ItemFilter {
 
     public final ItemInsertable insertable;

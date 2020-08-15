@@ -16,14 +16,14 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.misc.NullVariant;
 
-/** A {@link FluidExtractable} that never returns any items from
+/** A {@link FluidExtractable} that never returns any fluid from
  * {@link #attemptExtraction(FluidFilter, int, Simulation)}. */
 public enum EmptyFluidExtractable implements FluidExtractable, NullVariant {
     /** A {@link FluidExtractable} that should be treated as equal to null in all circumstances - that is any checks
      * that depend on an object being extractable should be considered FALSE for this instance. */
     NULL,
 
-    /** A {@link FluidExtractable} that informs callers that it will push items into a nearby {@link FluidInsertable},
+    /** A {@link FluidExtractable} that informs callers that it will push fluid into a nearby {@link FluidInsertable},
      * but doesn't expose any other fluid based attributes.
      * <p>
      * The buildcraft quarry is a good example of an item version of this - it doesn't have any inventory storage itself
@@ -32,6 +32,7 @@ public enum EmptyFluidExtractable implements FluidExtractable, NullVariant {
     SUPPLIER;
 
     @Override
+    @Deprecated
     public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
         return FluidKeys.EMPTY.withAmount(FluidAmount.ZERO);
     }

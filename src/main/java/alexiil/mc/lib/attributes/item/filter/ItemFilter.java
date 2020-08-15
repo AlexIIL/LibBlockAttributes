@@ -12,7 +12,7 @@ import java.util.function.Predicate;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-/** A general {@link Predicate} interface for {@link ItemStack}s. *
+/** A specialised version of the {@link Predicate} functional interface for {@link ItemStack}s.
  * <p>
  * 5 basic implementations are provided:
  * <ul>
@@ -29,7 +29,8 @@ import net.minecraft.item.ItemStack;
 public interface ItemFilter {
 
     /** Checks to see if this filter matches the given stack. Note that this must not care about
-     * {@link ItemStack#getCount()}, except in the case where the stack is {@link ItemStack#isEmpty()}. */
+     * {@link ItemStack#getCount()}, except in the case where the stack is {@link ItemStack#isEmpty()}, which isn't
+     * expected to return a useful result. */
     boolean matches(ItemStack stack);
 
     default ItemFilter negate() {
@@ -60,7 +61,7 @@ public interface ItemFilter {
 
         @Override
         public boolean test(ItemStack stack) {
-            if (stack == null) {
+            if (stack == null || stack.isEmpty()) {
                 // Predicate.test doesn't have this restriction
                 return false;
             }

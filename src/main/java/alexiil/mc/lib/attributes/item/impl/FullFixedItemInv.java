@@ -212,12 +212,16 @@ public class FullFixedItemInv implements CopyingFixedItemInv, ItemTransferable, 
 
     @Override
     public CompoundTag toTag(CompoundTag tag) {
-        ListTag tanksTag = new ListTag();
+        ListTag slotsTag = new ListTag();
         for (ItemStack stack : slots) {
             ItemInvModificationTracker.trackNeverChanging(stack);
-            tanksTag.add(stack.toTag(new CompoundTag()));
+            if (stack.isEmpty()) {
+                slotsTag.add(new CompoundTag());
+            } else {
+                slotsTag.add(stack.toTag(new CompoundTag()));
+            }
         }
-        tag.put("slots", tanksTag);
+        tag.put("slots", slotsTag);
         return tag;
     }
 

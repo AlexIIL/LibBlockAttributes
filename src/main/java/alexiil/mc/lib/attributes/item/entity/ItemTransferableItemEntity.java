@@ -47,14 +47,11 @@ public class ItemTransferableItemEntity implements ItemTransferable {
 
     @Override
     public ItemStack attemptExtraction(ItemFilter filter, int maxAmount, Simulation simulation) {
-        if (maxAmount < 1) {
-            return ItemStack.EMPTY;
-        }
-        if (!entity.isAlive()) {
+        if (maxAmount < 1 || !entity.isAlive()) {
             return ItemStack.EMPTY;
         }
         ItemStack current = entity.getStack();
-        if (!filter.matches(current)) {
+        if (current.isEmpty() || !filter.matches(current)) {
             return ItemStack.EMPTY;
         }
         current = current.copy();

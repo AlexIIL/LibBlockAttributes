@@ -8,8 +8,11 @@
 package alexiil.mc.lib.attributes.fluid;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
@@ -72,6 +75,15 @@ public final class FluidAttributes {
      * filters). */
     public static final CombinableAttribute<FluidFilter> FILTER;
 
+    /** A {@link List} of every inventory-type attribute, so: {@link #FIXED_INV_VIEW}, {@link #FIXED_INV},
+     * {@link #GROUPED_INV_VIEW}, {@link #GROUPED_INV}, {@link #INSERTABLE}, and {@link #EXTRACTABLE}. */
+    public static final List<CombinableAttribute<?>> INVENTORY_BASED;
+
+    /** Runs the given {@link Consumer} on every {@link #INVENTORY_BASED} attribute. */
+    public static void forEachInv(Consumer<? super CombinableAttribute<?>> consumer) {
+        INVENTORY_BASED.forEach(consumer);
+    }
+
     static {
         FIXED_INV_VIEW = create(
             FixedFluidInvView.class, //
@@ -116,10 +128,16 @@ public final class FluidAttributes {
             list -> AggregateFluidFilter.allOf(list)//
         );
 
+        INVENTORY_BASED = Arrays.asList(
+            FIXED_INV_VIEW, FIXED_INV, //
+            GROUPED_INV_VIEW, GROUPED_INV, //
+            INSERTABLE, EXTRACTABLE//
+        );
+
         LbaFluidModCompatLoader.load();
     }
 
-    public static <T> CombinableAttribute<T> create(
+    private static <T> CombinableAttribute<T> create(
         Class<T> clazz, @Nonnull T defaultValue, AttributeCombiner<T> combiner, Function<FixedFluidInv, T> convertor
     ) {
         CombinableAttribute<T> attribute = Attributes.createCombinable(clazz, defaultValue, combiner);

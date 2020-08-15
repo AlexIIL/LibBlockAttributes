@@ -17,12 +17,7 @@ public final class EmiItemInvCompat {
     private EmiItemInvCompat() {}
 
     static void load() {
-        put(ItemAttributes.INSERTABLE);
-        put(ItemAttributes.EXTRACTABLE);
-        put(ItemAttributes.GROUPED_INV_VIEW);
-        put(ItemAttributes.GROUPED_INV);
-        put(ItemAttributes.FIXED_INV_VIEW);
-        put(ItemAttributes.FIXED_INV);
+        ItemAttributes.forEachInv(EmiItemInvCompat::put);
     }
 
     private static void put(Attribute<?> attribute) {

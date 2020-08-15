@@ -27,6 +27,7 @@ import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -40,6 +41,8 @@ import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.render.DefaultFluidVolumeRenderer;
 import alexiil.mc.lib.attributes.fluid.volume.FluidEntry.FluidFloatingEntry;
+import alexiil.mc.lib.attributes.fluid.volume.FluidTemperature.ContinuousFluidTemperature;
+import alexiil.mc.lib.attributes.fluid.volume.FluidTemperature.DiscreteFluidTemperature;
 
 import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2IntSortedMap;
@@ -173,7 +176,7 @@ public abstract class FluidKey {
         /* package-private */ FluidAmount cohesion, netherCohesion;
         /* package-private */ FluidAmount density;
         /* package-private */ FluidAmount thermalCapacity;
-        /* package-private */ FluidTemperature.DiscreteFluidTemperature temperature;
+        /* package-private */ FluidTemperature temperature;
 
         /** @deprecated As the flowing sprite ID is needed as well. */
         @Deprecated
@@ -360,7 +363,16 @@ public abstract class FluidKey {
          * {@link FluidProperty}s to provide the fluid for this fluid.
          * 
          * @return this. */
-        public FluidKeyBuilder setTemperature(FluidTemperature.DiscreteFluidTemperature temperature) {
+        public FluidKeyBuilder setTemperature(DiscreteFluidTemperature temperature) {
+            this.temperature = temperature;
+            return this;
+        }
+
+        /** Sets the {@link FluidKey#thermalCapacity} property to the given {@link FluidAmount}, or null to allow
+         * {@link FluidProperty}s to provide the fluid for this fluid.
+         * 
+         * @return this. */
+        public FluidKeyBuilder setTemperature(ContinuousFluidTemperature temperature) {
             this.temperature = temperature;
             return this;
         }
@@ -437,7 +449,13 @@ public abstract class FluidKey {
         if (thermalCapacity.isNegative()) {
             throw new IllegalArgumentException("Negative thermal capacity is not allowed (" + thermalCapacity + ")");
         }
-        this.temperature = builder.temperature;
+
+        if (this instanceof FluidTemperature) {
+            this.temperature = (FluidTemperature) this;
+        } else {
+            this.temperature = builder.temperature;
+        }
+        FluidTemperature.validate(temperature);
 
         validateClass(getClass());
     }
@@ -501,6 +519,27 @@ public abstract class FluidKey {
         }
         assert this.equals(fromJson(json)) : json.toString();
     }
+
+    /** Reads a {@link FluidKey} from a vanilla minecraft {@link PacketByteBuf}. */
+    public static FluidKey fromMcBuffer(PacketByteBuf buffer) {
+        if (!buffer.readBoolean()) {
+            return FluidKeys.EMPTY;
+        }
+        return FluidKeys.get(FluidEntry.fromMcBuffer(buffer));
+    }
+
+    /** Writes this {@link FluidKey} to a vanilla minecraft {@link PacketByteBuf}, such that it can be read with
+     * {@link #fromMcBuffer(PacketByteBuf)}. */
+    public final void toMcBuffer(PacketByteBuf buffer) {
+        if (isEmpty()) {
+            buffer.writeBoolean(false);
+            return;
+        }
+        buffer.writeBoolean(true);
+        entry.toMcBuffer(buffer);
+    }
+
+    // TODO: LNS NetByteBuf read/write!
 
     /* package-private */ static FluidKey fromJsonInternal(JsonObject json) throws JsonSyntaxException {
         if (json.has("floating_fluid")) {
@@ -729,7 +768,26 @@ public abstract class FluidKey {
         return withAmount(FluidVolume.parseAmount(amount));
     }
 
-    // TODO: Add write/read with PacketBuffers!
+    /** Reads a {@link FluidVolume} from the {@link PacketByteBuf}. Unfortunately this method is not particularly
+     * efficient at encoding */
+    public final FluidVolume readVolume(PacketByteBuf buffer) {
+        if (isEmpty()) {
+            return FluidVolumeUtil.EMPTY;
+        }
+        FluidAmount amount = FluidAmount.fromMcBuffer(buffer);
+        FluidVolume volume = createFromMcBuffer(buffer, amount);
+        volume.readProperties(buffer);
+        return volume;
+    }
+
+    /** Creates a new {@link FluidVolume} and reads it from the buffer with
+     * {@link FluidVolume#fromMcBufferInternal(PacketByteBuf)}. This should not attempt to read properties. */
+    protected FluidVolume createFromMcBuffer(PacketByteBuf buffer, FluidAmount amount) {
+        FluidVolume volume = withAmount(amount);
+        volume.fromMcBufferInternal(buffer);
+        return volume;
+    }
+
     // TODO: Add LNS support!
 
     public final boolean isEmpty() {
@@ -793,7 +851,7 @@ public abstract class FluidKey {
 
     public final void addTooltipTemperature(FluidTooltipContext context, List<Text> tooltip) {
         if (temperature != null) {
-            temperature.addTemperatueToTooltip(this, context, tooltip);
+            temperature.addTemperatureToTooltip(this, context, tooltip);
         }
     }
 
@@ -832,7 +890,7 @@ public abstract class FluidKey {
             }
 
         } catch (NoSuchMethodException e) {
-            throw new IllegalStateException("Failed to fine the methods during validation!", e);
+            throw new IllegalStateException("Failed to find the methods during validation!", e);
         }
     }
 }

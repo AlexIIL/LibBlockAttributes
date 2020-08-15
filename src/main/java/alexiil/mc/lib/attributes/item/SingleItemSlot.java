@@ -13,6 +13,7 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ItemInsertableFilter;
 import alexiil.mc.lib.attributes.misc.StackReference;
 
 /** A delegating accessor of a single slot in a {@link FixedItemInv}. */
@@ -49,17 +50,17 @@ public class SingleItemSlot extends SingleItemSlotView implements ItemTransferab
 
     @Override
     public final ItemStack attemptExtraction(ItemFilter filter, int maxAmount, Simulation simulation) {
-        return ItemInvUtil.extractSingle(getBackingInv(), slot, filter, ItemStack.EMPTY, maxAmount, simulation);
+        return getBackingInv().extractStack(slot, filter, ItemStack.EMPTY, maxAmount, simulation);
     }
 
     @Override
     public final ItemStack attemptInsertion(ItemStack stack, Simulation simulation) {
-        return ItemInvUtil.insertSingle(getBackingInv(), slot, stack, simulation);
+        return getBackingInv().insertStack(slot, stack, simulation);
     }
 
     @Override
     public final ItemFilter getInsertionFilter() {
-        return getBackingInv().getFilterForSlot(slot);
+        return getBackingInv().getFilterForSlot(slot).and(new ItemInsertableFilter(this));
     }
 
     // Reference

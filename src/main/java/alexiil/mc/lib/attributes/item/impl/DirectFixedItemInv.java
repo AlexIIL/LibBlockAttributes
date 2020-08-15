@@ -23,7 +23,6 @@ import alexiil.mc.lib.attributes.item.FixedItemInv.ModifiableFixedItemInv;
 import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
 import alexiil.mc.lib.attributes.item.ItemInvAmountChangeListener;
-import alexiil.mc.lib.attributes.item.ItemInvUtil;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 import alexiil.mc.lib.attributes.misc.Saveable;
 
@@ -32,12 +31,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
 /** A simple implementation of {@link ModifiableFixedItemInv} that supports all of the features that the interface
  * exposes. For simplicities sake this also implements {@link GroupedItemInv}, however none of the grouped methods run
  * in O(1). */
-
-// TODO: Think about new class names!
-
-// Should this get renamed to SimpleFixedItemInv and a new (deprecated) class DirectFixedItemInv extend that to maintain
-// backwards compatibility? (As this is basically identical to how it behaved in 0.4.x)
-
 public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemInv, Saveable {
 
     private static final InvMarkDirtyListener[] NO_LISTENERS = new InvMarkDirtyListener[0];
@@ -123,11 +116,15 @@ public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemIn
 
     @Override
     public CompoundTag toTag(CompoundTag tag) {
-        ListTag tanksTag = new ListTag();
+        ListTag slotsTag = new ListTag();
         for (ItemStack stack : slots) {
-            tanksTag.add(stack.toTag(new CompoundTag()));
+            if (stack.isEmpty()) {
+                slotsTag.add(new CompoundTag());
+            } else {
+                slotsTag.add(stack.toTag(new CompoundTag()));
+            }
         }
-        tag.put("slots", tanksTag);
+        tag.put("slots", slotsTag);
         return tag;
     }
 
@@ -270,17 +267,13 @@ public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemIn
 
     /** Splits off the given amount from the {@link ItemStack} in the given slot. */
     public ItemStack extract(int slot, int count) {
-        ItemStack current = get(slot);
-        ItemStack split = current.split(count);
-        set(slot, current);
-        return split;
+        return extractStack(slot, null, ItemStack.EMPTY, count, Simulation.ACTION);
     }
 
     /** Tries to insert the given stack into the given slot.
      * 
      * @return The result that couldn't be inserted. */
     public ItemStack insert(int slot, ItemStack stack) {
-        // TODO: Optimise this!
-        return ItemInvUtil.insertSingle(this, slot, stack, Simulation.ACTION);
+        return insertStack(slot, stack, Simulation.ACTION);
     }
 }

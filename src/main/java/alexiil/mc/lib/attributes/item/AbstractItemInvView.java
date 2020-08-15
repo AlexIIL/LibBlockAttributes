@@ -29,8 +29,12 @@ public interface AbstractItemInvView {
      *         Inventories that support {@link #addListener(InvMarkDirtyListener, ListenerRemovalToken) listeners}
      *         <em>highly encouraged</em> to support this - by definition if an inventory knows when it changed then it
      *         should be able to count the number of changes. It is also implied that any changes to this value will
-     *         also invoke every registered {@link InvMarkDirtyListener}. */
-    int getChangeValue();
+     *         also invoke every registered {@link InvMarkDirtyListener}.
+     *         <p>
+     *         The default implementation returns an ever-increasing value. */
+    default int getChangeValue() {
+        return DefaultChangeTracker.changeValue++;
+    }
 
     /** Adds the given listener to this inventory, such that
      * {@link InvMarkDirtyListener#onMarkDirty(AbstractItemInvView)} will be called every time that any stored stack is
@@ -39,10 +43,19 @@ public interface AbstractItemInvView {
      * <p>
      * If the listener is registered (and thus this returns null) then it implies that {@link #getChangeValue()} will
      * change every time that the given listener is invoked, always just-before it is invoked.
+     * <p>
+     * The default implementation refuses to accept any listeners, but implementations are <em>highly encouraged</em> to
+     * override this if they are able to!
      * 
      * @param removalToken A token that will be called whenever the given listener is removed from this inventory (or if
      *            this inventory itself is unloaded or otherwise invalidated).
      * @return A token that represents the listener, or null if the listener could not be added. */
     @Nullable
-    ListenerToken addListener(InvMarkDirtyListener listener, ListenerRemovalToken removalToken);
+    default ListenerToken addListener(InvMarkDirtyListener listener, ListenerRemovalToken removalToken) {
+        return null;
+    }
+
+    static final class DefaultChangeTracker {
+        static int changeValue;
+    }
 }

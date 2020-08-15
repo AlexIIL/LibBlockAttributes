@@ -10,8 +10,8 @@ package alexiil.mc.lib.attributes.item;
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.item.filter.ItemInsertableFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ItemInsertableFilter;
 import alexiil.mc.lib.attributes.item.impl.FilteredItemInsertable;
 import alexiil.mc.lib.attributes.misc.LimitedConsumer;
 
@@ -31,25 +31,32 @@ public interface ItemInsertable extends LimitedConsumer<ItemStack> {
      *             {@link #attemptInsertion(ItemStack, Simulation)} directly. */
     @Override
     @Deprecated
-    default boolean offer(ItemStack object, Simulation simulation) {
-        return attemptInsertion(object, simulation).isEmpty();
+    default boolean offer(ItemStack stack, Simulation simulation) {
+        return attemptInsertion(stack, simulation).isEmpty();
     }
 
     /** @deprecated This is an override for {@link LimitedConsumer}, for the full javadoc you probably want to call
      *             {@link #insert(ItemStack)} directly. */
     @Override
     @Deprecated
-    default boolean offer(ItemStack object) {
-        return insert(object).isEmpty();
+    default boolean offer(ItemStack stack) {
+        return insert(stack).isEmpty();
     }
 
-    /** @deprecated This is an override for {@link LimitedConsumer}, for the full javadoc you probably want to call
-     *             {@link #attemptInsertion(ItemStack, Simulation) #attemptInsertion}(ItemStack, Simulation.SIMULATE)
-     *             directly. */
+    /** @return True if {@link #insert(ItemStack)} would fully accept the given stack, and return an empty excess. */
     @Override
-    @Deprecated
-    default boolean wouldAccept(ItemStack object) {
-        return attemptInsertion(object, Simulation.SIMULATE).isEmpty();
+    default boolean wouldAccept(ItemStack stack) {
+        return attemptInsertion(stack, Simulation.SIMULATE).isEmpty();
+    }
+
+    /** @return True if {@link #insert(ItemStack)} would accept any non-zero amount of the given stack, and return an
+     *         excess that is smaller than the given stack. */
+    default boolean wouldPartiallyAccept(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return false;
+        }
+        ItemStack excess = attemptInsertion(stack, Simulation.SIMULATE);
+        return excess.isEmpty() || excess.getCount() < stack.getCount();
     }
 
     /** Inserts the given stack into this insertable, and returns the excess.

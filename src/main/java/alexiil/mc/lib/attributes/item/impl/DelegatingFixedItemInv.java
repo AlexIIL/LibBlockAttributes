@@ -54,6 +54,11 @@ public class DelegatingFixedItemInv implements FixedItemInv {
     }
 
     @Override
+    public int getMaxAmount(int slot, ItemStack stack) {
+        return delegate.getMaxAmount(slot, stack);
+    }
+
+    @Override
     public ItemFilter getFilterForSlot(int slot) {
         return delegate.getFilterForSlot(slot);
     }
@@ -66,6 +71,18 @@ public class DelegatingFixedItemInv implements FixedItemInv {
     @Override
     public boolean setInvStack(int slot, ItemStack to, Simulation simulation) {
         return delegate.setInvStack(slot, to, simulation);
+    }
+
+    @Override
+    public ItemStack insertStack(int slot, ItemStack stack, Simulation simulation) {
+        return delegate.insertStack(slot, stack, simulation);
+    }
+
+    @Override
+    public ItemStack extractStack(
+        int slot, ItemFilter filter, ItemStack mergeWith, int maxCount, Simulation simulation
+    ) {
+        return delegate.extractStack(slot, filter, mergeWith, maxCount, simulation);
     }
 
     @Override

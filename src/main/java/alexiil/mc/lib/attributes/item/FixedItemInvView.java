@@ -77,19 +77,26 @@ public interface FixedItemInvView extends Convertible, AbstractItemInvView {
         return stack.isEmpty() ? 64 : stack.getMaxCount();
     }
 
-    /** Checks to see if the given stack is valid for a given slot. This ignores any current stacks in the slot.
+    /** Checks to see if the given stack would be valid for this slot, ignoring the current contents. Note that
+     * this method should adhere to the requirements of {@link ItemFilter#matches(ItemStack)}, so this must not care
+     * about the {@link ItemStack#getCount()}. Passing {@link ItemStack#isEmpty() empty} stacks will generally not
+     * return useful results.
      * 
      * @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
-     * @param stack The {@link ItemStack} to check.
+     * @param stack The {@link ItemStack} to check. It's undefined what is returned if an {@link ItemStack#isEmpty()
+     *            empty} stack is passed in, but it is not generally expected to be useful.
      * @throws RuntimeException if the given slot wasn't a valid index. */
     boolean isItemValidForSlot(int slot, ItemStack stack);
 
-    /** @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
+    /** Exposes {@link #isItemValidForSlot(int, ItemStack)} as a (potentially) readable filter.
+     * 
+     * @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
-     * @return An {@link ItemFilter} for this slot. If this slot is filtered by an {@link ItemFilter} internally then it
-     *         is highly recommended that this be overridden to return *that* filter rather than a newly constructed
-     *         one.
+     * @return An {@link ItemFilter} for what may be present in this slot. If this slot is filtered by an
+     *         {@link ItemFilter} internally then it is highly recommended that this be overridden to return
+     *         <em>that</em> filter rather than the default opaque wrapper around
+     *         {@link #isItemValidForSlot(int, ItemStack)}.
      * @throws RuntimeException if the given slot wasn't a valid index. */
     default ItemFilter getFilterForSlot(int slot) {
         return stack -> isItemValidForSlot(slot, stack);

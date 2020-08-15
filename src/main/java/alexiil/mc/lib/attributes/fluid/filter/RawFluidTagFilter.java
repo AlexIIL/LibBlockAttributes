@@ -7,13 +7,16 @@
  */
 package alexiil.mc.lib.attributes.fluid.filter;
 
+import java.util.HashSet;
+
 import net.minecraft.fluid.Fluid;
 import net.minecraft.tag.Tag;
 
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 
 /** A {@link FluidFilter} that operates on a {@link Tag} of vanilla minecraft's {@link Fluid}'s. */
-public final class RawFluidTagFilter implements ReadableFluidFilter {
+public final class RawFluidTagFilter implements ResolvableFluidFilter {
 
     public final Tag<Fluid> tag;
 
@@ -28,5 +31,14 @@ public final class RawFluidTagFilter implements ReadableFluidFilter {
             return false;
         }
         return raw.isIn(tag);
+    }
+
+    @Override
+    public ReadableFluidFilter resolve() {
+        HashSet<FluidKey> set = new HashSet<>();
+        for (Fluid fluid : tag.values()) {
+            set.add(FluidKeys.get(fluid));
+        }
+        return new FluidSetFilter(set);
     }
 }

@@ -19,10 +19,11 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
+import alexiil.mc.lib.attributes.VanillaSetupBaseTester;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey.FluidKeyBuilder;
 
-public class FluidPropertyTester {
+public class FluidPropertyTester extends VanillaSetupBaseTester {
 
     @Test
     public void testFluidProperty() {

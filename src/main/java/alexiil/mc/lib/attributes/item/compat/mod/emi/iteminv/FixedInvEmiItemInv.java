@@ -9,11 +9,8 @@ package alexiil.mc.lib.attributes.item.compat.mod.emi.iteminv;
 
 import net.minecraft.item.ItemStack;
 
-import alexiil.mc.lib.attributes.ListenerRemovalToken;
-import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
-import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
 import alexiil.mc.lib.attributes.item.ItemAttributes;
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
 import alexiil.mc.lib.attributes.misc.AbstractItemBasedAttribute;
@@ -27,8 +24,6 @@ import dev.emi.iteminventory.api.ItemInventory;
  * Very few mods will need to use this directly - instead this should be obtained as an attribute through
  * {@link ItemAttributes#FIXED_INV} or similar. */
 public class FixedInvEmiItemInv extends AbstractItemBasedAttribute implements FixedItemInv {
-
-    private int changes = 0;
 
     public FixedInvEmiItemInv(Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excessStacks) {
         super(stackRef, excessStacks);
@@ -52,17 +47,6 @@ public class FixedInvEmiItemInv extends AbstractItemBasedAttribute implements Fi
         ItemStack stack = stackRef.get();
         ItemInventory inv = inv(stack);
         return inv.canInsert(stack, slot, offered);
-    }
-
-    @Override
-    public int getChangeValue() {
-        // We don't have access to whatever the reference is, so we can't be certain about when it's changed
-        return changes++;
-    }
-
-    @Override
-    public ListenerToken addListener(InvMarkDirtyListener listener, ListenerRemovalToken removalToken) {
-        return null;
     }
 
     @Override

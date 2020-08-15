@@ -27,6 +27,7 @@ import com.google.gson.JsonSyntaxException;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -193,6 +194,18 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
         return json;
     }
 
+    @Override
+    protected void toMcBufferInternal(PacketByteBuf buffer) {
+        super.toMcBufferInternal(buffer);
+        writeValuesToMcBuffer(buffer, values);
+    }
+
+    @Override
+    protected void fromMcBufferInternal(PacketByteBuf buffer) {
+        super.fromMcBufferInternal(buffer);
+        readValuesFromMcBuffer(buffer, values);
+    }
+
     protected final void normalize() {
         FluidAmount total = FluidAmount.ZERO;
         for (FluidAmount amount : values.values()) {
@@ -266,6 +279,55 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
      *         other than that the {@link WeightedJsonGetter} should be able to read back the given value from the
      *         returned json. */
     protected abstract JsonElement toJson(T value);
+
+    protected void writeValuesToMcBuffer(PacketByteBuf buffer, Map<T, FluidAmount> map) {
+        buffer.writeByte(Math.min(255, map.size()));
+
+        Iterator<Entry<T, FluidAmount>> iterator = map.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<T, FluidAmount> entry = iterator.next();
+            writeValueToMcBuffer(buffer, entry.getKey());
+            if (iterator.hasNext()) {
+                entry.getValue().toMcBuffer(buffer);
+            }
+        }
+    }
+
+    protected void readValuesFromMcBuffer(PacketByteBuf buffer, Map<T, FluidAmount> map) {
+        map.clear();
+
+        int count = buffer.readUnsignedByte();
+        FluidAmount total = FluidAmount.ZERO;
+
+        for (int i = count - 1; i >= 0; i--) {
+            T value = readValueFromMcBuffer(buffer);
+            FluidAmount amt;
+            if (i > 0) {
+                amt = FluidAmount.fromMcBuffer(buffer);
+            } else {
+                amt = FluidAmount.ONE.sub(total);
+            }
+            if (!amt.isPositive()) {
+                // For error handling
+                // Obviously we should never actually read this, but if we do we'll just drop it
+                continue;
+            }
+            total = total.add(amt);
+            map.put(value, amt);
+        }
+
+        normalize(total);
+    }
+
+    protected T readValueFromMcBuffer(PacketByteBuf buffer) {
+        return readValue(buffer.readCompoundTag());
+    }
+
+    protected void writeValueToMcBuffer(PacketByteBuf buffer, T value) {
+        CompoundTag holder = new CompoundTag();
+        writeValue(holder, value);
+        buffer.writeCompoundTag(holder);
+    }
 
     protected Text getTextFor(T value) {
         return new LiteralText(Objects.toString(value));

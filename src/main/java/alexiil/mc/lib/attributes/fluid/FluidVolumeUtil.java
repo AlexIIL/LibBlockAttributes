@@ -254,6 +254,7 @@ public final class FluidVolumeUtil {
      * @param excessStacks A {@link Consumer} to take the excess {@link ItemStack}'s.
      * @deprecated This has been replaced by
      *             {@link FluidInvUtil#interactItemWithTank(FluidInsertable, FluidExtractable, Reference, LimitedConsumer)}. */
+    @Deprecated
     public static FluidTankInteraction interactWithTank(
         FluidInsertable invInsert, FluidExtractable invExtract, Ref<ItemStack> stack, Consumer<ItemStack> excessStacks
     ) {
@@ -364,7 +365,7 @@ public final class FluidVolumeUtil {
          *         {@link ItemContainerStatus#NOT_CHECKED}. */
         public boolean didCheckItemStack() {
             return intoTankStatus != ItemContainerStatus.NOT_CHECKED
-            || fromTankStatus != ItemContainerStatus.NOT_CHECKED;
+                || fromTankStatus != ItemContainerStatus.NOT_CHECKED;
         }
 
         /** Converts this interaction result into a vanilla minecraft {@link ActionResult}, suitable for normal block or
@@ -418,18 +419,11 @@ public final class FluidVolumeUtil {
      * {@link FluidInsertable} (or others) for their base implementation.
      * 
      * @param toInsert The volume to insert. This will not be modified.
-     * @return The excess {@link FluidVolume} that wasn't inserted. */
+     * @return The excess {@link FluidVolume} that wasn't inserted.
+     * @deprecated As this has been moved to {@link FixedFluidInv#insertFluid(int, FluidVolume, Simulation)} */
+    @Deprecated
     public static FluidVolume insertSingle(FixedFluidInv inv, int tank, FluidVolume toInsert, Simulation simulation) {
-        FluidTransferResult result = computeInsertion(inv.getInvFluid(tank), inv.getMaxAmount_F(tank), toInsert);
-        if (result.result == toInsert) {
-            return toInsert;
-        }
-
-        if (inv.setInvFluid(tank, result.inTank, simulation)) {
-            return result.result;
-        } else {
-            return toInsert;
-        }
+        return inv.insertFluid(tank, toInsert, simulation);
     }
 
     /** Computes the result of {@link #insertSingle(FixedFluidInv, int, FluidVolume, Simulation)}, but without actually
@@ -490,22 +484,15 @@ public final class FluidVolumeUtil {
      *            {@link FluidVolume#isEmpty() empty}.
      * @param maxAmount The maximum amount of fluid to extract. Note that the returned {@link FluidVolume} may have an
      *            amount up to this given amount plus the amount in "toAddWith".
-     * @return The extracted {@link FluidVolume}, inTank with "toAddWith". */
+     * @return The extracted {@link FluidVolume}, inTank with "toAddWith".
+     * @deprecated Moved to
+     *             {@link FixedFluidInv#extractFluid(int, FluidFilter, FluidVolume, FluidAmount, Simulation)} */
+    @Deprecated
     public static FluidVolume extractSingle(
         FixedFluidInv inv, int tank, @Nullable FluidFilter filter, FluidVolume toAddWith, FluidAmount maxAmount,
         Simulation simulation
     ) {
-        if (toAddWith == null) {
-            toAddWith = EMPTY;
-        }
-
-        FluidVolume inTank = inv.getInvFluid(tank);
-        FluidTransferResult result = computeExtraction(inTank, filter, toAddWith, maxAmount);
-        if (inv.setInvFluid(tank, result.inTank, simulation)) {
-            return result.result;
-        } else {
-            return toAddWith;
-        }
+        return inv.extractFluid(tank, filter, toAddWith, maxAmount, simulation);
     }
 
     /** Computes the result of

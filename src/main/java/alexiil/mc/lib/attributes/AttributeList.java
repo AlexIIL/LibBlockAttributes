@@ -70,6 +70,8 @@ public class AttributeList<T> extends AbstractAttributeList<T> {
         }
     }
 
+    /** @return The {@link Direction} that the search is moving in, or null if the {@link #searchParam} doesn't supply
+     *         one. */
     @Nullable
     public Direction getSearchDirection() {
         if (searchParam instanceof SearchOptionDirectional) {
@@ -77,6 +79,15 @@ public class AttributeList<T> extends AbstractAttributeList<T> {
         } else {
             return null;
         }
+    }
+
+    /** @return The side of the target block that the search is approaching. If the search option is directional then
+     *         this will be {@link Direction#getOpposite() opposite} of {@link #getSearchDirection()}, otherwise this
+     *         will be null. */
+    @Nullable
+    public Direction getTargetSide() {
+        Direction dir = getSearchDirection();
+        return dir == null ? null : dir.getOpposite();
     }
 
     // Adders (used by attribute providers)
@@ -225,7 +236,7 @@ public class AttributeList<T> extends AbstractAttributeList<T> {
             return shape;
         }
         // TODO: Improve this algorithm!
-        VoxelShape combined = VoxelShapes.empty();
+        VoxelShape combined = null;
         for (Box box : shape.getBoundingBoxes()) {
             // Offset it a tiny bit to allow an obstacle to return attributes (as otherwise it would block itself)
             box = box.offset(Vec3d.of(direction.getVector()).multiply(1 / 32.0));
@@ -247,9 +258,14 @@ public class AttributeList<T> extends AbstractAttributeList<T> {
                 default:
                     throw new IllegalStateException("Unknown Direction " + direction);
             }
-            combined = VoxelShapes.union(combined, VoxelShapes.cuboid(minX, minY, minZ, maxX, maxY, maxZ));
+            VoxelShape thisBox = VoxelShapes.cuboid(minX, minY, minZ, maxX, maxY, maxZ);
+            if (combined == null) {
+                combined = thisBox;
+            } else {
+                combined = VoxelShapes.union(combined, thisBox);
+            }
         }
-        return combined;
+        return combined == null ? VoxelShapes.empty() : combined;
     }
 
     // Accessors (used by attribute lookup functions)
@@ -285,13 +301,14 @@ public class AttributeList<T> extends AbstractAttributeList<T> {
         }
     }
 
-    /** @return True if any calls to {@link #add(Object, CacheInfo, VoxelShape)} have been made. */
+    /** @return True if {@link #getOfferedCount()} is greater than 0. */
     public boolean hasOfferedAny() {
         return offeredCount > 0;
     }
 
     /** @return The number of calls to {@link #add(Object, CacheInfo, VoxelShape)} (including calls to
-     *         {@link #offer(Object)} and it's variants). */
+     *         {@link #add(Object)} and it's variants). Note that this doesn't count calls to {@link #offer(Object)}
+     *         (and it's variants) that don't add any attributes. */
     public int getOfferedCount() {
         return offeredCount;
     }

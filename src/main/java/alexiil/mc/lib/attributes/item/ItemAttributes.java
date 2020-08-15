@@ -8,6 +8,9 @@
 package alexiil.mc.lib.attributes.item;
 
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
@@ -34,8 +37,6 @@ import alexiil.mc.lib.attributes.AttributeCombiner;
 import alexiil.mc.lib.attributes.AttributeSourceType;
 import alexiil.mc.lib.attributes.Attributes;
 import alexiil.mc.lib.attributes.CombinableAttribute;
-import alexiil.mc.lib.attributes.ListenerRemovalToken;
-import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fatjar.FatJarChecker;
 import alexiil.mc.lib.attributes.fluid.FluidAttributes;
@@ -73,6 +74,15 @@ public final class ItemAttributes {
      * much sense when applied to block's alone, however it makes much more sense in pipe input or extraction
      * filters). */
     public static final CombinableAttribute<ItemFilter> FILTER;
+
+    /** A {@link List} of every inventory-type attribute, so: {@link #FIXED_INV_VIEW}, {@link #FIXED_INV},
+     * {@link #GROUPED_INV_VIEW}, {@link #GROUPED_INV}, {@link #INSERTABLE}, and {@link #EXTRACTABLE}. */
+    public static final List<CombinableAttribute<?>> INVENTORY_BASED;
+
+    /** Runs the given {@link Consumer} on every {@link #INVENTORY_BASED} attribute. */
+    public static void forEachInv(Consumer<? super CombinableAttribute<?>> consumer) {
+        INVENTORY_BASED.forEach(consumer);
+    }
 
     static {
         FIXED_INV_VIEW = create(
@@ -115,6 +125,12 @@ public final class ItemAttributes {
             ItemFilter.class, //
             ConstantItemFilter.NOTHING, //
             list -> AggregateItemFilter.allOf(list)//
+        );
+
+        INVENTORY_BASED = Arrays.asList(
+            FIXED_INV_VIEW, FIXED_INV, //
+            GROUPED_INV_VIEW, GROUPED_INV, //
+            INSERTABLE, EXTRACTABLE//
         );
 
         LbaItemModCompat.load();
@@ -192,7 +208,6 @@ public final class ItemAttributes {
 
     static final class ShulkerBoxItemInv implements CopyingFixedItemInv {
         private final Reference<ItemStack> ref;
-        private int changes = 0;
 
         private ShulkerBoxItemInv(Reference<ItemStack> ref) {
             this.ref = ref;
@@ -232,18 +247,6 @@ public final class ItemAttributes {
             // Check for grouped item inv because everything else boils down to this
             // (Plus we don't care about insertable or extractable's, only inventories)
             return stack.isEmpty() || ItemAttributes.GROUPED_INV_VIEW.getFirstOrNull(stack) == null;
-        }
-
-        @Override
-        public int getChangeValue() {
-            // We don't have access to whatever the reference is, so we can't be certain about when it's changed
-            return changes++;
-        }
-
-        @Override
-        public ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken) {
-            // Listeners don't make any sense.
-            return null;
         }
 
         @Override

@@ -7,7 +7,11 @@
  */
 package alexiil.mc.lib.attributes.fluid.filter;
 
+import net.minecraft.fluid.Fluid;
+import net.minecraft.potion.Potion;
+
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
+import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 
 /** An {@link FluidFilter} that only matches on a single {@link FluidKey}. */
 public final class ExactFluidFilter implements ReadableFluidFilter {
@@ -21,5 +25,13 @@ public final class ExactFluidFilter implements ReadableFluidFilter {
     @Override
     public boolean matches(FluidKey other) {
         return fluid.equals(other);
+    }
+
+    public static ReadableFluidFilter of(Fluid fluid) {
+        return new ExactFluidFilter(FluidKeys.get(fluid));
+    }
+
+    public static ReadableFluidFilter of(Potion potion) {
+        return new ExactFluidFilter(FluidKeys.get(potion));
     }
 }

@@ -68,10 +68,13 @@ public abstract class InventoryFixedWrapper implements Inventory {
 
     @Override
     public ItemStack removeStack(int slot, int amount) {
-        ItemStack stack = getStack(slot);
-        ItemStack split = stack.split(amount);
-        setStack(slot, stack);
-        return split;
+        SlotStatus status = slotStatus.remove(slot);
+        if (status != null) {
+            status.validate(this, slot);
+        }
+
+        // No need to put a new status as we don't return the stored stack.
+        return inv.extractStack(slot, null, ItemStack.EMPTY, amount, Simulation.ACTION);
     }
 
     @Override
@@ -131,6 +134,7 @@ public abstract class InventoryFixedWrapper implements Inventory {
     }
 
     static final class SlotStatus {
+
         /** A copy of the itemstack that was originally seen in the backing {@link FixedItemInv}. */
         final ItemStack originalCopy;
 

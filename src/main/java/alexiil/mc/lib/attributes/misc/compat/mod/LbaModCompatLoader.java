@@ -10,11 +10,9 @@ package alexiil.mc.lib.attributes.misc.compat.mod;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import alexiil.mc.lib.attributes.fluid.compat.mod.reborncore.RebornCompatLoader;
-
 public abstract class LbaModCompatLoader {
     protected static Class<?> c(String name) throws ClassNotFoundException {
-        return Class.forName(name, false, RebornCompatLoader.class.getClassLoader());
+        return Class.forName(name, false, LbaModCompatLoader.class.getClassLoader());
     }
 
     protected static void requireField(Class<?> cls, String name, Class<?> type) throws ReflectiveOperationException {

@@ -16,7 +16,6 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
 import alexiil.mc.lib.attributes.item.FixedItemInvView;
 import alexiil.mc.lib.attributes.item.GroupedItemInv;
-import alexiil.mc.lib.attributes.item.ItemInvUtil;
 import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
@@ -68,9 +67,8 @@ public class GroupedItemInvFixedWrapper extends GroupedItemInvViewFixedWrapper i
     }
 
     private ItemStack simpleDumbBadInsertionToBeRemoved(ItemStack stack, Simulation simulation) {
-        stack = stack.copy();
         for (int s = 0; s < inv.getSlotCount(); s++) {
-            stack = ItemInvUtil.insertSingle(inv(), s, stack, simulation);
+            stack = inv().insertStack(s, stack, simulation);
             if (stack.isEmpty()) {
                 return ItemStack.EMPTY;
             }
@@ -88,7 +86,7 @@ public class GroupedItemInvFixedWrapper extends GroupedItemInvViewFixedWrapper i
             return stack;
         }
         for (int s = 0; s < inv.getSlotCount(); s++) {
-            stack = ItemInvUtil.extractSingle(inv(), s, filter, stack, maxCount - stack.getCount(), simulation);
+            stack = inv().extractStack(s, filter, stack, maxCount - stack.getCount(), simulation);
             if (stack.getCount() >= maxCount) {
                 return stack;
             }

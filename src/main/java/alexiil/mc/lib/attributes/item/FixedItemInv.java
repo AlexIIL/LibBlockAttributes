@@ -10,6 +10,8 @@ package alexiil.mc.lib.attributes.item;
 import java.util.Iterator;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
@@ -49,6 +51,13 @@ public interface FixedItemInv extends FixedItemInvView {
     @Override
     ItemStack getInvStack(int slot);
 
+    /** {@inheritDoc}
+     * <p>
+     * Note that just because an {@link ItemStack} passes this validity test, and is stackable with the current stack,
+     * does not mean that you can insert the stack into this inventory.. */
+    @Override
+    boolean isItemValidForSlot(int slot, ItemStack stack);
+
     /** Sets the stack in the given slot to the given stack.
      * 
      * @param to The new {@link ItemStack}. It is not defined if you are allowed to modify this or not.
@@ -69,6 +78,94 @@ public interface FixedItemInv extends FixedItemInvView {
      * the result (Which will throw an exception if the returned stack is not valid for this inventory). */
     default void modifySlot(int slot, Function<ItemStack, ItemStack> function) {
         forceSetInvStack(slot, function.apply(getInvStack(slot)));
+    }
+
+    /** Attempts to insert the given stack into the given slot, returning the excess.
+     * <p>
+     * (This is a slot-based version of {@link ItemInsertable#attemptInsertion(ItemStack, Simulation)} - if you want to
+     * use any of the other slot specific methods then it's recommended you get an {@link ItemInsertable} from
+     * {@link #getSlot(int)}).
+     * 
+     * @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
+     *            valid. (Like in arrays, lists, etc).
+     * @param stack The incoming stack. Must not be modified by this call.
+     * @param simulation If {@link Simulation#SIMULATE} then this shouldn't modify anything.
+     * @return the excess {@link ItemStack} that wasn't accepted. This will be independent of this insertable, however
+     *         it might be the given stack instead of a completely new object.
+     * @throws RuntimeException if the given slot wasn't a valid index. */
+    default ItemStack insertStack(int slot, ItemStack stack, Simulation simulation) {
+        if (stack.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+        ItemStack inSlot = getInvStack(slot);
+        int current = inSlot.isEmpty() ? 0 : inSlot.getCount();
+        int max = Math.min(current + stack.getCount(), getMaxAmount(slot, stack));
+        int addable = max - current;
+        if (addable <= 0) {
+            return stack;
+        }
+        if (current > 0 && !ItemStackUtil.areEqualIgnoreAmounts(stack, inSlot)) {
+            return stack;
+        }
+        if (inSlot.isEmpty()) {
+            inSlot = stack.copy();
+            inSlot.setCount(addable);
+        } else {
+            inSlot = inSlot.copy();
+            inSlot.increment(addable);
+        }
+        if (setInvStack(slot, inSlot, simulation)) {
+            stack = stack.copy();
+            stack.decrement(addable);
+            if (stack.isEmpty()) {
+                return ItemStack.EMPTY;
+            }
+        }
+        return stack;
+    }
+
+    /** Attempts to extract part of the stack that is held in the given slot.
+     * <p>
+     * This is a slot based version of {@link ItemExtractable}, however it includes a number of additional arguments. If
+     * you want to use any of the simpler methods than it's recommenced that you get an {@link ItemExtractable} from
+     * {@link #getSlot(int)}.
+     * 
+     * @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
+     *            valid. (Like in arrays, lists, etc).
+     * @param filter If non-null then this will be checked against the stored stack to see if anything can be extracted.
+     * @param mergeWith If non-empty then this will be merged with the extracted stack, and as such they should be
+     *            equal.
+     * @param maxCount The maximum number of items to extract. Note that if the "mergeWith" argument is non-empty then
+     *            the actual limit should be the minimum of {@link ItemStack#getMaxCount()} and the given maxCount.
+     * @param simulation If {@link Simulation#SIMULATE} then this shouldn't modify anything.
+     * @return mergeWith (if non-empty) or the extracted stack if it is empty. */
+    default ItemStack extractStack(
+        int slot, @Nullable ItemFilter filter, ItemStack mergeWith, int maxCount, Simulation simulation
+    ) {
+        ItemStack inSlot = getInvStack(slot);
+        if (inSlot.isEmpty() || (filter != null && !filter.matches(inSlot))) {
+            return mergeWith;
+        }
+        if (!mergeWith.isEmpty()) {
+            if (!ItemStackUtil.areEqualIgnoreAmounts(mergeWith, inSlot)) {
+                return mergeWith;
+            }
+            maxCount = Math.min(maxCount, mergeWith.getMaxCount() - mergeWith.getCount());
+            if (maxCount <= 0) {
+                return mergeWith;
+            }
+        }
+        inSlot = inSlot.copy();
+
+        ItemStack addable = inSlot.split(maxCount);
+        if (setInvStack(slot, inSlot, simulation)) {
+            if (mergeWith.isEmpty()) {
+                mergeWith = addable;
+            } else {
+                mergeWith.increment(addable.getCount());
+            }
+        }
+        return mergeWith;
     }
 
     @Override
@@ -203,9 +300,7 @@ public interface FixedItemInv extends FixedItemInvView {
         }
 
         /** @return The {@link ItemStack} that is held by this inventory. Modifying the returned {@link ItemStack} in
-         *         any way will (most likely - depending on the implementation) throw an exception (at some point).
-         *         <p>
-         *         Some implementations */
+         *         any way will (most likely - depending on the implementation) throw an exception (at some point). */
         ItemStack getUnmodifiableInvStack(int slot);
 
         @Override
@@ -225,10 +320,15 @@ public interface FixedItemInv extends FixedItemInvView {
          * {@link ItemInvSlotChangeListener#onChange(FixedItemInvView, int, ItemStack, ItemStack)} will be called every
          * time that this inventory changes. However if this inventory doesn't support listeners then this will return a
          * null {@link ListenerToken token}.
+         * <p>
+         * The default implementation refuses to accept any listeners, but implementations are <em>highly
+         * encouraged</em> to override this if they are able to!
          * 
          * @param removalToken A token that will be called whenever the given listener is removed from this inventory
          *            (or if this inventory itself is unloaded or otherwise invalidated).
          * @return A token that represents the listener, or null if the listener could not be added. */
-        ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken);
+        default ListenerToken addListener(ItemInvSlotChangeListener listener, ListenerRemovalToken removalToken) {
+            return null;
+        }
     }
 }

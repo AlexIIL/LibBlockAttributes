@@ -12,6 +12,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
@@ -107,6 +108,19 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
         }
         tag.putString(KEY_REGISTRY_TYPE, getName(backingRegistry));
         tag.putString(KEY_OBJ_IDENTIFIER, objId.toString());
+    }
+
+    @Override
+    public void toMcBuffer(PacketByteBuf buffer) {
+        if (backingRegistry == Registry.FLUID) {
+            buffer.writeByte(1);
+        } else if (backingRegistry == Registry.POTION) {
+            buffer.writeByte(2);
+        } else {
+            buffer.writeByte(3);
+            buffer.writeIdentifier(((Registry<Registry<?>>) Registry.REGISTRIES).getId(backingRegistry));
+        }
+        buffer.writeIdentifier(objId);
     }
 
     @Override

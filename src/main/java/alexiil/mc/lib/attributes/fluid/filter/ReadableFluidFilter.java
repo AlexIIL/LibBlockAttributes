@@ -7,6 +7,8 @@
  */
 package alexiil.mc.lib.attributes.fluid.filter;
 
+import alexiil.mc.lib.attributes.AttributeUtil;
+
 /** Marker interface for {@link FluidFilter} that indicates that object obtaining instances of this might be able to
  * read the real contents.
  * <p>
@@ -22,19 +24,23 @@ package alexiil.mc.lib.attributes.fluid.filter;
  * <li>{@link InvertedFluidFilter}</li>
  * <li>{@link RawFluidTagFilter}</li>
  * <li>{@link FluidTagFilter}</li>
+ * <li>{@link ResolvableFluidFilter}</li>
  * </ol>
- */
+ * Note that {@link ResolvableFluidFilter} is <em>not sealed</em>, but it must only return {@link ReadableFluidFilter}s
+ * that are {@link ReadableFluidFilter}s, other than {@link ResolvableFluidFilter}. */
 public interface ReadableFluidFilter extends FluidFilter {
 
     public static void checkValidity(ReadableFluidFilter filter) {
-        String clsName = ReadableFluidFilter.class.getName();
-        String expectedPackage = clsName.substring(0, clsName.lastIndexOf('.'));
-        if (!filter.getClass().getName().startsWith(expectedPackage)) {
-            throw new IllegalStateException(
-                "The owner of " + filter.getClass() + " has incorrectly implemented ReadableFluidFilter!\n"
-                    + "Note that only LibBlockAttributes should define readable fluid filters, "
-                    + "as otherwise there's no way to guarentee compatibility!"
-            );
+        if (AttributeUtil.EXPENSIVE_DEBUG_CHECKS) {
+            String clsName = ReadableFluidFilter.class.getName();
+            String expectedPackage = clsName.substring(0, clsName.lastIndexOf('.'));
+            if (!filter.getClass().getName().startsWith(expectedPackage)) {
+                throw new IllegalStateException(
+                    "The owner of " + filter.getClass() + " has incorrectly implemented ReadableFluidFilter!\n"
+                        + "Note that only LibBlockAttributes should define readable fluid filters, "
+                        + "as otherwise there's no way to guarentee compatibility!"
+                );
+            }
         }
     }
 }

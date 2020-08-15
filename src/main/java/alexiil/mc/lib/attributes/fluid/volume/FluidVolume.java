@@ -7,6 +7,7 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import java.io.IOException;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +31,7 @@ import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.potion.Potion;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -252,6 +254,71 @@ public abstract class FluidVolume {
         }
     }
 
+    public final void toMcBuffer(PacketByteBuf buffer) {
+        fluidKey.toMcBuffer(buffer);
+        if (!isEmpty()) {
+            toMcBufferInternal(buffer);
+            writeProperties(buffer);
+        }
+    }
+
+    protected void toMcBufferInternal(PacketByteBuf buffer) {
+        amount.toMcBuffer(buffer);
+    }
+
+    public static FluidVolume fromMcBuffer(PacketByteBuf buffer) throws IOException {
+        return FluidKey.fromMcBuffer(buffer).readVolume(buffer);
+    }
+
+    protected void fromMcBufferInternal(PacketByteBuf buffer) {
+        // For sub-classes
+    }
+
+    final void writeProperties(PacketByteBuf buffer) {
+        if (!fluidKey.properties.isEmpty()) {
+            int countPresent = 0;
+            for (Object obj : propertyValues) {
+                if (obj != null) {
+                    countPresent++;
+                }
+            }
+            buffer.writeByte(countPresent);
+            for (int i = propertyValues.length - 1; i >= 0; i--) {
+                FluidProperty<?> prop = fluidKey.properties.get(i);
+                Object val = propertyValues[i];
+                if (val != null) {
+                    // Really? Strings?
+                    // (Unfortunately you'd *need* to use LNS to make this work
+                    // properly with potentially incompatible modsets)
+                    buffer.writeString(prop.nbtKey);
+                    writeProp(prop, val, buffer);
+                }
+            }
+        }
+    }
+
+    private static <T> void writeProp(FluidProperty<T> prop, Object value, PacketByteBuf buffer) {
+        prop.writeToBuffer(buffer, prop.type.cast(value));
+    }
+
+    final void readProperties(PacketByteBuf buffer) {
+        if (!fluidKey.properties.isEmpty()) {
+            int count = buffer.readUnsignedByte();
+            for (int i = 0; i < count; i++) {
+                String key = buffer.readString();
+                int propIndex = fluidKey.propertyKeys.getInt(key);
+                if (propIndex < 0) {
+                    throw new IllegalArgumentException("Unknown remote fluid property " + key + " for " + fluidKey);
+                }
+                readProp(buffer, fluidKey.properties.get(propIndex));
+            }
+        }
+    }
+
+    private <T> void readProp(PacketByteBuf buffer, FluidProperty<T> prop) {
+        prop.set(this, prop.readFromBuffer(buffer));
+    }
+
     /** Creates a new {@link FluidVolume} from the given fluid, with the given amount stored. This just delegates
      * internally to {@link FluidKey#withAmount(int)}. */
     @Deprecated
@@ -285,7 +352,7 @@ public abstract class FluidVolume {
             return false;
         }
         return amount.equals(other.amount)//
-        && Objects.equals(fluidKey, other.fluidKey);
+            && Objects.equals(fluidKey, other.fluidKey);
     }
 
     @Override
@@ -817,7 +884,7 @@ public abstract class FluidVolume {
     public final void addTooltipTemperature(FluidTooltipContext context, List<Text> tooltip) {
         FluidTemperature temp = fluidKey.getTemperature();
         if (temp != null) {
-            temp.addTemperatueToTooltip(this, context, tooltip);
+            temp.addTemperatureToTooltip(this, context, tooltip);
         }
     }
 

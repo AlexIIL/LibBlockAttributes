@@ -7,18 +7,12 @@
  */
 package alexiil.mc.lib.attributes.item.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
 import alexiil.mc.lib.attributes.item.FixedItemInvView;
 import alexiil.mc.lib.attributes.item.ItemInsertable;
-import alexiil.mc.lib.attributes.item.ItemStackUtil;
-import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
-import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 /** An {@link ItemInsertable} wrapper over an {@link FixedItemInv}. This implementation is the naive implementation
@@ -30,83 +24,19 @@ import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 @Deprecated
 public final class SimpleFixedItemInvInsertable implements ItemInsertable {
 
-    private final FixedItemInv inv;
+    private final GroupedItemInvFixedWrapper wrapper;
 
     public SimpleFixedItemInvInsertable(FixedItemInv inv) {
-        this.inv = inv;
-    }
-
-    @Override
-    public ItemFilter getInsertionFilter() {
-        int invSize = inv.getSlotCount();
-        switch (invSize) {
-            case 0: {
-                // What?
-                return ConstantItemFilter.NOTHING;
-            }
-            case 1: {
-                return inv.getFilterForSlot(0);
-            }
-            case 2: {
-                return inv.getFilterForSlot(0).and(inv.getFilterForSlot(1));
-            }
-            default: {
-                List<ItemFilter> filters = new ArrayList<>(invSize);
-                for (int i = 0; i < invSize; i++) {
-                    filters.add(inv.getFilterForSlot(i));
-                }
-                return AggregateItemFilter.anyOf(filters);
-            }
-        }
+        this.wrapper = new GroupedItemInvFixedWrapper(inv);
     }
 
     @Override
     public ItemStack attemptInsertion(ItemStack stack, Simulation simulation) {
-        // ItemStack result = stack.copy();
-        //
-        // // First: scan the available slots to see if we can add to an existing stack
-        //
-        // IntList slotsModified = new IntArrayList();
-        //
-        // if (slots == null) {
-        // for (int s = 0; s < inv.getInvSize(); s++) {
-        // attemptAddToExisting(slotsModified, s, result, simulation);
-        // }
-        // } else {
-        // for (int s : slots) {
-        // attemptAddToExisting(slotsModified, s, result, simulation);
-        // }
-        // }
-
-        return simpleDumbBadInsertionToBeRemoved(stack, simulation);
+        return wrapper.attemptInsertion(stack, simulation);
     }
 
-    private ItemStack simpleDumbBadInsertionToBeRemoved(ItemStack stack, Simulation simulation) {
-        stack = stack.copy();
-        for (int s = 0; s < inv.getSlotCount(); s++) {
-            ItemStack inSlot = inv.getInvStack(s);
-            int current = inSlot.isEmpty() ? 0 : inSlot.getCount();
-            int max = Math.min(current + stack.getCount(), inv.getMaxAmount(s, stack));
-            int addable = max - current;
-            if (addable <= 0) {
-                continue;
-            }
-            if (current > 0 && !ItemStackUtil.areEqualIgnoreAmounts(stack, inSlot)) {
-                continue;
-            }
-            if (inSlot.isEmpty()) {
-                inSlot = stack.copy();
-                inSlot.setCount(addable);
-            } else {
-                inSlot.increment(addable);
-            }
-            if (inv.setInvStack(s, inSlot, simulation)) {
-                stack.decrement(addable);
-                if (stack.isEmpty()) {
-                    return ItemStack.EMPTY;
-                }
-            }
-        }
-        return stack;
+    @Override
+    public ItemFilter getInsertionFilter() {
+        return wrapper.getInsertionFilter();
     }
 }

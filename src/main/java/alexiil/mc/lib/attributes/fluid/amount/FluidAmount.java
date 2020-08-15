@@ -60,7 +60,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
     /** The maximum possible value that a valid {@link FluidAmount} can hold. It's not recommended to use this as it can
      * cause headaches when adding or subtracting values from this.
      * 
-     * @deprecated As {@link #MAX_BUCKETS} should generally be used instead, however if you really need the absolute m
+     * @deprecated As {@link #MAX_BUCKETS} should generally be used instead, however if you really need the absolute
      *             value then you can use {@link #ABSOLUTE_MAXIMUM}. */
     @Deprecated
     public static final FluidAmount MAX_VALUE = ABSOLUTE_MAXIMUM;
@@ -971,16 +971,12 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
     /** @return the result of {@link #safeAdd(FluidAmount, RoundingMode)}.{@link SafeAddResult#roundedResult
      *         roundedResult}. */
     public FluidAmount roundedAdd(@Nullable FluidAmount other, RoundingMode rounding) {
-        if (other == null) {
-            return this;
-        }
-        return safeAdd(other, rounding).roundedResult;
+        return add0(other, rounding);
     }
 
     /** @return the result of {@link #safeAdd(FluidAmount)}.{@link SafeAddResult#roundedResult roundedResult}. */
     public FluidAmount roundedAdd(@Nullable FluidAmount other) {
-        if (other == null) return this;
-        return safeAdd(other).roundedResult;
+        return roundedAdd(other, RoundingMode.HALF_EVEN);
     }
 
     /** Adds the given long value to this {@link FluidAmount}, without performing any checking or saturation. */
@@ -998,20 +994,24 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
      * @param by The amount to add. If it's null or zero then "this" will be returned.
      * @throws ArithmeticException if the result doesn't fit into a {@link FluidAmount}. */
     public FluidAmount checkedAdd(@Nullable FluidAmount by) {
-        return add0(by, false);
+        return add0(by, RoundingMode.UNNECESSARY);
     }
 
     /** Similar to {@link #checkedAdd(FluidAmount)}, but returns either {@link #MAX_BUCKETS} or {@link #MIN_BUCKETS}
      * instead of throwing an exception. */
     public FluidAmount saturatedAdd(@Nullable FluidAmount by) {
-        return add0(by, true);
+        return add0(by, RoundingMode.HALF_EVEN);
     }
 
-    private FluidAmount add0(FluidAmount by, boolean saturate) {
+    private FluidAmount add0(FluidAmount by, RoundingMode rounding) {
         if (by == null || by.isZero()) {
             return this;
         } else if (isZero()) {
             return by;
+        }
+
+        if (rounding == null) {
+            rounding = RoundingMode.HALF_EVEN;
         }
 
         // W3 + N3/D3 = W1 + N1/D1 + W2 + N2/D2
@@ -1021,7 +1021,16 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         // W3 = W1+W2
         // N3 = N1*D2+N2*D1
         // D3 = D1*D2
-        long w = LongMath.checkedAdd(whole, by.whole);
+        long w = LongMath.saturatedAdd(whole, by.whole);
+        if (didOverflow(w)) {
+            if (rounding == RoundingMode.UNNECESSARY) {
+                throw new ArithmeticException(
+                    "Cannot add the values " + whole + " and " + by.whole
+                        + " as they overflow, and the RoundingMode is UNNECESSARY!"
+                );
+            }
+            return w > 0 ? MAX_BUCKETS : MIN_BUCKETS;
+        }
         normal: {
             long d = LongMath.saturatedMultiply(denominator, by.denominator);
             if (didOverflow(d)) break normal;
@@ -1034,7 +1043,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
             return of(w, n, d);
         }
         BigFluidAmount bigResult = _bigAdd(by);
-        return saturate ? bigResult.asLongIntSaturated() : bigResult.asLongIntExact();
+        return bigResult.asLongIntRounded(rounding);
     }
 
     /** Directly adds the given {@link FluidAmount} to this one, returning the result as a {@link BigFluidAmount}.
@@ -1110,14 +1119,14 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
      *            {@link #safeAdd(FluidAmount, RoundingMode)}.
      * @return The {@link SafeAddResult#roundedResult}. */
     public FluidAmount roundedSub(@Nullable FluidAmount by, RoundingMode rounding) {
-        return safeSub(by, rounding).roundedResult;
+        return by == null ? this : roundedAdd(by.negate(), rounding);
     }
 
     /** @param by Either Null or a value that will be {@link #negate() negated} and then passed to
      *            {@link #safeAdd(FluidAmount)}.
      * @return The {@link SafeAddResult#roundedResult}. */
     public FluidAmount roundedSub(@Nullable FluidAmount by) {
-        return safeSub(by).roundedResult;
+        return by == null ? this : roundedAdd(by.negate());
     }
 
     /** @param by Either Null or a value that will be {@link #negate() negated} and then passed to

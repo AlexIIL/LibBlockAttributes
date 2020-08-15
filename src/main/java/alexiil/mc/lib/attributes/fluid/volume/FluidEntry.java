@@ -9,6 +9,7 @@ package alexiil.mc.lib.attributes.fluid.volume;
 
 import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
@@ -75,6 +76,42 @@ public abstract class FluidEntry {
         return FluidRegistryEntry.fromTag0(registry, name);
     }
 
+    public abstract void toMcBuffer(PacketByteBuf buffer);
+
+    public static FluidEntry fromMcBuffer(PacketByteBuf buffer) {
+        byte type = buffer.readByte();
+        if (type == 0) {
+            return new FluidFloatingEntry(buffer.readIdentifier());
+        }
+        Registry<?> registry;
+        if (type == 1) {
+            registry = Registry.FLUID;
+        } else if (type == 2) {
+            registry = Registry.POTION;
+        } else {
+            assert type == 3 : "Unknown remote FluidEntry type " + type;
+            Identifier id = buffer.readIdentifier();
+            registry = Registry.REGISTRIES.get(id);
+            if (registry == null) {
+                throw new IllegalArgumentException("Unknown remote registry " + id);
+            }
+        }
+        return read0(buffer, registry);
+    }
+
+    // TODO: LNS NetByteBuf read/write!
+
+    private static <T> FluidEntry read0(PacketByteBuf buffer, Registry<T> registry) {
+        Identifier id = buffer.readIdentifier();
+        T obj = registry.get(id);
+        if (obj == null) {
+            throw new IllegalArgumentException(
+                "Unknown remote object " + id + " in registry " + FluidRegistryEntry.getName(registry)
+            );
+        }
+        return new FluidRegistryEntry<>(registry, obj);
+    }
+
     /** @return True if this corresponds to the default value in the backing registry. (No floating entries are
      *         empty). */
     public abstract boolean isEmpty();
@@ -116,6 +153,12 @@ public abstract class FluidEntry {
         public void toTag(CompoundTag tag) {
             tag.putString(KEY_REGISTRY_TYPE, "i");
             tag.putString(KEY_OBJ_IDENTIFIER, id.toString());
+        }
+
+        @Override
+        public void toMcBuffer(PacketByteBuf buffer) {
+            buffer.writeByte(0);
+            buffer.writeIdentifier(id);
         }
 
         @Override

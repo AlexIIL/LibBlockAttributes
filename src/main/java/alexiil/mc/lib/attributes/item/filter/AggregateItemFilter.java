@@ -14,6 +14,7 @@ import java.util.RandomAccess;
 
 import com.google.common.collect.Iterators;
 
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.AggregateFilterType;
@@ -90,7 +91,7 @@ public final class AggregateItemFilter implements ReadableItemFilter, Iterable<I
             ItemStack exactA = ((ExactItemStackFilter) filterA).stack;
             if (filterB.matches(exactA)) {
                 return filterA;
-            } else {
+            } else if (all) {
                 return ConstantItemFilter.NOTHING;
             }
         }
@@ -98,7 +99,7 @@ public final class AggregateItemFilter implements ReadableItemFilter, Iterable<I
             ItemStack exactB = ((ExactItemStackFilter) filterB).stack;
             if (filterA.matches(exactB)) {
                 return filterB;
-            } else {
+            } else if (all) {
                 return ConstantItemFilter.NOTHING;
             }
         }
@@ -112,6 +113,36 @@ public final class AggregateItemFilter implements ReadableItemFilter, Iterable<I
 
     public static ItemFilter anyOf(ItemFilter... filters) {
         return combine(AggregateFilterType.ANY, filters);
+    }
+
+    public static ItemFilter anyOf(ItemStack... stacks) {
+        if (stacks == null || stacks.length == 0) {
+            return ConstantItemFilter.NOTHING;
+        }
+        if (stacks.length == 1) {
+            return new ExactItemStackFilter(stacks[0]);
+        }
+        ItemFilter[] filters = new ItemFilter[stacks.length];
+        int i = 0;
+        for (ItemStack item : stacks) {
+            filters[i++] = new ExactItemStackFilter(item);
+        }
+        return anyOf(filters);
+    }
+
+    public static ItemFilter anyOf(Item... items) {
+        if (items == null || items.length == 0) {
+            return ConstantItemFilter.NOTHING;
+        }
+        if (items.length == 1) {
+            return new ExactItemFilter(items[0]);
+        }
+        ItemFilter[] filters = new ItemFilter[items.length];
+        int i = 0;
+        for (Item item : items) {
+            filters[i++] = new ExactItemFilter(item);
+        }
+        return anyOf(filters);
     }
 
     public static ItemFilter combine(AggregateFilterType type, ItemFilter... filters) {

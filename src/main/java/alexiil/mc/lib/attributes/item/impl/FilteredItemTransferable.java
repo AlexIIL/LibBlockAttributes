@@ -24,7 +24,7 @@ public final class FilteredItemTransferable implements ItemTransferable {
 
     @Override
     public ItemStack attemptInsertion(ItemStack stack, Simulation simulation) {
-        if (!filter.matches(stack)) {
+        if (stack.isEmpty() || !filter.matches(stack)) {
             return stack;
         }
         return real.attemptInsertion(stack, simulation);

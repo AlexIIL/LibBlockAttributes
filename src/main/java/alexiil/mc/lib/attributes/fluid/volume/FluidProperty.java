@@ -93,15 +93,11 @@ public abstract class FluidProperty<T> {
                     "The FluidProperty " + getClass() + " should implement ContinuousFluidTemperature!"
                 );
             }
-            if (this instanceof DiscreteFluidTemperature) {
-                throw new IllegalStateException(
-                    "The FluidProperty " + getClass() + " must not implement DiscreteFluidTemperature!"
-                );
-            }
             this.temperature = (ContinuousFluidTemperature) this;
         } else {
             this.temperature = temperature;
         }
+        FluidTemperature.validate(this.temperature);
     }
 
     // ########

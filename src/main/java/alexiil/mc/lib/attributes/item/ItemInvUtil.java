@@ -7,6 +7,7 @@
  */
 package alexiil.mc.lib.attributes.item;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
@@ -18,6 +19,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Hand;
 
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.item.FixedItemInv.CopyingFixedItemInv;
 import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
@@ -186,6 +188,19 @@ public final class ItemInvUtil {
         }
     }
 
+    /** Copies every {@link ItemStack} held in the given inventory to the given {@link List}. */
+    public static void copyAll(FixedItemInvView inv, List<ItemStack> dest) {
+        for (int slot = 0; slot < inv.getSlotCount(); slot++) {
+            ItemStack stack = inv.getInvStack(slot);
+            if (!(inv instanceof CopyingFixedItemInv)) {
+                stack = stack.copy();
+            }
+            if (!stack.isEmpty()) {
+                dest.add(stack);
+            }
+        }
+    }
+
     // #######################
     // Implementation helpers
     // #######################
@@ -195,36 +210,11 @@ public final class ItemInvUtil {
      * {@link ItemInsertable} (or others) for the base implementation.
      * 
      * @param toInsert The stack to insert. This won't be modified.
-     * @return The excess {@link ItemStack} that wasn't inserted. */
+     * @return The excess {@link ItemStack} that wasn't inserted.
+     * @deprecated Because this has been moved to {@link FixedItemInv#insertStack(int, ItemStack, Simulation)}. */
+    @Deprecated
     public static ItemStack insertSingle(FixedItemInv inv, int slot, ItemStack toInsert, Simulation simulation) {
-        if (toInsert.isEmpty()) {
-            return ItemStack.EMPTY;
-        }
-        ItemStack inSlot = inv.getInvStack(slot);
-        int current = inSlot.isEmpty() ? 0 : inSlot.getCount();
-        int max = Math.min(current + toInsert.getCount(), inv.getMaxAmount(slot, toInsert));
-        int addable = max - current;
-        if (addable <= 0) {
-            return toInsert;
-        }
-        if (current > 0 && !ItemStackUtil.areEqualIgnoreAmounts(toInsert, inSlot)) {
-            return toInsert;
-        }
-        if (inSlot.isEmpty()) {
-            inSlot = toInsert.copy();
-            inSlot.setCount(addable);
-        } else {
-            inSlot = inSlot.copy();
-            inSlot.increment(addable);
-        }
-        if (inv.setInvStack(slot, inSlot, simulation)) {
-            toInsert = toInsert.copy();
-            toInsert.decrement(addable);
-            if (toInsert.isEmpty()) {
-                return ItemStack.EMPTY;
-            }
-        }
-        return toInsert;
+        return inv.insertStack(slot, toInsert, simulation);
     }
 
     /** Extracts a single ItemStack from a {@link FixedItemInv}, using only
@@ -235,35 +225,15 @@ public final class ItemInvUtil {
      * @param toAddWith An optional {@link ItemStack} that the extracted item will be added to.
      * @param maxAmount The maximum number of items to extract. Note that the returned {@link ItemStack} may have a
      *            higher amount than this if the given {@link ItemStack} isn't empty.
-     * @return The extracted ItemStack, plus the parameter "toAddWith". */
+     * @return The extracted ItemStack, plus the parameter "toAddWith".
+     * @deprecated Because this has been moved to
+     *             {@link FixedItemInv#extractStack(int, ItemFilter, ItemStack, int, Simulation)}. */
+    @Deprecated
     public static ItemStack extractSingle(
         FixedItemInv inv, int slot, @Nullable ItemFilter filter, ItemStack toAddWith, int maxAmount,
         Simulation simulation
     ) {
-        ItemStack inSlot = inv.getInvStack(slot);
-        if (inSlot.isEmpty() || (filter != null && !filter.matches(inSlot))) {
-            return toAddWith;
-        }
-        if (!toAddWith.isEmpty()) {
-            if (!ItemStackUtil.areEqualIgnoreAmounts(toAddWith, inSlot)) {
-                return toAddWith;
-            }
-            maxAmount = Math.min(maxAmount, toAddWith.getMaxCount() - toAddWith.getCount());
-            if (maxAmount <= 0) {
-                return toAddWith;
-            }
-        }
-        inSlot = inSlot.copy();
-
-        ItemStack addable = inSlot.split(maxAmount);
-        if (inv.setInvStack(slot, inSlot, simulation)) {
-            if (toAddWith.isEmpty()) {
-                toAddWith = addable;
-            } else {
-                toAddWith.increment(addable.getCount());
-            }
-        }
-        return toAddWith;
+        return inv.extractStack(slot, filter, toAddWith, maxAmount, simulation);
     }
 
     // #######################

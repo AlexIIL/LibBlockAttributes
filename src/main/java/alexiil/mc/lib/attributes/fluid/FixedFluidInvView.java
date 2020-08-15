@@ -96,18 +96,22 @@ public interface FixedFluidInvView extends Convertible {
         return FluidAmount.of1620(getMaxAmount(tank));
     }
 
-    /** Checks to see if the given stack is valid for a given tank. This ignores any current stacks in the tank.
+    /** Checks to see if the given fluid would be valid for this tank, ignoring current contents. Note that this method
+     * should adhere to the requirements of {@link FluidFilter#matches(FluidKey)}, so passing {@link FluidKey#isEmpty()
+     * empty} fluids will generally not return useful results.
      * 
      * @param tank The tank index. Must be a value between 0 (inclusive) and {@link #getTankCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
      * @throws RuntimeException if the given tank wasn't a valid index. */
     boolean isFluidValidForTank(int tank, FluidKey fluid);
 
-    /** @param tank The tank index. Must be a value between 0 (inclusive) and {@link #getTankCount()} (exclusive) to be
+    /** Exposes {@link #isFluidValidForTank(int, FluidKey)} as a (potentially) readable filter.
+     * 
+     * @param tank The tank index. Must be a value between 0 (inclusive) and {@link #getTankCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
      * @return An {@link FluidFilter} for this tank. If this tank is filtered by an {@link FluidFilter} internally then
-     *         it is highly recommended that this be overridden to return *that* filter rather than a newly constructed
-     *         one.
+     *         it is highly recommended that this be overridden to return <em>that</em> filter rather than the default
+     *         opaque wrapper around {@link #isFluidValidForTank(int, FluidKey)}.
      * @throws RuntimeException if the given tank wasn't a valid index. */
     default FluidFilter getFilterForTank(int tank) {
         return stack -> isFluidValidForTank(tank, stack);

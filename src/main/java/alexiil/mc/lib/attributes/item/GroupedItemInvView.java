@@ -90,11 +90,16 @@ public interface GroupedItemInvView extends AbstractItemInvView {
      * {@link ItemInvAmountChangeListener#onChange(GroupedItemInvView, ItemStack, int, int)} will be called every time
      * that this inventory changes. However if this inventory doesn't support listeners then this will return a null
      * {@link ListenerToken token}.
+     * <p>
+     * The default implementation refuses to accept any listeners, but implementations are <em>highly encouraged</em> to
+     * override this if they are able to!
      * 
      * @param removalToken A token that will be called whenever the given listener is removed from this inventory (or if
      *            this inventory itself is unloaded or otherwise invalidated).
      * @return A token that represents the listener, or null if the listener could not be added. */
-    ListenerToken addListener(ItemInvAmountChangeListener listener, ListenerRemovalToken removalToken);
+    default ListenerToken addListener(ItemInvAmountChangeListener listener, ListenerRemovalToken removalToken) {
+        return null;
+    }
 
     /** @return A completely unmodifiable view of this {@link GroupedItemInvView}. */
     default GroupedItemInvView getGroupedView() {

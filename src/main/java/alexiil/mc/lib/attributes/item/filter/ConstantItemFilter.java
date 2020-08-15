@@ -11,21 +11,26 @@ import net.minecraft.item.ItemStack;
 
 public enum ConstantItemFilter implements ReadableItemFilter {
     ANYTHING(true, true),
+
+    @Deprecated
     ANYTHING_EXCEPT_EMPTY(true, false),
+
+    @Deprecated
     ONLY_EMPTY(false, true),
+
     NOTHING(false, false);
 
-    private final boolean fullResult, emptyResult;
+    private final boolean fullResult;
 
     private ConstantItemFilter(boolean fullResult, boolean emptyResult) {
         this.fullResult = fullResult;
-        this.emptyResult = emptyResult;
     }
 
     public static ConstantItemFilter of(boolean result) {
         return result ? ANYTHING : NOTHING;
     }
 
+    @Deprecated
     public static ConstantItemFilter of(boolean fullResult, boolean emptyResult) {
         if (fullResult) {
             return emptyResult ? ANYTHING : ANYTHING_EXCEPT_EMPTY;
@@ -36,65 +41,22 @@ public enum ConstantItemFilter implements ReadableItemFilter {
 
     @Override
     public boolean matches(ItemStack stack) {
-        return stack.isEmpty() ? emptyResult : fullResult;
+        return stack.isEmpty() ? false : fullResult;
     }
 
     @Override
     public ItemFilter negate() {
-        return of(!fullResult, !emptyResult);
+        return of(!fullResult);
     }
 
     @Override
     public ItemFilter and(ItemFilter other) {
-        if (fullResult && emptyResult) {
-            return other;
-        }
-        if (!fullResult && !emptyResult) {
-            return NOTHING;
-        }
-
-        boolean otherMatchesEmpty = other.matches(ItemStack.EMPTY);
-
-        if (otherMatchesEmpty) {
-            if (fullResult) {
-                return ReadableItemFilter.super.and(other);
-            } else {
-                return ONLY_EMPTY;
-            }
-        } else {
-            if (fullResult) {
-                return other;
-            } else {
-                return NOTHING;
-            }
-        }
+        return fullResult ? other : NOTHING;
     }
 
     @Override
     public ItemFilter or(ItemFilter other) {
-
-        if (fullResult && emptyResult) {
-            return ANYTHING;
-        }
-        if (!fullResult && !emptyResult) {
-            return other;
-        }
-
-        boolean otherMatchesEmpty = other.matches(ItemStack.EMPTY);
-
-        if (otherMatchesEmpty) {
-            if (fullResult) {
-                return ANYTHING;
-            } else {
-                return other;
-            }
-        } else {
-            if (fullResult) {
-                return other;
-            } else {
-                return ReadableItemFilter.super.or(other);
-            }
-        }
+        return fullResult ? ANYTHING : other;
     }
 
     // Don't override asPredicate so that we still get the better version that calls our own negate(), and(), or()

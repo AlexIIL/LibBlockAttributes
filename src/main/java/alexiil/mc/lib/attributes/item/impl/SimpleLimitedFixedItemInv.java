@@ -9,6 +9,8 @@ package alexiil.mc.lib.attributes.item.impl;
 
 import java.util.Arrays;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
@@ -16,10 +18,8 @@ import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
 import alexiil.mc.lib.attributes.item.FixedItemInvView;
-import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
 import alexiil.mc.lib.attributes.item.ItemInvSlotChangeListener;
-import alexiil.mc.lib.attributes.item.ItemInvUtil;
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
 import alexiil.mc.lib.attributes.item.LimitedFixedItemInv;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
@@ -31,7 +31,6 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
 
     private static final byte MAX_AMOUNT = (byte) 64;
 
-    private final GroupedItemInv groupedItemInv;
     private boolean isImmutable = false;
 
     protected final ItemFilter[] insertionFilters;
@@ -46,38 +45,6 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
         maxInsertionAmounts = new byte[delegate.getSlotCount()];
         minimumAmounts = new byte[delegate.getSlotCount()];
         Arrays.fill(maxInsertionAmounts, MAX_AMOUNT);
-        groupedItemInv = new DelegatingGroupedItemInv(super.getGroupedInv()) {
-            @Override
-            public ItemStack attemptExtraction(ItemFilter filter, int maxAmount, Simulation simulation) {
-                if (maxAmount < 0) {
-                    throw new IllegalArgumentException("maxAmount cannot be negative! (was " + maxAmount + ")");
-                }
-                ItemStack stack = ItemStack.EMPTY;
-                if (maxAmount == 0) {
-                    return stack;
-                }
-                FixedItemInv inv = SimpleLimitedFixedItemInv.this;
-                for (int s = 0; s < getSlotCount(); s++) {
-                    ItemStack slotStack = inv.getInvStack(s);
-                    int minimum = minimumAmounts[s];
-                    int available = slotStack.getCount() - minimum;
-                    if (slotStack.isEmpty() || available <= 0) {
-                        continue;
-                    }
-
-                    int slotMax = Math.min(maxAmount - stack.getCount(), available);
-                    stack = ItemInvUtil.extractSingle(inv, s, filter, stack, slotMax, simulation);
-                    if (stack.getCount() >= maxAmount) {
-                        return stack;
-                    }
-                }
-                return stack;
-            }
-
-            // No need to override attemptInsertion because:
-            // - The maximum insertion amount is already available via FixedItemInv.getMaxAmount
-            // - The item filter will already be followed via setInvStack.
-        };
     }
 
     public static SimpleLimitedFixedItemInv createLimited(FixedItemInv inv) {
@@ -127,11 +94,6 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
     // Overrides
 
     @Override
-    public GroupedItemInv getGroupedInv() {
-        return groupedItemInv;
-    }
-
-    @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return (stack.isEmpty() || getFilterForSlot(slot).matches(stack)) && delegate.isItemValidForSlot(slot, stack);
     }
@@ -149,8 +111,8 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
     public boolean setInvStack(int slot, ItemStack to, Simulation simulation) {
         ItemStack current = getInvStack(slot);
         boolean same = ItemStackUtil.areEqualIgnoreAmounts(current, to);
-        boolean isExtracting = !same || to.getCount() < current.getCount();
-        boolean isInserting = !same || to.getCount() > current.getCount();
+        boolean isExtracting = !current.isEmpty() && (!same || to.getCount() < current.getCount());
+        boolean isInserting = !to.isEmpty() && (!same || to.getCount() > current.getCount());
         if (isExtracting) {
             if (same) {
                 if (to.getCount() < minimumAmounts[slot]) {
@@ -175,6 +137,26 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
         }
         return super.setInvStack(slot, to, simulation);
     }
+
+    @Override
+    public ItemStack extractStack(
+        int slot, @Nullable ItemFilter filter, ItemStack mergeWith, int maxCount, Simulation simulation
+    ) {
+        ItemStack current = getInvStack(slot);
+        if (current.isEmpty()) {
+            return mergeWith;
+        }
+
+        maxCount = Math.min(maxCount, current.getCount() - minimumAmounts[slot]);
+        if (maxCount <= 0) {
+            return mergeWith;
+        }
+        return super.extractStack(slot, filter, mergeWith, maxCount, simulation);
+    }
+
+    // No need to override insertStack because:
+    // - The maximum insertion amount is already available via FixedItemInv.getMaxAmount
+    // - The item filter will already be followed via setInvStack.
 
     @Override
     public int getMaxAmount(int slot, ItemStack stack) {

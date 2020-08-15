@@ -11,14 +11,12 @@ import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.Set;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
 
 import alexiil.mc.lib.attributes.AttributeList;
+import alexiil.mc.lib.attributes.AttributeSourceType;
+import alexiil.mc.lib.attributes.CombinableAttribute;
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
@@ -44,39 +42,31 @@ import reborncore.common.util.Tank;
     private RebornFluidCompat() {}
 
     static void load() {
-        // Unfortunately nothing about reborn core's blocks tells us if we can get a tank from them
-        // so instead we have to register last, using the old methods.
-        FluidAttributes.INSERTABLE.appendBlockAdder(RebornFluidCompat::add);
-        FluidAttributes.EXTRACTABLE.appendBlockAdder(RebornFluidCompat::add);
-        FluidAttributes.GROUPED_INV_VIEW.appendBlockAdder(RebornFluidCompat::add);
-        FluidAttributes.GROUPED_INV.appendBlockAdder(RebornFluidCompat::add);
-        FluidAttributes.FIXED_INV_VIEW.appendBlockAdder(RebornFluidCompat::add);
-        FluidAttributes.FIXED_INV.appendBlockAdder(RebornFluidCompat::add);
+        FluidAttributes.forEachInv(RebornFluidCompat::appendAdder);
     }
 
-    private static void add(
-        World world, BlockPos pos, BlockState state, AttributeList<? super RebornFluidTankWrapper> list
-    ) {
+    private static <T> void appendAdder(CombinableAttribute<T> attribute) {
+        attribute.putBlockEntityClassAdder(
+            AttributeSourceType.COMPAT_WRAPPER, MachineBaseBlockEntity.class, true, RebornFluidCompat::addWrapper
+        );
+    }
+
+    private static <T> void addWrapper(MachineBaseBlockEntity machine, AttributeList<T> list) {
         Direction dir = list.getSearchDirection();
         if (dir == null) {
             return;
         }
         Direction side = dir.getOpposite();
-        if (!state.getBlock().hasBlockEntity()) {
+
+        Tank tank = machine.getTank();
+        if (tank == null) {
             return;
         }
-        BlockEntity be = world.getBlockEntity(pos);
-        if (be instanceof MachineBaseBlockEntity) {
-            MachineBaseBlockEntity base = (MachineBaseBlockEntity) be;
-            Tank tank = base.getTank();
-            if (tank == null) {
-                return;
-            }
-            if (tank.getCapacity().getRawValue() <= 0) {
-                return;
-            }
-            list.add(new RebornFluidTankWrapper(side, base, tank));
+
+        if (tank.getCapacity().getRawValue() <= 0) {
+            return;
         }
+        list.offer(new RebornFluidTankWrapper(side, machine, tank));
     }
 
     static final class RebornFluidTankWrapper implements GroupedFluidInv, FixedFluidInv {

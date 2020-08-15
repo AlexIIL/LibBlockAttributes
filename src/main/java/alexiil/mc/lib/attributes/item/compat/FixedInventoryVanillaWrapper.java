@@ -53,6 +53,45 @@ public class FixedInventoryVanillaWrapper extends FixedInventoryViewVanillaWrapp
         return false;
     }
 
+    // TODO (After LBA for 1.16.2 release) implement this!
+    // @formatter:off
+    /*
+    @Override
+    public ItemStack extractStack(
+        int slot, ItemFilter filter, ItemStack mergeWith, int maxCount, Simulation simulation
+    ) {
+        ItemStack inSlot = getInvStack(slot);
+        maxCount = Math.min(inSlot.getCount(), maxCount);
+        if (maxCount < 0 || inSlot.isEmpty()) {
+            return mergeWith;
+        }
+        if (!mergeWith.isEmpty()) {
+            if (!ItemStackUtil.areEqualIgnoreAmounts(mergeWith, inSlot)) {
+                return mergeWith;
+            }
+            maxCount = Math.min(maxCount, inSlot.getMaxCount() - mergeWith.getCount());
+        }
+        if (filter != null && !filter.matches(inSlot)) {
+            return mergeWith;
+        }
+        if (!canExtract(slot, inSlot)) {
+            return mergeWith;
+        }
+    
+        ItemStack removed = inv.removeStack(slot, maxCount);
+    
+        assert ItemStackUtil.areEqualIgnoreAmounts(removed, inSlot);
+        assert removed.getCount() == maxCount;
+    
+        if (mergeWith.isEmpty()) {
+            return removed;
+        }
+        mergeWith.increment(removed.getCount());
+        return mergeWith;
+    //    }
+    */
+    // @formatter:on
+
     protected boolean canExtract(int slot, ItemStack extractedStack) {
         return true;
     }
