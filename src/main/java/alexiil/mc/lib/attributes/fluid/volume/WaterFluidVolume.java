@@ -15,7 +15,7 @@ import net.minecraft.world.biome.Biomes;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 
-/* package-private */ final class WaterFluidVolume extends BiomeSourcedFluidVolume {
+public final class WaterFluidVolume extends BiomeSourcedFluidVolume {
 
     public WaterFluidVolume(FluidAmount amount) {
         super(WaterFluidKey.INSTANCE, Biomes.OCEAN, amount);

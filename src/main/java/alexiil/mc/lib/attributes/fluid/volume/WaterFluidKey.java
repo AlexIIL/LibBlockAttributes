@@ -15,7 +15,7 @@ import net.minecraft.world.biome.Biome;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 
-/* package-private */ final class WaterFluidKey extends BiomeSourcedFluidKey {
+public final class WaterFluidKey extends BiomeSourcedFluidKey {
 
     public static final Identifier SPRITE_STILL = new Identifier("minecraft", "block/water_still");
     public static final Identifier SPRITE_FLOWING = new Identifier("minecraft", "block/water_flowing");
