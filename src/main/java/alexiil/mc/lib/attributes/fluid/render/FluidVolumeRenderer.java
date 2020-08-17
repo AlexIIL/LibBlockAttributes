@@ -120,6 +120,7 @@ public abstract class FluidVolumeRenderer {
     protected static void renderSimpleFluid(
         List<FluidRenderFace> faces, VertexConsumer vc, MatrixStack matrices, Sprite still, Sprite flowing, int colour
     ) {
+        int a = (colour >>> 24) & 0xFF;
         int r = (colour >> 16) & 0xFF;
         int g = (colour >> 8) & 0xFF;
         int b = (colour >> 0) & 0xFF;
@@ -127,10 +128,10 @@ public abstract class FluidVolumeRenderer {
         Sprite _s = still;
         Sprite _f = flowing;
         for (FluidRenderFace f : splitFaces(faces)) {
-            vertex(vc, matrices, f.x0, f.y0, f.z0, f.getU(_s, _f, f.u0), f.getV(_s, _f, f.v0), r, g, b, f);
-            vertex(vc, matrices, f.x1, f.y1, f.z1, f.getU(_s, _f, f.u1), f.getV(_s, _f, f.v1), r, g, b, f);
-            vertex(vc, matrices, f.x2, f.y2, f.z2, f.getU(_s, _f, f.u2), f.getV(_s, _f, f.v2), r, g, b, f);
-            vertex(vc, matrices, f.x3, f.y3, f.z3, f.getU(_s, _f, f.u3), f.getV(_s, _f, f.v3), r, g, b, f);
+            vertex(vc, matrices, f.x0, f.y0, f.z0, f.getU(_s, _f, f.u0), f.getV(_s, _f, f.v0), r, g, b, a, f);
+            vertex(vc, matrices, f.x1, f.y1, f.z1, f.getU(_s, _f, f.u1), f.getV(_s, _f, f.v1), r, g, b, a, f);
+            vertex(vc, matrices, f.x2, f.y2, f.z2, f.getU(_s, _f, f.u2), f.getV(_s, _f, f.v2), r, g, b, a, f);
+            vertex(vc, matrices, f.x3, f.y3, f.z3, f.getU(_s, _f, f.u3), f.getV(_s, _f, f.v3), r, g, b, a, f);
         }
     }
 
@@ -151,7 +152,28 @@ public abstract class FluidVolumeRenderer {
         VertexConsumer vc, MatrixStack matrices, double x, double y, double z, float u, float v, int r, int g, int b,
         FluidRenderFace f
     ) {
-        vertex(vc, matrices, x, y, z, u, v, r, g, b, f.light, f.nx, f.ny, f.nz);
+        vertex(vc, matrices, x, y, z, u, v, r, g, b, 0xFF, f);
+    }
+
+    /** Appends a single vertex in {@link VertexFormats#POSITION_COLOR_TEXTURE_LIGHT_NORMAL} format.
+     * 
+     * @param vc The {@link VertexConsumer} to append to.
+     * @param matrices The {@link MatrixStack} to apply to the x,y,z positions.
+     * @param x Position - X
+     * @param y Position - Y
+     * @param z Position - Z
+     * @param u Texture - U (0 -> 1)
+     * @param v Texture - V (0 -> 1)
+     * @param r Colour - Red (0 -> 255)
+     * @param g Colour - Green (0 -> 255)
+     * @param b Colour - Blue (0 -> 255)
+     * @param a Colour - Alpha (0 -> 255)
+     * @param f The source for the light and normal. */
+    protected static void vertex(
+        VertexConsumer vc, MatrixStack matrices, double x, double y, double z, float u, float v, int r, int g, int b,
+        int a, FluidRenderFace f
+    ) {
+        vertex(vc, matrices, x, y, z, u, v, r, g, b, a, f.light, f.nx, f.ny, f.nz);
     }
 
     /** Appends a single vertex in {@link VertexFormats#POSITION_COLOR_TEXTURE_LIGHT_NORMAL} format.
@@ -174,8 +196,32 @@ public abstract class FluidVolumeRenderer {
         VertexConsumer vc, MatrixStack matrices, double x, double y, double z, float u, float v, int r, int g, int b,
         int light, float nx, float ny, float nz
     ) {
+        vertex(vc, matrices, x, y, z, u, v, r, g, b, 0xFF, light, nx, ny, nz);
+    }
+
+    /** Appends a single vertex in {@link VertexFormats#POSITION_COLOR_TEXTURE_LIGHT_NORMAL} format.
+     * 
+     * @param vc The {@link VertexConsumer} to append to.
+     * @param matrices The {@link MatrixStack} to apply to the x,y,z positions.
+     * @param x Position - X
+     * @param y Position - Y
+     * @param z Position - Z
+     * @param u Texture - U (0 -> 1)
+     * @param v Texture - V (0 -> 1)
+     * @param r Colour - Red (0 -> 255)
+     * @param g Colour - Green (0 -> 255)
+     * @param b Colour - Blue (0 -> 255)
+     * @param a Colour - Alpha (0 -> 255)
+     * @param light Light - packed.
+     * @param nx Normal - X
+     * @param ny Normal - Y
+     * @param nz Normal - Z */
+    protected static void vertex(
+        VertexConsumer vc, MatrixStack matrices, double x, double y, double z, float u, float v, int r, int g, int b,
+        int a, int light, float nx, float ny, float nz
+    ) {
         vc.vertex(matrices.peek().getModel(), (float) x, (float) y, (float) z);
-        vc.color(r, g, b, 0xFF);
+        vc.color(r, g, b, a == 0 ? 0xFF : a);
         vc.texture(u, v);
         vc.overlay(OverlayTexture.DEFAULT_UV);
         vc.light(light);

@@ -7,14 +7,13 @@
  */
 package alexiil.mc.lib.attributes.fluid;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import net.fabricmc.loader.api.FabricLoader;
@@ -47,21 +46,25 @@ public final class LbaFluidsConfig {
 
     static {
         FabricLoader fabric = FabricLoader.getInstance();
-        final File cfgDir;
-        if (fabric.getGameDirectory() == null) {
+        final Path cfgDir;
+        if (fabric.getGameDir() == null) {
             // Can happen during a JUnit test
-            cfgDir = new File("config");
+            cfgDir = Paths.get("config");
         } else {
-            cfgDir = fabric.getConfigDirectory();
+            cfgDir = fabric.getGameDir();
         }
-        if (!cfgDir.isDirectory()) {
-            cfgDir.mkdirs();
+        if (!Files.isDirectory(cfgDir)) {
+            try {
+                Files.createDirectories(cfgDir);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to create the config directory! (" + cfgDir + ")", e);
+            }
         }
-        File cfgFile = new File(cfgDir, FILE_NAME);
+        Path cfgFile = cfgDir.resolve(FILE_NAME);
         Properties props = new Properties();
-        if (cfgFile.exists()) {
-            try (InputStreamReader isr = new InputStreamReader(new FileInputStream(cfgFile), StandardCharsets.UTF_8)) {
-                props.load(isr);
+        if (Files.exists(cfgFile)) {
+            try (Reader reader = Files.newBufferedReader(cfgFile, StandardCharsets.UTF_8)) {
+                props.load(reader);
             } catch (IOException e) {
                 LibBlockAttributes.LOGGER.error("Failed to read the config file!", e);
             }
@@ -87,7 +90,7 @@ public final class LbaFluidsConfig {
         TOOLTIP_JOIN_NAME_AMOUNT = "true".equalsIgnoreCase(props.getProperty("tooltip_join_name_amount", "false"));
 
         if (!hasAll) {
-            try (Writer fw = new OutputStreamWriter(new FileOutputStream(cfgFile, true), StandardCharsets.UTF_8)) {
+            try (Writer fw = Files.newBufferedWriter(cfgFile, StandardCharsets.UTF_8)) {
                 fw.append("# LibBlockAttributes options file (fluids module)\n");
                 fw.append("# Removing an option will reset it back to the default value\n");
                 fw.append("# Removing or altering comments doesn't replace them.\n\n");

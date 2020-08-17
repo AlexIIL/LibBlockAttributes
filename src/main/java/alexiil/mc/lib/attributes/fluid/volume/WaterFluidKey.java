@@ -7,6 +7,9 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+
 import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.TranslatableText;
@@ -24,25 +27,33 @@ public final class WaterFluidKey extends BiomeSourcedFluidKey {
 
     private WaterFluidKey() {
         super(
-            new FluidKeyBuilder(Fluids.WATER)//
+            ((ColouredFluidKeyBuilder) new ColouredFluidKeyBuilder(Fluids.WATER)//
                 .setSprites(SPRITE_STILL, SPRITE_FLOWING)//
                 .setName(new TranslatableText("block.minecraft.water"))//
-                .addUnit(FluidUnit.BOTTLE)
+                .addUnit(FluidUnit.BOTTLE)//
+            )// end of FluidKeyBuilder
+                .setAlphaBounds(0.25f, 1)//
+                .setDefaultColour(0x3f / 255f, 0x76 / 255f, 0xE4 / 255f, 1)//
         );
     }
 
     @Override
-    public BiomeSourcedFluidVolume readVolume(CompoundTag tag) {
+    public WaterFluidVolume readVolume(CompoundTag tag) {
         return new WaterFluidVolume(tag);
     }
 
     @Override
-    public BiomeSourcedFluidVolume withAmount(FluidAmount amount) {
+    public WaterFluidVolume withAmount(FluidAmount amount) {
         return new WaterFluidVolume(amount);
     }
 
     @Override
-    public BiomeSourcedFluidVolume withAmount(Biome source, FluidAmount amount) {
+    public WaterFluidVolume withAmount(Biome source, FluidAmount amount) {
         return new WaterFluidVolume(source, amount);
+    }
+
+    @Override
+    public WaterFluidVolume readVolume(JsonObject json) throws JsonSyntaxException {
+        return new WaterFluidVolume(json);
     }
 }

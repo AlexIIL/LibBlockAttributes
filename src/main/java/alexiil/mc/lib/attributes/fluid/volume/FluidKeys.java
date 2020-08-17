@@ -38,13 +38,14 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryTracker;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.Heightmap.Type;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.Biomes;
+import net.minecraft.world.biome.BiomeKeys;
+import net.minecraft.world.biome.BuiltinBiomes;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.biome.source.BiomeAccessType;
 import net.minecraft.world.border.WorldBorder;
@@ -246,10 +247,12 @@ public final class FluidKeys {
         private final DimensionType dim;
 
         private VoidWorldView(boolean nether) {
-            Biome biome = nether ? Biomes.NETHER_WASTES : Biomes.PLAINS;
+            DynamicRegistryManager dynamicRegistries = DynamicRegistryManager.create();
+            Biome biome = dynamicRegistries.get(Registry.BIOME_KEY)//
+                .get(nether ? BiomeKeys.NETHER_WASTES : BiomeKeys.PLAINS);
             BiomeAccessType biomeType = (a, b, c, d, e) -> biome;
             biomeAccess = new BiomeAccess((x, y, z) -> biome, 42, biomeType);
-            dim = RegistryTracker.create().get(Registry.DIMENSION_TYPE_KEY).get()
+            dim = dynamicRegistries.get(Registry.DIMENSION_TYPE_KEY)//
                 .get(nether ? DimensionType.THE_NETHER_REGISTRY_KEY : DimensionType.OVERWORLD_REGISTRY_KEY);
         }
 
@@ -310,7 +313,7 @@ public final class FluidKeys {
 
         @Override
         public Biome getGeneratorStoredBiome(int biomeX, int biomeY, int biomeZ) {
-            return Biomes.DEFAULT;
+            return BuiltinBiomes.PLAINS;
         }
 
         @Override

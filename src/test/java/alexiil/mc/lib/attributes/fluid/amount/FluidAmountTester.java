@@ -10,7 +10,9 @@ package alexiil.mc.lib.attributes.fluid.amount;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class FluidAmountTester {
+import alexiil.mc.lib.attributes.VanillaSetupBaseTester;
+
+public class FluidAmountTester extends VanillaSetupBaseTester {
 
     @Test
     public void testStrings() {

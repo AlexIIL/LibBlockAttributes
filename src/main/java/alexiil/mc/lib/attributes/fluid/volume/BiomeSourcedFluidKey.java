@@ -14,13 +14,20 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.Biomes;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+import alexiil.mc.lib.attributes.fluid.mixin.impl.BiomeEffectsAccessor;
 
-public class BiomeSourcedFluidKey extends WeightedFluidKey<Biome> {
+/** A {@link ColouredFluidKey} which gets it's colour from a {@link Biome}s water colour. */
+public class BiomeSourcedFluidKey extends ColouredFluidKey {
+
+    @Deprecated
     public BiomeSourcedFluidKey(FluidKeyBuilder builder) {
-        super(builder, Biome.class, Biomes.OCEAN);
+        this(new ColouredFluidKeyBuilder().copyFrom(builder));
+    }
+
+    public BiomeSourcedFluidKey(ColouredFluidKeyBuilder builder) {
+        super(builder);
     }
 
     @Override
@@ -38,9 +45,14 @@ public class BiomeSourcedFluidKey extends WeightedFluidKey<Biome> {
         return new BiomeSourcedFluidVolume(this, amount);
     }
 
-    @Override
     public BiomeSourcedFluidVolume withAmount(Biome source, FluidAmount amount) {
-        return new BiomeSourcedFluidVolume(this, source, amount);
+        BiomeSourcedFluidVolume volume = new BiomeSourcedFluidVolume(this, amount);
+        volume.setColourFromBiome(source);
+        return volume;
+    }
+
+    public int getColourFromBiome(Biome source) {
+        return 0xFF_00_00_00 | ((BiomeEffectsAccessor) source.getEffects()).libblockattributes_getWaterColour();
     }
 
     @Override
