@@ -20,27 +20,27 @@ jobs:
     name: 'Check Compile'
     steps:
     - uses: actions/checkout@v2
-    - name: 'Check License'
+    - name: 'Check Compile'
       run: './gradlew assemble'
   checkstyle:
     runs-on: ubuntu-latest
     name: 'Check Style'
     steps:
     - uses: actions/checkout@v2
-    - name: 'Check License'
+    - name: 'Check Style'
       run: './gradlew checkstyle'
   tests:
     runs-on: ubuntu-latest
     name: 'Run tests'
     steps:
     - uses: actions/checkout@v2
-    - name: 'Check License'
+    - name: 'Run Tests'
       run: './gradlew test'
-  tests:
+  build:
     runs-on: ubuntu-latest
     name: 'Full Build'
     steps:
     - uses: actions/checkout@v2
-    - name: 'Check License'
+    - name: 'Full Build'
       run: './gradlew build'
 
