@@ -66,7 +66,7 @@ task checkstyle {}
 if (gradle.startParameter.taskNames.contains("checkstyle")) {
     checkstyle {
         configFile = file("guidelines/lba.checkstyle")
-        toolVersion = "7.2"
+        toolVersion = "8.35"
     }
 
     tasks["checkstyle"].dependsOn checkstyleMain
