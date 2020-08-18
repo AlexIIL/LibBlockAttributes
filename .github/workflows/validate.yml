@@ -1,0 +1,46 @@
+name: Validation
+
+on:
+  push:
+    branches: '**'
+  pull_request:
+    branches: '**'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  check_license:
+    runs-on: ubuntu-latest
+    name: 'Check License'
+    steps:
+    - uses: actions/checkout@v2
+    - name: 'Check License'
+      run: './gradlew checkLicense'
+  compile:
+    runs-on: ubuntu-latest
+    name: 'Check Compile'
+    steps:
+    - uses: actions/checkout@v2
+    - name: 'Check License'
+      run: './gradlew assemble'
+  checkstyle:
+    runs-on: ubuntu-latest
+    name: 'Check Style'
+    steps:
+    - uses: actions/checkout@v2
+    - name: 'Check License'
+      run: './gradlew checkstyle'
+  tests:
+    runs-on: ubuntu-latest
+    name: 'Run tests'
+    steps:
+    - uses: actions/checkout@v2
+    - name: 'Check License'
+      run: './gradlew test'
+  tests:
+    runs-on: ubuntu-latest
+    name: 'Full Build'
+    steps:
+    - uses: actions/checkout@v2
+    - name: 'Check License'
+      run: './gradlew build'
+
