@@ -16,7 +16,6 @@ jobs:
   compile:
     runs-on: ubuntu-latest
     name: 'Check Compile'
-    needs: check_license
     steps:
     - uses: actions/checkout@v2
     - name: 'Check Compile'
@@ -24,7 +23,6 @@ jobs:
   checkstyle:
     runs-on: ubuntu-latest
     name: 'Check Style'
-    needs: compile
     steps:
     - uses: actions/checkout@v2
     - name: 'Check Style'
@@ -32,7 +30,6 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     name: 'Run Tests'
-    needs: checkstyle
     steps:
     - uses: actions/checkout@v2
     - name: 'Run Tests'
@@ -40,7 +37,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     name: 'Full Build'
-    needs: tests
     steps:
     - uses: actions/checkout@v2
     - name: 'Full Build'
