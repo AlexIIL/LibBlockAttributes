@@ -146,17 +146,17 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
             return ItemStack.EMPTY;
         }
 
-        // Test the insertion filter first because it's easier to do than calculating the amount
-        if (insertionFilters[slot] != null && !insertionFilters[slot].matches(stack)) {
-            return stack;
-        }
-
         // Calculate the final amount after the insert operation, ignoring stacking and other rules here
         // since these will be handled by the delegate
         ItemStack current = getInvStack(slot);
         int currentCount = current.isEmpty() ? 0 : current.getCount();
         if (currentCount >= maxInsertionAmounts[slot]) {
             return stack; // Avoid a copy for the simple case
+        }
+
+        // Test the insertion filter before potentially copying
+        if (insertionFilters[slot] != null && !insertionFilters[slot].matches(stack)) {
+            return stack;
         }
 
         // If current count + added count exceed the maximum, we need to try and insert
