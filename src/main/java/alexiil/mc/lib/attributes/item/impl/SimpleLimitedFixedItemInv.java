@@ -7,12 +7,6 @@
  */
 package alexiil.mc.lib.attributes.item.impl;
 
-import java.util.Arrays;
-
-import javax.annotation.Nullable;
-
-import net.minecraft.item.ItemStack;
-
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
@@ -24,9 +18,15 @@ import alexiil.mc.lib.attributes.item.ItemStackUtil;
 import alexiil.mc.lib.attributes.item.LimitedFixedItemInv;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import net.minecraft.item.ItemStack;
 
-/** A simple implementation of {@link LimitedFixedItemInv} that makes no assumptions about the backing
- * {@link FixedItemInv}. */
+import javax.annotation.Nullable;
+import java.util.Arrays;
+
+/**
+ * A simple implementation of {@link LimitedFixedItemInv} that makes no assumptions about the backing
+ * {@link FixedItemInv}.
+ */
 public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements LimitedFixedItemInv {
 
     private static final byte MAX_AMOUNT = (byte) 64;
@@ -66,7 +66,7 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
     protected void assertMutable() {
         if (isImmutable) {
             throw new IllegalStateException(
-                "This object has already been marked as immutable, so no further changes are permitted!"
+                    "This object has already been marked as immutable, so no further changes are permitted!"
             );
         }
     }
@@ -139,8 +139,50 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
     }
 
     @Override
+    public ItemStack insertStack(int slot, ItemStack stack, Simulation simulation) {
+        if (stack.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+
+        // Test the insertion filter first because it's easier to do than calculating the amount
+        if (insertionFilters[slot] != null && !insertionFilters[slot].matches(stack)) {
+            return stack;
+        }
+
+        // Calculate the final amount after the insert operation, ignoring stacking and other rules here
+        // since these will be handled by the delegate
+        ItemStack current = getInvStack(slot);
+        int currentCount = current.isEmpty() ? 0 : current.getCount();
+        if (currentCount >= maxInsertionAmounts[slot]) {
+            return stack; // Avoid a copy for the simple case
+        }
+
+        // If current count + added count exceed the maximum, we need to try and insert
+        // a partial amount and adjust the excess
+        int cannotAddAmount = Math.max(0, currentCount + stack.getCount() - maxInsertionAmounts[slot]);
+        ItemStack cannotAdd = null;
+        if (cannotAddAmount > 0) {
+            stack = stack.copy();
+            cannotAdd = stack.split(cannotAddAmount);
+        }
+
+        ItemStack excess = super.insertStack(slot, stack, simulation);
+
+        // Now adjust the excess for what we held back due to the max-amount
+        if (cannotAdd != null) {
+            if (!excess.isEmpty()) {
+                // The underlying inventory could _still_ reject some part of our insert attempt
+                // Also note that we're not checking that excess is actually the same item here
+                cannotAdd.increment(excess.getCount());
+            }
+            return cannotAdd;
+        }
+        return excess;
+    }
+
+    @Override
     public ItemStack extractStack(
-        int slot, @Nullable ItemFilter filter, ItemStack mergeWith, int maxCount, Simulation simulation
+            int slot, @Nullable ItemFilter filter, ItemStack mergeWith, int maxCount, Simulation simulation
     ) {
         ItemStack current = getInvStack(slot);
         if (current.isEmpty()) {
@@ -151,12 +193,13 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
         if (maxCount <= 0) {
             return mergeWith;
         }
+
+        if (extractionFilters[slot] != null && !extractionFilters[slot].matches(current)) {
+            return mergeWith;
+        }
+
         return super.extractStack(slot, filter, mergeWith, maxCount, simulation);
     }
-
-    // No need to override insertStack because:
-    // - The maximum insertion amount is already available via FixedItemInv.getMaxAmount
-    // - The item filter will already be followed via setInvStack.
 
     @Override
     public int getMaxAmount(int slot, ItemStack stack) {
