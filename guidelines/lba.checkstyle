@@ -12,6 +12,7 @@
       <property name="format" value="^[a-z_][a-zA-Z0-9_]*$"/>
     </module>
     <module name="ImportOrder">
+      <property name="separated" value="true"/>
       <property name="groups" value="java,javax,com,gnu,io,joptsimple,org,net,net.fabricmc.loader,net.fabricmc,net.minecraft,alexiil.mc.lib.modmail,alexiil.mc.lib.net,alexiil.mc.lib.attributes"/>
     </module>
     <module name="NoWhitespaceAfter">
