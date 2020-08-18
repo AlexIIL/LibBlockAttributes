@@ -7,6 +7,12 @@
  */
 package alexiil.mc.lib.attributes.item.impl;
 
+import java.util.Arrays;
+
+import javax.annotation.Nullable;
+
+import net.minecraft.item.ItemStack;
+
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
@@ -18,10 +24,6 @@ import alexiil.mc.lib.attributes.item.ItemStackUtil;
 import alexiil.mc.lib.attributes.item.LimitedFixedItemInv;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
-import net.minecraft.item.ItemStack;
-
-import javax.annotation.Nullable;
-import java.util.Arrays;
 
 /**
  * A simple implementation of {@link LimitedFixedItemInv} that makes no assumptions about the backing

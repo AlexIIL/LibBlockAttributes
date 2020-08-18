@@ -60,7 +60,7 @@ public abstract class FluidEntry {
      * {@link FluidKey}. */
     public static FluidEntry fromTag(CompoundTag tag) {
         String str = tag.getString(KEY_REGISTRY_TYPE);
-        if (str.equals("i")) {
+        if ("i".equals(str)) {
             Identifier id = Identifier.tryParse(tag.getString(KEY_OBJ_IDENTIFIER));
             if (id == null) {
                 return FluidKeys.EMPTY.entry;

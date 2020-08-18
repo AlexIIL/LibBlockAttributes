@@ -98,7 +98,6 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
 
     @Override
     public void toTag(CompoundTag tag) {
-        Identifier objId = getId();
         if (objId == null) {
             return;
         } else if (backingRegistry instanceof DefaultedRegistry<?>) {

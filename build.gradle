@@ -5,6 +5,10 @@ plugins {
 
 apply plugin: 'maven-publish' // for uploading to a maven repo
 
+if (gradle.startParameter.taskNames.contains("checkstyle")) {
+    apply plugin: "checkstyle"
+}
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -55,6 +59,20 @@ sourceSets {
             srcDir "src/fatjar/java"
         }
     }
+}
+
+task checkstyle {}
+
+if (gradle.startParameter.taskNames.contains("checkstyle")) {
+    checkstyle {
+        configFile = file("guidelines/lba.checkstyle")
+        toolVersion = "7.2"
+    }
+
+    tasks["checkstyle"].dependsOn checkstyleMain
+
+    tasks["checkstyleMain"].enabled = true
+    tasks["checkstyleTest"].enabled = false
 }
 
 processResources {

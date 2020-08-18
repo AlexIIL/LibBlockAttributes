@@ -8,7 +8,6 @@
 package alexiil.mc.lib.attributes.fluid.render;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer.ComponentRenderFaces;
@@ -16,19 +15,6 @@ import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer.ComponentRende
 /** The implementation for {@link FluidVolumeRenderer#splitFaces(List)} and
  * {@link FluidVolumeRenderer#splitFacesComponent(List)}. */
 /* package-private */ final class FluidFaceSplitter {
-
-    public static void main(String[] args) {
-        double l = 0.25;
-        double h = 0.75;
-        FluidRenderFace face = FluidRenderFace.createFlatFaceZ(l, l, 0, h, h, 0, 1, true);
-        System.out.println(face);
-
-        System.out.println("SPLIT:");
-
-        for (FluidRenderFace f : splitFaces(Collections.singletonList(face))) {
-            System.out.println(f);
-        }
-    }
 
     static List<FluidRenderFace> splitFaces(List<FluidRenderFace> faces) {
         return splitFacesComponent(faces).split;
@@ -438,10 +424,10 @@ import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer.ComponentRende
 
         FluidRenderFace toFace() {
             return new FluidRenderFace(
-                v0.x, v0.y, v0.z, v0.uN, v0.vN , //
-                v1.x, v1.y, v1.z, v1.uN, v1.vN , //
-                v2.x, v2.y, v2.z, v2.uN , v2.vN , //
-                v3.x, v3.y, v3.z, v3.uN , v3.vN , //
+                v0.x, v0.y, v0.z, v0.uN, v0.vN, //
+                v1.x, v1.y, v1.z, v1.uN, v1.vN, //
+                v2.x, v2.y, v2.z, v2.uN, v2.vN, //
+                v3.x, v3.y, v3.z, v3.uN, v3.vN, //
                 light, nx, ny, nz, flowing
             );
         }
