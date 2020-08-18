@@ -38,7 +38,7 @@ dependencies {
     modImplementation("io.github.prospector.silk:SilkAPI:${silk_version}") { transitive = false }
 
     // RebornCore
-    modImplementation("RebornCore:RebornCore-1.15:${reborncore_version}") { transitive = false }
+    modImplementation("RebornCore:RebornCore-${reborncore_mc_release}:${reborncore_version}") { transitive = false }
 
     // Item-inventory
     modImplementation("com.github.emilyploszaj:item-inventory:v1.1.0") { transitive = false }
