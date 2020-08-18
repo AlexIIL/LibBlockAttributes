@@ -14,6 +14,7 @@
     <module name="ImportOrder">
       <property name="separated" value="true"/>
       <property name="groups" value="java,javax,com,gnu,io,joptsimple,org,net,net.fabricmc.loader,net.fabricmc,net.minecraft,alexiil.mc.lib.modmail,alexiil.mc.lib.net,alexiil.mc.lib.attributes"/>
+      <property name="separated" value="true"/>
     </module>
     <module name="NoWhitespaceAfter">
       <property name="tokens" value="BNOT,DEC,DOT,INC,LNOT,UNARY_MINUS,UNARY_PLUS"/>

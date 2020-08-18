@@ -1,0 +1,21 @@
+#Organize Import Order
+#Tue Aug 18 21:02:47 BST 2020
+11=alexiil
+12=alexiil.mc.lib.modmail
+13=alexiil.mc.lib.net
+14=alexiil.mc.lib.attributes
+15=alexiil.mc.lib.multipart
+16=buildcraft.api
+17=buildcraft.lib
+18=buildcraft
+0=java
+1=javax
+2=com
+3=gnu
+4=io
+5=org
+6=net
+7=net.fabricmc.loader
+8=net.fabricmc
+9=net.minecraft
+10=net.minecraftforge

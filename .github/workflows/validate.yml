@@ -1,0 +1,44 @@
+name: Validation
+
+on:
+  push:
+    branches: '**'
+
+# Ideally we would have the 5 as separate steps... but I haven't found out how to expose the steps as jobs from the UI :/
+jobs:
+  check_license:
+    runs-on: ubuntu-latest
+    name: 'Check License'
+    steps:
+    - uses: actions/checkout@v2
+    - name: 'Check License'
+      run: './gradlew checkLicense'
+  compile:
+    runs-on: ubuntu-latest
+    name: 'Check Compile'
+    steps:
+    - uses: actions/checkout@v2
+    - name: 'Check Compile'
+      run: './gradlew assemble'
+  checkstyle:
+    runs-on: ubuntu-latest
+    name: 'Check Style'
+    steps:
+    - uses: actions/checkout@v2
+    - name: 'Check Style'
+      run: './gradlew checkstyle'
+  tests:
+    runs-on: ubuntu-latest
+    name: 'Run Tests'
+    steps:
+    - uses: actions/checkout@v2
+    - name: 'Run Tests'
+      run: './gradlew test'
+  build:
+    runs-on: ubuntu-latest
+    name: 'Full Build'
+    steps:
+    - uses: actions/checkout@v2
+    - name: 'Full Build'
+      run: './gradlew build'
+
