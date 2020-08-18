@@ -71,4 +71,8 @@ public abstract class ItemInvTester extends VanillaSetupBaseTester {
             Assert.fail("Expected <" + expected + "> but got <" + actual + ">");
         }
     }
+
+    public static void assertEmpty(ItemStack actual) {
+        assertEquals(ItemStack.EMPTY, actual);
+    }
 }
