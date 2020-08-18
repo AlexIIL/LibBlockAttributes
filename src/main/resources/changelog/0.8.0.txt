@@ -5,15 +5,15 @@ Breaking Changes:
 
 Changes:
 
-* Added FluidWorldUtil.fill, for placing fluid volumes into the world. (Shartte).
+* Added FluidWorldUtil.fill, for placing fluid volumes into the world. (Shartte)
+* Added mixin's to hoppers and droppers to make them insert into LBA inventories. (Shartte)
 * Added FluidAmount.MAX_BUCKETS and MIN_BUCKETS, which have a whole of Long.MAX_VALUE and MIN_VALUE, but a numerator of 0.
 * Changed FluidAmount.saturated* to return MAX_BUCKETS and MIN_BUCKETS instead of MAX_VALUE as that's much more useful.
 * Added ResolvableItemFilter and ResolvableFluidFilter, for filters that can be resolved into a ReadableFluidFilter.
 * Fixed "FixedInventoryViewVanillaWrapper.getInvStack" copying the inventories stack when it doesn't need to.
-* Added various "toMcBuffer" methods to fluid keys, volumes, and properties
+* Added various "toMcBuffer" methods to fluid keys, volumes, and properties.
 * Added FixedItemInv.insertStack and FixedItemInv.extractStack for inserting and extracting stacks from specific slots.
     * The signature is identical to ItemInvUtil.insertSingle and extractSingle, which are now deprecated.
-* Added more
 * Allowed BlockEntities to implement AttributeProviderBlockEntity as well as blocks to also expose attributes
 * Added various methods to Attribute to map BlockEntity-based stuff (classes, attributes, BlockEntityType) to external attribute adders.
 

@@ -3,7 +3,8 @@
   "package": "alexiil.mc.lib.attributes.item.mixin.impl",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "HopperBlockEntityMixin"
+    "HopperBlockEntityMixin",
+    "DropperBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 1

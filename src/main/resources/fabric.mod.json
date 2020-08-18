@@ -45,7 +45,9 @@
       "+name": "LibBlockAttributes (Items)",
       "+description": "Various utility classes for item inventories and transfer",
       "-entrypoints": {},
-      "-mixins": [],
+      "+mixins": [
+        "libblockattributes_item.common.json"
+      ],
       "~depends": {
         "+libblockattributes_core": ">=$version"
       },
@@ -56,6 +58,10 @@
       "+id": "libblockattributes_fluids",
       "+name": "LibBlockAttributes (Fluids)",
       "+description": "Various utility classes for fluid inventories and transfer",
+      "+mixins": [
+        "libblockattributes_fluid.common.json",
+        "libblockattributes_fluid.client.json"
+      ],
       "~depends": {
         "+libblockattributes_core": ">=$version"
       },

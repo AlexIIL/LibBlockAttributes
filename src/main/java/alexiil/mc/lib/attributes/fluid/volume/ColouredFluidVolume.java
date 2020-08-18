@@ -144,17 +144,12 @@ public class ColouredFluidVolume extends FluidVolume {
         float r = getRed();
         float g = getGreen();
         float b = getBlue();
-        if (alpha < 1) {
+        float a = getAlpha();
+        if (a < 1) {
             // Rescale towards white, rather than black
-            r = 1 - ((1 - r) * alpha);
-            g = 1 - ((1 - g) * alpha);
-            b = 1 - ((1 - b) * alpha);
-        }
-
-        if (r + g + b * 0.7 < 1.5) {
-            r = Math.min(1, r * 2);
-            g = Math.min(1, g * 2);
-            b = Math.min(1, b * 2);
+            r = 1 - ((1 - r) * a);
+            g = 1 - ((1 - g) * a);
+            b = 1 - ((1 - b) * a);
         }
 
         int rgb = (Math.round(r * 255) << 16 //
