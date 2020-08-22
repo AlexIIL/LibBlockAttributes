@@ -63,6 +63,7 @@
         "libblockattributes_fluid.client.json"
       ],
       "~depends": {
+        "minecraft": [ ">=1.16.2 <1.17-" ],
         "+libblockattributes_core": ">=$version"
       },
       "+icon": "assets/libblockattributes/icon_fluids.png",

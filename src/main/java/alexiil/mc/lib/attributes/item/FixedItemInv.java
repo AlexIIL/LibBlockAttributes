@@ -138,12 +138,12 @@ public interface FixedItemInv extends FixedItemInvView {
      * @param maxCount The maximum number of items to extract. Note that if the "mergeWith" argument is non-empty then
      *            the actual limit should be the minimum of {@link ItemStack#getMaxCount()} and the given maxCount.
      * @param simulation If {@link Simulation#SIMULATE} then this shouldn't modify anything.
-     * @return mergeWith (if non-empty) or the extracted stack if it is empty. */
+     * @return mergeWith (if non-empty) or the extracted stack if mergeWith is empty. */
     default ItemStack extractStack(
         int slot, @Nullable ItemFilter filter, ItemStack mergeWith, int maxCount, Simulation simulation
     ) {
         ItemStack inSlot = getInvStack(slot);
-        if (inSlot.isEmpty() || (filter != null && !filter.matches(inSlot))) {
+        if (inSlot.isEmpty()) {
             return mergeWith;
         }
         if (!mergeWith.isEmpty()) {
@@ -154,6 +154,9 @@ public interface FixedItemInv extends FixedItemInvView {
             if (maxCount <= 0) {
                 return mergeWith;
             }
+        }
+        if (filter != null && !filter.matches(inSlot)) {
+            return mergeWith;
         }
         inSlot = inSlot.copy();
 
