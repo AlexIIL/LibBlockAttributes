@@ -3,6 +3,8 @@ Breaking Changes:
 * Fixed a spelling mistake: "FluidTemperature.addTemperatueToTooltip" to "FluidTemperature.addTemperatureToTooltip".
     * Usually badly named methods won't be renamed, however fluid temperatures haven't been out for very long.
 * Changed the requirements for ItemFilter.matches to no longer return useful results for empty stacks - instead callers are expected to handle testing for empty stacks themselves.
+* Changed BiomeSourcedFluidVolume no longer extend WeightedFluidVolume<Biome>. It now extends ColouredFluidVolume instead.
+* As such water no longer stores the exact biome that it was pumped from, instead it only stores the colour.
 
 Changes:
 
@@ -18,6 +20,7 @@ Changes:
     * The signature is identical to ItemInvUtil.insertSingle and extractSingle, which are now deprecated.
 * Allowed BlockEntities to implement AttributeProviderBlockEntity as well as blocks to also expose attributes.
 * Added various methods to Attribute to map BlockEntity-based stuff (classes, attributes, BlockEntityType) to external attribute adders.
+* Allowed custom fluids to use alpha in their colours, and made the default fluid renderer use it.
 
 Bug Fixes:
 

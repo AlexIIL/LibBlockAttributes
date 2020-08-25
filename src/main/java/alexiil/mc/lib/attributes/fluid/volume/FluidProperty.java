@@ -26,7 +26,6 @@ import net.minecraft.util.Identifier;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.volume.FluidTemperature.ContinuousFluidTemperature;
-import alexiil.mc.lib.attributes.fluid.volume.FluidTemperature.DiscreteFluidTemperature;
 
 /** Some data that can be added to {@link FluidVolume}s.
  * <p>
