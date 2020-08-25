@@ -26,3 +26,4 @@ Bug Fixes:
 
 * [#22] Fix a crash on dedicated servers.
 * [#23] Fluids don't render in GUIs when using fabulous graphics mode.
+* [#34] Downgrade sanity check crash to a warning when a mod's mixin makes Block directly implement InventoryProvider. 
