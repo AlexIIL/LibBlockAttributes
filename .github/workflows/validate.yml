@@ -19,26 +19,26 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: 'Check Compile'
-      run: './gradlew assemble'
+      run: sleep 10 && './gradlew assemble'
   checkstyle:
     runs-on: ubuntu-latest
     name: 'Check Style'
     steps:
     - uses: actions/checkout@v2
     - name: 'Check Style'
-      run: './gradlew checkstyle'
+      run: sleep 20 && './gradlew checkstyle'
   tests:
     runs-on: ubuntu-latest
     name: 'Run Tests'
     steps:
     - uses: actions/checkout@v2
     - name: 'Run Tests'
-      run: './gradlew test'
+      run: sleep 40 && './gradlew test'
   build:
     runs-on: ubuntu-latest
     name: 'Full Build'
     steps:
     - uses: actions/checkout@v2
     - name: 'Full Build'
-      run: './gradlew build'
+      run: sleep 60 && './gradlew build'
 
