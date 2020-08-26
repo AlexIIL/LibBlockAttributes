@@ -228,11 +228,11 @@ final class AdderList<Instance, Cls, Adder> {
             ) {
                 if (!hasWarnedAboutUC) {
                     hasWarnedAboutUC = true;
-                    // Basically nothing we can do here
+                    // Basically nothing else we can do here
                     LibBlockAttributes.LOGGER.warn(
                         "[LibBlockAttributes] The class-based compatibility wrapper for InventoryProvider (" + value
                             + ") will override every other wrapper for " + name
-                            + " as UniversalComponents makes every Block implement InventoryProvider."
+                            + " as UniversalComponents makes every Block implement InventoryProvider!"
                     );
                 }
             } else {
