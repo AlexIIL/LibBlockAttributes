@@ -1,0 +1,7 @@
+Changes:
+
+* Added "FluidKeyCustomiser", for custom Fluid instances to implement to customise the implicit FluidKey that gets created for them.
+
+Bug Fixes:
+
+* Fixed FluidKeys static init loading worldgen early.

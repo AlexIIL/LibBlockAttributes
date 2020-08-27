@@ -12,19 +12,13 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.Entity;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.Potions;
@@ -35,27 +29,9 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.Heightmap.Type;
-import net.minecraft.world.WorldView;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeKeys;
-import net.minecraft.world.biome.BuiltinBiomes;
-import net.minecraft.world.biome.source.BiomeAccess;
-import net.minecraft.world.biome.source.BiomeAccessType;
-import net.minecraft.world.border.WorldBorder;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.light.LightingProvider;
-import net.minecraft.world.dimension.DimensionType;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
-import alexiil.mc.lib.attributes.fluid.mixin.impl.FlowableFluidAccessor;
 import alexiil.mc.lib.attributes.fluid.volume.FluidEntry.FluidFloatingEntry;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey.FluidKeyBuilder;
 
@@ -65,9 +41,6 @@ public final class FluidKeys {
     private FluidKeys() {}
 
     public static final Identifier MISSING_SPRITE = new Identifier("minecraft", "missingno");
-
-    private static final String ERROR_CAST_MIXIN_JUNIT_SUFFIX
-        = "cannot be cast to alexiil.mc.lib.attributes.fluid.mixin.impl.FlowableFluidAccessor";
 
     public static final FluidKey EMPTY;
     public static final FluidKey LAVA;
@@ -96,8 +69,17 @@ public final class FluidKeys {
             new FluidKeyBuilder(Fluids.EMPTY)//
                 .setName(new LiteralText("!EMPTY FLUID!"))
         );
-        LAVA = createImplicitFluid(Fluids.LAVA);
-        ((MutableText) LAVA.name).setStyle(Style.EMPTY.withColor(Formatting.RED));
+
+        LAVA = new SimpleFluidKey(
+            new FluidKeyBuilder(Fluids.LAVA)//
+                .setName(new TranslatableText(Blocks.LAVA.getTranslationKey())//
+                    .setStyle(Style.EMPTY.withColor(Formatting.RED))
+                )//
+                .setViscosity(FluidAmount.of(30, 5))//
+                .setNetherViscosity(FluidAmount.of(10, 5))//
+                .setCohesion(FluidAmount.ofWhole(2))//
+                .setNetherCohesion(FluidAmount.ofWhole(4))//
+        );
 
         WATER = WaterFluidKey.INSTANCE;
         ((MutableText) WATER.name).setStyle(Style.EMPTY.withColor(Formatting.BLUE));
@@ -167,29 +149,8 @@ public final class FluidKeys {
         Block block = fluid.getDefaultState().getBlockState().getBlock();
         Text name = new TranslatableText(block.getTranslationKey());
         FluidKeyBuilder builder = new FluidKeyBuilder(fluid).setName(name);
-        if (fluid instanceof FlowableFluid) {
-            FlowableFluid bf = (FlowableFluid) fluid;
-            try {
-                builder.setViscosity(FluidAmount.of(bf.getTickRate(VoidWorldView.OVERWORLD), 5));
-                builder.setNetherViscosity(FluidAmount.of(bf.getTickRate(VoidWorldView.NETHER), 5));
-                FlowableFluidAccessor bfa = (FlowableFluidAccessor) bf;
-                builder.setCohesion(FluidAmount.ofWhole(bfa.lba_getFlowSpeed(VoidWorldView.OVERWORLD)));
-                builder.setNetherCohesion(FluidAmount.ofWhole(bfa.lba_getFlowSpeed(VoidWorldView.NETHER)));
-            } catch (UnsupportedOperationException uoe) {
-                if (!uoe.getMessage().startsWith(VoidWorldView.ERROR_MESSAGE_START)) {
-                    throw uoe;
-                }
-            } catch (ClassCastException cce) {
-                // Mixin's don't load when using junit
-                if (cce.getMessage().endsWith(ERROR_CAST_MIXIN_JUNIT_SUFFIX)) {
-                    try {
-                        Class.forName("org.junit.Assert");
-                    } catch (ClassNotFoundException e) {
-                        cce.addSuppressed(new Error("Not running a test!", e));
-                        throw cce;
-                    }
-                }
-            }
+        if (fluid instanceof FluidKeyCustomiser) {
+            ((FluidKeyCustomiser) fluid).customiseKey(builder);
         }
         return new SimpleFluidKey(builder);
     }
@@ -234,111 +195,5 @@ public final class FluidKeys {
     /** @return A copy of all the {@link FluidFloatingEntry}s registered. */
     public static synchronized Set<FluidFloatingEntry> getFloatingFluidIds() {
         return new HashSet<>(FLOATING.keySet());
-    }
-
-    /** Private helper for determining the viscosity and cohesion of fluids. */
-    private enum VoidWorldView implements WorldView {
-        OVERWORLD(false),
-        NETHER(true);
-
-        static final String ERROR_MESSAGE_START = "LBA_Unsupported_";
-
-        private final BiomeAccess biomeAccess;
-        private final DimensionType dim;
-
-        private VoidWorldView(boolean nether) {
-            DynamicRegistryManager dynamicRegistries = DynamicRegistryManager.create();
-            Biome biome = dynamicRegistries.get(Registry.BIOME_KEY)//
-                .get(nether ? BiomeKeys.NETHER_WASTES : BiomeKeys.PLAINS);
-            BiomeAccessType biomeType = (a, b, c, d, e) -> biome;
-            biomeAccess = new BiomeAccess((x, y, z) -> biome, 42, biomeType);
-            dim = dynamicRegistries.get(Registry.DIMENSION_TYPE_KEY)//
-                .get(nether ? DimensionType.THE_NETHER_REGISTRY_KEY : DimensionType.OVERWORLD_REGISTRY_KEY);
-        }
-
-        @Override
-        public String toString() {
-            return "LBA_VoidWorldView_" + name();
-        }
-
-        @Override
-        public LightingProvider getLightingProvider() {
-            return null;
-        }
-
-        @Override
-        public BlockEntity getBlockEntity(BlockPos pos) {
-            return null;
-        }
-
-        @Override
-        public BlockState getBlockState(BlockPos pos) {
-            return Blocks.AIR.getDefaultState();
-        }
-
-        @Override
-        public FluidState getFluidState(BlockPos pos) {
-            return Fluids.EMPTY.getDefaultState();
-        }
-
-        @Override
-        public WorldBorder getWorldBorder() {
-            throw new UnsupportedOperationException(ERROR_MESSAGE_START + "getWorldBorder");
-        }
-
-        @Override
-        public Chunk getChunk(int chunkX, int chunkZ, ChunkStatus leastStatus, boolean create) {
-            throw new UnsupportedOperationException(ERROR_MESSAGE_START + "getChunk");
-        }
-
-        @Override
-        public boolean isChunkLoaded(int chunkX, int chunkZ) {
-            return false;
-        }
-
-        @Override
-        public int getTopY(Type heightmap, int x, int z) {
-            return 1;
-        }
-
-        @Override
-        public int getAmbientDarkness() {
-            return 0;
-        }
-
-        @Override
-        public BiomeAccess getBiomeAccess() {
-            return biomeAccess;
-        }
-
-        @Override
-        public Biome getGeneratorStoredBiome(int biomeX, int biomeY, int biomeZ) {
-            return BuiltinBiomes.PLAINS;
-        }
-
-        @Override
-        public boolean isClient() {
-            return true;
-        }
-
-        @Override
-        public int getSeaLevel() {
-            return 0;
-        }
-
-        @Override
-        public DimensionType getDimension() {
-            return dim;
-        }
-
-        @Override
-        public float getBrightness(Direction direction, boolean shaded) {
-            return 1;
-        }
-
-        @Override
-        public Stream<VoxelShape> getEntityCollisions(Entity entity, Box box, Predicate<Entity> predicate) {
-            return Stream.empty();
-        }
     }
 }
