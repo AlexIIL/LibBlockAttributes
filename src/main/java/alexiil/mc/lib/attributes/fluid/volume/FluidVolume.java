@@ -16,6 +16,7 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
@@ -82,6 +83,16 @@ public abstract class FluidVolume {
 
     static final String KEY_AMOUNT_1620INT = "Amount";
     static final String KEY_AMOUNT_LBA_FRACTION = "AmountF";
+
+    public static final JsonDeserializer<FluidVolume> DESERIALIZER = (json, type, ctx) -> {
+        if (json.isJsonNull()) {
+            return FluidVolumeUtil.EMPTY;
+        }
+        if (!json.isJsonObject()) {
+            throw new JsonSyntaxException("Expected " + json + " to be an object!");
+        }
+        return FluidVolume.fromJson(json.getAsJsonObject());
+    };
 
     public final FluidKey fluidKey;
 
@@ -255,8 +266,10 @@ public abstract class FluidVolume {
     }
 
     public final void toMcBuffer(PacketByteBuf buffer) {
-        fluidKey.toMcBuffer(buffer);
-        if (!isEmpty()) {
+        if (isEmpty()) {
+            FluidKeys.EMPTY.toMcBuffer(buffer);
+        } else {
+            fluidKey.toMcBuffer(buffer);
             toMcBufferInternal(buffer);
             writeProperties(buffer);
         }

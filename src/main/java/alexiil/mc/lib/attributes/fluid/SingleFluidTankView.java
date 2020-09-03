@@ -47,6 +47,10 @@ public class SingleFluidTankView {
         return backingView.getMaxAmount_F(tank);
     }
 
+    public final FluidAmount getSpace() {
+        return getMaxAmount_F().sub(get().amount());
+    }
+
     public final boolean isValid(FluidKey fluid) {
         return backingView.isFluidValidForTank(tank, fluid);
     }

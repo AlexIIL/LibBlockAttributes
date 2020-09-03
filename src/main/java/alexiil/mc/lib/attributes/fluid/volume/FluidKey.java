@@ -18,6 +18,7 @@ import java.util.SortedSet;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
@@ -62,6 +63,23 @@ public abstract class FluidKey {
     public static final FluidAmount DEFAULT_GAS_DENSITY = FluidAmount.of(1, 160);
 
     private static final Identifier MISSING_SPRITE = new Identifier("minecraft", "missingno");
+
+    public static final JsonDeserializer<FluidKey> DESERIALIZER = (json, type, ctx) -> {
+        if (json.isJsonNull()) {
+            return FluidKeys.EMPTY;
+        }
+        if (json.isJsonPrimitive()) {
+            if (json.getAsJsonPrimitive().isString()) {
+                JsonObject wrapper = new JsonObject();
+                wrapper.add("fluid", json);
+                return fromJson(wrapper);
+            }
+        }
+        if (!json.isJsonObject()) {
+            throw new JsonSyntaxException("Expected " + json + " to be an object or a string!");
+        }
+        return fromJson(json.getAsJsonObject());
+    };
 
     /** The identifier for this {@link FluidKey}. Primarily used during serialisation. */
     public final FluidEntry entry;
@@ -145,6 +163,10 @@ public abstract class FluidKey {
      * {@link FluidAmount#ONE}). */
     public final FluidAmount thermalCapacity;
 
+    /** The amount of block light emitted from this fluid. 0-15. (Fluid tanks may use this to emit light, but it's not
+     * required). */
+    public final int luminosity;
+
     /** The temperature that applies to this {@link FluidKey}. This is updated if a {@link FluidProperty} is added which
      * contains a {@link FluidTemperature}. */
     @Nullable
@@ -168,6 +190,7 @@ public abstract class FluidKey {
         /* package-private */ Identifier flowingSpriteId;
         /* package-private */ Text name;
         /* package-private */ int renderColor = 0xFF_FF_FF;
+        /* package-private */ int luminosity = 0;
         /* package-private */ FluidUnit unit = FluidUnit.BUCKET;
         /* package-private */ final FluidUnitSet unitSet = new FluidUnitSet();
         /* package-private */ Fluid rawFluid;
@@ -251,6 +274,14 @@ public abstract class FluidKey {
 
         public FluidKeyBuilder setRenderColor(int renderColor) {
             this.renderColor = renderColor;
+            return this;
+        }
+
+        /** Sets the {@link FluidKey#luminosity} property.
+         * 
+         * @param luminance A value between 0 and 15. */
+        public FluidKeyBuilder setLuminosity(int luminance) {
+            this.luminosity = Math.max(0, Math.min(15, luminance));
             return this;
         }
 
@@ -398,6 +429,7 @@ public abstract class FluidKey {
         this.flowingSpriteId = builder.flowingSpriteId != null ? builder.flowingSpriteId : spriteId;
         this.name = builder.name;
         this.renderColor = builder.renderColor;
+        this.luminosity = builder.luminosity;
         this.rawFluid = builder.rawFluid;
         if (rawFluid != null) {
             if (rawFluid instanceof EmptyFluid && rawFluid != Fluids.EMPTY) {

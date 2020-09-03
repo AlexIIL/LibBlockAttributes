@@ -88,6 +88,17 @@ public final class FluidVolumeUtil {
     public static FluidVolume move(
         FluidExtractable from, FluidInsertable to, @Nullable FluidFilter filter, @Nullable FluidAmount maximum
     ) {
+        return move(from, to, filter, maximum, Simulation.ACTION);
+    }
+
+    /** Attempts to move up to the given maximum amount of fluids from the {@link FluidExtractable} to the
+     * {@link FluidInsertable}, provided they match the given {@link FluidFilter}.
+     * 
+     * @return A copy of the fluid moved. */
+    public static FluidVolume move(
+        FluidExtractable from, FluidInsertable to, @Nullable FluidFilter filter, @Nullable FluidAmount maximum,
+        Simulation simulation
+    ) {
         FluidFilter insertionFilter = to.getInsertionFilter();
         if (filter != null && filter != ConstantFluidFilter.ANYTHING) {
             insertionFilter = AggregateFluidFilter.and(insertionFilter, filter);
@@ -121,14 +132,15 @@ public final class FluidVolumeUtil {
         }
 
         // Step 3:
+        ExactFluidFilter keyFilter = new ExactFluidFilter(extracted.fluidKey);
         FluidVolume exactExtracted
-            = from.attemptExtraction(new ExactFluidFilter(extracted.fluidKey), firstInserted, Simulation.SIMULATE);
+            = from.attemptExtraction(keyFilter, firstInserted, Simulation.SIMULATE);
         if (!exactExtracted.getAmount_F().equals(firstInserted)) {
             return EMPTY;
         }
 
         // Step 4:
-        FluidVolume reallyExtracted = from.extract(exactExtracted.fluidKey, firstInserted);
+        FluidVolume reallyExtracted = from.attemptExtraction(keyFilter, firstInserted, simulation);
         if (!reallyExtracted.equals(exactExtracted)) {
             throw throwBadImplException(
                 "A simulated extraction (returning A) didn't match the real extraction (returning B) from the fluid extractable C!",
@@ -138,7 +150,7 @@ public final class FluidVolumeUtil {
         }
 
         // Step 5:
-        FluidVolume leftover = to.insert(reallyExtracted);
+        FluidVolume leftover = to.attemptInsertion(reallyExtracted, simulation);
         if (leftover.isEmpty()) {
             return reallyExtracted;
         }

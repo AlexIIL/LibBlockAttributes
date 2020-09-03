@@ -75,6 +75,7 @@ public final class FluidKeys {
                 .setName(new TranslatableText(Blocks.LAVA.getTranslationKey())//
                     .setStyle(Style.EMPTY.withColor(Formatting.RED))
                 )//
+                .setLuminosity(15)//
                 .setViscosity(FluidAmount.of(30, 5))//
                 .setNetherViscosity(FluidAmount.of(10, 5))//
                 .setCohesion(FluidAmount.ofWhole(2))//

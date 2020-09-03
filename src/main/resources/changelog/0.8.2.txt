@@ -1,6 +1,7 @@
 Changes:
 
 * Added "FluidKeyCustomiser", for custom Fluid instances to implement to customise the implicit FluidKey that gets created for them.
+* Added FluidKey.luminosity, to allow tanks to emit light based on the fluid's light. (Lava uses 15). 
 
 Bug Fixes:
 

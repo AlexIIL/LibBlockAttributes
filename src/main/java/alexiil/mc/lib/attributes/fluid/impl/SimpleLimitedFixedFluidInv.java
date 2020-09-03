@@ -27,7 +27,12 @@ public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implemen
     private boolean isImmutable = false;
 
     protected final FluidFilter[] insertionFilters;
+
+    /** Array of maximum amounts that can be inserted up to. Null entries are (confusingly) equal to "MAX_VALUE", and
+     * <em>not</em> zero. */
     protected final FluidAmount[] maxInsertionAmounts;
+
+    /** Array of minimum amounts that can be extracted down to. Null entries are equal to zero. */
     protected final FluidAmount[] minimumAmounts;
 
     public SimpleLimitedFixedFluidInv(FixedFluidInv delegate) {
@@ -55,7 +60,7 @@ public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implemen
                         continue;
                     }
                     FluidAmount tankMax = maxAmount.roundedSub(volume.getAmount_F(), RoundingMode.DOWN).min(available);
-                    volume = FluidVolumeUtil.extractSingle(inv, t, filter, volume, tankMax, simulation);
+                    volume = inv.extractFluid(t, filter, volume, tankMax, simulation);
                     if (!volume.getAmount_F().isLessThan(maxAmount)) {
                         return volume;
                     }
@@ -135,7 +140,7 @@ public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implemen
             if (!isFluidValidForTank(tank, to.getFluidKey())) {
                 return false;
             }
-            if (to.getAmount_F().isGreaterThan(maxInsertionAmounts[tank])) {
+            if (maxInsertionAmounts[tank] != null && to.getAmount_F().isGreaterThan(maxInsertionAmounts[tank])) {
                 return false;
             }
         }
@@ -144,7 +149,11 @@ public class SimpleLimitedFixedFluidInv extends DelegatingFixedFluidInv implemen
 
     @Override
     public FluidAmount getMaxAmount_F(int tank) {
-        return super.getMaxAmount_F(tank).min(maxInsertionAmounts[tank]);
+        FluidAmount sup = super.getMaxAmount_F(tank);
+        if (maxInsertionAmounts[tank] != null) {
+            return sup.min(maxInsertionAmounts[tank]);
+        }
+        return sup;
     }
 
     // Rules
