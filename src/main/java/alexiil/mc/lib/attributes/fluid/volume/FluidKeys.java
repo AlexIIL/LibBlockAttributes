@@ -22,7 +22,6 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.Potions;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -67,7 +66,7 @@ public final class FluidKeys {
         // Empty doesn't have a proper sprite or text component because it doesn't ever make sense to use it.
         EMPTY = new SimpleFluidKey(
             new FluidKeyBuilder(Fluids.EMPTY)//
-                .setName(new LiteralText("!EMPTY FLUID!"))
+                .setName(new TranslatableText("libblockattributes.fluid.empty"))
         );
 
         LAVA = new SimpleFluidKey(

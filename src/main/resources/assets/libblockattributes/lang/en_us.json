@@ -1,4 +1,6 @@
 {
+    "libblockattributes.fluid.empty": "Empty",
+
     "libblockattributes.fluid.amount": "%1$s %2$s",
     "libblockattributes.fluid.name": "%1$s of %2$s",
     "libblockattributes.fluid.tank_empty.short": "0/%1$s",
