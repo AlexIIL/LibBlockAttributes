@@ -35,7 +35,7 @@ public interface GroupedFluidInvView {
      * @deprecated Replaced by {@link #getAmount_F(FluidKey)} */
     @Deprecated
     default int getAmount(FluidKey fluid) {
-        FluidInvStatistic stats = getStatistics(new ExactFluidFilter(fluid));
+        FluidInvStatistic stats = getStatistics(fluid.exactFilter);
         assert stats.spaceTotal >= 0;
         return stats.amount;
     }
@@ -43,7 +43,7 @@ public interface GroupedFluidInvView {
     /** @param fluid The stack to check for. Must not be {@link ItemStack#isEmpty() empty}.
      * @return The total amount of the given stack that is stored in this inventory. */
     default FluidAmount getAmount_F(FluidKey fluid) {
-        FluidInvStatistic stats = getStatistics(new ExactFluidFilter(fluid));
+        FluidInvStatistic stats = getStatistics(fluid.exactFilter);
         assert !stats.spaceTotal_F.isNegative();
         return stats.amount_F;
     }
@@ -53,7 +53,7 @@ public interface GroupedFluidInvView {
      * @deprecated Replaced by {@link #getCapacity_F(FluidKey)} */
     @Deprecated
     default int getCapacity(FluidKey fluid) {
-        FluidInvStatistic stats = getStatistics(new ExactFluidFilter(fluid));
+        FluidInvStatistic stats = getStatistics(fluid.exactFilter);
         assert stats.spaceTotal >= 0;
         return stats.amount + stats.spaceAddable + stats.spaceTotal;
     }
@@ -61,7 +61,7 @@ public interface GroupedFluidInvView {
     /** @param fluid The fluid to check for. Cannot be the empty fluid.
      * @return The total space that is available (right now!) to store the given stack. */
     default FluidAmount getCapacity_F(FluidKey fluid) {
-        FluidInvStatistic stats = getStatistics(new ExactFluidFilter(fluid));
+        FluidInvStatistic stats = getStatistics(fluid.exactFilter);
         assert !stats.spaceTotal_F.isNegative();
         return stats.amount_F.roundedAdd(stats.spaceAddable_F).roundedAdd(stats.spaceTotal_F);
     }
@@ -107,7 +107,7 @@ public interface GroupedFluidInvView {
      * @return Statistics about the currently stored amount, capacity, and space for everything that matches the given
      *         item stack. */
     default FluidInvStatistic getStatistics(FluidKey filter) {
-        return getStatistics(new ExactFluidFilter(filter));
+        return getStatistics(filter.exactFilter);
     }
 
     /** @return A count of all the {@link FluidKey}'s that match the given filter.
@@ -266,8 +266,8 @@ public interface GroupedFluidInvView {
         @Deprecated
         public final int spaceTotal;
 
-        /** The total amount of additional entries that could be added to by this filter. This might be -1 if the filter
-         * isn't specific enough to properly calculate this value. */
+        /** The total amount of additional entries that could be added to by this filter. This might be
+         * {@link FluidAmount#NEGATIVE_ONE} if the filter isn't specific enough to properly calculate this value. */
         public final FluidAmount spaceTotal_F;
 
         @Deprecated

@@ -11,6 +11,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.fluid.FluidAttributes;
+import alexiil.mc.lib.attributes.fluid.FluidContainerRegistry;
 import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
@@ -18,7 +19,10 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** General interface for any bucket-like {@link Item} to be exposed by default as a {@link GroupedFluidInv} in
- * {@link FluidAttributes}. (Although unlike the vanilla bucket it can store fluids in NBT or be stackable). */
+ * {@link FluidAttributes}. (Although unlike the vanilla bucket it can store fluids in NBT or be stackable).
+ * 
+ * @deprecated Replaced by {@link FluidContainerRegistry}. */
+@Deprecated
 public interface IBucketItem {
 
     boolean libblockattributes__shouldExposeFluid();
@@ -30,8 +34,8 @@ public interface IBucketItem {
     ItemStack libblockattributes__withFluid(FluidKey fluid);
 
     /** Similar to {@link #libblockattributes__withFluid(FluidKey)}, but can return an empty stack if this bucket should
-     * be roundingLoss when drained by a machine that doesn't have special tooling/mechanisms for keeping the container around.
-     * (Unlike withFluid this is assumed to always be a valid result). */
+     * be roundingLoss when drained by a machine that doesn't have special tooling/mechanisms for keeping the container
+     * around. (Unlike withFluid this is assumed to always be a valid result). */
     default ItemStack libblockattributes__drainedOfFluid(ItemStack stack) {
         // Most containers use the same logic for both
         return libblockattributes__withFluid(FluidKeys.EMPTY);

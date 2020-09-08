@@ -15,11 +15,16 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
  * <p>
  * Note that this <strong>has not been implemented yet!</strong> Instead you'll have to use the
  * {@link RawFluidTagFilter} to use tags (but only for raw vanilla minecraft fluids) */
-public final class FluidTagFilter implements ReadableFluidFilter {
+public final class FluidTagFilter implements ResolvableFluidFilter {
     private FluidTagFilter() {}
 
     @Override
     public boolean matches(FluidKey fluidKey) {
         return false;
+    }
+
+    @Override
+    public ReadableFluidFilter resolve() {
+        return ConstantFluidFilter.NOTHING;
     }
 }

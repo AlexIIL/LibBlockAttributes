@@ -18,6 +18,8 @@ public final class ExactFluidFilter implements ReadableFluidFilter {
 
     public final FluidKey fluid;
 
+    /** Creates a new {@link ExactFluidFilter}. There's generally little point in using this, as every {@link FluidKey}
+     * contains a field for storing this ({@link FluidKey#exactFilter}). */
     public ExactFluidFilter(FluidKey fluid) {
         this.fluid = fluid;
     }
@@ -28,10 +30,14 @@ public final class ExactFluidFilter implements ReadableFluidFilter {
     }
 
     public static ReadableFluidFilter of(Fluid fluid) {
-        return new ExactFluidFilter(FluidKeys.get(fluid));
+        return FluidKeys.get(fluid).exactFilter;
     }
 
     public static ReadableFluidFilter of(Potion potion) {
-        return new ExactFluidFilter(FluidKeys.get(potion));
+        return FluidKeys.get(potion).exactFilter;
+    }
+
+    public static ReadableFluidFilter of(FluidKey fluid) {
+        return fluid.exactFilter;
     }
 }

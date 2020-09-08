@@ -104,7 +104,6 @@ public class BucketItemMixin extends Item implements FluidProviderItem, IBucketI
 
     @Override
     public ItemStack libblockattributes__withFluid(FluidKey fluid) {
-        // TODO: handle other (modded) bucket types? (Like wooden or steel or etc)
         if (fluid == FluidKeys.EMPTY) {
             return new ItemStack(getRecipeRemainder());
         }

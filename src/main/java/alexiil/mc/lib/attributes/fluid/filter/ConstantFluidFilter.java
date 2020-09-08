@@ -27,6 +27,11 @@ public enum ConstantFluidFilter implements ReadableFluidFilter {
     }
 
     @Override
+    public String toString() {
+        return "ConstantFluidFilter." + name();
+    }
+
+    @Override
     public boolean matches(FluidKey fluid) {
         if (fluid.isEmpty()) {
             throw new IllegalArgumentException("You should never test a FluidFilter with an empty fluid!");

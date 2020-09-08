@@ -166,7 +166,9 @@ public interface FixedFluidInvView extends Convertible {
      * @param removalToken A token that will be called whenever the given listener is removed from this inventory (or if
      *            this inventory itself is unloaded or otherwise invalidated).
      * @return A token that represents the listener, or null if the listener could not be added. */
-    ListenerToken addListener(FluidInvTankChangeListener listener, ListenerRemovalToken removalToken);
+    default ListenerToken addListener(FluidInvTankChangeListener listener, ListenerRemovalToken removalToken) {
+        return null;
+    }
 
     /** Equivalent to {@link List#subList(int, int)}.
      * 

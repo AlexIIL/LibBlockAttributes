@@ -16,7 +16,8 @@ import alexiil.mc.lib.attributes.misc.Ref;
 
 /** An interface for {@link Item}'s to implement if they can be filled and drained like a bucket.
  * 
- * @deprecated This has been completely replaced by item-based attribute accessors. */
+ * @deprecated This has been completely replaced by item-based attribute accessors and
+ *             {@link FluidContainerRegistry}. */
 @Deprecated
 public interface FluidProviderItem {
     /** Attempts to drain some fluid from the given stack.

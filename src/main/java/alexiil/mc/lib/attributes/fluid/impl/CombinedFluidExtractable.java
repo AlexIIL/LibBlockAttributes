@@ -56,7 +56,7 @@ public final class CombinedFluidExtractable implements FluidExtractable {
                 if (!extracted.getAmount_F().isLessThan(maxAmount)) {
                     return extracted;
                 }
-                filter = new ExactFluidFilter(extracted.fluidKey);
+                filter = extracted.fluidKey.exactFilter;
             } else {
                 FluidAmount newMaxAmount = maxAmount.roundedSub(extracted.getAmount_F(), RoundingMode.UP);
                 FluidVolume additional = extractable.attemptExtraction(filter, newMaxAmount, simulation);

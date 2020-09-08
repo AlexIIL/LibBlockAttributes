@@ -149,7 +149,7 @@ public interface FluidExtractable {
      * @deprecated Replaced by {@link #extract(FluidKey, FluidAmount)} */
     @Deprecated
     default FluidVolume extract(FluidKey filter, int maxAmount) {
-        return attemptExtraction(new ExactFluidFilter(filter), maxAmount, Simulation.ACTION);
+        return attemptExtraction(filter.exactFilter, maxAmount, Simulation.ACTION);
     }
 
     /** Attempt to extract *any* {@link FluidVolume} from this that is
@@ -162,7 +162,7 @@ public interface FluidExtractable {
      * @param maxAmount The maximum number of items that can be extracted. Negative numbers throw an exception.
      * @return A new, independent {@link ItemStack} that was extracted. */
     default FluidVolume extract(FluidKey filter, FluidAmount maxAmount) {
-        return attemptExtraction(new ExactFluidFilter(filter), maxAmount, Simulation.ACTION);
+        return attemptExtraction(filter.exactFilter, maxAmount, Simulation.ACTION);
     }
 
     /** Attempt to extract *any* {@link FluidVolume} from this.

@@ -78,6 +78,11 @@ public interface FluidFilter {
                     return Predicate.super.and(other);
                 }
             }
+
+            @Override
+            public String toString() {
+                return "{FluidFilterWrapper for " + filter + "}";
+            }
         };
     }
 }

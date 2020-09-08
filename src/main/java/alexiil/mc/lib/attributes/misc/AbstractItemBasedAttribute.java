@@ -27,7 +27,7 @@ public abstract class AbstractItemBasedAttribute {
      * 
      * @param oldStack A copied stack from {@link #stackRef}, but decreased by 1.
      * @param newStack The modified stack that was split off from {@link #stackRef}. */
-    protected boolean setStacks(Simulation simulation, ItemStack oldStack, ItemStack newStack) {
+    public boolean setStacks(Simulation simulation, ItemStack oldStack, ItemStack newStack) {
         if (oldStack.isEmpty() && stackRef.set(newStack, simulation)) {
             return true;
         } else if (stackRef.isValid(oldStack) && excessStacks.offer(newStack, simulation)) {
@@ -42,5 +42,10 @@ public abstract class AbstractItemBasedAttribute {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getName() + " in " + stackRef;
     }
 }

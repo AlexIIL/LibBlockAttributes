@@ -132,7 +132,7 @@ public final class FluidVolumeUtil {
         }
 
         // Step 3:
-        ExactFluidFilter keyFilter = new ExactFluidFilter(extracted.fluidKey);
+        ExactFluidFilter keyFilter = extracted.fluidKey.exactFilter;
         FluidVolume exactExtracted
             = from.attemptExtraction(keyFilter, firstInserted, Simulation.SIMULATE);
         if (!exactExtracted.getAmount_F().equals(firstInserted)) {

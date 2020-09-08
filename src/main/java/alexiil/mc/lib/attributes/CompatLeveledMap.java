@@ -30,17 +30,19 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 
+import alexiil.mc.lib.attributes.fluid.FluidContainerRegistry;
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
 
-/** Used by {@link Attribute} to manage the custom adder list.
+/** Used primarily by {@link Attribute} to manage the custom adder list, and {@link FluidContainerRegistry} to manage
+ * filters for fluids.
  * 
  * @param <Instance> The object to map directly against with equals - for example this might be {@link Block}, or
  *            {@link Item}, or {@link BlockEntityType}, or {@link EntityType}.
  * @param <Cls> The class to map directly or hierarchically against - for example this might be {@link Block}, or
  *            {@link Item}, or {@link BlockEntity}, or {@link Entity}. */
-final class AdderList<Instance, Cls, Adder> {
+public final class CompatLeveledMap<Instance, Cls, V> {
 
-    static final int NULL_PRIORITY = 1 << 16;
+    public static final int NULL_PRIORITY = 1 << 16;
 
     // HashMap rather than a ClassValue because the target classes
     // (Block, Item, etc) never unload.
@@ -48,11 +50,11 @@ final class AdderList<Instance, Cls, Adder> {
 
     private final String name;
     private final Class<Cls> usedClass;
-    private final ValueEntry<Adder> nullEntry;
+    private final ValueEntry<V> nullEntry;
     private final Function<Instance, String> toStringFunc;
 
-    int baseOffset = 0;
-    int priorityMultiplier = 1;
+    public int baseOffset = 0;
+    public int priorityMultiplier = 1;
 
     // fields rather than an enum map because there's only 2 options
     // and adding types shouldn't happen lightly.
@@ -66,8 +68,8 @@ final class AdderList<Instance, Cls, Adder> {
     /** {@link AttributeSourceType#COMPAT_WRAPPER} */
     private PriorityEntry compatValues = null;
 
-    private Map<Instance, ValueEntry<Adder>> resolved = null;
-    private Map<Class<?>, ValueEntry<Adder>> classResolved = null;
+    private Map<Instance, ValueEntry<V>> resolved = null;
+    private Map<Class<?>, ValueEntry<V>> classResolved = null;
 
     /** Set to true when a target has been resolved by its class rather than its instance. */
     private boolean resolvedByClass = false;
@@ -75,7 +77,7 @@ final class AdderList<Instance, Cls, Adder> {
     /** @param nullValue A non-null value to use to indicate that this doesn't contain any entries for the given key.
      *            Note that this value will not be returned unless it is added to this map separately with any of the
      *            "put" methods. */
-    public AdderList(String name, Class<Cls> usedClass, Adder nullValue, Function<Instance, String> toStringFunc) {
+    public CompatLeveledMap(String name, Class<Cls> usedClass, V nullValue, Function<Instance, String> toStringFunc) {
         this.name = name;
         this.usedClass = usedClass;
         this.nullEntry = new ValueEntry<>(nullValue, NULL_PRIORITY);
@@ -83,13 +85,13 @@ final class AdderList<Instance, Cls, Adder> {
     }
 
     @Nullable
-    public Adder get(Instance key, Class<? extends Cls> clazz) {
-        ValueEntry<Adder> value = getEntry(key, clazz);
+    public V get(Instance key, Class<? extends Cls> clazz) {
+        ValueEntry<V> value = getEntry(key, clazz);
         return value != nullEntry ? value.value : null;
     }
 
-    public ValueEntry<Adder> getEntry(Instance key, Class<? extends Cls> clazz) {
-        ValueEntry<Adder> value = null;
+    public ValueEntry<V> getEntry(Instance key, Class<? extends Cls> clazz) {
+        ValueEntry<V> value = null;
         if (resolved != null) {
             value = resolved.get(key);
             if (value != null && value.priority == 0) {
@@ -97,7 +99,7 @@ final class AdderList<Instance, Cls, Adder> {
             }
         }
         if (classResolved != null) {
-            ValueEntry<Adder> instance = value;
+            ValueEntry<V> instance = value;
             value = classResolved.get(clazz);
             if (value == null) {
                 if (instance != null) {
@@ -126,7 +128,7 @@ final class AdderList<Instance, Cls, Adder> {
         return nullEntry;
     }
 
-    private ValueEntry<Adder> resolveTo(Instance key, ValueEntry<Adder> entry) {
+    private ValueEntry<V> resolveTo(Instance key, ValueEntry<V> entry) {
         if (resolved == null) {
             resolved = new HashMap<>();
         }
@@ -134,7 +136,7 @@ final class AdderList<Instance, Cls, Adder> {
         return entry;
     }
 
-    private ValueEntry<Adder> resolveClassTo(Class<? extends Cls> key, ValueEntry<Adder> entry) {
+    private ValueEntry<V> resolveClassTo(Class<? extends Cls> key, ValueEntry<V> entry) {
         if (classResolved == null) {
             classResolved = new HashMap<>();
         }
@@ -165,7 +167,7 @@ final class AdderList<Instance, Cls, Adder> {
         return list;
     }
 
-    void putExact(AttributeSourceType type, Instance key, Adder value) {
+    public void putExact(AttributeSourceType type, Instance key, V value) {
         if (resolved != null) {
             resolved.remove(key);
         }
@@ -175,13 +177,14 @@ final class AdderList<Instance, Cls, Adder> {
             entry.exactMappings = new HashMap<>();
         }
 
-        Adder old = entry.exactMappings.put(key, value);
-        LibBlockAttributes.LOGGER
-            .warn("Replaced the attribute " + name + " value for " + toStringFunc.apply(key) + " with " + value + " (was " + old + ")");
+        V old = entry.exactMappings.put(key, value);
+        LibBlockAttributes.LOGGER.warn(
+            "Replaced the " + name + " value for " + toStringFunc.apply(key) + " with " + value + " (was " + old + ")"
+        );
     }
 
-    void addPredicateBased(
-        AttributeSourceType type, boolean specific, Predicate<? super Instance> predicate, Adder value
+    public void addPredicateBased(
+        AttributeSourceType type, boolean specific, Predicate<? super Instance> predicate, V value
     ) {
         if (specific) {
             addSpecificPredicateBased(type, predicate, value);
@@ -190,9 +193,7 @@ final class AdderList<Instance, Cls, Adder> {
         }
     }
 
-    private void addSpecificPredicateBased(
-        AttributeSourceType type, Predicate<? super Instance> predicate, Adder value
-    ) {
+    private void addSpecificPredicateBased(AttributeSourceType type, Predicate<? super Instance> predicate, V value) {
         clearResolved();
 
         PriorityEntry entry = getOrCreateEntry(type);
@@ -204,7 +205,7 @@ final class AdderList<Instance, Cls, Adder> {
 
     private boolean hasWarnedAboutUC;
 
-    void putClassBased(AttributeSourceType type, Class<?> clazz, boolean matchSubclasses, Adder value) {
+    public void putClassBased(AttributeSourceType type, Class<?> clazz, boolean matchSubclasses, V value) {
 
         if (!matchSubclasses) {
             if (clazz.isInterface()) {
@@ -246,7 +247,7 @@ final class AdderList<Instance, Cls, Adder> {
         clearResolved();
 
         PriorityEntry entry = getOrCreateEntry(type);
-        final Map<Class<?>, Adder> map;
+        final Map<Class<?>, V> map;
         if (matchSubclasses) {
             if (entry.inheritClassMappings == null) {
                 entry.inheritClassMappings = new HashMap<>();
@@ -260,17 +261,14 @@ final class AdderList<Instance, Cls, Adder> {
             map = entry.exactClassMappings;
 
         }
-        Adder old = map.put(clazz, value);
+        V old = map.put(clazz, value);
         if (old != null) {
-            LibBlockAttributes.LOGGER.warn(
-                "Replaced the attribute " + name + " value for " + clazz + " with " + value + " (was " + old + ")"
-            );
+            LibBlockAttributes.LOGGER
+                .warn("Replaced the " + name + " value for " + clazz + " with " + value + " (was " + old + ")");
         }
     }
 
-    private void addGeneralPredicateBased(
-        AttributeSourceType type, Predicate<? super Instance> predicate, Adder value
-    ) {
+    private void addGeneralPredicateBased(AttributeSourceType type, Predicate<? super Instance> predicate, V value) {
         clearResolved();
 
         PriorityEntry entry = getOrCreateEntry(type);
@@ -309,14 +307,14 @@ final class AdderList<Instance, Cls, Adder> {
         final Predicate<? super K> predicate;
         final V value;
 
-        public PredicateEntry(Predicate<? super K> predicate, V value) {
+        PredicateEntry(Predicate<? super K> predicate, V value) {
             this.predicate = predicate;
             this.value = value;
         }
     }
 
-    static final class ValueEntry<V> {
-        final V value;
+    public static final class ValueEntry<V> {
+        public final V value;
 
         /**
          * <ol>
@@ -325,9 +323,9 @@ final class AdderList<Instance, Cls, Adder> {
          * <li>{@link #NULL_PRIORITY} for missing entry.</li>
          * </ol>
          */
-        final int priority;
+        public final int priority;
 
-        public ValueEntry(V value, int priority) {
+        ValueEntry(V value, int priority) {
             this.value = value;
             this.priority = priority;
         }
@@ -336,20 +334,20 @@ final class AdderList<Instance, Cls, Adder> {
     final class PriorityEntry {
         private final int basePriority;
 
-        private Map<Instance, Adder> exactMappings = null;
-        private List<PredicateEntry<Instance, Adder>> specificPredicates = null;
-        private Map<Class<?>, Adder> exactClassMappings = null;
-        private Map<Class<?>, Adder> inheritClassMappings = null;
-        private List<PredicateEntry<Instance, Adder>> generalPredicates = null;
+        private Map<Instance, V> exactMappings = null;
+        private List<PredicateEntry<Instance, V>> specificPredicates = null;
+        private Map<Class<?>, V> exactClassMappings = null;
+        private Map<Class<?>, V> inheritClassMappings = null;
+        private List<PredicateEntry<Instance, V>> generalPredicates = null;
 
         PriorityEntry(int basePriority) {
             this.basePriority = basePriority;
         }
 
         @Nullable
-        ValueEntry<Adder> get(Instance key, Class<? extends Cls> clazz) {
+        ValueEntry<V> get(Instance key, Class<? extends Cls> clazz) {
             resolvedByClass = false;
-            Adder value;
+            V value;
             if (exactMappings != null) {
                 value = exactMappings.get(key);
                 if (value != null) {
@@ -357,7 +355,7 @@ final class AdderList<Instance, Cls, Adder> {
                 }
             }
             if (specificPredicates != null) {
-                for (PredicateEntry<Instance, Adder> entry : specificPredicates) {
+                for (PredicateEntry<Instance, V> entry : specificPredicates) {
                     if (entry.predicate.test(key)) {
                         return new ValueEntry<>(entry.value, basePriority + 1);
                     }
@@ -380,7 +378,7 @@ final class AdderList<Instance, Cls, Adder> {
                 }
             }
             if (generalPredicates != null) {
-                for (PredicateEntry<Instance, Adder> entry : generalPredicates) {
+                for (PredicateEntry<Instance, V> entry : generalPredicates) {
                     if (entry.predicate.test(key)) {
                         return new ValueEntry<>(entry.value, basePriority + 4);
                     }

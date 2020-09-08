@@ -101,7 +101,7 @@ public class SimpleLimitedGroupedFluidInv extends DelegatingGroupedFluidInv impl
                 }
             }
             FluidAmount allowed = current.sub(minLeft);
-            return delegate.attemptExtraction(new ExactFluidFilter(key), maxAmount.min(allowed), simulation);
+            return delegate.attemptExtraction(key.exactFilter, maxAmount.min(allowed), simulation);
         }
         return FluidVolumeUtil.EMPTY;
     }

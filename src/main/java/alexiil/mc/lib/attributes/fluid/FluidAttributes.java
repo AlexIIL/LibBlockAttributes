@@ -69,6 +69,7 @@ public final class FluidAttributes {
     public static final CombinableAttribute<GroupedFluidInv> GROUPED_INV;
     public static final CombinableAttribute<FluidInsertable> INSERTABLE;
     public static final CombinableAttribute<FluidExtractable> EXTRACTABLE;
+    // TODO: Add MultiAttribute<FluidTransferable> to be able to get *everything* in a single call
 
     /** Mostly intended to be used for {@link ItemStack}'s, not {@link Block}'s. (As this interface doesn't really make
      * much sense when applied to block's alone, however it makes much more sense in pipe input or extraction
@@ -79,9 +80,18 @@ public final class FluidAttributes {
      * {@link #GROUPED_INV_VIEW}, {@link #GROUPED_INV}, {@link #INSERTABLE}, and {@link #EXTRACTABLE}. */
     public static final List<CombinableAttribute<?>> INVENTORY_BASED;
 
+    /** A {@link List} of every inventory-type attribute, so: {@link #GROUPED_INV_VIEW}, {@link #GROUPED_INV},
+     * {@link #INSERTABLE}, and {@link #EXTRACTABLE}. */
+    public static final List<CombinableAttribute<?>> GROUPED_INVENTORY_BASED;
+
     /** Runs the given {@link Consumer} on every {@link #INVENTORY_BASED} attribute. */
     public static void forEachInv(Consumer<? super CombinableAttribute<?>> consumer) {
         INVENTORY_BASED.forEach(consumer);
+    }
+
+    /** Runs the given {@link Consumer} on every {@link #GROUPED_INVENTORY_BASED} attribute. */
+    public static void forEachGroupedInv(Consumer<? super CombinableAttribute<?>> consumer) {
+        GROUPED_INVENTORY_BASED.forEach(consumer);
     }
 
     static {
@@ -125,11 +135,15 @@ public final class FluidAttributes {
         FILTER = Attributes.createCombinable(
             FluidFilter.class, //
             ConstantFluidFilter.NOTHING, //
-            list -> AggregateFluidFilter.allOf(list)//
+            AggregateFluidFilter::allOf//
         );
 
         INVENTORY_BASED = Arrays.asList(
             FIXED_INV_VIEW, FIXED_INV, //
+            GROUPED_INV_VIEW, GROUPED_INV, //
+            INSERTABLE, EXTRACTABLE//
+        );
+        GROUPED_INVENTORY_BASED = Arrays.asList(
             GROUPED_INV_VIEW, GROUPED_INV, //
             INSERTABLE, EXTRACTABLE//
         );
@@ -148,10 +162,14 @@ public final class FluidAttributes {
         return attribute;
     }
 
+    /** @deprecated Because this implements support for {@link IBucketItem}, which is deprecated. */
+    @Deprecated
     private static boolean isValidBucket(ItemStack stack) {
         return isValidBucket(stack.getItem());
     }
 
+    /** @deprecated Because this implements support for {@link IBucketItem}, which is deprecated. */
+    @Deprecated
     private static boolean isValidBucket(Item item) {
         if (item instanceof FishBucketItem) {
             return false;
@@ -160,7 +178,10 @@ public final class FluidAttributes {
     }
 
     /** A {@link GroupedFluidInv} for a {@link BucketItem}. Package-private because this should always be accessed via
-     * the attributes. */
+     * the attributes.
+     * 
+     * @deprecated Because this implements support for {@link IBucketItem}, which is deprecated. */
+    @Deprecated
     static final class BucketItemGroupedFluidInv extends AbstractItemBasedAttribute implements GroupedFluidInv {
 
         BucketItemGroupedFluidInv(Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excessStacks) {

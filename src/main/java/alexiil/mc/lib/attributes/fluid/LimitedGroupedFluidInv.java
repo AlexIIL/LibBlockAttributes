@@ -46,7 +46,7 @@ public interface LimitedGroupedFluidInv extends GroupedFluidInv {
 
     /** @return A rule for the specific {@link FluidKey} given. */
     default FluidLimitRule getRule(FluidKey key) {
-        return getRule(new ExactFluidFilter(key));
+        return getRule(key.exactFilter);
     }
 
     /** @return An {@link FluidLimitRule} that applies to every fluid that matches the given filter. */

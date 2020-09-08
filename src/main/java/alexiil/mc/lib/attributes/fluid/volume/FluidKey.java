@@ -40,6 +40,8 @@ import net.minecraft.world.WorldView;
 
 import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+import alexiil.mc.lib.attributes.fluid.filter.ExactFluidFilter;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.render.DefaultFluidVolumeRenderer;
 import alexiil.mc.lib.attributes.fluid.volume.FluidEntry.FluidFloatingEntry;
 import alexiil.mc.lib.attributes.fluid.volume.FluidTemperature.ContinuousFluidTemperature;
@@ -183,6 +185,9 @@ public abstract class FluidKey {
      * should be the same on the client and server. */
     /* package-private */ final Object2IntSortedMap<FluidProperty<?>> propertyKeys
         = new Object2IntAVLTreeMap<>(FluidProperty.COMPARATOR);
+
+    /** A {@link FluidFilter} that only matches this {@link FluidKey}. */
+    public final ExactFluidFilter exactFilter = new ExactFluidFilter(this);
 
     public static class FluidKeyBuilder {
         /* package-private */ FluidEntry entry;

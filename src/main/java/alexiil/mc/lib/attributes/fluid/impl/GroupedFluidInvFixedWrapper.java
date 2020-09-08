@@ -68,7 +68,7 @@ public class GroupedFluidInvFixedWrapper extends GroupedFluidInvViewFixedWrapper
         }
         fluid = fluid.copy();
         for (int t = 0; t < inv().getTankCount(); t++) {
-            fluid = FluidVolumeUtil.insertSingle(inv(), t, fluid, simulation);
+            fluid = inv().insertFluid(t, fluid, simulation);
             if (fluid.isEmpty()) {
                 return FluidVolumeUtil.EMPTY;
             }
@@ -87,7 +87,7 @@ public class GroupedFluidInvFixedWrapper extends GroupedFluidInvViewFixedWrapper
         }
         for (int t = 0; t < inv().getTankCount(); t++) {
             FluidAmount thisMax = maxAmount.roundedSub(fluid.getAmount_F(), RoundingMode.DOWN);
-            fluid = FluidVolumeUtil.extractSingle(inv(), t, filter, fluid, thisMax, simulation);
+            fluid = inv().extractFluid(t, filter, fluid, thisMax, simulation);
             if (!fluid.getAmount_F().isLessThan(maxAmount)) {
                 return fluid;
             }

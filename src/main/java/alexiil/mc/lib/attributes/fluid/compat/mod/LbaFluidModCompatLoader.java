@@ -9,12 +9,15 @@ package alexiil.mc.lib.attributes.fluid.compat.mod;
 
 import alexiil.mc.lib.attributes.fluid.compat.mod.reborncore.RebornCompatLoader;
 import alexiil.mc.lib.attributes.fluid.compat.mod.silk.SilkFluidCompat;
+import alexiil.mc.lib.attributes.fluid.compat.mod.vanilla.VanillaFluidCompat;
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
 
 public final class LbaFluidModCompatLoader {
     private LbaFluidModCompatLoader() {}
 
     public static void load() {
+        VanillaFluidCompat.load();
+
         try {
             Class.forName("io.github.prospector.silk.fluid.FluidContainerProvider");
             LibBlockAttributes.LOGGER.info("Silk found, loading compatibility for fluids.");

@@ -69,6 +69,7 @@ public final class ItemAttributes {
     public static final CombinableAttribute<GroupedItemInv> GROUPED_INV;
     public static final CombinableAttribute<ItemInsertable> INSERTABLE;
     public static final CombinableAttribute<ItemExtractable> EXTRACTABLE;
+    // TODO: Add MultiAttribute<ItemTransferable> to be able to get *everything* in a single call
 
     /** Mostly intended to be used for {@link ItemStack}'s, not {@link Block}'s. (As this interface doesn't really make
      * much sense when applied to block's alone, however it makes much more sense in pipe input or extraction
@@ -79,9 +80,18 @@ public final class ItemAttributes {
      * {@link #GROUPED_INV_VIEW}, {@link #GROUPED_INV}, {@link #INSERTABLE}, and {@link #EXTRACTABLE}. */
     public static final List<CombinableAttribute<?>> INVENTORY_BASED;
 
+    /** A {@link List} of every inventory-type attribute, so: {@link #GROUPED_INV_VIEW}, {@link #GROUPED_INV},
+     * {@link #INSERTABLE}, and {@link #EXTRACTABLE}. */
+    public static final List<CombinableAttribute<?>> GROUPED_INVENTORY_BASED;
+
     /** Runs the given {@link Consumer} on every {@link #INVENTORY_BASED} attribute. */
     public static void forEachInv(Consumer<? super CombinableAttribute<?>> consumer) {
         INVENTORY_BASED.forEach(consumer);
+    }
+
+    /** Runs the given {@link Consumer} on every {@link #GROUPED_INVENTORY_BASED} attribute. */
+    public static void forEachGroupedInv(Consumer<? super CombinableAttribute<?>> consumer) {
+        GROUPED_INVENTORY_BASED.forEach(consumer);
     }
 
     static {
@@ -129,6 +139,10 @@ public final class ItemAttributes {
 
         INVENTORY_BASED = Arrays.asList(
             FIXED_INV_VIEW, FIXED_INV, //
+            GROUPED_INV_VIEW, GROUPED_INV, //
+            INSERTABLE, EXTRACTABLE//
+        );
+        GROUPED_INVENTORY_BASED = Arrays.asList(
             GROUPED_INV_VIEW, GROUPED_INV, //
             INSERTABLE, EXTRACTABLE//
         );

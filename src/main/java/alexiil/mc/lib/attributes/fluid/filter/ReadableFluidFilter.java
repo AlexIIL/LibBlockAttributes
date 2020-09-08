@@ -22,8 +22,6 @@ import alexiil.mc.lib.attributes.AttributeUtil;
  * <li>{@link AggregateFluidFilter}</li>
  * <li>{@link FluidSetFilter}</li>
  * <li>{@link InvertedFluidFilter}</li>
- * <li>{@link RawFluidTagFilter}</li>
- * <li>{@link FluidTagFilter}</li>
  * <li>{@link ResolvableFluidFilter}</li>
  * </ol>
  * Note that {@link ResolvableFluidFilter} is <em>not sealed</em>, but it must only return {@link ReadableFluidFilter}s
