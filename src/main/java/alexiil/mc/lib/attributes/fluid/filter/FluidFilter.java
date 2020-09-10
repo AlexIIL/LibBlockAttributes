@@ -75,7 +75,7 @@ public interface FluidFilter {
                     // Because the real filter might have optimisations in or()
                     return filter.or((FluidFilter) other).asPredicate();
                 } else {
-                    return Predicate.super.and(other);
+                    return Predicate.super.or(other);
                 }
             }
 
