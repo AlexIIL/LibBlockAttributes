@@ -178,9 +178,11 @@ public final class CompatLeveledMap<Instance, Cls, V> {
         }
 
         V old = entry.exactMappings.put(key, value);
-        LibBlockAttributes.LOGGER.warn(
-            "Replaced the " + name + " value for " + toStringFunc.apply(key) + " with " + value + " (was " + old + ")"
-        );
+        if (old != null) {
+            LibBlockAttributes.LOGGER.warn(
+                "Replaced the " + name + " value for " + toStringFunc.apply(key) + " with " + value + " (was " + old + ")"
+            );
+        }
     }
 
     public void addPredicateBased(
@@ -362,7 +364,7 @@ public final class CompatLeveledMap<Instance, Cls, V> {
                 }
             }
             if (exactClassMappings != null) {
-                value = exactMappings.get(clazz);
+                value = exactClassMappings.get(clazz);
                 if (value != null) {
                     resolvedByClass = true;
                     return new ValueEntry<>(value, basePriority + 2);

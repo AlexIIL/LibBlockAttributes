@@ -354,13 +354,18 @@ public abstract class FluidVolume {
     @Override
     public boolean equals(Object obj) {
         if (obj == this) return true;
-        if (obj == null || obj.getClass() != getClass()) {
+        if (obj == null) {
+            return false;
+        }
+        if (isEmpty()) {
+            if (obj instanceof FluidVolume) {
+                return ((FluidVolume) obj).isEmpty();
+            }
+        }
+        if (obj.getClass() != getClass()) {
             return false;
         }
         FluidVolume other = (FluidVolume) obj;
-        if (isEmpty()) {
-            return other.isEmpty();
-        }
         if (other.isEmpty()) {
             return false;
         }

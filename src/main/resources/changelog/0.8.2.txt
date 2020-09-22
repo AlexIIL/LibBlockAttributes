@@ -13,3 +13,4 @@ Bug Fixes:
 * Fixed various tooltip issues with FluidUnits. 
 * Fixed FluidAmount.toLong() rounding incorrectly.
 * Fixed ItemInvUtil.move reusing the insertion filter after modifying the inventory.
+* Fixed FluidVolume.equals not considering two empty fluids of different classes te be equal.
