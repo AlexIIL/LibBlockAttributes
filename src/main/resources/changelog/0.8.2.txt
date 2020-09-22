@@ -10,3 +10,6 @@ Changes:
 Bug Fixes:
 
 * Fixed FluidKeys static init loading worldgen early.
+* Fixed various tooltip issues with FluidUnits. 
+* Fixed FluidAmount.toLong() rounding incorrectly.
+* Fixed ItemInvUtil.move reusing the insertion filter after modifying the inventory.

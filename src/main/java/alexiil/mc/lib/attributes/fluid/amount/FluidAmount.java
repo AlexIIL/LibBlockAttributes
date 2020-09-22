@@ -653,7 +653,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
      *         {@link #denominator} is {@link Long#MAX_VALUE}. */
     public boolean isOverflow() {
         return whole == Long.MIN_VALUE || whole == Long.MAX_VALUE || numerator == Long.MIN_VALUE
-        || numerator == Long.MAX_VALUE || denominator == Long.MAX_VALUE;
+            || numerator == Long.MAX_VALUE || denominator == Long.MAX_VALUE;
     }
 
     @Override
@@ -717,34 +717,37 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
             case UP:
                 return LongMath.saturatedAdd(mult.whole, mult.sign());
             case CEILING:
-                return LongMath.saturatedAdd(mult.whole, +1);
+                return mult.whole > 0 ? LongMath.saturatedAdd(mult.whole, +1) : mult.whole;
             case FLOOR:
-                return LongMath.saturatedAdd(mult.whole, -1);
+                return mult.whole < 0 ? LongMath.saturatedAdd(mult.whole, -1) : mult.whole;
             case HALF_DOWN: {
-                long pnum = mult.numerator < 0 ? -mult.numerator : mult.numerator;
-                if (pnum <= mult.denominator / 2) {
+                if (Math.abs(mult.numerator) <= mult.denominator / 2) {
                     return mult.whole;
                 }
                 return LongMath.saturatedAdd(mult.whole, mult.sign());
             }
             case HALF_UP: {
-                long pnum = mult.numerator < 0 ? -mult.numerator : mult.numerator;
-                if (pnum < mult.denominator / 2) {
-                    return mult.whole;
+                // den = 3 (/2=1)
+                // num = 1 -> 1 <= den/2 = true -> correct
+                // num = 2 -> 2 <= den/2 = false -> correct
+                long pnum = Math.abs(mult.numerator);
+                if (pnum <= mult.denominator / 2) {
+                    if (pnum * 2 < mult.denominator) {
+                        return mult.whole;
+                    }
                 }
                 return LongMath.saturatedAdd(mult.whole, mult.sign());
             }
             case HALF_EVEN: {
-                long pnum = mult.numerator < 0 ? -mult.numerator : mult.numerator;
-                if (pnum < mult.denominator / 2) {
-                    return mult.whole;
-                } else if (pnum > mult.denominator / 2) {
-                    return LongMath.saturatedAdd(mult.whole, mult.sign());
-                } else if ((mult.whole & 1) == 0) {
-                    return mult.whole;
-                } else {
-                    return LongMath.saturatedAdd(mult.whole, mult.sign());
+                long pnum = Math.abs(mult.numerator);
+                if (pnum <= mult.denominator / 2) {
+                    if (pnum * 2 < mult.denominator) {
+                        return mult.whole;
+                    } else if ((mult.whole & 1) == 0) {
+                        return mult.whole;
+                    }
                 }
+                return LongMath.saturatedAdd(mult.whole, mult.sign());
             }
             case UNNECESSARY:
                 throw new ArithmeticException(

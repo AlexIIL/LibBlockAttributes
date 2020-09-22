@@ -7,6 +7,8 @@
  */
 package alexiil.mc.lib.attributes.fluid.amount;
 
+import java.math.RoundingMode;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -105,5 +107,28 @@ public class FluidAmountTester extends VanillaSetupBaseTester {
         Assert.assertEquals(FluidAmount.of(28, 10), FluidAmount.parse("0 + (28 / 10)"));
         Assert.assertEquals(FluidAmount.of(28, 10), FluidAmount.parse("2 + 8 / 10"));
         Assert.assertEquals(FluidAmount.of(28, 10), FluidAmount.parse("2 + (8 / 10)"));
+    }
+
+    @Test
+    public void testLongRounding() {
+        for (RoundingMode mode : RoundingMode.values()) {
+            Assert.assertEquals(3, FluidAmount.of(3, 10).asLong(10, mode));
+        }
+
+        Assert.assertEquals(334, FluidAmount.of(1, 3).asLong(1000, RoundingMode.UP));
+        Assert.assertEquals(333, FluidAmount.of(1, 3).asLong(1000, RoundingMode.DOWN));
+        Assert.assertEquals(334, FluidAmount.of(1, 3).asLong(1000, RoundingMode.CEILING));
+        Assert.assertEquals(333, FluidAmount.of(1, 3).asLong(1000, RoundingMode.FLOOR));
+        Assert.assertEquals(333, FluidAmount.of(1, 3).asLong(1000, RoundingMode.HALF_UP));
+        Assert.assertEquals(333, FluidAmount.of(1, 3).asLong(1000, RoundingMode.HALF_DOWN));
+        Assert.assertEquals(333, FluidAmount.of(1, 3).asLong(1000, RoundingMode.HALF_EVEN));
+
+        Assert.assertEquals(-334, FluidAmount.of(-1, 3).asLong(1000, RoundingMode.UP));
+        Assert.assertEquals(-333, FluidAmount.of(-1, 3).asLong(1000, RoundingMode.DOWN));
+        Assert.assertEquals(-333, FluidAmount.of(-1, 3).asLong(1000, RoundingMode.CEILING));
+        Assert.assertEquals(-334, FluidAmount.of(-1, 3).asLong(1000, RoundingMode.FLOOR));
+        Assert.assertEquals(-333, FluidAmount.of(-1, 3).asLong(1000, RoundingMode.HALF_UP));
+        Assert.assertEquals(-333, FluidAmount.of(-1, 3).asLong(1000, RoundingMode.HALF_DOWN));
+        Assert.assertEquals(-333, FluidAmount.of(-1, 3).asLong(1000, RoundingMode.HALF_EVEN));
     }
 }

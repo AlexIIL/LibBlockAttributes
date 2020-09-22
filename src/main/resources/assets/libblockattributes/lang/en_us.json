@@ -4,7 +4,7 @@
     "libblockattributes.fluid.amount": "%1$s %2$s",
     "libblockattributes.fluid.name": "%1$s of %2$s",
     "libblockattributes.fluid.tank_empty.short": "0/%1$s",
-    "libblockattributes.fluid.tank_empty.long": "Empty %s Tank",
+    "libblockattributes.fluid.tank_empty.long": "Empty %1$s Tank",
     "libblockattributes.fluid.tank_full.short": "%1$s/%1$s",
     "libblockattributes.fluid.tank_full.long": "Full %1$s Tank",
     "libblockattributes.fluid.tank_partial.short": "%1$s/%2$s",

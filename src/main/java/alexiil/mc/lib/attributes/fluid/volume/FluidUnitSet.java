@@ -74,8 +74,11 @@ public final class FluidUnitSet extends FluidUnitBase {
         }
         String amt
             = localizeAmountInner(amount, forceLastSingular, ctx, FluidUnit::localizeUnit, FluidUnit::localizeDirect);
-        // TODO: Append the fluidName!
-        return amt;
+        if (fluidName != null && ctx.shouldJoinNameWithAmount()) {
+            return FluidUnit.localizeDirect(FluidUnit.KEY_NAME, amt, FluidUnit.textToString(fluidName));
+        } else {
+            return amt;
+        }
     }
 
     @Override
@@ -93,8 +96,11 @@ public final class FluidUnitSet extends FluidUnitBase {
             return getSmallestUnit().getAmount(amount, forceLastSingular, fluidName, ctx);
         }
         Text amt = localizeAmountInner(amount, forceLastSingular, ctx, FluidUnit::getUnit, FluidUnit::getDirect);
-        // TODO: Append the fluidName!
-        return amt;
+        if (fluidName != null && ctx.shouldJoinNameWithAmount()) {
+            return FluidUnit.getDirect(FluidUnit.KEY_NAME, amt, ctx.stripFluidColours(fluidName));
+        } else {
+            return amt;
+        }
     }
 
     private interface UnitLocalizer<T> {
@@ -212,7 +218,8 @@ public final class FluidUnitSet extends FluidUnitBase {
 
     @Override
     public String localizeFullTank(FluidAmount capacity, @Nullable Text fluidName, FluidTooltipContext ctx) {
-        return FluidUnit.localizeDirect(FluidUnit.KEY_TANK_FULL.get(ctx), localizeAmount(capacity, true, fluidName, ctx));
+        return FluidUnit
+            .localizeDirect(FluidUnit.KEY_TANK_FULL.get(ctx), localizeAmount(capacity, true, fluidName, ctx));
     }
 
     @Override
@@ -221,7 +228,9 @@ public final class FluidUnitSet extends FluidUnitBase {
     }
 
     @Override
-    public String localizePartialTank(FluidAmount amount, FluidAmount capacity, @Nullable Text fluidName, FluidTooltipContext ctx) {
+    public String localizePartialTank(
+        FluidAmount amount, FluidAmount capacity, @Nullable Text fluidName, FluidTooltipContext ctx
+    ) {
         if (units.isEmpty()) {
             // Default to buckets
             return FluidUnit.BUCKET.localizeTank(amount, capacity, ctx);
@@ -234,7 +243,9 @@ public final class FluidUnitSet extends FluidUnitBase {
     }
 
     @Override
-    public Text getPartialTank(FluidAmount amount, FluidAmount capacity, @Nullable Text fluidName, FluidTooltipContext ctx) {
+    public Text getPartialTank(
+        FluidAmount amount, FluidAmount capacity, @Nullable Text fluidName, FluidTooltipContext ctx
+    ) {
         if (units.isEmpty()) {
             // Default to buckets
             return FluidUnit.BUCKET.getPartialTank(amount, capacity, ctx);

@@ -9,6 +9,7 @@ package alexiil.mc.lib.attributes.fluid.volume;
 
 import java.util.Arrays;
 import java.util.IllegalFormatException;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -92,7 +93,7 @@ public final class FluidUnit extends FluidUnitBase implements Comparable<FluidUn
     /** (Amount+Unit) */
     /* package-private */ static final LsLocaleKey KEY_TANK_FULL = duel("fluid.tank_full");
 
-    /** Amount, Capacity, Unit */
+    /** (Amount+Unit), (Capacity+Unit) */
     /* package-private */ static final LsLocaleKey KEY_TANK_PARTIAL = duel("fluid.tank_partial");
 
     /** Amount, Capacity */
@@ -171,7 +172,7 @@ public final class FluidUnit extends FluidUnitBase implements Comparable<FluidUn
     ) {
         String str = localize(KEY_AMOUNT, forceSingular ? true : amount.equals(unitAmount), amount, ctx);
         if (fluidName != null && ctx.shouldJoinNameWithAmount()) {
-            str = localizeDirect(KEY_NAME, str, fluidNameToString(fluidName, ctx));
+            str = localizeDirect(KEY_NAME, str, textToString(fluidName));
         }
         return str;
     }
@@ -182,7 +183,7 @@ public final class FluidUnit extends FluidUnitBase implements Comparable<FluidUn
     ) {
         Text txt = get(KEY_AMOUNT, forceSingular || amount.equals(unitAmount), amount, ctx);
         if (fluidName != null && ctx.shouldJoinNameWithAmount()) {
-            txt = getDirect(KEY_NAME, txt, fluidName);
+            txt = getDirect(KEY_NAME, txt, ctx.stripFluidColours(fluidName));
         }
         return txt;
     }
@@ -211,14 +212,16 @@ public final class FluidUnit extends FluidUnitBase implements Comparable<FluidUn
     public String localizePartialTank(
         FluidAmount amount, FluidAmount capacity, @Nullable Text fluidName, FluidTooltipContext ctx
     ) {
-        return localizeDirect(KEY_TANK_PARTIAL.get(ctx), format(amount), format(capacity), localizeUnit(true, ctx));
+        String strAmount = localizeAmount(amount, fluidName, ctx);
+        String strCapacity = localizeAmount(capacity, true, ctx);
+        return localizeDirect(KEY_TANK_PARTIAL.get(ctx), strAmount, strCapacity);
     }
 
     @Override
     public Text getPartialTank(
         FluidAmount amount, FluidAmount capacity, @Nullable Text fluidName, FluidTooltipContext ctx
     ) {
-        return getDirect(KEY_TANK_PARTIAL.get(ctx), format(amount), format(capacity), getUnit(true, ctx));
+        return getDirect(KEY_TANK_PARTIAL.get(ctx), getAmount(amount, fluidName, ctx), getAmount(capacity, true, ctx));
     }
 
     @Override
@@ -265,6 +268,23 @@ public final class FluidUnit extends FluidUnitBase implements Comparable<FluidUn
         String translatedKey = Language.getInstance().get(localeKey);
         if (translatedKey == localeKey) {
             return localeKey + " " + Arrays.toString(args);
+        }
+        boolean check = false;
+        assert check = true;
+        if (check) {
+            for (int i = 0; i < args.length; i++) {
+                Object[] arr = new Object[i];
+                Arrays.fill(arr, "~ESC~");
+                try {
+                    String.format(translatedKey, arr);
+                } catch (IllegalFormatException ignored) {
+                    // This works correctly if this throws
+                    continue;
+                }
+                throw new IllegalStateException(
+                    "The key '" + localeKey + "' doesn't use all of the arguments " + Arrays.toString(args)
+                );
+            }
         }
         try {
             return String.format(translatedKey, args);
@@ -335,7 +355,12 @@ public final class FluidUnit extends FluidUnitBase implements Comparable<FluidUn
         }
     }
 
-    private static String fluidNameToString(Text text, FluidTooltipContext ctx) {
-        return text.asString();
+    /* package-private */ static String textToString(Text text) {
+        StringBuilder sb = new StringBuilder();
+        text.visit(s -> {
+            sb.append(s);
+            return Optional.empty();
+        });
+        return sb.toString();
     }
 }

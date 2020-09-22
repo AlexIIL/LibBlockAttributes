@@ -386,8 +386,16 @@ public abstract class FluidVolume {
         return fluidKey.unitSet.localizeAmount(getAmount_F());
     }
 
+    public final String localizeAmount(FluidTooltipContext ctx) {
+        return fluidKey.unitSet.localizeAmount(getAmount_F(), getName(), ctx);
+    }
+
     public String localizeInTank(FluidAmount capacity) {
         return fluidKey.unitSet.localizeTank(getAmount_F(), capacity);
+    }
+
+    public final String localizeInTank(FluidAmount capacity, FluidTooltipContext ctx) {
+        return fluidKey.unitSet.localizeTank(getAmount_F(), capacity, getName(), ctx);
     }
 
     /** @deprecated Use {@link Objects#equals(Object)} instead of this. */

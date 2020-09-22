@@ -10,6 +10,8 @@ package alexiil.mc.lib.attributes.fluid.volume;
 import org.junit.Assert;
 import org.junit.Test;
 
+import net.minecraft.potion.Potions;
+
 import alexiil.mc.lib.attributes.VanillaSetupBaseTester;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 
@@ -17,16 +19,39 @@ public class FluidUnitSetTester extends VanillaSetupBaseTester {
 
     @Test
     public void testWaterUnits() {
-        int b = FluidVolume.BOTTLE;
-        System.out.println(FluidKeys.WATER.withAmount(b).localizeAmount());
-        System.out.println(FluidKeys.WATER.withAmount(2 * b).localizeAmount());
-        System.out.println(FluidKeys.WATER.withAmount(3 * b).localizeAmount());
-        System.out.println(FluidKeys.WATER.withAmount(4 * b).localizeAmount());
-        System.out.println(FluidKeys.WATER.withAmount(5 * b).localizeAmount());
-        System.out.println(FluidKeys.WATER.withAmount(5 * b + 23).localizeAmount());
-        System.out.println(FluidUnit.BUCKET.localizeEmptyTank(FluidAmount.BUCKET));
-        System.out.println(FluidUnit.BUCKET.localizeFullTank(FluidAmount.BUCKET));
-        System.out.println(FluidUnit.BUCKET.localizeTank(FluidAmount.BUCKET, FluidAmount.BUCKET.mul(2)));
+
+        boolean[] bools = { false, true };
+        for (FluidKey fluid : new FluidKey[] { FluidKeys.WATER, FluidKeys.LAVA, FluidKeys.get(Potions.HEALING) }) {
+            for (int flags = 0; flags <= 2 * 2 * 2; flags++) {
+                boolean useSymbols = (flags & 1) == 1;
+                boolean useShortDesc = (flags & 2) == 2;
+                boolean joinName = (flags & 4) == 4;
+
+                FluidTooltipContext ctx = FluidTooltipContext.USE_CONFIG//
+                    .forceSymbols(useSymbols)//
+                    .forceShortDesc(useShortDesc)//
+                    .forceJoinedName(joinName);
+
+                System.out.println(
+                    "\n" + fluid + (useSymbols ? " symbols" : "") + (useShortDesc ? " short-desc" : "")
+                        + (joinName ? " joined-name" : "")
+                );
+
+                int b = FluidVolume.BOTTLE;
+                System.out.println(fluid.withAmount(1 * b).localizeAmount(ctx));
+                System.out.println(fluid.withAmount(2 * b).localizeAmount(ctx));
+                System.out.println(fluid.withAmount(3 * b).localizeAmount(ctx));
+                System.out.println(fluid.withAmount(4 * b).localizeAmount(ctx));
+                System.out.println(fluid.withAmount(5 * b).localizeAmount(ctx));
+                System.out.println(fluid.withAmount(5 * b + 23).localizeAmount(ctx));
+                if (fluid == FluidKeys.WATER) {
+                    System.out.println(FluidUnit.BUCKET.localizeEmptyTank(FluidAmount.BUCKET, ctx));
+                    System.out.println(FluidUnit.BUCKET.localizeFullTank(FluidAmount.BUCKET, ctx));
+                    System.out
+                        .println(FluidUnit.BUCKET.localizeTank(FluidAmount.BUCKET, FluidAmount.BUCKET.mul(2), ctx));
+                }
+            }
+        }
     }
 
     @Test

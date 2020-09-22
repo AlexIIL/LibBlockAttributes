@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.junit.Assert;
 import org.junit.BeforeClass;
 
 import net.minecraft.Bootstrap;
@@ -86,6 +87,12 @@ public class VanillaSetupBaseTester {
         map.put("libblockattributes.fluid_unit.nugget.singular", "Nugget");
         map.put("libblockattributes.fluid_unit.nugget.plural", "Nuggets");
 
+        // Some that vanilla needs
+
+        map.put("block.minecraft.water", "Water");
+        map.put("block.minecraft.lava", "Lava");
+        map.put("item.minecraft.potion.effect.healing", "Healing Potion");
+
         Language.setInstance(new Language() {
             @Override
             public boolean isRightToLeft() {
@@ -107,11 +114,17 @@ public class VanillaSetupBaseTester {
 
             @Override
             public boolean hasTranslation(String key) {
+                if (!map.containsKey(key)) {
+                    Assert.fail("No translation for '" + key + "'");
+                }
                 return map.containsKey(key);
             }
 
             @Override
             public String get(String key) {
+                if (!map.containsKey(key)) {
+                    Assert.fail("No translation for '" + key + "'");
+                }
                 return map.getOrDefault(key, key);
             }
         });

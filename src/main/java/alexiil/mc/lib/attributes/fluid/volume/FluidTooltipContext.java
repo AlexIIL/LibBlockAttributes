@@ -133,6 +133,15 @@ public final class FluidTooltipContext {
         return withForced(OFFSET_TICKS, enable);
     }
 
+    /** @return A {@link FluidTooltipContext} which uses the LBA fluids config file for {@link #shouldUseTicks()}. */
+    public FluidTooltipContext usingConfigForShortDesc() {
+        return withConfig(OFFSET_SHORT_DESC);
+    }
+
+    public FluidTooltipContext forceShortDesc(boolean enable) {
+        return withForced(OFFSET_SHORT_DESC, enable);
+    }
+
     /** @return A {@link FluidTooltipContext} which uses the LBA fluids config file for
      *         {@link #shouldStripFluidColours()}. */
     public FluidTooltipContext usingConfigForFluidColours() {

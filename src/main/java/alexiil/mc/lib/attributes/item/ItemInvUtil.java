@@ -22,6 +22,7 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv.CopyingFixedItemInv;
 import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
+import alexiil.mc.lib.attributes.item.filter.ExactItemStackFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 import alexiil.mc.lib.attributes.misc.PlayerInvUtil;
 import alexiil.mc.lib.attributes.misc.Reference;
@@ -115,7 +116,8 @@ public final class ItemInvUtil {
         if (insertedAmount == 0) {
             return 0; // Nothing was accepted by the target
         }
-        ItemStack reallyExtracted = from.attemptExtraction(insertionFilter, insertedAmount, simulation);
+        ItemStack reallyExtracted
+            = from.attemptExtraction(new ExactItemStackFilter(extracted), insertedAmount, simulation);
 
         if (reallyExtracted.isEmpty()) {
             throw throwBadImplException(
