@@ -20,7 +20,7 @@ repositories {
 }
 
 archivesBaseName = "libblockatttributes"
-version = "0.8.2-pre.9"
+version = "0.8.2-pre.10"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -94,6 +94,13 @@ compileJava {
     options.compilerArgs << "-Xmaxwarns" << "2"
     options.compilerArgs << "-Xlint:all"
     options.compilerArgs << "-Xdiags:verbose"
+}
+
+javadoc {
+    options.group("Items Module", "alexiil.mc.lib.attributes.item*");
+    options.group("Fluids Module", "alexiil.mc.lib.attributes.fluid*");
+    options.linkSource();
+    // options.header("%%REPLACE-ME-HEAD%%");
 }
 
 // ensure that the encoding is set to UTF-8, no matter what the system default is
