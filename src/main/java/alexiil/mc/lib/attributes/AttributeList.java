@@ -138,7 +138,12 @@ public class AttributeList<T> extends AbstractAttributeList<T> {
         }
         VoxelShape searchShape = searchParam.getShape();
         if (combinedShapeList != null) {
-            VoxelShape combined = VoxelShapes.combine(shape, searchShape, BooleanBiFunction.AND);
+            VoxelShape combined;
+            if (searchShape == VoxelShapes.fullCube()) {
+                combined = shape;
+            } else {
+                combined = VoxelShapes.combine(shape, searchShape, BooleanBiFunction.AND);
+            }
             if (combined.isEmpty()) {
                 return;
             }
