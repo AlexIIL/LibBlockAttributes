@@ -6,6 +6,7 @@ Changes:
 * Added FluidKey.luminosity, to allow tanks to emit light based on the fluid's light. (Lava uses 15).
 * Gave the empty fluid a proper name.
 * Added a new field to FluidKey: exactFilter, which is an ExactFluidFilter of that fluid key.
+* Optimised AttributeList.addAll when searching the entire block in a specific direction. 
 
 Bug Fixes:
 
