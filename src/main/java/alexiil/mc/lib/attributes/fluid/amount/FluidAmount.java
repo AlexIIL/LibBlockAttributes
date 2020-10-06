@@ -23,17 +23,21 @@ import net.minecraft.network.PacketByteBuf;
 /** A simple mixed fraction. The value represented by this can be calculated with this: "{@link #whole} +
  * ({@link #numerator} / {@link #denominator})". Negative values are indicated with both {@link #whole} and
  * {@link #numerator} being negative - it is never permissible for only one of them to be less than 0 and the other to
- * be greater than 0. */
+ * be greater than 0.
+ * <p>
+ * Note: This class is intended to become a value-based class, so it will (eventually) obey the rules set out in
+ * https://openjdk.java.net/jeps/390. */
+/* openjdk.jep.390.@ValueBased */
 public final class FluidAmount extends FluidAmountBase<FluidAmount> {
 
-    public static final FluidAmount ZERO = new FluidAmount(0);
-    public static final FluidAmount ONE = new FluidAmount(1);
-    public static final FluidAmount NEGATIVE_ONE = new FluidAmount(-1);
+    public static final FluidAmount ZERO = ofWhole(0);
+    public static final FluidAmount ONE = ofWhole(1);
+    public static final FluidAmount NEGATIVE_ONE = ofWhole(-1);
 
     /** A very large amount of fluid - one million buckets. Used primarily in cases where we need to test if any fluid
      * is insertable, so we go above normal values (without going so far out of range to make common calculations
      * overflow into {@link BigFluidAmount}). */
-    public static final FluidAmount A_MILLION = new FluidAmount(1_000_000);
+    public static final FluidAmount A_MILLION = ofWhole(1_000_000);
 
     /** One bucket of fluid - which is always {@link #ONE}. */
     public static final FluidAmount BUCKET = ONE;
@@ -42,27 +46,27 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
     public static final FluidAmount BOTTLE = of(1, 3);
 
     /** {@link Long#MAX_VALUE} of buckets. */
-    public static final FluidAmount MAX_BUCKETS = new FluidAmount(Long.MAX_VALUE, 0, 1);
+    public static final FluidAmount MAX_BUCKETS = createDirect(Long.MAX_VALUE, 0, 1);
 
     /** {@link Long#MIN_VALUE} of buckets. */
-    public static final FluidAmount MIN_BUCKETS = new FluidAmount(Long.MIN_VALUE, 0, 1);
+    public static final FluidAmount MIN_BUCKETS = createDirect(Long.MIN_VALUE, 0, 1);
 
     /** The maximum possible value that a valid {@link FluidAmount} can hold. It's not recommended to use this as it can
      * cause headaches when adding or subtracting values from this. */
     public static final FluidAmount ABSOLUTE_MAXIMUM
-        = new FluidAmount(Long.MAX_VALUE, Long.MAX_VALUE - 1, Long.MAX_VALUE);
+        = createDirect(Long.MAX_VALUE, Long.MAX_VALUE - 1, Long.MAX_VALUE);
 
     /** The minimum possible value that a valid {@link FluidAmount} can hold. It's not recommended to use this as it can
      * cause headaches when adding or subtracting values from this. */
     public static final FluidAmount ABSOLUTE_MINIMUM
-        = new FluidAmount(Long.MIN_VALUE, -Long.MAX_VALUE + 1, Long.MAX_VALUE);
+        = createDirect(Long.MIN_VALUE, -Long.MAX_VALUE + 1, Long.MAX_VALUE);
 
     /** The maximum possible value that a valid {@link FluidAmount} can hold. It's not recommended to use this as it can
      * cause headaches when adding or subtracting values from this.
      * 
      * @deprecated As {@link #MAX_BUCKETS} should generally be used instead, however if you really need the absolute
      *             value then you can use {@link #ABSOLUTE_MAXIMUM}. */
-    @Deprecated
+    @Deprecated // (since = "0.8.0", forRemoval = true)
     public static final FluidAmount MAX_VALUE = ABSOLUTE_MAXIMUM;
 
     /** The minimum possible value that a valid {@link FluidAmount} can hold. It's not recommended to use this as it can
@@ -70,7 +74,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
      * 
      * @deprecated As {@link #MIN_BUCKETS} should generally be used instead, however if you really need the absolute
      *             minimum value then you can use {@link #ABSOLUTE_MINIMUM}. */
-    @Deprecated
+    @Deprecated // (since = "0.8.0", forRemoval = true)
     public static final FluidAmount MIN_VALUE = ABSOLUTE_MINIMUM;
 
     public final long whole;
@@ -82,7 +86,10 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
     // Construction
 
     /** Constructs a new {@link FluidAmount} with the given whole value. The numerator is set to 0, and the denominator
-     * is set to 1. */
+     * is set to 1.
+     * 
+     * @deprecated As {@link #ofWhole(long)} should be used instead. */
+    @Deprecated // (since = "0.8.2", forRemoval = true)
     public FluidAmount(long whole) {
         this(whole, 0, 1);
     }
@@ -141,11 +148,11 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
             denominator = 1;
         }
 
-        return new FluidAmount(whole, numerator, denominator);
+        return createDirect(whole, numerator, denominator);
     }
 
     /** @deprecated Use {@link #parse(String)} instead. */
-    @Deprecated
+    @Deprecated // (since = "0.6.4", forRemoval = true)
     public static FluidAmount fromDouble(double value) {
         if (!Double.isFinite(value)) {
             throw new IllegalArgumentException("Cannot turn infinity or NaN into a FluidAmount!");
@@ -563,7 +570,11 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         }
     }
 
-    /* package-private */ FluidAmount(long whole, long numerator, long denominator) {
+    /* package-private */ static FluidAmount createDirect(long whole, long numerator, long denominator) {
+        return new FluidAmount(whole, numerator, denominator);
+    }
+
+    private FluidAmount(long whole, long numerator, long denominator) {
         this.whole = whole;
         this.numerator = numerator;
         this.denominator = denominator;
@@ -661,7 +672,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         if (denominator == 1) {
             return ONE;
         } else {
-            return new FluidAmount(0, 1, denominator);
+            return createDirect(0, 1, denominator);
         }
     }
 
@@ -890,7 +901,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
 
     @Override
     public FluidAmount negate() {
-        return new FluidAmount(-whole, -numerator, denominator);
+        return createDirect(-whole, -numerator, denominator);
     }
 
     @Override
@@ -987,7 +998,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         if (by == 0) {
             return this;
         } else if (isZero()) {
-            return new FluidAmount(by);
+            return ofWhole(by);
         }
         return of(by + whole, numerator, denominator);
     }

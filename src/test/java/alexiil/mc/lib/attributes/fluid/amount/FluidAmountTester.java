@@ -26,9 +26,9 @@ public class FluidAmountTester extends VanillaSetupBaseTester {
 
     @Test
     public void testEquality() {
-        Assert.assertEquals(FluidAmount.ZERO, new FluidAmount(0));
-        Assert.assertEquals(FluidAmount.ONE, new FluidAmount(1));
-        Assert.assertEquals(FluidAmount.NEGATIVE_ONE, new FluidAmount(-1));
+        Assert.assertEquals(FluidAmount.ZERO, FluidAmount.ofWhole(0));
+        Assert.assertEquals(FluidAmount.ONE, FluidAmount.ofWhole(1));
+        Assert.assertEquals(FluidAmount.NEGATIVE_ONE, FluidAmount.ofWhole(-1));
     }
 
     @Test
@@ -80,8 +80,8 @@ public class FluidAmountTester extends VanillaSetupBaseTester {
         Assert.assertEquals(FluidAmount.ZERO, FluidAmount.parse("0"));
         Assert.assertEquals(FluidAmount.ONE, FluidAmount.parse("1"));
         Assert.assertEquals(FluidAmount.NEGATIVE_ONE, FluidAmount.parse("-1"));
-        Assert.assertEquals(new FluidAmount(416789), FluidAmount.parse("416789"));
-        Assert.assertEquals(new FluidAmount(-13416789), FluidAmount.parse("-13416789"));
+        Assert.assertEquals(FluidAmount.ofWhole(416789), FluidAmount.parse("416789"));
+        Assert.assertEquals(FluidAmount.ofWhole(-13416789), FluidAmount.parse("-13416789"));
     }
 
     @Test

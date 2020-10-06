@@ -6,7 +6,8 @@ Changes:
 * Added FluidKey.luminosity, to allow tanks to emit light based on the fluid's light. (Lava uses 15).
 * Gave the empty fluid a proper name.
 * Added a new field to FluidKey: exactFilter, which is an ExactFluidFilter of that fluid key.
-* Optimised AttributeList.addAll when searching the entire block in a specific direction. 
+* Optimised AttributeList.addAll when searching the entire block in a specific direction.
+* Added fluid compat for cauldrons. (However you can only insert or extract 1/3 of a bucket at a time, so it's not always possible to insert into them with pipes).
 
 Bug Fixes:
 
@@ -14,4 +15,4 @@ Bug Fixes:
 * Fixed various tooltip issues with FluidUnits. 
 * Fixed FluidAmount.toLong() rounding incorrectly.
 * Fixed ItemInvUtil.move reusing the insertion filter after modifying the inventory.
-* Fixed FluidVolume.equals not considering two empty fluids of different classes te be equal.
+* Fixed FluidVolume.equals not considering two empty fluids of different classes to be equal.

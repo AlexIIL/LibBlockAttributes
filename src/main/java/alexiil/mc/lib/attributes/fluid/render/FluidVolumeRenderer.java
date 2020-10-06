@@ -109,7 +109,7 @@ public abstract class FluidVolumeRenderer {
 
     /** @deprecated Use {@link #renderSimpleFluid(List, VertexConsumer, MatrixStack, Sprite, Sprite, int)} instead,
      *             which takes both the still and flowing sprites. */
-    @Deprecated
+    @Deprecated // (since = "0.6.0", forRemoval = true)
     protected static void renderSimpleFluid(
         List<FluidRenderFace> faces, VertexConsumer vc, MatrixStack matrices, Sprite sprite, int colour
     ) {

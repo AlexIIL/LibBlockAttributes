@@ -81,7 +81,7 @@ public interface LimitedGroupedFluidInv extends GroupedFluidInv {
          * @param max The maximum. A value less than 0 will reset this back to no limits.
          * @return this.
          * @deprecated Replaced by {@link #limitInsertionAmount(FluidAmount)} */
-        @Deprecated
+        @Deprecated // (since = "0.6.4", forRemoval = true)
         default FluidLimitRule limitInsertionCount(int max) {
             return limitInsertionAmount(FluidAmount.of1620(max));
         }
@@ -113,7 +113,7 @@ public interface LimitedGroupedFluidInv extends GroupedFluidInv {
          * @param min The minimum number of items. A value of 0 removes the rule for this {@link FluidFilter}.
          * @return this.
          * @deprecated Replaced by {@link #setMinimum(FluidAmount)}. */
-        @Deprecated
+        @Deprecated // (since = "0.6.4", forRemoval = true)
         default FluidLimitRule setMinimum(int min) {
             return setMinimum(FluidAmount.of1620(min));
         }

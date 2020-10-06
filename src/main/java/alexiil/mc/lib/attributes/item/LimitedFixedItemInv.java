@@ -91,7 +91,7 @@ public interface LimitedFixedItemInv extends FixedItemInv {
          * 
          * @deprecated Because this is ambiguous as the name could refer to the count, or the filter, so instead you
          *             should use {@link #noInsertionFilter()}. */
-        @Deprecated
+        @Deprecated // (since = "0.5.1", forRemoval = true)
         default ItemSlotLimitRule noInsertionLimits() {
             return filterInserts(null);
         }

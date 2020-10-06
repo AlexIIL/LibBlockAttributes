@@ -234,13 +234,15 @@ public class AttributeList<T> extends AbstractAttributeList<T> {
         }
     }
 
-    /** @return A new voxel shape that has been extended to infinity(?) in the given direction, and also moved forwards
-     *         by half a voxel. */
+    /** @return A new voxel shape that has been extended to the edge of the block in the given direction, and also moved
+     *         forwards by half a voxel. */
     private static VoxelShape extendShape(VoxelShape shape, Direction direction) {
         if (direction == null) {
             return shape;
         }
         // TODO: Improve this algorithm!
+        // FIXME: This is likely a huge part of the performance issues!
+        // (moving by 1/32.0)
         VoxelShape combined = null;
         for (Box box : shape.getBoundingBoxes()) {
             // Offset it a tiny bit to allow an obstacle to return attributes (as otherwise it would block itself)

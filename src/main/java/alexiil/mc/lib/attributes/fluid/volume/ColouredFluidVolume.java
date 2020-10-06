@@ -42,7 +42,7 @@ public class ColouredFluidVolume extends FluidVolume {
         super(key, amount);
     }
 
-    @Deprecated
+    @Deprecated  // in 0.6.4
     public ColouredFluidVolume(ColouredFluidKey key, int amount) {
         super(key, amount);
     }

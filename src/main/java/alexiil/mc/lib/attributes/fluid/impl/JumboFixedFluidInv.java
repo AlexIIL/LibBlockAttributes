@@ -18,7 +18,7 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 public class JumboFixedFluidInv extends SimpleFixedFluidInv {
 
     /** @deprecated Replaced by {@link #JumboFixedFluidInv(int, FluidAmount)}. */
-    @Deprecated
+    @Deprecated // (since = "0.6.0", forRemoval = true)
     public JumboFixedFluidInv(int invSize, int tankCapacity) {
         super(invSize, tankCapacity);
     }

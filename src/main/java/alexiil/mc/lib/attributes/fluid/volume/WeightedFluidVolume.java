@@ -50,7 +50,7 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
         values.put(value, FluidAmount.ONE);
     }
 
-    @Deprecated
+    @Deprecated // (since = "0.6.4", forRemoval = true)
     public WeightedFluidVolume(WeightedFluidKey<T> key, T value, int amount) {
         this(key, value, FluidAmount.of1620(amount));
     }

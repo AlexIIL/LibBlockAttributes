@@ -16,11 +16,8 @@
  * <li>Slots are called "tanks"</li>
  * <li>Tanks/Slots do not have a pre-defined maximum amount (and neither do fluids themselves as that depends wholly on
  * the container).</li>
- * <li>The units for fluids are based around {@link alexiil.mc.lib.attributes.fluid.volume.FluidVolume#BASE_UNIT drips},
- * {@link alexiil.mc.lib.attributes.fluid.volume.FluidVolume#BOTTLE bottles}, and
- * {@link alexiil.mc.lib.attributes.fluid.volume.FluidVolume#BUCKET buckets}, however custom fluids can use their own
- * {@link alexiil.mc.lib.attributes.fluid.volume.FluidUnit units} if that makes more sense than the default
- * (buckets).</li>
+ * <li>The units for fluids are fractional amounts based on 1+0/1 being equal to 1 bucket, stored in
+ * {@link alexiil.mc.lib.attributes.fluid.amount.FluidAmount}.</li>
  * </ul>
  */
 package alexiil.mc.lib.attributes.fluid;

@@ -136,7 +136,7 @@ import javax.annotation.Nullable;
 
     /** @throws ArithmeticException if the given values don't fit in a {@link FluidAmount} */
     static FluidAmount _toSmall(BigInteger whole, BigInteger numerator, BigInteger denominator) {
-        return new FluidAmount(whole.longValueExact(), numerator.longValueExact(), denominator.longValueExact());
+        return FluidAmount.createDirect(whole.longValueExact(), numerator.longValueExact(), denominator.longValueExact());
     }
 
     BigFluidAmount _bigGcd(FluidAmountBase<?> by) {

@@ -32,7 +32,7 @@ public interface FluidInsertable extends LimitedConsumer<FluidVolume> {
     /** @deprecated This is an override for {@link LimitedConsumer}, for the full javadoc you probably want to call
      *             {@link #attemptInsertion(FluidVolume, Simulation)} directly. */
     @Override
-    @Deprecated
+    @Deprecated // Not for removal
     default boolean offer(FluidVolume fluid, Simulation simulation) {
         return attemptInsertion(fluid, simulation).isEmpty();
     }
@@ -40,7 +40,7 @@ public interface FluidInsertable extends LimitedConsumer<FluidVolume> {
     /** @deprecated This is an override for {@link LimitedConsumer}, for the full javadoc you probably want to call
      *             {@link #insert(FluidVolume)} directly. */
     @Override
-    @Deprecated
+    @Deprecated // Not for removal
     default boolean offer(FluidVolume object) {
         return insert(object).isEmpty();
     }
@@ -49,7 +49,7 @@ public interface FluidInsertable extends LimitedConsumer<FluidVolume> {
      *             {@link #attemptInsertion(FluidVolume, Simulation) attemptInsertion}(FluidVolume, Simulation.SIMULATE)
      *             directly. */
     @Override
-    @Deprecated
+    @Deprecated // Not for removal
     default boolean wouldAccept(FluidVolume object) {
         return attemptInsertion(object, Simulation.SIMULATE).isEmpty();
     }

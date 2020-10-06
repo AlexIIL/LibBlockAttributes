@@ -21,7 +21,9 @@ import alexiil.mc.lib.attributes.fluid.mixin.impl.BiomeEffectsAccessor;
 /** A {@link ColouredFluidKey} which gets it's colour from a {@link Biome}s water colour. */
 public class BiomeSourcedFluidKey extends ColouredFluidKey {
 
-    @Deprecated
+    /** @deprecated because it's recommended to create a {@link ColouredFluidKey.ColouredFluidKeyBuilder} instead and
+     *             pass that to {@link #BiomeSourcedFluidKey(ColouredFluidKeyBuilder)}. */
+    @Deprecated // (since = "0.8.1", forRemoval = true)
     public BiomeSourcedFluidKey(FluidKeyBuilder builder) {
         this(new ColouredFluidKeyBuilder().copyFrom(builder));
     }

@@ -30,7 +30,7 @@ import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer;
 
 public final class PotionFluidVolume extends FluidVolume {
 
-    @Deprecated
+    @Deprecated // (since = "0.6.0", forRemoval = true)
     public PotionFluidVolume(PotionFluidKey key, int amount) {
         super(key, amount);
     }
@@ -59,7 +59,7 @@ public final class PotionFluidVolume extends FluidVolume {
     /** @deprecated Replaced by {@link #getFullTooltip()}. */
     @Override
     @Environment(EnvType.CLIENT)
-    @Deprecated
+    @Deprecated // (since = "0.7.0", forRemoval = true)
     public List<Text> getTooltipText(TooltipContext ctx) {
         List<Text> tooltip = super.getTooltipText(ctx);
         PotionUtil.buildTooltip(PotionUtil.setPotion(new ItemStack(Items.POTION), getPotion()), tooltip, 1.0F);

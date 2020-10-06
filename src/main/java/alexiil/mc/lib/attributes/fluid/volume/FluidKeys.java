@@ -120,7 +120,7 @@ public final class FluidKeys {
     /** Removes a fluid entry from this map.
      * 
      * @deprecated Because I think fluids are meant to be all statically created? */
-    @Deprecated
+    @Deprecated // (forRemoval = false)
     public static synchronized void remove(Fluid fluid) {
         FLUIDS.remove(fluid);
     }

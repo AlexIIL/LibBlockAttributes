@@ -130,7 +130,7 @@ public class Attribute<T> {
 
     /** @deprecated Kept for backwards compatibility, instead you should call {@link #Attribute(Class)} followed by
      *             {@link #appendBlockAdder(CustomAttributeAdder)}. */
-    @Deprecated
+    @Deprecated // (since = "0.5.0", forRemoval = true)
     protected Attribute(Class<T> clazz, CustomAttributeAdder<T> customAdder) {
         this(clazz);
         appendBlockAdder(customAdder);
@@ -266,7 +266,7 @@ public class Attribute<T> {
 
     /** @deprecated Provided for backwards compatibility - instead you should use
      *             {@link #appendBlockAdder(CustomAttributeAdder)}. */
-    @Deprecated
+    @Deprecated // (since = "0.5.0", forRemoval = true)
     public final void appendCustomAdder(CustomAttributeAdder<T> customAdder) {
         appendBlockAdder(customAdder);
     }

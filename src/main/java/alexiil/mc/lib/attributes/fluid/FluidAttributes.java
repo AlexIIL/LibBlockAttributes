@@ -60,6 +60,7 @@ import alexiil.mc.lib.attributes.misc.LibBlockAttributes.LbaModule;
 import alexiil.mc.lib.attributes.misc.LimitedConsumer;
 import alexiil.mc.lib.attributes.misc.Reference;
 
+/** Central storage for fluid {@link Attribute} instances. */
 public final class FluidAttributes {
     private FluidAttributes() {}
 
@@ -163,13 +164,13 @@ public final class FluidAttributes {
     }
 
     /** @deprecated Because this implements support for {@link IBucketItem}, which is deprecated. */
-    @Deprecated
+    @Deprecated // (since = "0.8.2", forRemoval = true)
     private static boolean isValidBucket(ItemStack stack) {
         return isValidBucket(stack.getItem());
     }
 
     /** @deprecated Because this implements support for {@link IBucketItem}, which is deprecated. */
-    @Deprecated
+    @Deprecated // (since = "0.8.2", forRemoval = true)
     private static boolean isValidBucket(Item item) {
         if (item instanceof FishBucketItem) {
             return false;
@@ -181,7 +182,7 @@ public final class FluidAttributes {
      * the attributes.
      * 
      * @deprecated Because this implements support for {@link IBucketItem}, which is deprecated. */
-    @Deprecated
+    @Deprecated // (since = "0.8.2", forRemoval = true)
     static final class BucketItemGroupedFluidInv extends AbstractItemBasedAttribute implements GroupedFluidInv {
 
         BucketItemGroupedFluidInv(Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excessStacks) {

@@ -30,7 +30,7 @@ public interface ItemInsertable extends LimitedConsumer<ItemStack> {
     /** @deprecated This is an override for {@link LimitedConsumer}, for the full javadoc you probably want to call
      *             {@link #attemptInsertion(ItemStack, Simulation)} directly. */
     @Override
-    @Deprecated
+    @Deprecated // Not for removal
     default boolean offer(ItemStack stack, Simulation simulation) {
         return attemptInsertion(stack, simulation).isEmpty();
     }
@@ -38,7 +38,7 @@ public interface ItemInsertable extends LimitedConsumer<ItemStack> {
     /** @deprecated This is an override for {@link LimitedConsumer}, for the full javadoc you probably want to call
      *             {@link #insert(ItemStack)} directly. */
     @Override
-    @Deprecated
+    @Deprecated // Not for removal
     default boolean offer(ItemStack stack) {
         return insert(stack).isEmpty();
     }

@@ -22,10 +22,10 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
  * 
  * @deprecated Because any {@link FluidKey} can map to a single {@link Fluid}, and {@link SimpleFluidVolume} has a much
  *             better name than this. */
-@Deprecated
+@Deprecated // (since = "0.6.0", forRemoval = true)
 public class NormalFluidVolume extends FluidVolume {
 
-    @Deprecated
+    @Deprecated // (since = "0.6.0", forRemoval = true)
     NormalFluidVolume(NormalFluidKey fluid, int amount) {
         super(fluid, amount);
     }

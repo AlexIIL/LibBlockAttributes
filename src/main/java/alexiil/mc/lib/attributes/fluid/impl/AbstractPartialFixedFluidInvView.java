@@ -42,7 +42,7 @@ public abstract class AbstractPartialFixedFluidInvView implements FixedFluidInvV
     }
 
     @Override
-    @Deprecated
+    @Deprecated // (since = "0.6.0", forRemoval = true)
     public int getMaxAmount(int tank) {
         return inv.getMaxAmount(getInternalTank(tank));
     }

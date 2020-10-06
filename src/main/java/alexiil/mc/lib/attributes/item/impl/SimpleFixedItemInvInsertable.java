@@ -21,7 +21,7 @@ import alexiil.mc.lib.attributes.item.filter.ItemFilter;
  * (unless the target inventory has a very small {@link FixedItemInvView#getSlotCount() size}.
  * 
  * @deprecated Use {@link GroupedItemInvFixedWrapper} instead. */
-@Deprecated
+@Deprecated // (since = "0.4.0", forRemoval = true)
 public final class SimpleFixedItemInvInsertable implements ItemInsertable {
 
     private final GroupedItemInvFixedWrapper wrapper;

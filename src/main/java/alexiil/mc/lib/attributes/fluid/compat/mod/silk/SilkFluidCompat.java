@@ -22,6 +22,7 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.FluidAttributes;
 import alexiil.mc.lib.attributes.fluid.FluidExtractable;
 import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
+import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
@@ -50,8 +51,8 @@ public final class SilkFluidCompat {
                                 int amountMoved
                                     = container.tryPartialInsertFluid(dir, mcFluid, amount, toSilkAction(simulation));
                                 fluid = fluid.copy();
-                                FluidVolume removed = fluid.split(amountMoved);
-                                assert removed.getAmount() == amountMoved;
+                                FluidVolume removed = fluid.split(FluidAmount.of1620(amountMoved));
+                                assert removed.amount().as1620(RoundingMode.UNNECESSARY) == amountMoved;
                             }
                             return fluid;
                         });
@@ -69,9 +70,8 @@ public final class SilkFluidCompat {
                         list.add(new FluidExtractable() {
 
                             @Override
-                            @Deprecated
                             public FluidVolume attemptExtraction(
-                                FluidFilter filter, int maxAmount, Simulation simulation
+                                FluidFilter filter, FluidAmount maxAmount, Simulation simulation
                             ) {
                                 Direction dir = list.getSearchDirection();
                                 if (dir != null) {
@@ -81,10 +81,11 @@ public final class SilkFluidCompat {
                                     Fluid rawFluid = containedFluid.getFluid();
                                     FluidKey fluidKey = FluidKeys.get(rawFluid);
                                     if (fluidKey != null && filter.matches(fluidKey)) {
-                                        int extracted = container
-                                            .tryPartialExtractFluid(dir, rawFluid, maxAmount, toSilkAction(simulation));
+                                        int extracted = container.tryPartialExtractFluid(
+                                            dir, rawFluid, maxAmount.as1620(RoundingMode.DOWN), toSilkAction(simulation)
+                                        );
                                         if (extracted > 0) {
-                                            return fluidKey.withAmount(extracted);
+                                            return fluidKey.withAmount(FluidAmount.of1620(extracted));
                                         }
                                     }
                                 }

@@ -32,7 +32,7 @@ public enum EmptyFluidExtractable implements FluidExtractable, NullVariant {
     SUPPLIER;
 
     @Override
-    @Deprecated
+    @Deprecated // (since = "0.6.0", forRemoval = true)
     public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
         return FluidKeys.EMPTY.withAmount(FluidAmount.ZERO);
     }

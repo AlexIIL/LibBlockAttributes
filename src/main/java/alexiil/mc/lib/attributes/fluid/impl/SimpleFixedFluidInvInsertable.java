@@ -17,7 +17,7 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 /** @deprecated This has been replaced with {@link FixedFluidInv#getMappedInv(int...)} followed by
  *             {@link FixedFluidInv#getInsertable()}. (And optionally {@link FluidInsertable#getPureInsertable()} if you
  *             only want to expose it as an insertable). */
-@Deprecated
+@Deprecated // (since = "0.4.0", forRemoval = true)
 public final class SimpleFixedFluidInvInsertable implements FluidInsertable {
 
     private final FluidInsertable real;

@@ -50,7 +50,7 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable, Sa
     private static final FluidInvTankChangeListener[] INVALIDATING_LISTENERS = new FluidInvTankChangeListener[0];
 
     /** @deprecated Replaced by {@link #tankCapacity_F} */
-    @Deprecated
+    @Deprecated // (since = "0.6.0", forRemoval = true)
     public final int tankCapacity;
 
     public final FluidAmount tankCapacity_F;
@@ -68,7 +68,7 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable, Sa
     private FluidInvTankChangeListener[] bakedListeners = NO_LISTENERS;
 
     /** @deprecated Replaced by {@link #SimpleFixedFluidInv(int, FluidAmount)}. */
-    @Deprecated
+    @Deprecated // (since = "0.6.0", forRemoval = true)
     public SimpleFixedFluidInv(int invSize, int tankCapacity) {
         this(invSize, FluidAmount.of1620(tankCapacity));
     }
@@ -88,7 +88,7 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable, Sa
 
     /** @deprecated Replaced by {@link #getMaxAmount_F(int)}. */
     @Override
-    @Deprecated
+    @Deprecated // (since = "0.6.0", forRemoval = true)
     public int getMaxAmount(int tank) {
         return tankCapacity;
     }

@@ -20,7 +20,7 @@ public class SimpleFluidVolume extends FluidVolume {
         super(key, amount);
     }
 
-    @Deprecated
+    @Deprecated // (since = "0.6.4", forRemoval = true)
     protected SimpleFluidVolume(SimpleFluidKey key, int amount) {
         super(key, amount);
     }

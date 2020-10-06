@@ -21,7 +21,7 @@ public interface FluidInvAmountChangeListener_F {
      *            key, or equal to the passed {@link FluidKey} . */
     void onChange(GroupedFluidInvView inv, FluidKey fluid, FluidAmount previous, FluidAmount current);
 
-    @Deprecated
+    @Deprecated // (since = "0.6.0", forRemoval = true)
     public static FluidInvAmountChangeListener asOld(FluidInvAmountChangeListener_F listener) {
         return (inv, fluid, previous, current) -> {
             listener.onChange(inv, fluid, FluidAmount.of1620(previous), FluidAmount.of1620(current));

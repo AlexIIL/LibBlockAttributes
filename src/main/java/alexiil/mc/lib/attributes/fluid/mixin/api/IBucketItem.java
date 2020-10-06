@@ -22,7 +22,7 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
  * {@link FluidAttributes}. (Although unlike the vanilla bucket it can store fluids in NBT or be stackable).
  * 
  * @deprecated Replaced by {@link FluidContainerRegistry}. */
-@Deprecated
+@Deprecated // (since = "0.8.2", forRemoval = true)
 public interface IBucketItem {
 
     boolean libblockattributes__shouldExposeFluid();

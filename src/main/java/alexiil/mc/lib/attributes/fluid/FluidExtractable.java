@@ -23,7 +23,7 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
 
-/** Defines an object that can have items extracted from it.
+/** Defines an object that can have fluids extracted from it.
  * <p>
  * As of 0.6 implementations must override either {@link #attemptExtraction(FluidFilter, FluidAmount, Simulation)} or
  * {@link #attemptExtraction(FluidFilter, int, Simulation)}, as both implementations call each other by default. */
@@ -100,7 +100,7 @@ public interface FluidExtractable {
      * of {@link ConstantFluidFilter#ANYTHING}.
      * 
      * @deprecated Replaced by {@link #attemptAnyExtraction(FluidAmount, Simulation)} */
-    @Deprecated
+    @Deprecated // (since = "0.6.0", forRemoval = true)
     default FluidVolume attemptAnyExtraction(int maxAmount, Simulation simulation) {
         return attemptExtraction(ConstantFluidFilter.ANYTHING, maxAmount, simulation);
     }
@@ -120,7 +120,7 @@ public interface FluidExtractable {
      * @param maxAmount The maximum number of items that can be extracted. Negative numbers throw an exception.
      * @return A new, independent {@link ItemStack} that was extracted.
      * @deprecated Replaced by {@link #extract(FluidFilter, FluidAmount)}. */
-    @Deprecated
+    @Deprecated // (since = "0.6.0", forRemoval = true)
     default FluidVolume extract(FluidFilter filter, int maxAmount) {
         return attemptExtraction(filter, maxAmount, Simulation.ACTION);
     }
@@ -147,7 +147,7 @@ public interface FluidExtractable {
      * @param maxAmount The maximum number of items that can be extracted. Negative numbers throw an exception.
      * @return A new, independent {@link ItemStack} that was extracted.
      * @deprecated Replaced by {@link #extract(FluidKey, FluidAmount)} */
-    @Deprecated
+    @Deprecated // (since = "0.6.0", forRemoval = true)
     default FluidVolume extract(FluidKey filter, int maxAmount) {
         return attemptExtraction(filter.exactFilter, maxAmount, Simulation.ACTION);
     }
@@ -174,7 +174,7 @@ public interface FluidExtractable {
      * @param maxAmount The maximum number of items that can be extracted. Negative numbers throw an exception.
      * @return A new, independent {@link ItemStack} that was extracted.
      * @deprecated Replaced by {@link #extract(FluidAmount)} */
-    @Deprecated
+    @Deprecated // (since = "0.6.0", forRemoval = true)
     default FluidVolume extract(int maxAmount) {
         return attemptExtraction(ConstantFluidFilter.ANYTHING, maxAmount, Simulation.ACTION);
     }
@@ -228,7 +228,7 @@ public interface FluidExtractable {
         FluidExtractable delegate = this;
         return new FluidExtractable() {
             @Override
-            @Deprecated
+            @Deprecated // Just for the override, will be removed at the same time
             public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
                 return delegate.attemptExtraction(filter, maxAmount, simulation);
             }
@@ -239,7 +239,7 @@ public interface FluidExtractable {
             }
 
             @Override
-            @Deprecated
+            @Deprecated // Just for the override, will be removed at the same time
             public FluidVolume attemptAnyExtraction(int maxAmount, Simulation simulation) {
                 return delegate.attemptAnyExtraction(maxAmount, simulation);
             }

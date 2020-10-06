@@ -82,8 +82,17 @@ public interface LimitedFixedFluidInv extends FixedFluidInv {
          * @param filter Null or {@link ConstantFluidFilter#ANYTHING} to clear the current filter. */
         FluidTankLimitRule filterInserts(@Nullable FluidFilter filter);
 
-        /** Removes the current {@link #filterInserts(FluidFilter)}. */
+        /** Removes the current {@link #filterInserts(FluidFilter)}.
+         * 
+         * @deprecated Because this is ambiguous as the name could refer to the count, or the filter, so instead you
+         *             should use {@link #noInsertionFilter()} */
+        @Deprecated // (since = "0.8.2", forRemoval = "true")
         default FluidTankLimitRule noInsertionLimits() {
+            return filterInserts(null);
+        }
+
+        /** Removes the current {@link #filterInserts(FluidFilter) insertion filter}. */
+        default FluidTankLimitRule noInsertionFilter() {
             return filterInserts(null);
         }
 
@@ -103,7 +112,7 @@ public interface LimitedFixedFluidInv extends FixedFluidInv {
          * @param max The maximum. A value below 0 will reset this rule.
          * @return this.
          * @deprecated Replaced by {@link #limitInsertionAmount(FluidAmount)}. */
-        @Deprecated
+        @Deprecated // (since = "0.6.0", forRemoval = true)
         default FluidTankLimitRule limitInsertionCount(int max) {
             return limitInsertionAmount(FluidAmount.of1620(max));
         }
@@ -120,7 +129,7 @@ public interface LimitedFixedFluidInv extends FixedFluidInv {
          * 
          * @return this.
          * @deprecated Replaced by {@link #setMinimum(FluidAmount)} */
-        @Deprecated
+        @Deprecated // (since = "0.6.0", forRemoval = true)
         default FluidTankLimitRule setMinimum(int min) {
             return setMinimum(FluidAmount.of1620(min));
         }

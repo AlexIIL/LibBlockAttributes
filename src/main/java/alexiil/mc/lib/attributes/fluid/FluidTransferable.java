@@ -81,13 +81,13 @@ public interface FluidTransferable extends FluidInsertable, FluidExtractable {
             }
 
             @Override
-            @Deprecated
+            @Deprecated // (since = "0.6.0", forRemoval = true)
             public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
                 return extractable.attemptExtraction(filter, maxAmount, simulation);
             }
 
             @Override
-            @Deprecated
+            @Deprecated // (since = "0.6.0", forRemoval = true)
             public FluidVolume attemptAnyExtraction(int maxAmount, Simulation simulation) {
                 return extractable.attemptAnyExtraction(maxAmount, simulation);
             }
@@ -129,13 +129,13 @@ public interface FluidTransferable extends FluidInsertable, FluidExtractable {
             }
 
             @Override
-            @Deprecated
+            @Deprecated // (since = "0.6.0", forRemoval = true)
             public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
                 return extractable.attemptExtraction(filter, maxAmount, simulation);
             }
 
             @Override
-            @Deprecated
+            @Deprecated // (since = "0.6.0", forRemoval = true)
             public FluidVolume attemptAnyExtraction(int maxAmount, Simulation simulation) {
                 return extractable.attemptAnyExtraction(maxAmount, simulation);
             }

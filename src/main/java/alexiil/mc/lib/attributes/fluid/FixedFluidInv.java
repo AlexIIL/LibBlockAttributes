@@ -27,8 +27,8 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.item.ItemExtractable;
 
-/** A changeable {@link FixedFluidInvView} that can have it's contents changed. Note that this does not imply that the
- * contents can be changed to anything the caller wishes them to be.
+/** A {@link FixedFluidInvView} that can have it's contents changed. Note that this does not imply that the contents can
+ * be changed to anything the caller wishes them to be.
  * <p>
  * The attribute is stored in {@link FluidAttributes#FIXED_INV}.
  * <p>

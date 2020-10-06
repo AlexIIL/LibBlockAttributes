@@ -102,7 +102,7 @@ public class CombinedFixedFluidInvView<InvType extends FixedFluidInvView> implem
     }
 
     @Override
-    @Deprecated
+    @Deprecated // (since = "0.6.0", forRemoval = true)
     public int getMaxAmount(int tank) {
         return getInv(tank).getMaxAmount(getSubTank(tank));
     }

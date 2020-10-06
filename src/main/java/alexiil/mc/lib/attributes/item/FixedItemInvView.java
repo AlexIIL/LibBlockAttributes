@@ -77,10 +77,10 @@ public interface FixedItemInvView extends Convertible, AbstractItemInvView {
         return stack.isEmpty() ? 64 : stack.getMaxCount();
     }
 
-    /** Checks to see if the given stack would be valid for this slot, ignoring the current contents. Note that
-     * this method should adhere to the requirements of {@link ItemFilter#matches(ItemStack)}, so this must not care
-     * about the {@link ItemStack#getCount()}. Passing {@link ItemStack#isEmpty() empty} stacks will generally not
-     * return useful results.
+    /** Checks to see if the given stack would be valid for this slot, ignoring the current contents. Note that this
+     * method should adhere to the requirements of {@link ItemFilter#matches(ItemStack)}, so this must not care about
+     * the {@link ItemStack#getCount()}. Passing {@link ItemStack#isEmpty() empty} stacks will generally not return
+     * useful results.
      * 
      * @param slot The slot index. Must be a value between 0 (inclusive) and {@link #getSlotCount()} (exclusive) to be
      *            valid. (Like in arrays, lists, etc).
@@ -200,7 +200,7 @@ public interface FixedItemInvView extends Convertible, AbstractItemInvView {
      * 
      * @deprecated Because this functionality has been fully replaced by {@link Convertible} and it's usage in
      *             {@link AttributeList}, so you can always just offer this object directly to the attribute list. */
-    @Deprecated
+    @Deprecated // (since = "0.4.9", forRemoval = true)
     default void offerSelfAsAttribute(
         AttributeList<?> list, @Nullable CacheInfo cacheInfo, @Nullable VoxelShape shape
     ) {
