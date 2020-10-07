@@ -40,7 +40,15 @@ public final class FluidVolumeUtil {
      * @return A copy of the fluid moved.
      * @see #move(FluidExtractable, FluidInsertable, FluidFilter, int) */
     public static FluidVolume move(FluidExtractable from, FluidInsertable to) {
-        return move(from, to, null, FluidAmount.MAX_BUCKETS);
+        return move(from, to, null, FluidAmount.MAX_BUCKETS, Simulation.ACTION);
+    }
+
+    /** Attempts to move as much fluid as possible from the {@link FluidExtractable} to the {@link FluidInsertable}.
+     * 
+     * @return A copy of the fluid moved.
+     * @see #move(FluidExtractable, FluidInsertable, FluidFilter, int) */
+    public static FluidVolume move(FluidExtractable from, FluidInsertable to, Simulation simulation) {
+        return move(from, to, null, FluidAmount.MAX_BUCKETS, simulation);
     }
 
     /** Attempts to move up to the given amount of fluid from the {@link FluidExtractable} to the
@@ -51,7 +59,7 @@ public final class FluidVolumeUtil {
      * @deprecated Replaced by {@link #move(FluidExtractable, FluidInsertable, FluidAmount)} */
     @Deprecated // (since = "0.6.0", forRemoval = true)
     public static FluidVolume move(FluidExtractable from, FluidInsertable to, int maximum) {
-        return move(from, to, null, maximum);
+        return move(from, to, null, FluidAmount.of1620(maximum), Simulation.ACTION);
     }
 
     /** Attempts to move up to the given amount of fluid from the {@link FluidExtractable} to the
@@ -60,7 +68,18 @@ public final class FluidVolumeUtil {
      * @return A copy of the fluid moved.
      * @see #move(FluidExtractable, FluidInsertable, FluidFilter, int) */
     public static FluidVolume move(FluidExtractable from, FluidInsertable to, FluidAmount maximum) {
-        return move(from, to, null, maximum);
+        return move(from, to, null, maximum, Simulation.ACTION);
+    }
+
+    /** Attempts to move up to the given amount of fluid from the {@link FluidExtractable} to the
+     * {@link FluidInsertable}.
+     * 
+     * @return A copy of the fluid moved.
+     * @see #move(FluidExtractable, FluidInsertable, FluidFilter, int) */
+    public static FluidVolume move(
+        FluidExtractable from, FluidInsertable to, FluidAmount maximum, Simulation simulation
+    ) {
+        return move(from, to, null, maximum, simulation);
     }
 
     /** Attempts to move up to the given maximum amount of fluids from the {@link FluidExtractable} to the
@@ -70,7 +89,7 @@ public final class FluidVolumeUtil {
      * @deprecated Replaced by {@link #move(FluidExtractable, FluidInsertable, FluidFilter, FluidAmount)} */
     @Deprecated // (since = "0.6.0", forRemoval = true)
     public static FluidVolume move(FluidExtractable from, FluidInsertable to, FluidFilter filter, int maximum) {
-        return move(from, to, filter, FluidAmount.of1620(maximum));
+        return move(from, to, filter, FluidAmount.of1620(maximum), Simulation.ACTION);
     }
 
     /** Attempts to move up to the given maximum amount of fluids from the {@link FluidExtractable} to the
@@ -78,7 +97,17 @@ public final class FluidVolumeUtil {
      * 
      * @return A copy of the fluid moved. */
     public static FluidVolume move(FluidExtractable from, FluidInsertable to, FluidFilter filter) {
-        return move(from, to, filter, null);
+        return move(from, to, filter, null, Simulation.ACTION);
+    }
+
+    /** Attempts to move up to the given maximum amount of fluids from the {@link FluidExtractable} to the
+     * {@link FluidInsertable}, provided they match the given {@link FluidFilter}.
+     * 
+     * @return A copy of the fluid moved. */
+    public static FluidVolume move(
+        FluidExtractable from, FluidInsertable to, FluidFilter filter, Simulation simulation
+    ) {
+        return move(from, to, filter, null, simulation);
     }
 
     /** Attempts to move up to the given maximum amount of fluids from the {@link FluidExtractable} to the
