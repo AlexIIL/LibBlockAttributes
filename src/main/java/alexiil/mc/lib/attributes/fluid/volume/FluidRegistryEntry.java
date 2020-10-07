@@ -11,8 +11,10 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.potion.Potion;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
@@ -61,22 +63,31 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
         return System.identityHashCode(backingRegistry) * 31 + objId.hashCode();
     }
 
-    static String getName(Registry<?> registry) {
+    /** @return The save name for the given registry. Currently {@link Fluid} and {@link Potion} based registries are
+     *         special-cased to return single-char strings ('f' and 'p' respectively). In the future other common
+     *         registries may have additional special names. The only guarantee given is that
+     *         {@link #getRegistryFromName(String)} will know what the mapping is. */
+    public static String getName(Registry<?> registry) {
         if (registry == Registry.FLUID) {
             return "f";
         } else if (registry == Registry.POTION) {
             return "p";
         } else {
-            Identifier id = ((Registry<Registry<?>>) Registry.REGISTRIES).getId(registry);
-            if (id == null) {
-                throw new IllegalArgumentException("Unregistered registry: " + registry);
-            }
-            return id.toString();
+            return getFullRegistryName(registry).toString();
         }
     }
 
+    /** @return The full {@link Identifier} for the given registry. This isn't directly used for saving. */
+    public static Identifier getFullRegistryName(Registry<?> registry) {
+        Identifier id = ((Registry<Registry<?>>) Registry.REGISTRIES).getId(registry);
+        if (id == null) {
+            throw new IllegalArgumentException("Unregistered registry: " + registry);
+        }
+        return id;
+    }
+
     @Nullable
-    static DefaultedRegistry<?> fromName(String name) {
+    public static DefaultedRegistry<?> getRegistryFromName(String name) {
         if ("f".equals(name)) {
             return Registry.FLUID;
         } else if ("p".equals(name)) {
@@ -166,6 +177,10 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
     @Override
     public Identifier getId() {
         return objId;
+    }
+
+    public Registry<T> getBackingRegistry() {
+        return backingRegistry;
     }
 
     public T getBackingObject() {

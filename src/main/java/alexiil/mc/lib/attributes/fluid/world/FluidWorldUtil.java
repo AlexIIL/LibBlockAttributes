@@ -24,8 +24,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldAccess;
 
 import alexiil.mc.lib.attributes.Simulation;
+import alexiil.mc.lib.attributes.fluid.FluidExtractable;
+import alexiil.mc.lib.attributes.fluid.FluidInsertable;
 import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
+import alexiil.mc.lib.attributes.fluid.filter.FluidTypeFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
@@ -73,10 +77,9 @@ public final class FluidWorldUtil {
         return FluidVolumeUtil.EMPTY;
     }
 
-    /**
-     * Attempts to place the given fluid volume into the given block position.
-     * @return The leftover amount of fluid after placing, or the original volume if it was unable to be placed.
-     */
+    /** Attempts to place the given fluid volume into the given block position.
+     * 
+     * @return The leftover amount of fluid after placing, or the original volume if it was unable to be placed. */
     public static FluidVolume fill(WorldAccess world, BlockPos pos, FluidVolume volume, Simulation simulation) {
 
         if (volume.getAmount_F().isLessThan(FluidAmount.BUCKET)) {
@@ -136,4 +139,39 @@ public final class FluidWorldUtil {
         return fluid;
     }
 
+    /** @return A {@link FluidExtractable} that pumps fluid directly out of the given world co-ordinates. (I.E. from
+     *         water or lava directly). */
+    public static FluidExtractable createFluidDrainer(WorldAccess world, BlockPos pos) {
+        return new FluidExtractable() {
+            @Override
+            public FluidVolume attemptExtraction(FluidFilter filter, FluidAmount maxAmount, Simulation simulation) {
+
+                FluidVolume simulated = drain(world, pos, Simulation.SIMULATE);
+                if (simulated.amount().isGreaterThan(maxAmount)) {
+                    return FluidVolumeUtil.EMPTY;
+                }
+                if (simulation.isSimulate()) {
+                    return simulated;
+                } else {
+                    return drain(world, pos, Simulation.ACTION);
+                }
+            }
+        };
+    }
+
+    /** @return A {@link FluidInsertable} that places the fluid given directly at the given world co-ordinates, if there
+     *         isn't already fluid there. */
+    public static FluidInsertable createFluidPlacer(WorldAccess world, BlockPos pos) {
+        return new FluidInsertable() {
+            @Override
+            public FluidVolume attemptInsertion(FluidVolume fluid, Simulation simulation) {
+                return fill(world, pos, fluid, simulation);
+            }
+
+            @Override
+            public FluidFilter getInsertionFilter() {
+                return FluidTypeFilter.RAW_FLUID;
+            }
+        };
+    }
 }

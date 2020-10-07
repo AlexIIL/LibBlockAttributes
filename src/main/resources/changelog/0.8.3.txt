@@ -1,0 +1,4 @@
+Changes:
+
+* Added FluidTypeFilter, for checking if a fluid is a raw (minecraft) fluid, a floating fluid, or of a particular registry.
+* Added FluidWorldUtil.createFluidDrainer and FluidWorldUtil.createFluidPlacer, which return a FluidExtractable and FluidInsertable that operate on the world directly.
