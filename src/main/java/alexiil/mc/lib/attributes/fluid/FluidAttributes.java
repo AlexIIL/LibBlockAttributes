@@ -22,8 +22,6 @@ import net.fabricmc.loader.api.ModContainer;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.BucketItem;
-import net.minecraft.item.FishBucketItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Attribute;
@@ -55,7 +53,6 @@ import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
-import alexiil.mc.lib.attributes.misc.AbstractItemBasedAttribute;
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes.LbaModule;
 import alexiil.mc.lib.attributes.misc.LimitedConsumer;
 import alexiil.mc.lib.attributes.misc.Reference;
@@ -157,33 +154,15 @@ public final class FluidAttributes {
     ) {
         CombinableAttribute<T> attribute = Attributes.createCombinable(clazz, defaultValue, combiner);
         AttributeSourceType srcType = AttributeSourceType.COMPAT_WRAPPER;
-        attribute.addItemPredicateAdder(srcType, true, FluidAttributes::isValidBucket, (ref, excess, list) -> {
+        attribute.addItemPredicateAdder(srcType, true, FluidItemBase::isIBucket, (ref, excess, list) -> {
             list.offer(new BucketItemGroupedFluidInv(ref, excess));
         });
         return attribute;
     }
 
-    /** @deprecated Because this implements support for {@link IBucketItem}, which is deprecated. */
-    @Deprecated // (since = "0.8.2", forRemoval = true)
-    private static boolean isValidBucket(ItemStack stack) {
-        return isValidBucket(stack.getItem());
-    }
-
-    /** @deprecated Because this implements support for {@link IBucketItem}, which is deprecated. */
-    @Deprecated // (since = "0.8.2", forRemoval = true)
-    private static boolean isValidBucket(Item item) {
-        if (item instanceof FishBucketItem) {
-            return false;
-        }
-        return item instanceof IBucketItem && ((IBucketItem) item).libblockattributes__shouldExposeFluid();
-    }
-
     /** A {@link GroupedFluidInv} for a {@link BucketItem}. Package-private because this should always be accessed via
-     * the attributes.
-     * 
-     * @deprecated Because this implements support for {@link IBucketItem}, which is deprecated. */
-    @Deprecated // (since = "0.8.2", forRemoval = true)
-    static final class BucketItemGroupedFluidInv extends AbstractItemBasedAttribute implements GroupedFluidInv {
+     * the attributes. */
+    static final class BucketItemGroupedFluidInv extends FluidItemBase implements GroupedFluidInv {
 
         BucketItemGroupedFluidInv(Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excessStacks) {
             super(stackRef, excessStacks);
@@ -192,7 +171,7 @@ public final class FluidAttributes {
         @Override
         public Set<FluidKey> getStoredFluids() {
             ItemStack stack = stackRef.get();
-            if (!isValidBucket(stack)) {
+            if (!isIBucket(stack)) {
                 return Collections.emptySet();
             }
             IBucketItem bucket = (IBucketItem) stack.getItem();
@@ -206,7 +185,7 @@ public final class FluidAttributes {
         @Override
         public FluidAmount getTotalCapacity_F() {
             ItemStack stack = stackRef.get();
-            if (!isValidBucket(stack)) {
+            if (!isIBucket(stack)) {
                 return FluidAmount.ZERO;
             }
             IBucketItem bucket = (IBucketItem) stack.getItem();
@@ -217,36 +196,7 @@ public final class FluidAttributes {
         @Override
         public FluidInvStatistic getStatistics(FluidFilter filter) {
             ItemStack stack = stackRef.get();
-            if (!isValidBucket(stack)) {
-                return FluidInvStatistic.emptyOf(filter);
-            }
-
-            IBucketItem bucket = (IBucketItem) stack.getItem();
-            FluidKey current = bucket.libblockattributes__getFluid(stack);
-
-            if (current != FluidKeys.EMPTY) {
-                if (filter.matches(current)) {
-                    FluidAmount perBucket = bucket.libblockattributes__getFluidVolumeAmount();
-                    FluidAmount amount = perBucket.checkedMul(stack.getCount());
-                    return new FluidInvStatistic(filter, amount, FluidAmount.ZERO, amount);
-                } else {
-                    return FluidInvStatistic.emptyOf(filter);
-                }
-            }
-
-            Set<FluidKey> any = FluidFilterUtil.decomposeFilter(filter);
-
-            if (any != null) {
-                FluidAmount perBucket = bucket.libblockattributes__getFluidVolumeAmount();
-                FluidAmount space = perBucket.checkedMul(stack.getCount());
-                for (FluidKey key : any) {
-                    if (!bucket.libblockattributes__withFluid(key).isEmpty()) {
-                        return new FluidInvStatistic(filter, FluidAmount.ZERO, FluidAmount.ZERO, space);
-                    }
-                }
-            }
-
-            return FluidInvStatistic.emptyOf(filter);
+            return getIBucketStatistics(stack, filter);
         }
 
         @Override
@@ -257,45 +207,13 @@ public final class FluidAttributes {
         @Override
         public FluidVolume attemptInsertion(FluidVolume fluid, Simulation simulation) {
             ItemStack stack = stackRef.get();
-            if (!isValidBucket(stack)) {
-                return fluid;
-            }
-            IBucketItem bucket = (IBucketItem) stack.getItem();
-            FluidAmount perBucket = bucket.libblockattributes__getFluidVolumeAmount();
-            if (fluid.getAmount_F().isLessThan(perBucket)) {
-                return fluid;
-            }
-            FluidKey current = bucket.libblockattributes__getFluid(stack);
-            if (!current.isEmpty()) {
-                return fluid;
-            }
-            ItemStack newStack = bucket.libblockattributes__withFluid(fluid.fluidKey);
-            if (newStack.isEmpty()) {
-                return fluid;
-            }
-
-            stack = stack.copy();
-            stack.decrement(1);
-
-            FluidVolume originalFluid = fluid;
-            fluid = fluid.copy();
-            FluidVolume splitOff = fluid.split(perBucket);
-            if (!splitOff.getAmount_F().equals(perBucket)) {
-                throw new IllegalStateException(
-                    "Split off amount was not equal to perBucket!"//
-                        + "\n\tsplitOff = " + splitOff//
-                        + "\n\tfluid = " + fluid//
-                        + "\n\tperBucket = " + perBucket//
-                );
-            }
-
-            return setStacks(simulation, stack, newStack) ? fluid : originalFluid;
+            return attemptIBucketInsertion(stack, fluid, simulation);
         }
 
         @Override
         public FluidVolume attemptExtraction(FluidFilter filter, FluidAmount maxAmount, Simulation simulation) {
             ItemStack stack = stackRef.get();
-            if (!isValidBucket(stack)) {
+            if (!isIBucket(stack)) {
                 return FluidVolumeUtil.EMPTY;
             }
             IBucketItem bucket = (IBucketItem) stack.getItem();

@@ -19,10 +19,8 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** General interface for any bucket-like {@link Item} to be exposed by default as a {@link GroupedFluidInv} in
- * {@link FluidAttributes}. (Although unlike the vanilla bucket it can store fluids in NBT or be stackable).
- * 
- * @deprecated Replaced by {@link FluidContainerRegistry}. */
-@Deprecated // (since = "0.8.2", forRemoval = true)
+ * {@link FluidAttributes}. (Although unlike the vanilla bucket it can store fluids in NBT or be stackable). Note that
+ * any registrations to {@link FluidContainerRegistry} will be considered before this. */
 public interface IBucketItem {
 
     boolean libblockattributes__shouldExposeFluid();

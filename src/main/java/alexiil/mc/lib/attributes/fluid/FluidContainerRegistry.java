@@ -28,6 +28,7 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ExactFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
+import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.misc.AbstractItemBasedAttribute;
@@ -494,7 +495,7 @@ public final class FluidContainerRegistry {
             return "{FluidContainerRegistry.StateEmpty for " + itemToString() + "}";
         }
 
-        class EmptyBucketInv extends AbstractItemBasedAttribute implements GroupedFluidInv {
+        class EmptyBucketInv extends FluidItemBase implements GroupedFluidInv {
             public EmptyBucketInv(Reference<ItemStack> stackRef, LimitedConsumer<ItemStack> excessStacks) {
                 super(stackRef, excessStacks);
             }
@@ -516,7 +517,7 @@ public final class FluidContainerRegistry {
                     FluidKey fluid = ((ExactFluidFilter) filter).fluid;
                     FluidFillHandler handler = variants.get(fluid, fluid.getClass());
                     if (handler == null) {
-                        return FluidInvStatistic.emptyOf(filter);
+                        return getIBucketStatistics(stack, filter);
                     }
                     FluidAmount capacity = handler.getCapacity(filter).mul(stack.getCount());
                     return new FluidInvStatistic(filter, FluidAmount.ZERO, FluidAmount.ZERO, capacity);
@@ -543,7 +544,11 @@ public final class FluidContainerRegistry {
 
                 FluidFillHandler handler = variants.get(fluid.fluidKey, fluid.fluidKey.getClass());
 
-                if (handler == null || fluid.amount().isLessThan(handler.minimum)) {
+                if (handler == null) {
+                    return attemptIBucketInsertion(stack, fluid, simulation);
+                }
+
+                if (fluid.amount().isLessThan(handler.minimum)) {
                     return fluid;
                 }
 

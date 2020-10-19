@@ -11,7 +11,7 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.ItemStack;
 
-/** Items that extend {@link BucketItem} should implement this interface to ensure that LBA gets the correct
+/** Items that implement {@link BucketItem} should implement this interface to ensure that LBA gets the correct
  * {@link ItemStack} from filling this with a fluid. */
 public interface ICustomBucketItem {
     ItemStack getFilledBucket(Fluid fluid);
