@@ -4,3 +4,5 @@ Changes:
 * Added FluidWorldUtil.createFluidDrainer and FluidWorldUtil.createFluidPlacer, which return a FluidExtractable and FluidInsertable that operate on the world directly.
 * Added a few additional variants of FluidVolumeUtil.move that take a Simulation parameter.
 * Undeprecate IBucketItem and make FluidContainerRegistry use it.
+* Remove GroupedFluidInvFixedWrapper.getInsertionFilter() as it wasn't correct.
+    (It returned all of the filters for every slot OR'd together, but ItemInsertable.getInsertionFilter() is meant to filter only item stacks where attemptInsertion would succeed).
