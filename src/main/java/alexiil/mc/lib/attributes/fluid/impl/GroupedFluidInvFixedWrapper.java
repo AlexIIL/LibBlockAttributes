@@ -38,30 +38,6 @@ public class GroupedFluidInvFixedWrapper extends GroupedFluidInvViewFixedWrapper
     }
 
     @Override
-    public FluidFilter getInsertionFilter() {
-        int tankCount = inv().getTankCount();
-        switch (tankCount) {
-            case 0: {
-                // What?
-                return ConstantFluidFilter.NOTHING;
-            }
-            case 1: {
-                return inv().getFilterForTank(0);
-            }
-            case 2: {
-                return inv().getFilterForTank(0).or(inv().getFilterForTank(1));
-            }
-            default: {
-                List<FluidFilter> filters = new ArrayList<>(tankCount);
-                for (int i = 0; i < tankCount; i++) {
-                    filters.add(inv().getFilterForTank(i));
-                }
-                return AggregateFluidFilter.anyOf(filters);
-            }
-        }
-    }
-
-    @Override
     public FluidVolume attemptInsertion(FluidVolume fluid, Simulation simulation) {
         if (fluid.isEmpty()) {
             return FluidVolumeUtil.EMPTY;

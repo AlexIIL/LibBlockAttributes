@@ -38,7 +38,6 @@ import alexiil.mc.lib.attributes.fluid.compat.mod.LbaFluidModCompatLoader;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
-import alexiil.mc.lib.attributes.fluid.filter.FluidFilterUtil;
 import alexiil.mc.lib.attributes.fluid.impl.CombinedFixedFluidInv;
 import alexiil.mc.lib.attributes.fluid.impl.CombinedFixedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.impl.CombinedFluidExtractable;
