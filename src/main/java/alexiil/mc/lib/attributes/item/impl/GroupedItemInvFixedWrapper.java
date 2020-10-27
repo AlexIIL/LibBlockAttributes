@@ -7,17 +7,12 @@
  */
 package alexiil.mc.lib.attributes.item.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
 import alexiil.mc.lib.attributes.item.FixedItemInvView;
 import alexiil.mc.lib.attributes.item.GroupedItemInv;
-import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
-import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 /** A {@link GroupedItemInv} wrapper over a {@link FixedItemInv}. This implementation is the naive implementation where
@@ -32,30 +27,6 @@ public class GroupedItemInvFixedWrapper extends GroupedItemInvViewFixedWrapper i
 
     final FixedItemInv inv() {
         return (FixedItemInv) inv;
-    }
-
-    @Override
-    public ItemFilter getInsertionFilter() {
-        int invSize = inv.getSlotCount();
-        switch (invSize) {
-            case 0: {
-                // What?
-                return ConstantItemFilter.NOTHING;
-            }
-            case 1: {
-                return inv.getFilterForSlot(0);
-            }
-            case 2: {
-                return inv.getFilterForSlot(0).or(inv.getFilterForSlot(1));
-            }
-            default: {
-                List<ItemFilter> filters = new ArrayList<>(invSize);
-                for (int i = 0; i < invSize; i++) {
-                    filters.add(inv.getFilterForSlot(i));
-                }
-                return AggregateItemFilter.anyOf(filters);
-            }
-        }
     }
 
     @Override
