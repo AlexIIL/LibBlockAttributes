@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Properties;
 
 import net.fabricmc.loader.api.FabricLoader;
@@ -62,7 +63,8 @@ public final class LbaFluidsConfig {
         }
         Path cfgFile = cfgDir.resolve(FILE_NAME);
         Properties props = new Properties();
-        if (Files.exists(cfgFile)) {
+        boolean didFileExist = Files.exists(cfgFile);
+        if (didFileExist) {
             try (Reader reader = Files.newBufferedReader(cfgFile, StandardCharsets.UTF_8)) {
                 props.load(reader);
             } catch (IOException e) {
@@ -90,10 +92,12 @@ public final class LbaFluidsConfig {
         TOOLTIP_JOIN_NAME_AMOUNT = "true".equalsIgnoreCase(props.getProperty("tooltip_join_name_amount", "false"));
 
         if (!hasAll) {
-            try (Writer fw = Files.newBufferedWriter(cfgFile, StandardCharsets.UTF_8)) {
-                fw.append("# LibBlockAttributes options file (fluids module)\n");
-                fw.append("# Removing an option will reset it back to the default value\n");
-                fw.append("# Removing or altering comments doesn't replace them.\n\n");
+            try (Writer fw = Files.newBufferedWriter(cfgFile, StandardCharsets.UTF_8, StandardOpenOption.APPEND)) {
+                if (!didFileExist) {
+                    fw.append("# LibBlockAttributes options file (fluids module)\n");
+                    fw.append("# Removing an option will reset it back to the default value\n");
+                    fw.append("# Removing or altering comments doesn't replace them.\n\n");
+                }
 
                 if (!props.containsKey("symbols")) {
                     fw.append("# False to use long names (buckets, ticks) or true to use symbols (B, t)\n");
