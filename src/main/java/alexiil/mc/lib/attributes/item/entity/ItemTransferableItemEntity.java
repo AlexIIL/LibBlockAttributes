@@ -7,6 +7,7 @@
  */
 package alexiil.mc.lib.attributes.item.entity;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 
@@ -59,7 +60,7 @@ public class ItemTransferableItemEntity implements ItemTransferable {
         if (simulation == Simulation.ACTION) {
             entity.setStack(current);
             if (current.isEmpty()) {
-                entity.remove();
+                entity.remove(Entity.RemovalReason.DISCARDED);
             }
         }
         return extracted;

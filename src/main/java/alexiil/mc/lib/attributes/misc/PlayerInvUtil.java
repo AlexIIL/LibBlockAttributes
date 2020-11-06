@@ -26,7 +26,7 @@ public final class PlayerInvUtil {
     /** Either inserts the given item into the player's inventory or drops it in front of them. Note that this will
      * always keep a reference to the passed stack (and might modify it!) */
     public static void insertItemIntoPlayerInventory(PlayerEntity player, ItemStack stack) {
-        if (player.inventory.insertStack(stack) && stack.isEmpty()) {
+        if (player.method_31548().insertStack(stack) && stack.isEmpty()) {
             return;
         }
         player.dropItem(stack, /* PreventPlayerQuickPickup = */ false);
@@ -35,8 +35,8 @@ public final class PlayerInvUtil {
     /** Creates a {@link Reference} to the given player's {@link PlayerInventory#getCursorStack() cursor stack}, that
      * updates the client whenever it is changed. */
     public static Reference<ItemStack> referenceGuiCursor(ServerPlayerEntity player) {
-        return Reference.callable(player.inventory::getCursorStack, s -> {
-            player.inventory.setCursorStack(s);
+        return Reference.callable(player.method_31548()::getCursorStack, s -> {
+            player.method_31548().setCursorStack(s);
             player.updateCursorStack();
         }, s -> true);
     }

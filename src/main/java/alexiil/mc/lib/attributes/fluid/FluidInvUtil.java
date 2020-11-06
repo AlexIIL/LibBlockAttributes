@@ -1714,7 +1714,7 @@ public final class FluidInvUtil {
         if (mainStack.isEmpty()) {
             return FluidTankInteraction.NONE;
         }
-        boolean isCreative = player.abilities.creativeMode;
+        boolean isCreative = player.method_31549().creativeMode;
         Reference<ItemStack> realRef = stack;
         if (isCreative) {
             realRef = Reference.callable(stack::get, ITEM_VOID, s -> true);
