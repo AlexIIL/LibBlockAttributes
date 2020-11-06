@@ -20,7 +20,7 @@ repositories {
 }
 
 archivesBaseName = "libblockatttributes"
-version = "0.8.5-pre.1"
+version = "0.8.1700-pre.1"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -57,6 +57,7 @@ sourceSets {
         java {
             srcDir "src/main/java"
             srcDir "src/fatjar/java"
+            exclude "alexiil/mc/lib/attributes/fluid/compat/mod/reborncore/**"
         }
     }
 }
