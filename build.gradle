@@ -120,9 +120,9 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 new File("run/").mkdirs();
 
-//test {
-//    workingDir = "run/"
-//}
+test {
+    workingDir = "run/"
+}
 
 publishing {
     repositories {
