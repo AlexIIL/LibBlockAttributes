@@ -33,6 +33,7 @@ import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.screen.PlayerScreenHandler;
 
 import alexiil.mc.lib.attributes.fluid.mixin.impl.RenderLayerAccessor;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
@@ -98,7 +99,7 @@ public abstract class FluidVolumeRenderer {
                 flowing = still;
             }
         } else {
-            SpriteAtlasTexture atlas = mc.getBakedModelManager().method_24153(SpriteAtlasTexture.BLOCK_ATLAS_TEX);
+            SpriteAtlasTexture atlas = mc.getBakedModelManager().method_24153(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
             // Seems odd that Sprite is AutoClosable... but there's nothing we can do about it
             still = atlas.getSprite(fluid.getStillSprite());
             flowing = atlas.getSprite(fluid.getFlowingSprite());

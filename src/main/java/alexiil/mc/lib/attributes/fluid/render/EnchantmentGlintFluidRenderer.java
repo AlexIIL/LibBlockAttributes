@@ -30,7 +30,7 @@ public class EnchantmentGlintFluidRenderer extends FluidVolumeRenderer {
     ) {
         Sprite[] sprites = getSprites(fluid);
         RenderLayer layer = getRenderLayer(fluid);
-        VertexConsumer vc = ItemRenderer.getGlintVertexConsumer(vcp, layer, true, true);
+        VertexConsumer vc = ItemRenderer.getItemGlintConsumer(vcp, layer, true, true);
         renderSimpleFluid(faces, vc, matrices, sprites[0], sprites[1], fluid.getRenderColor());
     }
 }

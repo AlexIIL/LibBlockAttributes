@@ -11,14 +11,14 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.texture.SpriteAtlasTexture;
+import net.minecraft.screen.PlayerScreenHandler;
 
 import alexiil.mc.lib.attributes.fluid.volume.PotionFluidKey;
 
 public class ClientFluidInit implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        ClientSpriteRegistryCallback.event(SpriteAtlasTexture.BLOCK_ATLAS_TEX).register((atlasTexture, registry) -> {
+        ClientSpriteRegistryCallback.event(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).register((atlasTexture, registry) -> {
             registry.register(PotionFluidKey.POTION_TEXTURE);
         });
 

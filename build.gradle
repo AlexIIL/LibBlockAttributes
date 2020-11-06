@@ -20,7 +20,7 @@ repositories {
 }
 
 archivesBaseName = "libblockatttributes"
-version = "0.8.4"
+version = "0.8.5-pre.1"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -31,12 +31,12 @@ minecraft {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:1.16.2"
-    mappings "net.fabricmc:yarn:1.16.2+build.19:v2"
-    modImplementation "net.fabricmc:fabric-loader:0.9.1+build.205"
+    minecraft "com.mojang:minecraft:20w45a"
+    mappings "net.fabricmc:yarn:20w45a+build.7:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.10.6+build.214"
 
     //Fabric api
-    modImplementation "net.fabricmc.fabric-api:fabric-api:0.18.0+build.397-1.16"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.25.3+1.17"
 
     // Silk API
     modImplementation("io.github.prospector.silk:SilkAPI:${silk_version}") { transitive = false }
@@ -120,9 +120,9 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 new File("run/").mkdirs();
 
-test {
-    workingDir = "run/"
-}
+//test {
+//    workingDir = "run/"
+//}
 
 publishing {
     repositories {

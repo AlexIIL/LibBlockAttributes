@@ -76,7 +76,7 @@ import alexiil.mc.lib.attributes.misc.UnmodifiableRef;
  * <li>If the block or item implements {@link AttributeProvider} or {@link AttributeProviderItem} directly then is is
  * used first. If that adder didn't add anything then the next steps aren't skipped (so it will exit early if the
  * block/item provided any implementations itself, otherwise it will continue to try to find one).</li>
- * <li>If the block is meant to have a {@link BlockEntity} ({@link Block#hasBlockEntity()}), and a {@link BlockEntity}
+ * <li>If the block state is meant to have a {@link BlockEntity} ({@link BlockState#method_31709()}), and a {@link BlockEntity}
  * is present in the world, and it implements {@link AttributeProviderBlockEntity} then it is checked second. If that
  * adder didn't add anything then the next steps aren't skipped (so it will exit early if the block entity provided any
  * implementations itself, otherwise it will continue to try to find one).</li>
@@ -308,7 +308,7 @@ public class Attribute<T> {
             }
         }
 
-        BlockEntity be = block.hasBlockEntity() ? world.getBlockEntity(pos) : null;
+        BlockEntity be = state.method_31709() ? world.getBlockEntity(pos) : null;
         if (be instanceof AttributeProviderBlockEntity) {
             ((AttributeProviderBlockEntity) be).addAllAttributes(list);
             if (list.hasOfferedAny()) {

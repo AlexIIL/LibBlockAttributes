@@ -26,6 +26,7 @@ public final class LbaFluidModCompatLoader {
             LibBlockAttributes.LOGGER.info("Silk not found, not loading compatibility for fluids.");
         }
 
-        RebornCompatLoader.load();
+        //FIXME: Fix reborn core compat once it updates to 1.17
+        //RebornCompatLoader.load();
     }
 }
