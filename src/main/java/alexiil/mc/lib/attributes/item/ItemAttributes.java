@@ -187,7 +187,7 @@ public final class ItemAttributes {
         });
 
         attribute.appendBlockAdder((w, p, s, l) -> {
-            if (!s.method_31709()) {
+            if (!s.hasBlockEntity()) {
                 return;
             }
             Direction direction = l.getSearchDirection();

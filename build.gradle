@@ -20,7 +20,7 @@ repositories {
 }
 
 archivesBaseName = "libblockatttributes"
-version = "0.8.1700-pre.1"
+version = "0.8.17004-pre.1"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -32,7 +32,7 @@ minecraft {
 
 dependencies {
     minecraft "com.mojang:minecraft:20w45a"
-    mappings "net.fabricmc:yarn:20w45a+build.7:v2"
+    mappings "net.fabricmc:yarn:20w45a+build.19:v2"
     modImplementation "net.fabricmc:fabric-loader:0.10.6+build.214"
 
     //Fabric api
