@@ -20,7 +20,7 @@ repositories {
 }
 
 archivesBaseName = "libblockatttributes"
-version = "0.8.17004-pre.1"
+version = "0.8.17000-pre.1"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -42,10 +42,10 @@ dependencies {
     modImplementation("io.github.prospector.silk:SilkAPI:${silk_version}") { transitive = false }
 
     // RebornCore
-    modImplementation("RebornCore:RebornCore-${reborncore_mc_release}:${reborncore_version}") { transitive = false }
+    //modImplementation("RebornCore:RebornCore-${reborncore_mc_release}:${reborncore_version}") { transitive = false }
 
     // Item-inventory
-    modImplementation("com.github.emilyploszaj:item-inventory:v1.1.0") { transitive = false }
+    //modImplementation("com.github.emilyploszaj:item-inventory:v1.1.0") { transitive = false }
 
     // Misc
     compile "com.google.code.findbugs:jsr305:3.0.1"
@@ -57,6 +57,7 @@ sourceSets {
         java {
             srcDir "src/main/java"
             srcDir "src/fatjar/java"
+            exclude "alexiil/mc/lib/attributes/item/compat/mod/emi/iteminv/**"
             exclude "alexiil/mc/lib/attributes/fluid/compat/mod/reborncore/**"
         }
     }
