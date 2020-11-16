@@ -640,16 +640,14 @@ public abstract class FluidKey {
         }
         Identifier id = getAsIdentifier(json, key);
 
-        if (registry.containsId(id)) {
-            T value = registry.get(id);
-            if (value != null) {
-                if (registry instanceof DefaultedRegistry<?>) {
-                    if (value != registry.get(((DefaultedRegistry<?>) registry).getDefaultId())) {
-                        return value;
-                    }
-                } else {
+        T value = registry.get(id);
+        if (value != null) {
+            if (registry instanceof DefaultedRegistry<?>) {
+                if (value != registry.get(((DefaultedRegistry<?>) registry).getDefaultId())) {
                     return value;
                 }
+            } else {
+                return value;
             }
         }
 
