@@ -2,7 +2,7 @@
 
 This is a library mod for the [Fabric](https://fabricmc.net/) API, based around [Minecraft](https://minecraft.net).
 
-This project has 3 major concepts: attributes, item management, and fluid management.
+This project has 3 major concepts: attributes, item management, and fluid management. Please [open an issue](https://github.com/AlexIIL/LibBlockAttributes/issues/new/choose) if you have issues when using this, or join the CottonMC's discord (#lba channel) for discussion [https://discord.gg/BjnuMUs](https://discord.gg/BjnuMUs).
 
 ### Attributes
 
