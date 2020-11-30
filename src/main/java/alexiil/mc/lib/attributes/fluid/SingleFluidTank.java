@@ -52,12 +52,12 @@ public final class SingleFluidTank extends SingleFluidTankView implements FluidT
     @Override
     @Deprecated // (since = "0.6.0", forRemoval = true)
     public FluidVolume attemptExtraction(FluidFilter filter, int maxAmount, Simulation simulation) {
-        return FluidVolumeUtil.extractSingle(getBackingInv(), tank, filter, null, maxAmount, simulation);
+        return FluidVolumeUtil.extractSingle(getBackingInv(), tank, filter, FluidVolumeUtil.EMPTY, maxAmount, simulation);
     }
 
     @Override
     public FluidVolume attemptExtraction(FluidFilter filter, FluidAmount maxAmount, Simulation simulation) {
-        return FluidVolumeUtil.extractSingle(getBackingInv(), tank, filter, null, maxAmount, simulation);
+        return FluidVolumeUtil.extractSingle(getBackingInv(), tank, filter, FluidVolumeUtil.EMPTY, maxAmount, simulation);
     }
 
     @Override
