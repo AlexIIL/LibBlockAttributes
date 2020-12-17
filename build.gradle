@@ -101,9 +101,11 @@ javadoc {
     exclude "alexiil/mc/lib/attributes/fluid/mixin/impl";
     options.group("Items Module", "alexiil.mc.lib.attributes.item*");
     options.group("Fluids Module", "alexiil.mc.lib.attributes.fluid*");
-    destinationDir file(new File(System.getenv("JAVADOC_DIR") ?: "$projectDir/build/javadoc", "libnetworkstack/$version"));
+    destinationDir file(new File(System.getenv("JAVADOC_DIR") ?: "$projectDir/build/javadoc", "$version"));
     options.optionFiles << file('javadoc.options');
 }
+
+build.dependsOn(javadoc);
 
 // ensure that the encoding is set to UTF-8, no matter what the system default is
 // this fixes some edge cases with special characters not displaying correctly
