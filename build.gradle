@@ -99,8 +99,10 @@ compileJava {
 javadoc {
     exclude "alexiil/mc/lib/attributes/mixin";
     exclude "alexiil/mc/lib/attributes/fluid/mixin/impl";
+    exclude "alexiil/mc/lib/attributes/fatjar";
     options.group("Items Module", "alexiil.mc.lib.attributes.item*");
     options.group("Fluids Module", "alexiil.mc.lib.attributes.fluid*");
+    options.group("Core Module", "alexiil.mc.lib.attributes*");
     destinationDir file(new File(System.getenv("JAVADOC_DIR") ?: "$projectDir/build/javadoc", "$version"));
     options.optionFiles << file('javadoc.options');
 }
