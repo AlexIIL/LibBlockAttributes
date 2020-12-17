@@ -101,6 +101,9 @@ public final class HopperHooks {
     }
 
     public static ActionResult tryDispense(DispenserBlockEntity dropper, int invIndex) {
+        if (invIndex < 0) {
+            return ActionResult.PASS;
+        }
         Direction towards = dropper.getCachedState().get(DispenserBlock.FACING);
         BlockPos targetPos = dropper.getPos().offset(towards);
 
