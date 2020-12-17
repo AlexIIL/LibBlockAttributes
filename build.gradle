@@ -97,10 +97,12 @@ compileJava {
 }
 
 javadoc {
+    exclude "alexiil/mc/lib/attributes/mixin";
+    exclude "alexiil/mc/lib/attributes/fluid/mixin/impl";
     options.group("Items Module", "alexiil.mc.lib.attributes.item*");
     options.group("Fluids Module", "alexiil.mc.lib.attributes.fluid*");
-    options.linkSource();
-    // options.header("%%REPLACE-ME-HEAD%%");
+    destinationDir file(new File(System.getenv("JAVADOC_DIR") ?: "$projectDir/build/javadoc", "libnetworkstack/$version"));
+    options.optionFiles << file('javadoc.options');
 }
 
 // ensure that the encoding is set to UTF-8, no matter what the system default is

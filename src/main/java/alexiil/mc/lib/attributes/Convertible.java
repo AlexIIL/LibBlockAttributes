@@ -17,9 +17,9 @@ public interface Convertible {
     /** Attempts to provide a variant of this in the given class form. This does not have to return "this" object if
      * this is already an instance of the given class.
      * <p>
-     * 
-     * @apiNote In order to be typesafe (and prevent crashes) it is recommended that you return
-     *          {@link Class#cast(Object)} with the object you wish to return rather than just blindly cast to "T". */
+     * Note: In order to be typesafe (and prevent crashes) it is recommended that you return {@link Class#cast(Object)}
+     * with the object you wish to return rather than just blindly cast to "T". */
+    // TODO: (Java 9+) re-add "@apiNote"
     @Nullable
     <T> T convertTo(Class<T> otherType);
 

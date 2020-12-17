@@ -811,7 +811,7 @@ public abstract class FluidVolume {
     }
 
     /** @return The colour tint to use when rendering this fluid volume in gui's or in-world. Note that this MUST be in
-     *         0xAA_RR_GG_BB format: <code>(r << 16) | (g << 8) | (b)</code>. Alpha may be omitted however - which
+     *         0xAA_RR_GG_BB format: <code>(r &lt;&lt; 16) | (g &lt;&lt; 8) | (b)</code>. Alpha may be omitted however - which
      *         should default it to 0xFF. */
     public int getRenderColor() {
         if (fluidKey.useFallbackRenderColor) {

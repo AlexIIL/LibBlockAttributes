@@ -41,7 +41,7 @@ import alexiil.mc.lib.attributes.misc.PlayerInvUtil;
 import alexiil.mc.lib.attributes.misc.Reference;
 
 /** 4 base methods for interacting a {@link Reference} of an {@link ItemStack} with a {@link FixedFluidInv},
- * {@link FluidTransferable}, or {@link FluidInsertable}&{@link FluidExtractable} pair.
+ * {@link FluidTransferable}, or {@link FluidInsertable}&amp;{@link FluidExtractable} pair.
  * <p>
  * The 4 main methods are:
  * <ol>

@@ -1,0 +1,3 @@
+-use
+-Xdoclint:syntax
+-Xmaxwarns 1
