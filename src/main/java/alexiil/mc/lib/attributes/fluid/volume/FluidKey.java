@@ -103,6 +103,8 @@ public abstract class FluidKey {
      * Note that this might differ from the one returned by {@link FluidVolume#getRenderColor()}! */
     public final int renderColor;
 
+    /* package-private */ final boolean useFallbackRenderColor;
+
     /** The name to use when displaying tooltips for this {@link FluidKey} specifically.
      * <p>
      * Note that this might differ from the one returned by {@link FluidVolume#getName()}! */
@@ -195,6 +197,7 @@ public abstract class FluidKey {
         /* package-private */ Identifier flowingSpriteId;
         /* package-private */ Text name;
         /* package-private */ int renderColor = 0xFF_FF_FF;
+        /* package-private */ boolean useFallbackRenderColor = true;
         /* package-private */ int luminosity = 0;
         /* package-private */ FluidUnit unit = FluidUnit.BUCKET;
         /* package-private */ final FluidUnitSet unitSet = new FluidUnitSet();
@@ -279,6 +282,7 @@ public abstract class FluidKey {
 
         public FluidKeyBuilder setRenderColor(int renderColor) {
             this.renderColor = renderColor;
+            this.useFallbackRenderColor = false;
             return this;
         }
 
@@ -434,6 +438,7 @@ public abstract class FluidKey {
         this.flowingSpriteId = builder.flowingSpriteId != null ? builder.flowingSpriteId : spriteId;
         this.name = builder.name;
         this.renderColor = builder.renderColor;
+        this.useFallbackRenderColor = builder.useFallbackRenderColor;
         this.luminosity = builder.luminosity;
         this.rawFluid = builder.rawFluid;
         if (rawFluid != null) {
