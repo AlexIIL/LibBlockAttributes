@@ -24,8 +24,8 @@ public class SingleFluidTankView {
         this.backingView = backingView;
         this.tank = tank;
 
-        if (tank < 0 || tank >= backingView.getTankCount()) {
-            throw new IllegalArgumentException(tank + " is not in the bounds of the inventory!");
+        if (tank < 0) {
+            throw new IllegalArgumentException(tank + " is negative! This will never work!");
         }
     }
 

@@ -21,8 +21,8 @@ public class SingleItemSlotView {
         this.backingView = backingView;
         this.slot = slot;
 
-        if (slot < 0 || slot >= backingView.getSlotCount()) {
-            throw new IllegalArgumentException(slot + " is not in the bounds of the inventory!");
+        if (slot < 0) {
+            throw new IllegalArgumentException(slot + " is negative! This will never work!");
         }
     }
 
