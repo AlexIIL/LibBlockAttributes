@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.4-SNAPSHOT'
+    id 'fabric-loom' version '0.5-SNAPSHOT'
     id 'net.minecrell.licenser' version '0.4.1'
 }
 
@@ -20,7 +20,7 @@ repositories {
 }
 
 archivesBaseName = "libblockatttributes"
-version = "0.8.17000-pre.1"
+version = "0.8.17000-pre.2"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -31,12 +31,12 @@ minecraft {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:20w45a"
-    mappings "net.fabricmc:yarn:20w45a+build.31:v2"
-    modImplementation "net.fabricmc:fabric-loader:0.10.6+build.214"
+    minecraft "com.mojang:minecraft:21w08a"
+    mappings "net.fabricmc:yarn:21w08a+build.2:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.11.2"
 
     //Fabric api
-    modImplementation "net.fabricmc.fabric-api:fabric-api:0.25.5+1.17"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.31.1+1.17"
 
     // Silk API
     modImplementation("io.github.prospector.silk:SilkAPI:${silk_version}") { transitive = false }
@@ -99,11 +99,17 @@ compileJava {
 }
 
 javadoc {
+    exclude "alexiil/mc/lib/attributes/mixin";
+    exclude "alexiil/mc/lib/attributes/fluid/mixin/impl";
+    exclude "alexiil/mc/lib/attributes/fatjar";
     options.group("Items Module", "alexiil.mc.lib.attributes.item*");
     options.group("Fluids Module", "alexiil.mc.lib.attributes.fluid*");
-    options.linkSource();
-    // options.header("%%REPLACE-ME-HEAD%%");
+    options.group("Core Module", "alexiil.mc.lib.attributes*");
+    destinationDir file(new File(System.getenv("JAVADOC_DIR") ?: "$projectDir/build/javadoc", "$version"));
+    options.optionFiles << file('javadoc.options');
 }
+
+build.dependsOn(javadoc);
 
 // ensure that the encoding is set to UTF-8, no matter what the system default is
 // this fixes some edge cases with special characters not displaying correctly

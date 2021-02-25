@@ -23,6 +23,10 @@ public class SingleFluidTankView {
     SingleFluidTankView(FixedFluidInvView backingView, int tank) {
         this.backingView = backingView;
         this.tank = tank;
+
+        if (tank < 0) {
+            throw new IllegalArgumentException(tank + " is negative! This will never work!");
+        }
     }
 
     public FixedFluidInvView getBackingInv() {

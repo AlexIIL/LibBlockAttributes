@@ -1,3 +1,11 @@
 Changes:
 
-* Updated to be compatible with minecraft 20w45a
+* Made FluidVolume.getRenderColor default to using fabric's FluidRenderHandler if we're on the client and the caller hasn't explicitly set it.
+* Made SingleItemSlotView and SingleFluidTankView throw an exception if you pass an out-of-bounds slot.
+
+Bug Fixes:
+
+* Made FluidVolume.getRenderColor default to using fabric's FluidRenderHandler if we're on the client and the caller hasn't explicitly set it.
+* Fixed usage of Registry.containsId on the server (which is a client-only method)
+* [#34] Fixed the dropper mixin crashing when there's no non-empty slots to drop from.
+* [#39] Fixed Dank Storage inventories not being inserted to properly.

@@ -2,42 +2,98 @@ name: Validation
 
 on:
   push:
-    branches: '**'
+  pull_request:
+    branches: '**:**'
 
-# Ideally we would have the 5 as separate steps... but I haven't found out how to expose the steps as jobs from the UI :/
 jobs:
-  check_license:
+  prep:
     runs-on: ubuntu-latest
-    name: 'Check License'
+    name: 'Work'
+    outputs:
+      did_tasks: ${{ steps.tasks.conclusion }}
+      did_license: ${{ steps.license.conclusion }}
+      did_test: ${{ steps.test.conclusion }}
+      did_javadoc: ${{ steps.javadoc.conclusion }}
+      did_build: ${{ steps.build.conclusion }}
     steps:
     - uses: actions/checkout@v2
-    - name: 'Check License'
+    - id: tasks
+      name: 'Setup'
+      run: './gradlew tasks'
+    - id: 'license'
+      name: 'Check License'
       run: './gradlew checkLicense'
-  compile:
-    runs-on: ubuntu-latest
-    name: 'Check Compile'
-    steps:
-    - uses: actions/checkout@v2
-    - name: 'Check Compile'
-      run: './gradlew assemble'
-  checkstyle:
-    runs-on: ubuntu-latest
-    name: 'Check Style'
-    steps:
-    - uses: actions/checkout@v2
-    - name: 'Check Style'
-      run: './gradlew checkstyle'
-  tests:
-    runs-on: ubuntu-latest
-    name: 'Run Tests'
-    steps:
-    - uses: actions/checkout@v2
-    - name: 'Run Tests'
+    - id: 'test'
+      name: 'Test'
       run: './gradlew test'
-  build:
-    runs-on: ubuntu-latest
-    name: 'Full Build'
-    steps:
-    - uses: actions/checkout@v2
-    - name: 'Full Build'
+    - id: 'javadoc'
+      name: 'Javadoc'
+      run: './gradlew javadoc'
+    - id: 'build'
+      name: 'Build'
       run: './gradlew build'
+  output_tasks:
+    name: 'Check Buildscript'
+    runs-on: ubuntu-latest
+    needs: prep
+    if: always()
+    steps:
+    - name: 'Check Tasks'
+      run: |
+        echo "${{ needs.prep.outputs.did_tasks }}"
+        if [[ ${{ needs.prep.outputs.did_tasks }} != "success" ]]; then
+          echo "Look at the 'Work' job to see what went wrong!"
+          exit 1
+        fi
+  output_license:
+    name: 'Check License'
+    runs-on: ubuntu-latest
+    needs: [prep, output_tasks]
+    if: always()
+    steps:
+    - name: 'Check License'
+      run: |
+        echo "${{ needs.prep.outputs.did_license }}"
+        if [[ ${{ needs.prep.outputs.did_license }} != "success" ]]; then
+          echo "Look at the 'Work' job to see what went wrong!"
+          exit 1
+        fi
+  output_test:
+    name: 'Run Tests'
+    runs-on: ubuntu-latest
+    needs: [prep, output_license]
+    if: always()
+    steps:
+    - name: 'Check Test'
+      run: |
+        echo "${{ needs.prep.outputs.did_test }}"
+        if [[ ${{ needs.prep.outputs.did_test }} != "success" ]]; then
+          echo "Look at the 'Work' job to see what went wrong!"
+          exit 1
+        fi
+  output_javadoc:
+    name: 'Generate Javadoc'
+    runs-on: ubuntu-latest
+    needs: [prep, output_test]
+    if: always()
+    steps:
+    - name: 'Check Javadocs'
+      run: |
+        echo "${{ needs.prep.outputs.did_javadoc }}"
+        if [[ ${{ needs.prep.outputs.did_javadoc }} != "success" ]]; then
+          echo "Look at the 'Work' job to see what went wrong!"
+          exit 1
+        fi
+  output_build:
+    name: 'Build Jars'
+    runs-on: ubuntu-latest
+    needs: [prep, output_javadoc]
+    if: always()
+    steps:
+    - name: 'Check Build'
+      run: |
+        echo "${{ needs.prep.outputs.did_build }}"
+        if [[ ${{ needs.prep.outputs.did_build }} != "success" ]]; then
+          echo "Look at the 'Work' job to see what went wrong!"
+          exit 1
+        fi

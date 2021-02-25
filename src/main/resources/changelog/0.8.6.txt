@@ -1,0 +1,4 @@
+Changes:
+
+* Partially reverted the 0.8.5 change which made SingleItemSlotView and SingleFluidTankView throw an exception if you pass an out-of-bounds slot.
+* Instead they only throw an exception on negative slot indices.

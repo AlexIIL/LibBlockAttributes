@@ -21,8 +21,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
+import net.fabricmc.loader.api.FabricLoader;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
+import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -807,9 +811,18 @@ public abstract class FluidVolume {
     }
 
     /** @return The colour tint to use when rendering this fluid volume in gui's or in-world. Note that this MUST be in
-     *         0xAA_RR_GG_BB format: <code>(r << 16) | (g << 8) | (b)</code>. Alpha may be omitted however - which
+     *         0xAA_RR_GG_BB format: <code>(r &lt;&lt; 16) | (g &lt;&lt; 8) | (b)</code>. Alpha may be omitted however - which
      *         should default it to 0xFF. */
     public int getRenderColor() {
+        if (fluidKey.useFallbackRenderColor) {
+            Fluid raw = getRawFluid();
+            if (raw != null && FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+                FluidRenderHandler handler = FluidRenderHandlerRegistry.INSTANCE.get(raw);
+                if (handler != null) {
+                    return handler.getFluidColor(null, null, raw.getDefaultState());
+                }
+            }
+        }
         return getFluidKey().renderColor;
     }
 

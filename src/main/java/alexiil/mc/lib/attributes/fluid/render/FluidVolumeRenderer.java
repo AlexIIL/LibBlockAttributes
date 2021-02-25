@@ -143,11 +143,11 @@ public abstract class FluidVolumeRenderer {
      * @param x Position - X
      * @param y Position - Y
      * @param z Position - Z
-     * @param u Texture - U (0 -> 1)
-     * @param v Texture - V (0 -> 1)
-     * @param r Colour - Red (0 -> 255)
-     * @param g Colour - Green (0 -> 255)
-     * @param b Colour - Blue (0 -> 255)
+     * @param u Texture - U (0 -&gt; 1)
+     * @param v Texture - V (0 -&gt; 1)
+     * @param r Colour - Red (0 -&gt; 255)
+     * @param g Colour - Green (0 -&gt; 255)
+     * @param b Colour - Blue (0 -&gt; 255)
      * @param f The source for the light and normal. */
     protected static void vertex(
         VertexConsumer vc, MatrixStack matrices, double x, double y, double z, float u, float v, int r, int g, int b,
@@ -163,12 +163,12 @@ public abstract class FluidVolumeRenderer {
      * @param x Position - X
      * @param y Position - Y
      * @param z Position - Z
-     * @param u Texture - U (0 -> 1)
-     * @param v Texture - V (0 -> 1)
-     * @param r Colour - Red (0 -> 255)
-     * @param g Colour - Green (0 -> 255)
-     * @param b Colour - Blue (0 -> 255)
-     * @param a Colour - Alpha (0 -> 255)
+     * @param u Texture - U (0 -&gt; 1)
+     * @param v Texture - V (0 -&gt; 1)
+     * @param r Colour - Red (0 -&gt; 255)
+     * @param g Colour - Green (0 -&gt; 255)
+     * @param b Colour - Blue (0 -&gt; 255)
+     * @param a Colour - Alpha (0 -&gt; 255)
      * @param f The source for the light and normal. */
     protected static void vertex(
         VertexConsumer vc, MatrixStack matrices, double x, double y, double z, float u, float v, int r, int g, int b,
@@ -184,11 +184,11 @@ public abstract class FluidVolumeRenderer {
      * @param x Position - X
      * @param y Position - Y
      * @param z Position - Z
-     * @param u Texture - U (0 -> 1)
-     * @param v Texture - V (0 -> 1)
-     * @param r Colour - Red (0 -> 255)
-     * @param g Colour - Green (0 -> 255)
-     * @param b Colour - Blue (0 -> 255)
+     * @param u Texture - U (0 -&gt; 1)
+     * @param v Texture - V (0 -&gt; 1)
+     * @param r Colour - Red (0 -&gt; 255)
+     * @param g Colour - Green (0 -&gt; 255)
+     * @param b Colour - Blue (0 -&gt; 255)
      * @param light Light - packed.
      * @param nx Normal - X
      * @param ny Normal - Y
@@ -207,12 +207,12 @@ public abstract class FluidVolumeRenderer {
      * @param x Position - X
      * @param y Position - Y
      * @param z Position - Z
-     * @param u Texture - U (0 -> 1)
-     * @param v Texture - V (0 -> 1)
-     * @param r Colour - Red (0 -> 255)
-     * @param g Colour - Green (0 -> 255)
-     * @param b Colour - Blue (0 -> 255)
-     * @param a Colour - Alpha (0 -> 255)
+     * @param u Texture - U (0 -&gt; 1)
+     * @param v Texture - V (0 -&gt; 1)
+     * @param r Colour - Red (0 -&gt; 255)
+     * @param g Colour - Green (0 -&gt; 255)
+     * @param b Colour - Blue (0 -&gt; 255)
+     * @param a Colour - Alpha (0 -&gt; 255)
      * @param light Light - packed.
      * @param nx Normal - X
      * @param ny Normal - Y

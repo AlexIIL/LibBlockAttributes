@@ -7,10 +7,13 @@
  */
 package alexiil.mc.lib.attributes.item.compat.mod;
 
+import alexiil.mc.lib.attributes.item.compat.mod.dank.DankItemInvCompatLoader;
+
 public final class LbaItemModCompat {
     private LbaItemModCompat() {}
 
     public static void load() {
         // EmiItemInvCompatLoader.load();
+        DankItemInvCompatLoader.load();
     }
 }

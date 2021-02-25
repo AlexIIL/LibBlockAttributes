@@ -20,6 +20,10 @@ public class SingleItemSlotView {
     SingleItemSlotView(FixedItemInvView backingView, int slot) {
         this.backingView = backingView;
         this.slot = slot;
+
+        if (slot < 0) {
+            throw new IllegalArgumentException(slot + " is negative! This will never work!");
+        }
     }
 
     public FixedItemInvView getBackingInv() {
