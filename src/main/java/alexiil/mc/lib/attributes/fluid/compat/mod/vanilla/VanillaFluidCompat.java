@@ -11,9 +11,11 @@ import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.Set;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.WaterCauldronBlock;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.potion.Potion;
@@ -64,8 +66,18 @@ public final class VanillaFluidCompat {
             })
         );
 
+        registerCauldronAttributes(Blocks.CAULDRON, Fluids.EMPTY);
+        registerCauldronAttributes(Blocks.WATER_CAULDRON, Fluids.WATER);
+        registerCauldronAttributes(Blocks.LAVA_CAULDRON, Fluids.LAVA);
+    }
+
+    public static void registerCauldronAttributes(Block cauldron, Fluid fluid) {
+        registerCauldronAttributes(cauldron, FluidKeys.get(fluid));
+    }
+
+    public static void registerCauldronAttributes(Block cauldron, FluidKey fluid) {
         FluidAttributes.forEachInv(
-            attr -> attr.setBlockAdder(AttributeSourceType.COMPAT_WRAPPER, Blocks.CAULDRON, (w, p, state, list) -> {
+            attr -> attr.setBlockAdder(AttributeSourceType.COMPAT_WRAPPER, cauldron, (w, p, state, list) -> {
                 list.offer(new CauldronBlockInv(w, p));
             })
         );
@@ -167,16 +179,20 @@ public final class VanillaFluidCompat {
 
         final World world;
         final BlockPos pos;
+        final Block cauldronBlock;
+        final FluidKey fluid;
 
         GroupedFluidInv grouped;
 
-        public CauldronBlockInv(World w, BlockPos p) {
+        public CauldronBlockInv(World w, BlockPos p, Block cauldronBlock, FluidKey fluid) {
             this.world = w;
             this.pos = p;
+            this.cauldronBlock = cauldronBlock;
+            this.fluid = fluid;
         }
 
-        private static boolean isValid(BlockState state) {
-            return state.getBlock() == Blocks.CAULDRON && state.contains(WaterCauldronBlock.LEVEL);
+        private boolean isValid(BlockState state) {
+            return state.getBlock() == cauldronBlock && state.contains(WaterCauldronBlock.LEVEL);
         }
 
         @Override

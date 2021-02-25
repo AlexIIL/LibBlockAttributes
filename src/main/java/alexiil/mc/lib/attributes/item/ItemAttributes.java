@@ -242,7 +242,7 @@ public final class ItemAttributes {
             }
 
             DefaultedList<ItemStack> list = DefaultedList.of();
-            Inventories.fromTag(tag, list);
+            Inventories.readNbt(tag, list);
             if (slot >= list.size()) {
                 return ItemStack.EMPTY;
             }
@@ -293,14 +293,14 @@ public final class ItemAttributes {
             }
 
             DefaultedList<ItemStack> list = DefaultedList.of();
-            Inventories.fromTag(tag, list);
+            Inventories.readNbt(tag, list);
 
             while (slot >= list.size()) {
                 list.add(ItemStack.EMPTY);
             }
 
             list.set(slot, to);
-            Inventories.toTag(tag, list);
+            Inventories.writeNbt(tag, list);
             return ref.set(stack, simulation);
         }
     }

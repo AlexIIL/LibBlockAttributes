@@ -218,7 +218,7 @@ public class FullFixedItemInv implements CopyingFixedItemInv, ItemTransferable, 
             if (stack.isEmpty()) {
                 slotsTag.add(new CompoundTag());
             } else {
-                slotsTag.add(stack.toTag(new CompoundTag()));
+                slotsTag.add(stack.writeNbt(new CompoundTag()));
             }
         }
         tag.put("slots", slotsTag);
@@ -229,7 +229,7 @@ public class FullFixedItemInv implements CopyingFixedItemInv, ItemTransferable, 
     public void fromTag(CompoundTag tag) {
         ListTag slotsTag = tag.getList("slots", new CompoundTag().getType());
         for (int i = 0; i < slotsTag.size() && i < slots.size(); i++) {
-            slots.set(i, ItemStack.fromTag(slotsTag.getCompound(i)));
+            slots.set(i, ItemStack.fromNbt(slotsTag.getCompound(i)));
         }
         for (int i = slotsTag.size(); i < slots.size(); i++) {
             slots.set(i, ItemStack.EMPTY);

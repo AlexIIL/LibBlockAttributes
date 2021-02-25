@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.BucketItem;
-import net.minecraft.item.FishBucketItem;
+import net.minecraft.item.EntityBucketItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -46,7 +46,7 @@ public class BucketItemMixin extends Item implements FluidProviderItem, IBucketI
 
     @Override
     public FluidVolume drain(Ref<ItemStack> stack) {
-        if (fluid == Fluids.EMPTY || ((Object) this) instanceof FishBucketItem) {
+        if (fluid == Fluids.EMPTY || ((Object) this) instanceof EntityBucketItem) {
             return FluidVolumeUtil.EMPTY;
         }
 
@@ -94,7 +94,7 @@ public class BucketItemMixin extends Item implements FluidProviderItem, IBucketI
 
     @Override
     public boolean libblockattributes__shouldExposeFluid() {
-        return !(((Object) this) instanceof FishBucketItem);
+        return !(((Object) this) instanceof EntityBucketItem);
     }
 
     @Override

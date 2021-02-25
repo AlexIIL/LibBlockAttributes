@@ -9,7 +9,6 @@ package alexiil.mc.lib.attributes.fluid.volume;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.TooltipContext;
-import net.minecraft.client.options.GameOptions;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 

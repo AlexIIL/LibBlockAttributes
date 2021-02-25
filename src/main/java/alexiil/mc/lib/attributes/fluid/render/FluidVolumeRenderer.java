@@ -21,7 +21,6 @@ import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry
 
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.options.GraphicsMode;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
@@ -99,7 +98,7 @@ public abstract class FluidVolumeRenderer {
                 flowing = still;
             }
         } else {
-            SpriteAtlasTexture atlas = mc.getBakedModelManager().method_24153(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
+            SpriteAtlasTexture atlas = mc.getBakedModelManager().getAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
             // Seems odd that Sprite is AutoClosable... but there's nothing we can do about it
             still = atlas.getSprite(fluid.getStillSprite());
             flowing = atlas.getSprite(fluid.getFlowingSprite());

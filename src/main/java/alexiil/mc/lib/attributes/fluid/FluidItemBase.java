@@ -9,7 +9,7 @@ package alexiil.mc.lib.attributes.fluid;
 
 import java.util.Set;
 
-import net.minecraft.item.FishBucketItem;
+import net.minecraft.item.EntityBucketItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
@@ -40,7 +40,7 @@ import alexiil.mc.lib.attributes.misc.Reference;
     }
 
     static boolean isIBucket(Item item) {
-        if (item instanceof FishBucketItem) {
+        if (item instanceof EntityBucketItem) {
             return false;
         }
         return item instanceof IBucketItem && ((IBucketItem) item).libblockattributes__shouldExposeFluid();

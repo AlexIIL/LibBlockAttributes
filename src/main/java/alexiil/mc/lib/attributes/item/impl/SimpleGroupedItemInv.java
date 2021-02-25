@@ -203,7 +203,7 @@ public class SimpleGroupedItemInv implements GroupedItemInv, Saveable {
             if (count <= 0) {
                 continue;
             }
-            CompoundTag itemTag = stack.toTag(new CompoundTag());
+            CompoundTag itemTag = stack.writeNbt(new CompoundTag());
             itemTag.putInt("Count", count);
             items.add(itemTag);
         }
@@ -220,7 +220,7 @@ public class SimpleGroupedItemInv implements GroupedItemInv, Saveable {
             CompoundTag itemTag = items.getCompound(i);
             int count = itemTag.getInt("Count");
             itemTag.putByte("Count", (byte) 1);
-            ItemStack stack = ItemStack.fromTag(itemTag);
+            ItemStack stack = ItemStack.fromNbt(itemTag);
             if (!stack.isEmpty()) {
                 stacks.put(stack, count);
             }
