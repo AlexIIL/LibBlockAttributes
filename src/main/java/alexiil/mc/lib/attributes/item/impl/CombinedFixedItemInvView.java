@@ -19,6 +19,7 @@ import alexiil.mc.lib.attributes.item.FixedItemInv;
 import alexiil.mc.lib.attributes.item.FixedItemInvView;
 import alexiil.mc.lib.attributes.item.InvMarkDirtyListener;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.misc.AbstractCombined;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectRBTreeMap;
@@ -28,13 +29,14 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
 /** An {@link FixedItemInvView} that delegates to a list of them instead of storing items directly. */
-public class CombinedFixedItemInvView<InvType extends FixedItemInvView> implements FixedItemInvView {
+public class CombinedFixedItemInvView<InvType extends FixedItemInvView> extends AbstractCombined<InvType> implements FixedItemInvView {
 
     public final List<? extends InvType> views;
     protected final int[] subSlotStartIndex;
     protected final int invSize;
 
     public CombinedFixedItemInvView(List<? extends InvType> views) {
+        super(views);
         this.views = views;
         subSlotStartIndex = new int[views.size()];
         int size = 0;

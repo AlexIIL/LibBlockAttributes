@@ -17,18 +17,17 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.misc.AbstractCombined;
 
-public final class CombinedFluidInsertable implements FluidInsertable {
-
-    private final List<? extends FluidInsertable> insertables;
+public final class CombinedFluidInsertable extends AbstractCombined<FluidInsertable> implements FluidInsertable {
 
     public CombinedFluidInsertable(List<? extends FluidInsertable> list) {
-        this.insertables = list;
+        super(list);
     }
 
     @Override
     public FluidVolume attemptInsertion(FluidVolume stack, Simulation simulation) {
-        for (FluidInsertable insertable : insertables) {
+        for (FluidInsertable insertable : list) {
             stack = insertable.attemptInsertion(stack, simulation);
             if (stack.isEmpty()) {
                 return FluidVolumeUtil.EMPTY;
@@ -39,9 +38,9 @@ public final class CombinedFluidInsertable implements FluidInsertable {
 
     @Override
     public FluidFilter getInsertionFilter() {
-        List<FluidFilter> filters = new ArrayList<>(insertables.size());
-        for (int i = 0; i < insertables.size(); i++) {
-            filters.add(insertables.get(i).getInsertionFilter());
+        List<FluidFilter> filters = new ArrayList<>(list.size());
+        for (int i = 0; i < list.size(); i++) {
+            filters.add(list.get(i).getInsertionFilter());
         }
         return AggregateFluidFilter.anyOf(filters);
     }
@@ -49,7 +48,7 @@ public final class CombinedFluidInsertable implements FluidInsertable {
     @Override
     public FluidAmount getMinimumAcceptedAmount() {
         FluidAmount fa = null;
-        for (FluidInsertable fi : insertables) {
+        for (FluidInsertable fi : list) {
             FluidAmount fa2 = fi.getMinimumAcceptedAmount();
             if (fa2 == null) {
                 return null;

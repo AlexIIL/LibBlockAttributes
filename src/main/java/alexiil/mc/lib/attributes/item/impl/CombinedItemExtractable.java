@@ -16,13 +16,12 @@ import alexiil.mc.lib.attributes.item.ItemExtractable;
 import alexiil.mc.lib.attributes.item.ItemStackUtil;
 import alexiil.mc.lib.attributes.item.filter.ExactItemStackFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.misc.AbstractCombined;
 
-public final class CombinedItemExtractable implements ItemExtractable {
-
-    private final List<? extends ItemExtractable> list;
+public final class CombinedItemExtractable extends AbstractCombined<ItemExtractable> implements ItemExtractable {
 
     public CombinedItemExtractable(List<? extends ItemExtractable> list) {
-        this.list = list;
+        super(list);
     }
 
     @Override

@@ -9,9 +9,23 @@ package alexiil.mc.lib.attributes;
 
 import javax.annotation.Nullable;
 
+import alexiil.mc.lib.attributes.item.FixedItemInv;
+import alexiil.mc.lib.attributes.item.GroupedItemInv;
+import alexiil.mc.lib.attributes.item.impl.GroupedItemInvFixedWrapper;
+import alexiil.mc.lib.attributes.misc.OpenWrapper;
+
 /** Simple interface for converting this object into another {@link Class}. It is always a good idea to check to see if
  * this object is an instance of the desired class before calling {@link #convertTo(Class)}, because it is not required
- * that it return itself. */
+ * that it return itself.
+ * <p>
+ * It is highly recommended that all objects which can be converted to are both documented in the class header, and
+ * exposed through a public "getter" method.
+ * <p>
+ * It is generally intended that converted instances (which do not just extend the base type, but instead convert to a
+ * completely different type) implement {@link OpenWrapper} to return this object. <br>
+ * For example {@link FixedItemInv} can be converted to {@link GroupedItemInv} (by default returning a
+ * {@link GroupedItemInvFixedWrapper}) which returns the original {@link FixedItemInv} from
+ * {@link OpenWrapper#getWrapped()}. */
 public interface Convertible {
 
     /** Attempts to provide a variant of this in the given class form. This does not have to return "this" object if

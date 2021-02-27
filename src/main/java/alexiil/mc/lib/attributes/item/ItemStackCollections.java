@@ -38,7 +38,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
 
 /** Utility methods for creating {@link Map}'s and {@link Set}'s based on {@link ItemStack}'s.
  * <p>
- * Every set or map factory method will produce a set of map using {@link #STRATEGY_IGNORE_AMOUNT} or
+ * Every set or map factory method will produce a set or map using {@link #STRATEGY_IGNORE_AMOUNT} or
  * {@link #COMPARATOR_IGNORE_AMOUNT}, rather than their exact versions. */
 public enum ItemStackCollections {
     ;

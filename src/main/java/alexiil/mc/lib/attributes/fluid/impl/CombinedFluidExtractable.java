@@ -14,16 +14,14 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.FluidExtractable;
 import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
-import alexiil.mc.lib.attributes.fluid.filter.ExactFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.misc.AbstractCombined;
 
-public final class CombinedFluidExtractable implements FluidExtractable {
-
-    private final List<? extends FluidExtractable> list;
+public final class CombinedFluidExtractable extends AbstractCombined<FluidExtractable> implements FluidExtractable {
 
     public CombinedFluidExtractable(List<? extends FluidExtractable> list) {
-        this.list = list;
+        super(list);
     }
 
     @Override
@@ -73,17 +71,5 @@ public final class CombinedFluidExtractable implements FluidExtractable {
             }
         }
         return extracted;
-    }
-
-    @Override
-    public String toString() {
-        if (list.isEmpty()) {
-            return "CombinedFluidExtractable{}";
-        }
-        String inner = "\n";
-        for (FluidExtractable extractable : list) {
-            inner += "  " + extractable + "\n";
-        }
-        return "CombinedFluidExtractable{" + inner + "}";
     }
 }

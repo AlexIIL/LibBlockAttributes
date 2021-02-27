@@ -22,9 +22,10 @@ import alexiil.mc.lib.attributes.item.ItemStackCollections;
 import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 import alexiil.mc.lib.attributes.item.filter.ItemStackFilterUtil;
+import alexiil.mc.lib.attributes.misc.OpenWrapper;
 
 /** A {@link GroupedItemInvView} that wraps a {@link FixedItemInvView}. */
-public class GroupedItemInvViewFixedWrapper implements GroupedItemInvView {
+public class GroupedItemInvViewFixedWrapper implements GroupedItemInvView, OpenWrapper {
 
     final FixedItemInvView inv;
 
@@ -132,5 +133,10 @@ public class GroupedItemInvViewFixedWrapper implements GroupedItemInvView {
                 }
             }
         }, removalToken);
+    }
+
+    @Override
+    public Object getWrapped() {
+        return inv;
     }
 }

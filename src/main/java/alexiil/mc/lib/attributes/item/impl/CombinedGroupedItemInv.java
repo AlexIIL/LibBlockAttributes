@@ -28,7 +28,7 @@ public class CombinedGroupedItemInv extends CombinedGroupedItemInvView implement
 
     @Override
     public ItemStack attemptInsertion(ItemStack stack, Simulation simulation) {
-        for (GroupedItemInvView view : this.inventories) {
+        for (GroupedItemInvView view : this.list) {
             GroupedItemInv inv = (GroupedItemInv) view;
             stack = inv.attemptInsertion(stack, simulation);
             if (stack.isEmpty()) {
@@ -41,7 +41,7 @@ public class CombinedGroupedItemInv extends CombinedGroupedItemInvView implement
     @Override
     public ItemFilter getInsertionFilter() {
         ItemFilter filter = ConstantItemFilter.NOTHING;
-        for (GroupedItemInvView view : this.inventories) {
+        for (GroupedItemInvView view : this.list) {
             GroupedItemInv inv = (GroupedItemInv) view;
             filter = filter.or(inv.getInsertionFilter());
         }
@@ -54,7 +54,7 @@ public class CombinedGroupedItemInv extends CombinedGroupedItemInvView implement
             throw new IllegalArgumentException("maxCount cannot be negative! (was " + maxAmount + ")");
         }
         ItemStack extracted = ItemStack.EMPTY;
-        for (GroupedItemInvView view : this.inventories) {
+        for (GroupedItemInvView view : this.list) {
             ItemExtractable extractable = (ItemExtractable) view;
             if (extracted.isEmpty()) {
                 extracted = extractable.attemptExtraction(filter, maxAmount, simulation);

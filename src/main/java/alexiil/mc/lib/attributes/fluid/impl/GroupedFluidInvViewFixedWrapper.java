@@ -20,8 +20,9 @@ import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilterUtil;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.misc.OpenWrapper;
 
-public class GroupedFluidInvViewFixedWrapper implements GroupedFluidInvView {
+public class GroupedFluidInvViewFixedWrapper implements GroupedFluidInvView, OpenWrapper {
 
     private final FixedFluidInvView inv;
 
@@ -30,6 +31,11 @@ public class GroupedFluidInvViewFixedWrapper implements GroupedFluidInvView {
     }
 
     protected FixedFluidInvView inv() {
+        return inv;
+    }
+
+    @Override
+    public Object getWrapped() {
         return inv;
     }
 

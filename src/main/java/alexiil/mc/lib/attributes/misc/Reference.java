@@ -15,7 +15,25 @@ import alexiil.mc.lib.attributes.Simulation;
 
 /** A reference to some object. The object can either be obtained from ({@link #get()}), or changed with
  * ({@link #set(Object)}). Note that changing the object isn't always permitted, and so it may return false if no change
- * happened. */
+ * happened.
+ * <p>
+ * Most users will only need to construct {@link Ref} instances to create a {@link Reference}, which is a simple
+ * reference that stores the object in a public modifiable field. However there are also 4 other basic implementations:
+ * <ul>
+ * <li>{@link UnmodifiableRef} is a Reference which always returns the same object from {@link #get()}, and returns
+ * false from {@link #set(Object)} and {@link #isValid(Object)}. You can either construct instances directly or via the
+ * factory method {@link Reference#unmodifiable(Object)}.</li>
+ * <li>{@link CallableRef} is a Reference which delegates to 3 objects: a {@link Supplier} for {@link #get()}, a
+ * {@link Consumer} for {@link #set(Object)}, and a {@link Predicate} for {@link #isValid(Object)}. You can either
+ * construct instances directly, or use the factory method {@link Reference#callable(Supplier, Consumer, Predicate)}.
+ * </li>
+ * <li>{@link SimulatableRef} is similar to {@link CallableRef}, but uses a single {@link LimitedConsumer} for both
+ * {@link #set(Object)} and {@link #isValid(Object)}.</li>
+ * <li>{@link DestroyableRef} is a bit different from the others, as it wraps another {@link Reference} internally, and
+ * delegates all calls to it. However you can call {@link DestroyableRef#destroy()} to disallow any further
+ * modifications to the backing reference.</li>
+ * </ul>
+ */
 public interface Reference<T> {
 
     /** @return The object referenced. Note that you should generally not modify the returned value directly - instead

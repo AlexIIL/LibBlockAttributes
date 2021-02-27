@@ -17,15 +17,17 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.misc.AbstractCombined;
 
 /** An {@link FixedFluidInvView} that delegates to a list of them instead of storing items directly. */
-public class CombinedFixedFluidInvView<InvType extends FixedFluidInvView> implements FixedFluidInvView {
+public class CombinedFixedFluidInvView<InvType extends FixedFluidInvView> extends AbstractCombined<InvType> implements FixedFluidInvView {
 
     public final List<? extends InvType> views;
     private final int[] subTankStartIndex;
     private final int invSize;
 
     public CombinedFixedFluidInvView(List<? extends InvType> views) {
+        super(views);
         this.views = views;
         subTankStartIndex = new int[views.size()];
         int size = 0;
