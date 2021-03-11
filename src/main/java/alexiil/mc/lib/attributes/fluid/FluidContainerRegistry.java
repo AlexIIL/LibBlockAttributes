@@ -41,6 +41,8 @@ import alexiil.mc.lib.attributes.misc.StackReference;
 public final class FluidContainerRegistry {
     private FluidContainerRegistry() {}
 
+//    TODO: Add "simple block container" support, like for cauldron.
+
     // TODO: Expose mapContainer via LibModMail
     // (We can't really expose registerFillHandler usefully, as it's heavily dependent on classes)
 
