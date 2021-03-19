@@ -20,7 +20,7 @@ repositories {
 }
 
 archivesBaseName = "libblockatttributes"
-version = "0.8.8-pre.1"
+version = "0.8.8-pre.2"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
