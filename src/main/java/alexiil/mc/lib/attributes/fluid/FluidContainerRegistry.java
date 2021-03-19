@@ -21,7 +21,10 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 import alexiil.mc.lib.attributes.AttributeSourceType;
+import alexiil.mc.lib.attributes.CombinableAttribute;
 import alexiil.mc.lib.attributes.CompatLeveledMap;
+import alexiil.mc.lib.attributes.ItemAttributeAdder;
+import alexiil.mc.lib.attributes.ItemAttributeList;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.FluidContainerRegistry.FluidFillHandler.StackReturnFunc;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
@@ -482,10 +485,22 @@ public final class FluidContainerRegistry {
 
         @Override
         void addItemAttributes() {
-            FluidAttributes.forEachGroupedInv(attribute -> {
-                attribute.setItemAdder(AttributeSourceType.INSTANCE, item, (ref, excess, list) -> {
+            FluidAttributes.forEachGroupedInv(attribute -> setupItemAdder(attribute));
+        }
+
+        private <T> void setupItemAdder(CombinableAttribute<T> attribute) {
+            attribute.setItemAdder(AttributeSourceType.INSTANCE, item, new ItemAttributeAdder<T>() {
+                @Override
+                public void addAll(
+                    Reference<ItemStack> ref, LimitedConsumer<ItemStack> excess, ItemAttributeList<T> list
+                ) {
                     list.offer(new EmptyBucketInv(ref, excess));
-                });
+                }
+
+                @Override
+                public String toString() {
+                    return StateEmpty.this.toString();
+                }
             });
         }
 
@@ -605,10 +620,22 @@ public final class FluidContainerRegistry {
 
         @Override
         void addItemAttributes() {
-            FluidAttributes.forEachGroupedInv(attribute -> {
-                attribute.setItemAdder(AttributeSourceType.INSTANCE, item, (ref, excess, list) -> {
+            FluidAttributes.forEachGroupedInv(attribute -> setupItemAdders(attribute));
+        }
+
+        private <T> void setupItemAdders(CombinableAttribute<T> attribute) {
+            attribute.setItemAdder(AttributeSourceType.INSTANCE, item, new ItemAttributeAdder<T>() {
+                @Override
+                public void addAll(
+                    Reference<ItemStack> ref, LimitedConsumer<ItemStack> excess, ItemAttributeList<T> list
+                ) {
                     list.offer(new FullBucketInv(ref, excess));
-                });
+                }
+
+                @Override
+                public String toString() {
+                    return StateFull.this.toString();
+                }
             });
         }
 
