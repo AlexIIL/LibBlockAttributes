@@ -317,11 +317,21 @@ public final class FluidContainerRegistry {
         FluidVolume insert(ItemStack stack, FluidVolume fluid, Simulation simulation, StackReturnFunc stackReturn);
     }
 
-    // #############
+    // ###############
     //
-    // Impl classes
+    // Implementation
     //
-    // #############
+    // ###############
+
+    static {
+        // Run FluidAttributes init before we call anything
+        // This ensures that FluidAttributes sets everything up before anybody else does anything
+
+        // Preventing issues like https://github.com/AlexIIL/LibBlockAttributes/issues/41
+        // where FluidAttributes starts setting up attributes in the middle of "addItemAttributes"
+        // which causes us to not be fully atomic, and results in adding the attributes twice (and logging a warning)
+        FluidAttributes.ensureClassLoaded();
+    }
 
     static final class NullFluidFillHandler extends FluidFillHandler {
         static final NullFluidFillHandler INSTANCE = new NullFluidFillHandler();
@@ -411,9 +421,9 @@ public final class FluidContainerRegistry {
         static String itemToString(Item item) {
             Identifier id = Registry.ITEM.getId(item);
             if (id == null || Registry.ITEM.getDefaultId().equals(id)) {
-                return "{UnregisteredItem " + item.toString() + "}";
+                return "{UnregisteredItem " + item.getClass() + " #" + System.identityHashCode(item) + "}";
             }
-            return "{Item " + id + "}";
+            return "{Item " + id + " #" + System.identityHashCode(item) + "}";
         }
 
         final String itemToString() {

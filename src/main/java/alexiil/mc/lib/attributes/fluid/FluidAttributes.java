@@ -298,4 +298,10 @@ public final class FluidAttributes {
         // 7
         return;
     }
+
+    /** This is used by other LBA classes just to ensure that this class is loaded (and thus has completed it's
+     * initialisation). */
+    static void ensureClassLoaded() {
+        // Do nothing
+    }
 }
