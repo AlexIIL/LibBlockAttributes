@@ -44,9 +44,8 @@ public final class CompatLeveledMap<Instance, Cls, V> {
 
     public static final int NULL_PRIORITY = 1 << 16;
 
-    // FIXME: Remove the "true |"!
     private static final boolean RECORD_ADDITIONS
-        = true | Boolean.getBoolean("libblockattributes.debug.record_attribute_additions");
+        = Boolean.getBoolean("libblockattributes.debug.record_attribute_additions");
 
     // HashMap rather than a ClassValue because the target classes
     // (Block, Item, etc) never unload.
@@ -193,6 +192,10 @@ public final class CompatLeveledMap<Instance, Cls, V> {
             if (RECORD_ADDITIONS) {
                 LibBlockAttributes.LOGGER.warn(" - Original added: ", entry.exactMappingsTrace.get(key));
                 LibBlockAttributes.LOGGER.warn(" - Replacement: ", new Throwable());
+            } else {
+                LibBlockAttributes.LOGGER.info(
+                    "Try adding '-Dlibblockattributes.debug.record_attribute_additions=true' to your vm arguments to debug the cause of this"
+                );
             }
         }
 
@@ -293,6 +296,10 @@ public final class CompatLeveledMap<Instance, Cls, V> {
             if (RECORD_ADDITIONS) {
                 LibBlockAttributes.LOGGER.warn(" - Original added: ", mapTrace.get(clazz));
                 LibBlockAttributes.LOGGER.warn(" - Replacement: ", new Throwable());
+            } else {
+                LibBlockAttributes.LOGGER.info(
+                    "Try adding '-Dlibblockattributes.debug.record_attribute_additions=true' to your vm arguments to debug the cause of this"
+                );
             }
         }
 
