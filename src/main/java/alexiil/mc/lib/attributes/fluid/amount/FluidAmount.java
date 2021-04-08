@@ -14,6 +14,10 @@ import java.util.Arrays;
 import javax.annotation.Nullable;
 
 import com.google.common.math.LongMath;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSyntaxException;
 
 import io.netty.buffer.ByteBuf;
 
@@ -53,8 +57,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
 
     /** The maximum possible value that a valid {@link FluidAmount} can hold. It's not recommended to use this as it can
      * cause headaches when adding or subtracting values from this. */
-    public static final FluidAmount ABSOLUTE_MAXIMUM
-        = createDirect(Long.MAX_VALUE, Long.MAX_VALUE - 1, Long.MAX_VALUE);
+    public static final FluidAmount ABSOLUTE_MAXIMUM = createDirect(Long.MAX_VALUE, Long.MAX_VALUE - 1, Long.MAX_VALUE);
 
     /** The minimum possible value that a valid {@link FluidAmount} can hold. It's not recommended to use this as it can
      * cause headaches when adding or subtracting values from this. */
@@ -76,6 +79,8 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
      *             minimum value then you can use {@link #ABSOLUTE_MINIMUM}. */
     @Deprecated // (since = "0.8.0", forRemoval = true)
     public static final FluidAmount MIN_VALUE = ABSOLUTE_MINIMUM;
+
+    public static final JsonDeserializer<FluidAmount> DESERIALIZER = (json, type, ctx) -> fromJson(json);
 
     public final long whole;
     public final long numerator;
@@ -628,6 +633,36 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         buffer.writeVarLong(whole);
         buffer.writeVarLong(numerator);
         buffer.writeVarLong(denominator);
+    }
+
+    public static FluidAmount fromJson(JsonElement json) throws JsonSyntaxException {
+        if (json.isJsonPrimitive()) {
+            JsonPrimitive primitive = json.getAsJsonPrimitive();
+
+            if (primitive.isString()) {
+                Object result = tryParse(primitive.getAsString());
+                if (result instanceof FluidAmount) {
+                    return (FluidAmount) result;
+                } else {
+                    throw new JsonSyntaxException((String) result);
+                }
+            }
+
+            if (primitive.isNumber()) {
+                return FluidAmount.ofWhole(primitive.getAsLong());
+            }
+            throw new JsonSyntaxException("Cannot convert " + primitive + " to a FluidAmount!");
+        } else {
+            throw new JsonSyntaxException("Expected either a string or an integer, but got " + json + "!");
+        }
+    }
+
+    public JsonElement toJson() {
+        if (numerator == 0) {
+            return new JsonPrimitive(whole);
+        } else {
+            return new JsonPrimitive(toParseableString());
+        }
     }
 
     // Properties
