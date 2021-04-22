@@ -319,13 +319,17 @@ public class Attribute<T> {
         ValueEntry<CustomAttributeAdder<T>> customBlock = customBlockMap.getEntry(block, block.getClass());
         if (customBlock.priority < 8) {
             customBlock.value.addAll(world, pos, state, list);
-            return;
+            if (list.hasOfferedAny()) {
+                return;
+            }
         }
 
         if (be == null) {
             if (customBlock.priority < CompatLeveledMap.NULL_PRIORITY) {
                 customBlock.value.addAll(world, pos, state, list);
-                return;
+                if (list.hasOfferedAny()) {
+                    return;
+                }
             }
         } else {
             ValueEntry<BlockEntityAttributeAdder<T, ?>> customEntity
@@ -333,12 +337,16 @@ public class Attribute<T> {
 
             if (customEntity.priority < customBlock.priority) {
                 addAll(customEntity.value, be, list);
-                return;
+                if (list.hasOfferedAny()) {
+                    return;
+                }
             }
 
             if (customBlock.priority < CompatLeveledMap.NULL_PRIORITY) {
                 customBlock.value.addAll(world, pos, state, list);
-                return;
+                if (list.hasOfferedAny()) {
+                    return;
+                }
             }
         }
 
