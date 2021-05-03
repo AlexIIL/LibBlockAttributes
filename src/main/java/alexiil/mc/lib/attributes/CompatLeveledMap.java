@@ -224,8 +224,6 @@ public final class CompatLeveledMap<Instance, Cls, V> {
         entry.specificPredicates.add(new PredicateEntry<>(predicate, value));
     }
 
-    private boolean hasWarnedAboutUC;
-
     public void putClassBased(AttributeSourceType type, Class<?> clazz, boolean matchSubclasses, V value) {
 
         if (!matchSubclasses) {
@@ -244,25 +242,10 @@ public final class CompatLeveledMap<Instance, Cls, V> {
         }
 
         if (clazz.isAssignableFrom(usedClass)) {
-            if (
-                type == AttributeSourceType.COMPAT_WRAPPER && clazz == InventoryProvider.class
-                    && usedClass == Block.class && FabricLoader.getInstance().isModLoaded("universalcomponents")
-            ) {
-                if (!hasWarnedAboutUC) {
-                    hasWarnedAboutUC = true;
-                    // Basically nothing else we can do here
-                    LibBlockAttributes.LOGGER.warn(
-                        "[LibBlockAttributes] The class-based compatibility wrapper for InventoryProvider (" + value
-                            + ") will override every other wrapper for " + name
-                            + " as UniversalComponents makes every Block implement InventoryProvider!"
-                    );
-                }
-            } else {
-                throw new IllegalArgumentException(
-                    "The given " + clazz + " is a superclass/superinterface of the base " + usedClass
-                        + " - which won't work very well, because it will override everything else."
-                );
-            }
+            throw new IllegalArgumentException(
+                "The given " + clazz + " is a superclass/superinterface of the base " + usedClass
+                    + " - which won't work very well, because it will override everything else."
+            );
         }
 
         clearResolved();
