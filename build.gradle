@@ -31,12 +31,12 @@ minecraft {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:21w08a"
-    mappings "net.fabricmc:yarn:21w08a+build.2:v2"
-    modImplementation "net.fabricmc:fabric-loader:0.11.2"
+    minecraft "com.mojang:minecraft:21w18a"
+    mappings "net.fabricmc:yarn:21w18a+build.10:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.11.3"
 
     //Fabric api
-    modImplementation "net.fabricmc.fabric-api:fabric-api:0.31.1+1.17"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.34.3+1.17"
 
     // Silk API
     modImplementation("io.github.prospector.silk:SilkAPI:${silk_version}") { transitive = false }

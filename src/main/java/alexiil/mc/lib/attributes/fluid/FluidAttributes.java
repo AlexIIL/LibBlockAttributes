@@ -33,6 +33,7 @@ import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fatjar.FatJarChecker;
+import alexiil.mc.lib.attributes.fluid.FluidAttributes.BucketItemGroupedFluidInv;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.compat.mod.LbaFluidModCompatLoader;
 import alexiil.mc.lib.attributes.fluid.filter.AggregateFluidFilter;

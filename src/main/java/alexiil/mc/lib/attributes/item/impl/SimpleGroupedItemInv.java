@@ -12,7 +12,7 @@ import java.util.Set;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Util;
 
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
@@ -196,7 +196,7 @@ public class SimpleGroupedItemInv implements GroupedItemInv, Saveable {
 
     @Override
     public NbtCompound toTag(NbtCompound tag) {
-        ListTag items = new ListTag();
+        NbtList items = new NbtList();
         for (Object2IntMap.Entry<ItemStack> entry : this.stacks.object2IntEntrySet()) {
             ItemStack stack = entry.getKey();
             int count = entry.getIntValue();
@@ -215,7 +215,7 @@ public class SimpleGroupedItemInv implements GroupedItemInv, Saveable {
 
     @Override
     public void fromTag(NbtCompound tag) {
-        ListTag items = tag.getList("items", new NbtCompound().getType());
+        NbtList items = tag.getList("items", new NbtCompound().getType());
         for (int i = 0; i < items.size(); i++) {
             NbtCompound itemTag = items.getCompound(i);
             int count = itemTag.getInt("Count");

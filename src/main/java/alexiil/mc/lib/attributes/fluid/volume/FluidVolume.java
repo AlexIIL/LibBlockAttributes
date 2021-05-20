@@ -35,7 +35,7 @@ import net.minecraft.fluid.EmptyFluid;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.potion.Potion;
 import net.minecraft.text.LiteralText;
@@ -161,7 +161,7 @@ public abstract class FluidVolume {
                 // End to Start so we only allocate the values array once.
                 for (int index = key.properties.size() - 1; index >= 0; index--) {
                     FluidProperty<?> property = key.properties.get(index);
-                    Tag propTag = properties.get(property.nbtKey);
+                    NbtElement propTag = properties.get(property.nbtKey);
                     if (propTag == null) {
                         continue;
                     }
@@ -201,7 +201,7 @@ public abstract class FluidVolume {
                     continue;
                 }
                 FluidProperty<?> property = fluidKey.properties.get(index);
-                Tag propTag = propToTag(property, value);
+                NbtElement propTag = propToTag(property, value);
                 if (propTag != null) {
                     properties.put(property.nbtKey, propTag);
                 }
@@ -214,7 +214,7 @@ public abstract class FluidVolume {
         return tag;
     }
 
-    private static <T> Tag propToTag(FluidProperty<T> property, Object value) {
+    private static <T> NbtElement propToTag(FluidProperty<T> property, Object value) {
         return property.toTag(property.type.cast(value));
     }
 

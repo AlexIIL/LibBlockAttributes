@@ -26,7 +26,7 @@ import com.google.gson.JsonSyntaxException;
 
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
@@ -60,7 +60,7 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
         this.key = key;
 
         final T _def = defaultValue();
-        ListTag list = tag.getList(saveName(), new NbtCompound().getType());
+        NbtList list = tag.getList(saveName(), new NbtCompound().getType());
         for (int i = 0; i < list.size(); i++) {
             NbtCompound ctag = list.getCompound(i);
             FluidAmount amount;
@@ -236,7 +236,7 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
     @Override
     public NbtCompound toTag(NbtCompound tag) {
         super.toTag(tag);
-        ListTag list = new ListTag();
+        NbtList list = new NbtList();
         for (Map.Entry<T, FluidAmount> entry : values.entrySet()) {
             NbtCompound ctag = new NbtCompound();
             ctag.put(KEY_AMOUNT_LBA_FRACTION, entry.getValue().toNbt());
@@ -320,13 +320,13 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
     }
 
     protected T readValueFromMcBuffer(PacketByteBuf buffer) {
-        return readValue(buffer.readNbtCompound());
+        return readValue(buffer.readNbt());
     }
 
     protected void writeValueToMcBuffer(PacketByteBuf buffer, T value) {
         NbtCompound holder = new NbtCompound();
         writeValue(holder, value);
-        buffer.writeNbtCompound(holder);
+        buffer.writeNbt(holder);
     }
 
     protected Text getTextFor(T value) {

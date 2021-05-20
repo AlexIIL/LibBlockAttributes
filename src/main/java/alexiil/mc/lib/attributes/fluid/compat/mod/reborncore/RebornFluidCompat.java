@@ -26,6 +26,7 @@ import alexiil.mc.lib.attributes.fluid.FluidInvTankChangeListener;
 import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.GroupedFluidInv;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
+import alexiil.mc.lib.attributes.fluid.compat.mod.reborncore.RebornFluidCompat.RebornFluidTankWrapper;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;

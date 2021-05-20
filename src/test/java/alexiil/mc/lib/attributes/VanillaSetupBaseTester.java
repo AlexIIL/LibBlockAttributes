@@ -17,6 +17,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 
 import net.minecraft.Bootstrap;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.font.TextVisitFactory;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.StringVisitable;
@@ -38,6 +39,7 @@ public class VanillaSetupBaseTester {
         PrintStream sysOut = System.out;
         InputStream sysIn = System.in;
 
+        SharedConstants.createGameVersion();
         Bootstrap.initialize();
 
         System.setIn(sysIn);

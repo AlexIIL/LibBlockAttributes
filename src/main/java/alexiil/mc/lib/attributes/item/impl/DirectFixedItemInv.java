@@ -12,7 +12,7 @@ import java.util.Set;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Util;
 import net.minecraft.util.collection.DefaultedList;
 
@@ -116,7 +116,7 @@ public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemIn
 
     @Override
     public NbtCompound toTag(NbtCompound tag) {
-        ListTag slotsTag = new ListTag();
+        NbtList slotsTag = new NbtList();
         for (ItemStack stack : slots) {
             if (stack.isEmpty()) {
                 slotsTag.add(new NbtCompound());
@@ -130,7 +130,7 @@ public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemIn
 
     @Override
     public void fromTag(NbtCompound tag) {
-        ListTag slotsTag = tag.getList("slots", new NbtCompound().getType());
+        NbtList slotsTag = tag.getList("slots", new NbtCompound().getType());
         for (int i = 0; i < slotsTag.size() && i < slots.size(); i++) {
             slots.set(i, ItemStack.fromNbt(slotsTag.getCompound(i)));
         }

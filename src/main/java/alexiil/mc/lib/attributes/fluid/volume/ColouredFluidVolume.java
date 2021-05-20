@@ -17,8 +17,8 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.FloatTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtFloat;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
@@ -51,7 +51,7 @@ public class ColouredFluidVolume extends FluidVolume {
         super(key, tag);
 
         if (tag.contains("colour")) {
-            ListTag list = tag.getList("colour", FloatTag.ZERO.getType());
+            NbtList list = tag.getList("colour", NbtFloat.ZERO.getType());
             if (list.size() == 4) {
                 red = Math.max(key.minRed, Math.min(key.maxRed, list.getFloat(0)));
                 green = Math.max(key.minGreen, Math.min(key.maxGreen, list.getFloat(1)));
@@ -64,11 +64,11 @@ public class ColouredFluidVolume extends FluidVolume {
     @Override
     public NbtCompound toTag(NbtCompound nbt) {
         super.toTag(nbt);
-        ListTag list = new ListTag();
-        list.add(FloatTag.of(red));
-        list.add(FloatTag.of(green));
-        list.add(FloatTag.of(blue));
-        list.add(FloatTag.of(alpha));
+        NbtList list = new NbtList();
+        list.add(NbtFloat.of(red));
+        list.add(NbtFloat.of(green));
+        list.add(NbtFloat.of(blue));
+        list.add(NbtFloat.of(alpha));
         nbt.put("colour", list);
         return nbt;
     }

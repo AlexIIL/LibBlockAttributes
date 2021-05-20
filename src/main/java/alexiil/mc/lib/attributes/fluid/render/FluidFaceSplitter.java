@@ -9,7 +9,10 @@ package alexiil.mc.lib.attributes.fluid.render;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import alexiil.mc.lib.attributes.fluid.render.FluidFaceSplitter.Line;
+import alexiil.mc.lib.attributes.fluid.render.FluidFaceSplitter.Quad;
+import alexiil.mc.lib.attributes.fluid.render.FluidFaceSplitter.Quad.BucketedVertexList;
+import alexiil.mc.lib.attributes.fluid.render.FluidFaceSplitter.Vertex;
 import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer.ComponentRenderFaces;
 
 /** The implementation for {@link FluidVolumeRenderer#splitFaces(List)} and
