@@ -9,7 +9,7 @@ package alexiil.mc.lib.attributes.fluid.volume;
 
 import com.google.gson.JsonObject;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.biome.Biome;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
@@ -37,7 +37,7 @@ public class BiomeSourcedFluidVolume extends ColouredFluidVolume {
         super(key, amount);
     }
 
-    public BiomeSourcedFluidVolume(BiomeSourcedFluidKey key, CompoundTag tag) {
+    public BiomeSourcedFluidVolume(BiomeSourcedFluidKey key, NbtCompound tag) {
         super(key, tag);
     }
 

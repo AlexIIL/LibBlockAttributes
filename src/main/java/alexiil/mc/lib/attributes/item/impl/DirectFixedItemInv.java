@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.util.Util;
 import net.minecraft.util.collection.DefaultedList;
@@ -110,18 +110,18 @@ public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemIn
     // ##################
 
     @Override
-    public final CompoundTag toTag() {
-        return toTag(new CompoundTag());
+    public final NbtCompound toTag() {
+        return toTag(new NbtCompound());
     }
 
     @Override
-    public CompoundTag toTag(CompoundTag tag) {
+    public NbtCompound toTag(NbtCompound tag) {
         ListTag slotsTag = new ListTag();
         for (ItemStack stack : slots) {
             if (stack.isEmpty()) {
-                slotsTag.add(new CompoundTag());
+                slotsTag.add(new NbtCompound());
             } else {
-                slotsTag.add(stack.writeNbt(new CompoundTag()));
+                slotsTag.add(stack.writeNbt(new NbtCompound()));
             }
         }
         tag.put("slots", slotsTag);
@@ -129,8 +129,8 @@ public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemIn
     }
 
     @Override
-    public void fromTag(CompoundTag tag) {
-        ListTag slotsTag = tag.getList("slots", new CompoundTag().getType());
+    public void fromTag(NbtCompound tag) {
+        ListTag slotsTag = tag.getList("slots", new NbtCompound().getType());
         for (int i = 0; i < slotsTag.size() && i < slots.size(); i++) {
             slots.set(i, ItemStack.fromNbt(slotsTag.getCompound(i)));
         }

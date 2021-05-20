@@ -10,7 +10,7 @@ package alexiil.mc.lib.attributes.fluid.volume;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.biome.Biome;
@@ -33,7 +33,7 @@ public class BiomeSourcedFluidKey extends ColouredFluidKey {
     }
 
     @Override
-    public BiomeSourcedFluidVolume readVolume(CompoundTag tag) {
+    public BiomeSourcedFluidVolume readVolume(NbtCompound tag) {
         return new BiomeSourcedFluidVolume(this, tag);
     }
 

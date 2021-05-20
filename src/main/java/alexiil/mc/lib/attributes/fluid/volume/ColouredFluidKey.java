@@ -11,7 +11,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
 import net.minecraft.fluid.Fluid;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -167,7 +167,7 @@ public class ColouredFluidKey extends FluidKey {
     }
 
     @Override
-    public ColouredFluidVolume readVolume(CompoundTag tag) {
+    public ColouredFluidVolume readVolume(NbtCompound tag) {
         return new ColouredFluidVolume(this, tag);
     }
 

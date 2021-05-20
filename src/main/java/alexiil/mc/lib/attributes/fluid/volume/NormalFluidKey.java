@@ -17,7 +17,7 @@ import net.minecraft.fluid.EmptyFluid;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -120,7 +120,7 @@ public class NormalFluidKey extends FluidKey {
     }
 
     @Override
-    public NormalFluidVolume readVolume(CompoundTag tag) {
+    public NormalFluidVolume readVolume(NbtCompound tag) {
         return new NormalFluidVolume(this, tag);
     }
 

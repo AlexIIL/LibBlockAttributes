@@ -17,8 +17,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonSyntaxException;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -125,31 +125,31 @@ public abstract class FluidProperty<T> {
     /** @return The tag that will be passed to {@link #fromTag(Tag)} to return the value. Returning null indicates that
      *         nothing should be written out, and as such the default value will be used when reading. */
     @Nullable
-    protected abstract Tag toTag(T value);
+    protected abstract NbtElement toTag(T value);
 
     /** Reads the value from the given tag.
      * 
      * @param tag A tag, which will probably have been generated from {@link #toTag(Object)}, but can also come from the
      *            user (via /give or similar). This will never be null, as a null or missing tag will instead use
      *            {@link #defaultValue}. */
-    protected abstract T fromTag(Tag tag);
+    protected abstract T fromTag(NbtElement tag);
 
     /** Writes the given value out to a packet buffer. By default this writes the {@link Tag} returned by
-     * {@link #toTag(Object)} in a {@link CompoundTag} to the buffer, so it's recommenced that you override this to
+     * {@link #toTag(Object)} in a {@link NbtCompound} to the buffer, so it's recommenced that you override this to
      * write out the value using a more efficient method. */
     protected void writeToBuffer(PacketByteBuf buffer, T value) {
-        Tag tag = toTag(value);
+        NbtElement tag = toTag(value);
         if (tag == null) {
             buffer.writeBoolean(false);
         } else {
             buffer.writeBoolean(true);
-            CompoundTag comp = new CompoundTag();
+            NbtCompound comp = new NbtCompound();
             comp.put("k", tag);
-            buffer.writeCompoundTag(comp);
+            buffer.writeNbt(comp);
         }
     }
 
-    /** Writes the given value out to a packet buffer. By default this reads a {@link CompoundTag} from the buffer, so
+    /** Writes the given value out to a packet buffer. By default this reads a {@link NbtCompound} from the buffer, so
      * it's recommenced that you override this to read out the value using a more efficient method.
      * 
      * @return The read value, or null if the default value should be used instead. (Which will most likely be stored as
@@ -157,8 +157,8 @@ public abstract class FluidProperty<T> {
     @Nullable
     protected T readFromBuffer(PacketByteBuf buffer) {
         if (buffer.readBoolean()) {
-            CompoundTag comp = buffer.readCompoundTag();
-            Tag tag = comp != null ? comp.get("k") : null;
+            NbtCompound comp = buffer.readNbt();
+            NbtElement tag = comp != null ? comp.get("k") : null;
             if (tag == null) {
                 return null;
             }

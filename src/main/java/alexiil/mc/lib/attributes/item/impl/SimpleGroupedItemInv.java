@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.util.Util;
 
@@ -195,7 +195,7 @@ public class SimpleGroupedItemInv implements GroupedItemInv, Saveable {
     // NBT support
 
     @Override
-    public CompoundTag toTag(CompoundTag tag) {
+    public NbtCompound toTag(NbtCompound tag) {
         ListTag items = new ListTag();
         for (Object2IntMap.Entry<ItemStack> entry : this.stacks.object2IntEntrySet()) {
             ItemStack stack = entry.getKey();
@@ -203,7 +203,7 @@ public class SimpleGroupedItemInv implements GroupedItemInv, Saveable {
             if (count <= 0) {
                 continue;
             }
-            CompoundTag itemTag = stack.writeNbt(new CompoundTag());
+            NbtCompound itemTag = stack.writeNbt(new NbtCompound());
             itemTag.putInt("Count", count);
             items.add(itemTag);
         }
@@ -214,10 +214,10 @@ public class SimpleGroupedItemInv implements GroupedItemInv, Saveable {
     }
 
     @Override
-    public void fromTag(CompoundTag tag) {
-        ListTag items = tag.getList("items", new CompoundTag().getType());
+    public void fromTag(NbtCompound tag) {
+        ListTag items = tag.getList("items", new NbtCompound().getType());
         for (int i = 0; i < items.size(); i++) {
-            CompoundTag itemTag = items.getCompound(i);
+            NbtCompound itemTag = items.getCompound(i);
             int count = itemTag.getInt("Count");
             itemTag.putByte("Count", (byte) 1);
             ItemStack stack = ItemStack.fromNbt(itemTag);

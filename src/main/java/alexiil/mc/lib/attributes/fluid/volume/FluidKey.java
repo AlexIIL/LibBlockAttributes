@@ -27,7 +27,7 @@ import net.minecraft.fluid.EmptyFluid;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -502,7 +502,7 @@ public abstract class FluidKey {
         validateClass(getClass());
     }
 
-    public static FluidKey fromTag(CompoundTag tag) {
+    public static FluidKey fromTag(NbtCompound tag) {
         if (tag.isEmpty()) {
             return FluidKeys.EMPTY;
         }
@@ -513,11 +513,11 @@ public abstract class FluidKey {
         return fluidKey;
     }
 
-    public final CompoundTag toTag() {
-        return toTag(new CompoundTag());
+    public final NbtCompound toTag() {
+        return toTag(new NbtCompound());
     }
 
-    public final CompoundTag toTag(CompoundTag tag) {
+    public final NbtCompound toTag(NbtCompound tag) {
         if (isEmpty()) {
             return tag;
         }
@@ -795,7 +795,7 @@ public abstract class FluidKey {
         return Collections.unmodifiableSortedSet(propertyKeys.keySet());
     }
 
-    public abstract FluidVolume readVolume(CompoundTag tag);
+    public abstract FluidVolume readVolume(NbtCompound tag);
 
     public FluidVolume readVolume(JsonObject json) throws JsonSyntaxException {
         if (isEmpty()) {

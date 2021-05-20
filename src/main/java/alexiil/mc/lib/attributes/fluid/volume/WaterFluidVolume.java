@@ -9,7 +9,7 @@ package alexiil.mc.lib.attributes.fluid.volume;
 
 import com.google.gson.JsonObject;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.biome.Biome;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
@@ -34,7 +34,7 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
         super(WaterFluidKey.INSTANCE, source, amount);
     }
 
-    public WaterFluidVolume(CompoundTag tag) {
+    public WaterFluidVolume(NbtCompound tag) {
         super(WaterFluidKey.INSTANCE, tag);
     }
 

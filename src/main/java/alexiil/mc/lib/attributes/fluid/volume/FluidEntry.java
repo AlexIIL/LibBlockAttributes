@@ -8,7 +8,7 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
 import net.minecraft.fluid.Fluid;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.Identifier;
@@ -54,11 +54,11 @@ public abstract class FluidEntry {
 
     protected abstract boolean equals(FluidEntry other);
 
-    public abstract void toTag(CompoundTag tag);
+    public abstract void toTag(NbtCompound tag);
 
     /** Reads a {@link FluidEntry} from the given tag. Note that the returned entry might not map to a
      * {@link FluidKey}. */
-    public static FluidEntry fromTag(CompoundTag tag) {
+    public static FluidEntry fromTag(NbtCompound tag) {
         String str = tag.getString(KEY_REGISTRY_TYPE);
         if ("i".equals(str)) {
             Identifier id = Identifier.tryParse(tag.getString(KEY_OBJ_IDENTIFIER));
@@ -150,7 +150,7 @@ public abstract class FluidEntry {
         }
 
         @Override
-        public void toTag(CompoundTag tag) {
+        public void toTag(NbtCompound tag) {
             tag.putString(KEY_REGISTRY_TYPE, "i");
             tag.putString(KEY_OBJ_IDENTIFIER, id.toString());
         }

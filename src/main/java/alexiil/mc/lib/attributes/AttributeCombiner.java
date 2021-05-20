@@ -11,8 +11,13 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import alexiil.mc.lib.attributes.misc.Combined;
+
 @FunctionalInterface
 public interface AttributeCombiner<T> {
+
+    /** Combines the given list of attributes down into a single one. It is recommended that implementations return
+     * instances that implement {@link Combined}. */
     @Nonnull
     T combine(List<? extends T> attributes);
 }

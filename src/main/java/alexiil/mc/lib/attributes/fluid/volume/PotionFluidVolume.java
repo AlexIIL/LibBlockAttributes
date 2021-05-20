@@ -18,7 +18,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.text.Text;
@@ -39,7 +39,7 @@ public final class PotionFluidVolume extends FluidVolume {
         super(key, amount);
     }
 
-    public PotionFluidVolume(PotionFluidKey key, CompoundTag tag) {
+    public PotionFluidVolume(PotionFluidKey key, NbtCompound tag) {
         super(key, tag);
     }
 

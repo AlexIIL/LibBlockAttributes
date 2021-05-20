@@ -1,0 +1,21 @@
+Changes:
+
+* Added "lba.misc.OpenWrapper", which is meant to be the opposite of Convertible.
+    * This is used in cases where an object really is a "simple wrapper" from one type to another
+    * This has a single method: "Object getWrapped()".
+        * Note that this may return null if an implementation can't expose the inner object without also exposing more details than they wish.
+    * All of LBA's base wrapper implementations implement this:
+        * GroupedItemInvViewFixedWrapper (returned by FixedItemInvView.getGroupedInv())
+        * GroupedFluidInvViewFixedWrapper (returned by FixedFluidInvView.getGroupedInv())
+        * FixedInventoryViewVanillaWrapper (turns a vanilla Inventory into an LBA FixedItemInvView)
+        * InventoryFixedWrapper (turns an LBA FixedItemInv into a vanilla Inventory)
+    * None of LBA's mod-compat implementations implement this.
+* Added "lba.misc.Combined", which is meant to be the opposite of AttributeCombiner.
+    * This is used in cases where an object is a "simpler combiner" of a list of objects (of the same type)
+    * This has two methods:
+        * "int getSubObjectCount()": Returns the number of objects that this combines.
+        * "Object getSubObject(int index)": Returns the sub-object at that particular index.
+            * Unlike "OpenWrapper" this must not return null, unless the index is invalid.
+            * However getSubObjectCount() may return 0, or -1 if the sub-objects cannot be exposed normally.
+    * There's also a new abstract class to make implementing these simpler: "lba.misc.AbstractCombined".
+    * All of LBA's base combined implementations implement this.

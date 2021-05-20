@@ -25,7 +25,7 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 
 import net.minecraft.client.item.TooltipContext;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
@@ -55,14 +55,14 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
         this(key, value, FluidAmount.of1620(amount));
     }
 
-    public WeightedFluidVolume(WeightedFluidKey<T> key, CompoundTag tag) {
+    public WeightedFluidVolume(WeightedFluidKey<T> key, NbtCompound tag) {
         super(key, tag);
         this.key = key;
 
         final T _def = defaultValue();
-        ListTag list = tag.getList(saveName(), new CompoundTag().getType());
+        ListTag list = tag.getList(saveName(), new NbtCompound().getType());
         for (int i = 0; i < list.size(); i++) {
-            CompoundTag ctag = list.getCompound(i);
+            NbtCompound ctag = list.getCompound(i);
             FluidAmount amount;
             if (ctag.contains(KEY_AMOUNT_1620INT)) {
                 amount = FluidAmount.of1620(ctag.getInt(KEY_AMOUNT_1620INT));
@@ -234,11 +234,11 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
     }
 
     @Override
-    public CompoundTag toTag(CompoundTag tag) {
+    public NbtCompound toTag(NbtCompound tag) {
         super.toTag(tag);
         ListTag list = new ListTag();
         for (Map.Entry<T, FluidAmount> entry : values.entrySet()) {
-            CompoundTag ctag = new CompoundTag();
+            NbtCompound ctag = new NbtCompound();
             ctag.put(KEY_AMOUNT_LBA_FRACTION, entry.getValue().toNbt());
             writeValue(ctag, entry.getKey());
             list.add(ctag);
@@ -248,7 +248,7 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
     }
 
     /** @return The name to use when saving/loading the {@link #values} map to/from disk. This is only used in
-     *         {@link #toTag(CompoundTag)}, {@link #WeightedFluidVolume(WeightedFluidKey, CompoundTag)},
+     *         {@link #toTag(NbtCompound)}, {@link #WeightedFluidVolume(WeightedFluidKey, NbtCompound)},
      *         {@link #toJson()}, {@link #WeightedFluidVolume(WeightedFluidKey, JsonObject, WeightedStringGetter)}, and
      *         {@link #WeightedFluidVolume(WeightedFluidKey, JsonObject, WeightedJsonGetter)}, so you can move things
      *         around before these are called. */
@@ -259,13 +259,13 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
         return key.defaultValue;
     }
 
-    /** Inverse of {@link #writeValue(CompoundTag, Object)}. */
-    protected abstract T readValue(CompoundTag holder);
+    /** Inverse of {@link #writeValue(NbtCompound, Object)}. */
+    protected abstract T readValue(NbtCompound holder);
 
-    /** @param holder The {@link CompoundTag} to store the key in. Either "Amount" or "AmountF" might be overwritten by
+    /** @param holder The {@link NbtCompound} to store the key in. Either "Amount" or "AmountF" might be overwritten by
      *            this class. (If in doubt it is better to use an embedded compound to store all of the data, using a
      *            key like "Name" or "Value"). */
-    protected abstract void writeValue(CompoundTag holder, T value);
+    protected abstract void writeValue(NbtCompound holder, T value);
 
     /** @return True if the weights should be serialised to json in "compact" form (where the value is serialised into a
      *         single string, and read back with {@link WeightedStringGetter}), or "full" form (and read back with
@@ -320,13 +320,13 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
     }
 
     protected T readValueFromMcBuffer(PacketByteBuf buffer) {
-        return readValue(buffer.readCompoundTag());
+        return readValue(buffer.readNbtCompound());
     }
 
     protected void writeValueToMcBuffer(PacketByteBuf buffer, T value) {
-        CompoundTag holder = new CompoundTag();
+        NbtCompound holder = new NbtCompound();
         writeValue(holder, value);
-        buffer.writeCompoundTag(holder);
+        buffer.writeNbtCompound(holder);
     }
 
     protected Text getTextFor(T value) {

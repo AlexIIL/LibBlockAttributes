@@ -11,7 +11,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
 import net.minecraft.fluid.Fluids;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.biome.Biome;
@@ -38,7 +38,7 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
     }
 
     @Override
-    public WaterFluidVolume readVolume(CompoundTag tag) {
+    public WaterFluidVolume readVolume(NbtCompound tag) {
         return new WaterFluidVolume(tag);
     }
 

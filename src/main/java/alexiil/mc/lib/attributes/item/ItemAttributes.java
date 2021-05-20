@@ -28,7 +28,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Direction;
 
@@ -236,7 +236,7 @@ public final class ItemAttributes {
             assert 0 <= slot && slot < 27;
 
             ItemStack stack = ref.get();
-            CompoundTag tag = stack.getSubTag("BlockEntityTag");
+            NbtCompound tag = stack.getSubTag("BlockEntityTag");
             if (tag == null || stack.isEmpty() || stack.getCount() != 1 || !isShulkerBox(stack.getItem())) {
                 return ItemStack.EMPTY;
             }
@@ -281,15 +281,15 @@ public final class ItemAttributes {
                 stack = stack.copy();
             }
 
-            CompoundTag tag = stack.getSubTag("BlockEntityTag");
+            NbtCompound tag = stack.getSubTag("BlockEntityTag");
             if (tag == null) {
                 if (simulation == Simulation.ACTION) {
                     tag = stack.getOrCreateSubTag("BlockEntityTag");
                 } else {
-                    tag = new CompoundTag();
+                    tag = new NbtCompound();
                 }
             } else if (simulation == Simulation.SIMULATE) {
-                tag = new CompoundTag().copyFrom(tag);
+                tag = new NbtCompound().copyFrom(tag);
             }
 
             DefaultedList<ItemStack> list = DefaultedList.of();

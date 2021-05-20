@@ -18,20 +18,19 @@ import alexiil.mc.lib.attributes.item.GroupedItemInvView;
 import alexiil.mc.lib.attributes.item.ItemInvAmountChangeListener;
 import alexiil.mc.lib.attributes.item.ItemStackCollections;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.misc.AbstractCombined;
 
 /** A combined version of multiple {@link GroupedItemInvView}'s. */
-public class CombinedGroupedItemInvView implements GroupedItemInvView {
-
-    final List<? extends GroupedItemInvView> inventories;
+public class CombinedGroupedItemInvView extends AbstractCombined<GroupedItemInvView> implements GroupedItemInvView {
 
     public CombinedGroupedItemInvView(List<? extends GroupedItemInvView> inventories) {
-        this.inventories = inventories;
+        super(inventories);
     }
 
     @Override
     public int getAmount(ItemFilter filter) {
         int total = 0;
-        for (GroupedItemInvView view : inventories) {
+        for (GroupedItemInvView view : list) {
             total += view.getAmount(filter);
         }
         return total;
@@ -40,7 +39,7 @@ public class CombinedGroupedItemInvView implements GroupedItemInvView {
     @Override
     public int getAmount(ItemStack stack) {
         int total = 0;
-        for (GroupedItemInvView view : inventories) {
+        for (GroupedItemInvView view : list) {
             total += view.getAmount(stack);
         }
         return total;
@@ -49,7 +48,7 @@ public class CombinedGroupedItemInvView implements GroupedItemInvView {
     @Override
     public int getSpace(ItemStack stack) {
         int total = 0;
-        for (GroupedItemInvView view : inventories) {
+        for (GroupedItemInvView view : list) {
             total += view.getSpace(stack);
         }
         return total;
@@ -58,7 +57,7 @@ public class CombinedGroupedItemInvView implements GroupedItemInvView {
     @Override
     public int getCapacity(ItemStack stack) {
         int total = 0;
-        for (GroupedItemInvView view : inventories) {
+        for (GroupedItemInvView view : list) {
             total += view.getCapacity(stack);
         }
         return total;
@@ -67,7 +66,7 @@ public class CombinedGroupedItemInvView implements GroupedItemInvView {
     @Override
     public int getTotalCapacity() {
         int total = 0;
-        for (GroupedItemInvView view : inventories) {
+        for (GroupedItemInvView view : list) {
             total += view.getTotalCapacity();
         }
         return total;
@@ -78,7 +77,7 @@ public class CombinedGroupedItemInvView implements GroupedItemInvView {
         int amount = 0;
         int spaceAddable = 0;
         int spaceTotal = 0;
-        for (GroupedItemInvView stats : inventories) {
+        for (GroupedItemInvView stats : list) {
             ItemInvStatistic stat = stats.getStatistics(filter);
             amount += stat.amount;
             spaceAddable += stat.spaceAddable;
@@ -90,7 +89,7 @@ public class CombinedGroupedItemInvView implements GroupedItemInvView {
     @Override
     public Set<ItemStack> getStoredStacks() {
         Set<ItemStack> set = ItemStackCollections.set();
-        for (GroupedItemInvView stats : inventories) {
+        for (GroupedItemInvView stats : list) {
             set.addAll(stats.getStoredStacks());
         }
         return set;
@@ -99,7 +98,7 @@ public class CombinedGroupedItemInvView implements GroupedItemInvView {
     @Override
     public int getChangeValue() {
         int total = 0;
-        for (GroupedItemInvView inv : inventories) {
+        for (GroupedItemInvView inv : list) {
             total += inv.getChangeValue();
         }
         return total;
@@ -107,7 +106,7 @@ public class CombinedGroupedItemInvView implements GroupedItemInvView {
 
     @Override
     public ListenerToken addListener(ItemInvAmountChangeListener listener, ListenerRemovalToken removalToken) {
-        final ListenerToken[] tokens = new ListenerToken[inventories.size()];
+        final ListenerToken[] tokens = new ListenerToken[list.size()];
         final ListenerRemovalToken ourRemToken = new ListenerRemovalToken() {
 
             boolean hasAlreadyRemoved = false;
@@ -129,7 +128,7 @@ public class CombinedGroupedItemInvView implements GroupedItemInvView {
             }
         };
         for (int i = 0; i < tokens.length; i++) {
-            tokens[i] = inventories.get(i).addListener((inv, stack, previous, current) -> {
+            tokens[i] = list.get(i).addListener((inv, stack, previous, current) -> {
                 int totalCurrent = this.getAmount(stack);
                 listener.onChange(this, stack, totalCurrent - current + previous, totalCurrent);
             }, ourRemToken);

@@ -14,6 +14,7 @@ import net.minecraft.item.ItemStack;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
 import alexiil.mc.lib.attributes.item.impl.ItemInvModificationTracker;
+import alexiil.mc.lib.attributes.misc.OpenWrapper;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -22,7 +23,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
  * <p>
  * One of the {@link Inventory} methods must be overridden by subclasses however:
  * {@link Inventory#canPlayerUse(PlayerEntity)}. */
-public abstract class InventoryFixedWrapper implements Inventory {
+public abstract class InventoryFixedWrapper implements Inventory, OpenWrapper {
 
     protected final FixedItemInv inv;
     private final Int2ObjectMap<SlotStatus> slotStatus = new Int2ObjectOpenHashMap<>();
@@ -131,6 +132,11 @@ public abstract class InventoryFixedWrapper implements Inventory {
             slotStatus.remove(slot).process(this, slot);
         }
         assert slotStatus.isEmpty();
+    }
+
+    @Override
+    public Object getWrapped() {
+        return inv;
     }
 
     static final class SlotStatus {

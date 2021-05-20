@@ -12,9 +12,10 @@ import net.minecraft.item.ItemStack;
 
 import alexiil.mc.lib.attributes.item.FixedItemInv;
 import alexiil.mc.lib.attributes.item.FixedItemInvView;
+import alexiil.mc.lib.attributes.misc.OpenWrapper;
 
 /** An {@link FixedItemInv} that wraps a vanilla {@link Inventory}. */
-public class FixedInventoryViewVanillaWrapper implements FixedItemInvView {
+public class FixedInventoryViewVanillaWrapper implements FixedItemInvView, OpenWrapper {
     protected final Inventory inv;
 
     public FixedInventoryViewVanillaWrapper(Inventory inv) {
@@ -43,5 +44,10 @@ public class FixedInventoryViewVanillaWrapper implements FixedItemInvView {
     @Override
     public int getMaxAmount(int slot, ItemStack stack) {
         return Math.min(inv.getMaxCountPerStack(), stack.getMaxCount());
+    }
+
+    @Override
+    public Object getWrapped() {
+        return inv;
     }
 }

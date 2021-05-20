@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 import java.math.RoundingMode;
 import java.util.Map;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.util.Util;
 import net.minecraft.util.collection.DefaultedList;
@@ -209,12 +209,12 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable, Sa
     // NBT support
 
     @Override
-    public final CompoundTag toTag() {
-        return toTag(new CompoundTag());
+    public final NbtCompound toTag() {
+        return toTag(new NbtCompound());
     }
 
     @Override
-    public CompoundTag toTag(CompoundTag tag) {
+    public NbtCompound toTag(NbtCompound tag) {
         ListTag tanksTag = new ListTag();
         for (FluidVolume volume : tanks) {
             tanksTag.add(volume.toTag());
@@ -224,8 +224,8 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable, Sa
     }
 
     @Override
-    public void fromTag(CompoundTag tag) {
-        ListTag tanksTag = tag.getList("tanks", new CompoundTag().getType());
+    public void fromTag(NbtCompound tag) {
+        ListTag tanksTag = tag.getList("tanks", new NbtCompound().getType());
         for (int i = 0; i < tanksTag.size() && i < tanks.size(); i++) {
             tanks.set(i, FluidVolume.fromTag(tanksTag.getCompound(i)));
         }

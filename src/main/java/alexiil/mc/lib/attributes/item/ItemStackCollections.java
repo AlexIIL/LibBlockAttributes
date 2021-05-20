@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.SortedMap;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -38,7 +38,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
 
 /** Utility methods for creating {@link Map}'s and {@link Set}'s based on {@link ItemStack}'s.
  * <p>
- * Every set or map factory method will produce a set of map using {@link #STRATEGY_IGNORE_AMOUNT} or
+ * Every set or map factory method will produce a set or map using {@link #STRATEGY_IGNORE_AMOUNT} or
  * {@link #COMPARATOR_IGNORE_AMOUNT}, rather than their exact versions. */
 public enum ItemStackCollections {
     ;
@@ -124,8 +124,8 @@ public enum ItemStackCollections {
                 return comp;
             }
         }
-        CompoundTag tagA = a.getTag();
-        CompoundTag tagB = b.getTag();
+        NbtCompound tagA = a.getTag();
+        NbtCompound tagB = b.getTag();
         if (tagA == null) {
             if (tagB != null) {
                 return 1;

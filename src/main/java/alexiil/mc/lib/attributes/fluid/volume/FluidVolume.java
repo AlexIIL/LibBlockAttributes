@@ -34,7 +34,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.fluid.EmptyFluid;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.potion.Potion;
@@ -57,7 +57,7 @@ import alexiil.mc.lib.attributes.fluid.render.FluidVolumeRenderer;
  * <ol>
  * <li>FluidVolume is abstract, and it's subclasses must be defined by the {@link FluidKey} rather than anyone else. As
  * such you should always use the factory methods in {@link FluidKey}.</li>
- * <li>LBA doesn't have any direct way to store arbitrary data in a {@link CompoundTag}/NBT, so instead all custom data
+ * <li>LBA doesn't have any direct way to store arbitrary data in a {@link NbtCompound}/NBT, so instead all custom data
  * must be stored in a way that's defined by the {@link FluidKey}, or a FluidProperty that's already been registered
  * with the {@link FluidKey}.</li>
  * <li>The amount field cannot be modified directly - instead you should either split or merge with any of the public
@@ -142,7 +142,7 @@ public abstract class FluidVolume {
         }
     }
 
-    public FluidVolume(FluidKey key, CompoundTag tag) {
+    public FluidVolume(FluidKey key, NbtCompound tag) {
         this(key);
         if (key.entry.isEmpty()) {
             this.amount = FluidAmount.ZERO;
@@ -157,7 +157,7 @@ public abstract class FluidVolume {
                 }
             }
             if (!key.properties.isEmpty()) {
-                CompoundTag properties = tag.getCompound("Properties");
+                NbtCompound properties = tag.getCompound("Properties");
                 // End to Start so we only allocate the values array once.
                 for (int index = key.properties.size() - 1; index >= 0; index--) {
                     FluidProperty<?> property = key.properties.get(index);
@@ -175,25 +175,25 @@ public abstract class FluidVolume {
         }
     }
 
-    public static FluidVolume fromTag(CompoundTag tag) {
+    public static FluidVolume fromTag(NbtCompound tag) {
         if (tag.isEmpty()) {
             return FluidKeys.EMPTY.withAmount(FluidAmount.ZERO);
         }
         return FluidKey.fromTag(tag).readVolume(tag);
     }
 
-    public final CompoundTag toTag() {
-        return toTag(new CompoundTag());
+    public final NbtCompound toTag() {
+        return toTag(new NbtCompound());
     }
 
-    public CompoundTag toTag(CompoundTag tag) {
+    public NbtCompound toTag(NbtCompound tag) {
         if (isEmpty()) {
             return tag;
         }
         fluidKey.toTag(tag);
         tag.put(KEY_AMOUNT_LBA_FRACTION, amount.toNbt());
         if (propertyValues != null) {
-            CompoundTag properties = new CompoundTag();
+            NbtCompound properties = new NbtCompound();
 
             for (int index = propertyValues.length - 1; index >= 0; index--) {
                 Object value = propertyValues[index];

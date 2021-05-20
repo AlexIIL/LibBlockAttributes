@@ -12,7 +12,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import net.minecraft.fluid.Fluid;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.Identifier;
@@ -108,7 +108,7 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
     }
 
     @Override
-    public void toTag(CompoundTag tag) {
+    public void toTag(NbtCompound tag) {
         if (objId == null) {
             return;
         } else if (backingRegistry instanceof DefaultedRegistry<?>) {

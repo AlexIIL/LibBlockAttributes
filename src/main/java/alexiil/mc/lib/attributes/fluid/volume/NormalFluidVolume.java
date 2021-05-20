@@ -13,7 +13,7 @@ import com.google.gson.JsonObject;
 
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 
@@ -34,7 +34,7 @@ public class NormalFluidVolume extends FluidVolume {
         super(fluid, amount);
     }
 
-    NormalFluidVolume(NormalFluidKey fluid, CompoundTag tag) {
+    NormalFluidVolume(NormalFluidKey fluid, NbtCompound tag) {
         super(fluid, tag);
     }
 

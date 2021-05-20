@@ -13,7 +13,8 @@ import java.util.Objects;
 import org.junit.Assert;
 import org.junit.Test;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.Tag;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -70,8 +71,8 @@ public class FluidPropertyTester extends VanillaSetupBaseTester {
         }
 
         @Override
-        protected Tag toTag(Purity value) {
-            CompoundTag tag = new CompoundTag();
+        protected NbtElement toTag(Purity value) {
+            NbtCompound tag = new NbtCompound();
             tag.putDouble("Quality", value.quality);
             tag.putDouble("Uniformity", value.uniformity);
             tag.putDouble("Alignment", value.alignment);
@@ -79,9 +80,9 @@ public class FluidPropertyTester extends VanillaSetupBaseTester {
         }
 
         @Override
-        protected Purity fromTag(Tag tag) {
-            if (tag instanceof CompoundTag) {
-                CompoundTag c = (CompoundTag) tag;
+        protected Purity fromTag(NbtElement tag) {
+            if (tag instanceof NbtCompound) {
+                NbtCompound c = (NbtCompound) tag;
                 return new Purity(c.getDouble("Quality"), c.getDouble("Uniformity"), c.getDouble("Alignment"));
             } else {
                 return Purity.NONE;

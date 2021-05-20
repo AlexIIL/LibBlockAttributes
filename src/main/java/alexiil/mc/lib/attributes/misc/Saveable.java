@@ -7,16 +7,16 @@
  */
 package alexiil.mc.lib.attributes.misc;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 
 /** An object that can be saved and loaded (in place, unlike fluid keys or volumes which must be loaded from a
  * specialised static method). */
 public interface Saveable {
-    default CompoundTag toTag() {
-        return toTag(new CompoundTag());
+    default NbtCompound toTag() {
+        return toTag(new NbtCompound());
     }
 
-    CompoundTag toTag(CompoundTag tag);
+    NbtCompound toTag(NbtCompound tag);
 
-    void fromTag(CompoundTag tag);
+    void fromTag(NbtCompound tag);
 }

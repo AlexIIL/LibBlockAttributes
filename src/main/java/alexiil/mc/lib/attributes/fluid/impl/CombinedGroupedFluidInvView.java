@@ -19,12 +19,14 @@ import alexiil.mc.lib.attributes.fluid.GroupedFluidInvView;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
+import alexiil.mc.lib.attributes.misc.AbstractCombined;
 
-public class CombinedGroupedFluidInvView implements GroupedFluidInvView {
+public class CombinedGroupedFluidInvView extends AbstractCombined<GroupedFluidInvView> implements GroupedFluidInvView {
 
     protected final List<? extends GroupedFluidInvView> inventories;
 
     public CombinedGroupedFluidInvView(List<? extends GroupedFluidInvView> inventories) {
+        super(inventories);
         this.inventories = inventories;
     }
 

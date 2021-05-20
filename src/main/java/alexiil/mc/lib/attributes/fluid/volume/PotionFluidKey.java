@@ -14,7 +14,7 @@ import com.google.gson.JsonSyntaxException;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.text.Style;
@@ -56,7 +56,7 @@ public final class PotionFluidKey extends FluidKey {
     }
 
     @Override
-    public PotionFluidVolume readVolume(CompoundTag tag) {
+    public PotionFluidVolume readVolume(NbtCompound tag) {
         return new PotionFluidVolume(this, tag);
     }
 

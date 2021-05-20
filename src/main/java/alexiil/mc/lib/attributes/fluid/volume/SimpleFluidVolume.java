@@ -9,7 +9,7 @@ package alexiil.mc.lib.attributes.fluid.volume;
 
 import com.google.gson.JsonObject;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 
@@ -25,7 +25,7 @@ public class SimpleFluidVolume extends FluidVolume {
         super(key, amount);
     }
 
-    protected SimpleFluidVolume(SimpleFluidKey key, CompoundTag tag) {
+    protected SimpleFluidVolume(SimpleFluidKey key, NbtCompound tag) {
         super(key, tag);
     }
 

@@ -35,10 +35,13 @@ public final class PlayerInvUtil {
     /** Creates a {@link Reference} to the given player's {@link PlayerInventory#getCursorStack() cursor stack}, that
      * updates the client whenever it is changed. */
     public static Reference<ItemStack> referenceGuiCursor(ServerPlayerEntity player) {
-        return Reference.callable(player.getInventory()::getCursorStack, s -> {
-            player.getInventory().setCursorStack(s);
-            player.updateCursorStack();
-        }, s -> true);
+        return Reference.callable(//
+            () -> player.currentScreenHandler.getCursorStack()//
+            , s -> {
+                player.currentScreenHandler.setCursorStack(s);
+                player.currentScreenHandler.syncState();
+            }, //
+            s -> true);
     }
 
     /** Creates a {@link Reference} to the what the player is currently holding in the given {@link Hand}. */

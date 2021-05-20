@@ -17,7 +17,7 @@ import com.google.common.math.LongMath;
 
 import io.netty.buffer.ByteBuf;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 
 /** A simple mixed fraction. The value represented by this can be calculated with this: "{@link #whole} +
@@ -582,15 +582,15 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
 
     // Serialisation
 
-    public static FluidAmount fromNbt(CompoundTag tag) {
+    public static FluidAmount fromNbt(NbtCompound tag) {
         long w = tag.getLong("w");
         long n = tag.getLong("n");
         long d = Math.max(1, tag.getLong("d"));
         return of(w, n, d);
     }
 
-    public CompoundTag toNbt() {
-        CompoundTag tag = new CompoundTag();
+    public NbtCompound toNbt() {
+        NbtCompound tag = new NbtCompound();
         tag.putLong("w", whole);
         tag.putLong("n", numerator);
         tag.putLong("d", denominator);

@@ -16,7 +16,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.PacketByteBuf;
@@ -47,7 +47,7 @@ public class ColouredFluidVolume extends FluidVolume {
         super(key, amount);
     }
 
-    public ColouredFluidVolume(ColouredFluidKey key, CompoundTag tag) {
+    public ColouredFluidVolume(ColouredFluidKey key, NbtCompound tag) {
         super(key, tag);
 
         if (tag.contains("colour")) {
@@ -62,7 +62,7 @@ public class ColouredFluidVolume extends FluidVolume {
     }
 
     @Override
-    public CompoundTag toTag(CompoundTag nbt) {
+    public NbtCompound toTag(NbtCompound nbt) {
         super.toTag(nbt);
         ListTag list = new ListTag();
         list.add(FloatTag.of(red));

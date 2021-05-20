@@ -8,7 +8,7 @@
 package alexiil.mc.lib.attributes.fluid.compat.mod.reborncore;
 
 import net.minecraft.fluid.Fluid;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.Direction;
 
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
@@ -60,8 +60,8 @@ public final class RebornCompatLoader extends LbaModCompatLoader {
         requireMethod(tank, "getFluidInstance", new Class[0], fluidInstance);
         requireMethod(tank, "getFluid", new Class[0], Fluid.class);
         requireMethod(tank, "setFluid", new Class[] { Direction.class, fluidInstance }, void.class);
-        requireMethod(fluidInstance, "getTag", new Class[0], CompoundTag.class);
-        requireMethod(fluidInstance, "setTag", new Class[] { CompoundTag.class }, void.class);
+        requireMethod(fluidInstance, "getTag", new Class[0], NbtCompound.class);
+        requireMethod(fluidInstance, "setTag", new Class[] { NbtCompound.class }, void.class);
         requireMethod(fluidInstance, "getFluid", new Class[0], Fluid.class);
         requireMethod(fluidInstance, "addAmount", new Class[] { fluidValue }, fluidInstance);
         requireMethod(fluidInstance, "subtractAmount", new Class[] { fluidValue }, fluidInstance);
