@@ -11,7 +11,7 @@
     ]
   },
   "depends": {
-    "minecraft": [">=1.17-alpha.20.45.a <1.18-"],
+    "minecraft": [">=1.17-alpha.21.18.a <1.18-"],
     "fabricloader": ">=0.4.0",
     "fabric": "*"
   },
