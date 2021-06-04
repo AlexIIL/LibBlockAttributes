@@ -45,6 +45,9 @@ public final class CompatLeveledMap<Instance, Cls, V> {
 
     public static final int NULL_PRIORITY = 1 << 16;
 
+    private static final boolean RECORD_ADDITIONS
+        = Boolean.getBoolean("libblockattributes.debug.record_attribute_additions");
+
     // HashMap rather than a ClassValue because the target classes
     // (Block, Item, etc) never unload.
     private static final Map<Class<?>, List<Class<?>>> CLASS_TO_SUPERS = new HashMap<>();
@@ -176,13 +179,29 @@ public final class CompatLeveledMap<Instance, Cls, V> {
         PriorityEntry entry = getOrCreateEntry(type);
         if (entry.exactMappings == null) {
             entry.exactMappings = new HashMap<>();
+            if (RECORD_ADDITIONS) {
+                entry.exactMappingsTrace = new HashMap<>();
+            }
         }
 
         V old = entry.exactMappings.put(key, value);
         if (old != null) {
             LibBlockAttributes.LOGGER.warn(
-                "Replaced the " + name + " value for " + toStringFunc.apply(key) + " with " + value + " (was " + old + ")"
+                "Replaced the " + name + " value for " + toStringFunc.apply(key) + " with " + value + " (was " + old
+                    + ")"
             );
+            if (RECORD_ADDITIONS) {
+                LibBlockAttributes.LOGGER.warn(" - Original added: ", entry.exactMappingsTrace.get(key));
+                LibBlockAttributes.LOGGER.warn(" - Replacement: ", new Throwable());
+            } else {
+                LibBlockAttributes.LOGGER.info(
+                    "Try adding '-Dlibblockattributes.debug.record_attribute_additions=true' to your vm arguments to debug the cause of this"
+                );
+            }
+        }
+
+        if (RECORD_ADDITIONS) {
+            entry.exactMappingsTrace.put(key, new Throwable());
         }
     }
 
@@ -206,8 +225,6 @@ public final class CompatLeveledMap<Instance, Cls, V> {
         entry.specificPredicates.add(new PredicateEntry<>(predicate, value));
     }
 
-    private boolean hasWarnedAboutUC;
-
     public void putClassBased(AttributeSourceType type, Class<?> clazz, boolean matchSubclasses, V value) {
 
         if (!matchSubclasses) {
@@ -226,48 +243,52 @@ public final class CompatLeveledMap<Instance, Cls, V> {
         }
 
         if (clazz.isAssignableFrom(usedClass)) {
-            if (
-                type == AttributeSourceType.COMPAT_WRAPPER && clazz == InventoryProvider.class
-                    && usedClass == Block.class && FabricLoader.getInstance().isModLoaded("universalcomponents")
-            ) {
-                if (!hasWarnedAboutUC) {
-                    hasWarnedAboutUC = true;
-                    // Basically nothing else we can do here
-                    LibBlockAttributes.LOGGER.warn(
-                        "[LibBlockAttributes] The class-based compatibility wrapper for InventoryProvider (" + value
-                            + ") will override every other wrapper for " + name
-                            + " as UniversalComponents makes every Block implement InventoryProvider!"
-                    );
-                }
-            } else {
-                throw new IllegalArgumentException(
-                    "The given " + clazz + " is a superclass/superinterface of the base " + usedClass
-                        + " - which won't work very well, because it will override everything else."
-                );
-            }
+            throw new IllegalArgumentException(
+                "The given " + clazz + " is a superclass/superinterface of the base " + usedClass
+                    + " - which won't work very well, because it will override everything else."
+            );
         }
 
         clearResolved();
 
         PriorityEntry entry = getOrCreateEntry(type);
         final Map<Class<?>, V> map;
+        final Map<Class<?>, Throwable> mapTrace;
         if (matchSubclasses) {
             if (entry.inheritClassMappings == null) {
                 entry.inheritClassMappings = new HashMap<>();
+                if (RECORD_ADDITIONS) {
+                    entry.inheritClassMappingsTrace = new HashMap<>();
+                }
             }
             map = entry.inheritClassMappings;
-
+            mapTrace = entry.inheritClassMappingsTrace;
         } else {
             if (entry.exactClassMappings == null) {
                 entry.exactClassMappings = new HashMap<>();
+                if (RECORD_ADDITIONS) {
+                    entry.exactClassMappingsTrace = new HashMap<>();
+                }
             }
             map = entry.exactClassMappings;
-
+            mapTrace = entry.exactClassMappingsTrace;
         }
         V old = map.put(clazz, value);
         if (old != null) {
             LibBlockAttributes.LOGGER
                 .warn("Replaced the " + name + " value for " + clazz + " with " + value + " (was " + old + ")");
+            if (RECORD_ADDITIONS) {
+                LibBlockAttributes.LOGGER.warn(" - Original added: ", mapTrace.get(clazz));
+                LibBlockAttributes.LOGGER.warn(" - Replacement: ", new Throwable());
+            } else {
+                LibBlockAttributes.LOGGER.info(
+                    "Try adding '-Dlibblockattributes.debug.record_attribute_additions=true' to your vm arguments to debug the cause of this"
+                );
+            }
+        }
+
+        if (RECORD_ADDITIONS) {
+            mapTrace.put(clazz, new Throwable());
         }
     }
 
@@ -342,6 +363,10 @@ public final class CompatLeveledMap<Instance, Cls, V> {
         private Map<Class<?>, V> exactClassMappings = null;
         private Map<Class<?>, V> inheritClassMappings = null;
         private List<PredicateEntry<Instance, V>> generalPredicates = null;
+
+        private Map<Instance, Throwable> exactMappingsTrace = null;
+        private Map<Class<?>, Throwable> exactClassMappingsTrace = null;
+        private Map<Class<?>, Throwable> inheritClassMappingsTrace = null;
 
         PriorityEntry(int basePriority) {
             this.basePriority = basePriority;

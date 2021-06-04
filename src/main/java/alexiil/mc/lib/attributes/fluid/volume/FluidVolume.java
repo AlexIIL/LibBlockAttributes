@@ -237,18 +237,7 @@ public abstract class FluidVolume {
         if (elem == null) {
             throw new JsonSyntaxException("Expected 'amount' to be a string, but was missing!");
         } else {
-            if (!elem.isJsonPrimitive()) {
-                throw new JsonSyntaxException("Expected 'amount' to be a string, but was " + elem);
-            }
-            try {
-                FluidAmount a = FluidAmount.parse(elem.getAsString());
-                if (a.isNegative()) {
-                    throw new JsonSyntaxException("Expected 'amount' to be either positive or zero, but was negative!");
-                }
-                return a;
-            } catch (NumberFormatException nfe) {
-                throw new JsonSyntaxException("Expected 'amount' to be a valid fluid amount!", nfe);
-            }
+            return FluidAmount.fromJson(elem);
         }
     }
 
@@ -256,7 +245,7 @@ public abstract class FluidVolume {
         JsonObject json = new JsonObject();
         fluidKey.toJson(json);
         if (!isEmpty()) {
-            json.addProperty("amount", amount.toParseableString());
+            json.add("amount", amount.toJson());
         }
         return json;
     }

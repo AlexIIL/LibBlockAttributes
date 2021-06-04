@@ -1,0 +1,4 @@
+Changes:
+
+* Added FluidAmount json serialisation.
+* [#44] Removed Universal Components compatibility workaround. As such LBA is now incompatible with UC.

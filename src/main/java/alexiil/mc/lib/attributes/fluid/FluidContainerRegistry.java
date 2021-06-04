@@ -21,7 +21,10 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 import alexiil.mc.lib.attributes.AttributeSourceType;
+import alexiil.mc.lib.attributes.CombinableAttribute;
 import alexiil.mc.lib.attributes.CompatLeveledMap;
+import alexiil.mc.lib.attributes.ItemAttributeAdder;
+import alexiil.mc.lib.attributes.ItemAttributeList;
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.FluidContainerRegistry.FluidFillHandler.StackReturnFunc;
 import alexiil.mc.lib.attributes.fluid.FluidContainerRegistry.FluidFillHandlerWrapper;
@@ -324,11 +327,21 @@ public final class FluidContainerRegistry {
         FluidVolume insert(ItemStack stack, FluidVolume fluid, Simulation simulation, StackReturnFunc stackReturn);
     }
 
-    // #############
+    // ###############
     //
-    // Impl classes
+    // Implementation
     //
-    // #############
+    // ###############
+
+    static {
+        // Run FluidAttributes init before we call anything
+        // This ensures that FluidAttributes sets everything up before anybody else does anything
+
+        // Preventing issues like https://github.com/AlexIIL/LibBlockAttributes/issues/41
+        // where FluidAttributes starts setting up attributes in the middle of "addItemAttributes"
+        // which causes us to not be fully atomic, and results in adding the attributes twice (and logging a warning)
+        FluidAttributes.ensureClassLoaded();
+    }
 
     static final class NullFluidFillHandler extends FluidFillHandler {
         static final NullFluidFillHandler INSTANCE = new NullFluidFillHandler();
@@ -418,9 +431,9 @@ public final class FluidContainerRegistry {
         static String itemToString(Item item) {
             Identifier id = Registry.ITEM.getId(item);
             if (id == null || Registry.ITEM.getDefaultId().equals(id)) {
-                return "{UnregisteredItem " + item.toString() + "}";
+                return "{UnregisteredItem " + item.getClass() + " #" + System.identityHashCode(item) + "}";
             }
-            return "{Item " + id + "}";
+            return "{Item " + id + " #" + System.identityHashCode(item) + "}";
         }
 
         final String itemToString() {
@@ -492,10 +505,22 @@ public final class FluidContainerRegistry {
 
         @Override
         void addItemAttributes() {
-            FluidAttributes.forEachGroupedInv(attribute -> {
-                attribute.setItemAdder(AttributeSourceType.INSTANCE, item, (ref, excess, list) -> {
+            FluidAttributes.forEachGroupedInv(attribute -> setupItemAdder(attribute));
+        }
+
+        private <T> void setupItemAdder(CombinableAttribute<T> attribute) {
+            attribute.setItemAdder(AttributeSourceType.INSTANCE, item, new ItemAttributeAdder<T>() {
+                @Override
+                public void addAll(
+                    Reference<ItemStack> ref, LimitedConsumer<ItemStack> excess, ItemAttributeList<T> list
+                ) {
                     list.offer(new EmptyBucketInv(ref, excess));
-                });
+                }
+
+                @Override
+                public String toString() {
+                    return StateEmpty.this.toString();
+                }
             });
         }
 
@@ -615,10 +640,22 @@ public final class FluidContainerRegistry {
 
         @Override
         void addItemAttributes() {
-            FluidAttributes.forEachGroupedInv(attribute -> {
-                attribute.setItemAdder(AttributeSourceType.INSTANCE, item, (ref, excess, list) -> {
+            FluidAttributes.forEachGroupedInv(attribute -> setupItemAdders(attribute));
+        }
+
+        private <T> void setupItemAdders(CombinableAttribute<T> attribute) {
+            attribute.setItemAdder(AttributeSourceType.INSTANCE, item, new ItemAttributeAdder<T>() {
+                @Override
+                public void addAll(
+                    Reference<ItemStack> ref, LimitedConsumer<ItemStack> excess, ItemAttributeList<T> list
+                ) {
                     list.offer(new FullBucketInv(ref, excess));
-                });
+                }
+
+                @Override
+                public String toString() {
+                    return StateFull.this.toString();
+                }
             });
         }
 

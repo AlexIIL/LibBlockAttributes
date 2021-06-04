@@ -1,0 +1,9 @@
+Changes:
+
+* Added debug logging to CompatLeveledMap to aid in debugging fluid attribute replacement.
+    * This can be enabled by adding the following debug flag to your vm arguments:
+    * "-Dlibblockattributes.debug.record_attribute_additions=true"
+
+Bug Fixes:
+
+* [#41] Warnings about fluid attributes for "glass_bottle" being replaced when it shouldn't be.
