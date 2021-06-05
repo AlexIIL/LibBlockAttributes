@@ -55,7 +55,6 @@ dependencies {
 sourceSets {
     main {
         java {
-            srcDir "src/main/java"
             srcDir "src/fatjar/java"
             exclude "alexiil/mc/lib/attributes/item/compat/mod/emi/iteminv/**"
             exclude "alexiil/mc/lib/attributes/fluid/compat/mod/reborncore/**"
@@ -79,16 +78,8 @@ if (gradle.startParameter.taskNames.contains("checkstyle")) {
 
 processResources {
     inputs.property "version", project.version
-
-    from(sourceSets.main.resources.srcDirs) {
-        include "fabric.mod.json"
-        // We can't use expand because "$version.jar" doesn't expand correctly
-        filter({str -> str.replace("$version", project.version)});
-    }
-
-    from(sourceSets.main.resources.srcDirs) {
-        exclude "fabric.mod.json"
-    }
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    filter({str -> str.replace("$version", project.version)});
 }
 
 compileJava {

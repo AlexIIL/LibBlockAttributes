@@ -135,6 +135,7 @@ generateJar("items", itemsReq, [], false, [], ["core"]);
 // 2019/12/20 AlexIIL: Fix including all versions of the jars (including old versions if "gradle clean" hasn't been run)
 // 2020/01/23 AlexIIL: Add "fat" jars and the option for optimised compression.
 // 2020/02/22 AlexIIL: Added better error handling when generating fabric.mod.json files.
+// 2021/06/05 AlexIIL: Fixed a few missing task dependencies in gradle 7.
 
 // ==========================================================
 // User config - change both of these on a per-project basis
@@ -228,7 +229,7 @@ def getExpandedJarContentsFolder(String name) {
 }
 
 ext.extra_jar_def__unzippedSourceJar = new File("$projectDir/build/processing/tasks/unzipped_src_jar/unzip")
-task unzipSourcesJar(type: Copy, dependsOn: sourcesJar) {
+task unzipSourcesJar(type: Copy, dependsOn: remapSourcesJar) {
     from (zipTree(sourcesJar.archivePath)) {
         include "**"
     }
@@ -464,7 +465,7 @@ def generateJarInternal(
         }
     }
 
-    task("submod_" + key + "Jar", type: Jar, dependsOn: "writeFabricModJson_" + key) {
+    task("submod_" + key + "Jar", type: Jar, dependsOn: ["writeFabricModJson_" + key, "remapJar"]) {
 
         baseName = "$mainName-$key";
         destinationDir = extra_jar_def__modulesDir;
