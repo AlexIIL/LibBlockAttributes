@@ -15,7 +15,7 @@ import alexiil.mc.lib.attributes.item.ItemExtractable;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 
 /** @deprecated Use {@link GroupedItemInvFixedWrapper} instead of this! */
-@Deprecated // (since = "0.4.0", forRemoval = true)
+@Deprecated(since = "0.4.0", forRemoval = true)
 public final class SimpleFixedItemInvExtractable implements ItemExtractable {
 
     private final GroupedItemInvFixedWrapper wrapper;

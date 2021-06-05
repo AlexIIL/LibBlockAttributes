@@ -100,7 +100,7 @@ public interface FluidExtractable {
      * of {@link ConstantFluidFilter#ANYTHING}.
      * 
      * @deprecated Replaced by {@link #attemptAnyExtraction(FluidAmount, Simulation)} */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     default FluidVolume attemptAnyExtraction(int maxAmount, Simulation simulation) {
         return attemptExtraction(ConstantFluidFilter.ANYTHING, maxAmount, simulation);
     }
@@ -120,7 +120,7 @@ public interface FluidExtractable {
      * @param maxAmount The maximum number of items that can be extracted. Negative numbers throw an exception.
      * @return A new, independent {@link ItemStack} that was extracted.
      * @deprecated Replaced by {@link #extract(FluidFilter, FluidAmount)}. */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     default FluidVolume extract(FluidFilter filter, int maxAmount) {
         return attemptExtraction(filter, maxAmount, Simulation.ACTION);
     }
@@ -147,7 +147,7 @@ public interface FluidExtractable {
      * @param maxAmount The maximum number of items that can be extracted. Negative numbers throw an exception.
      * @return A new, independent {@link ItemStack} that was extracted.
      * @deprecated Replaced by {@link #extract(FluidKey, FluidAmount)} */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     default FluidVolume extract(FluidKey filter, int maxAmount) {
         return attemptExtraction(filter.exactFilter, maxAmount, Simulation.ACTION);
     }
@@ -174,7 +174,7 @@ public interface FluidExtractable {
      * @param maxAmount The maximum number of items that can be extracted. Negative numbers throw an exception.
      * @return A new, independent {@link ItemStack} that was extracted.
      * @deprecated Replaced by {@link #extract(FluidAmount)} */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     default FluidVolume extract(int maxAmount) {
         return attemptExtraction(ConstantFluidFilter.ANYTHING, maxAmount, Simulation.ACTION);
     }

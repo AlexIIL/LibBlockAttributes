@@ -74,15 +74,15 @@ public abstract class FluidVolume {
      * @deprecated Fluids now use {@link FluidAmount fractions} instead of a single base unit - which makes this
      *             completely deprecated with no replacement. */
     // and to establish easy compatibility with silk, which is where the numbers came from
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     public static final int BASE_UNIT = 1;
 
     /** @deprecated Replaced by {@link FluidAmount#BUCKET} */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     public static final int BUCKET = 20 * 9 * 9 * BASE_UNIT;
 
     /** @deprecated Replaced by {@link FluidAmount#BOTTLE} */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     public static final int BOTTLE = BUCKET / 3;
 
     static final String KEY_AMOUNT_1620INT = "Amount";
@@ -124,7 +124,7 @@ public abstract class FluidVolume {
     }
 
     /** @param amount The amount, in (amount / 1620) */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public FluidVolume(FluidKey key, int amount) {
         this(key, FluidAmount.of1620(amount));
     }
@@ -327,19 +327,19 @@ public abstract class FluidVolume {
 
     /** Creates a new {@link FluidVolume} from the given fluid, with the given amount stored. This just delegates
      * internally to {@link FluidKey#withAmount(int)}. */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static FluidVolume create(FluidKey fluid, int amount) {
         return fluid.withAmount(amount);
     }
 
     /** Creates a new {@link FluidVolume} from the given fluid, with the given amount stored. */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static FluidVolume create(Fluid fluid, int amount) {
         return FluidKeys.get(fluid).withAmount(amount);
     }
 
     /** Creates a new {@link FluidVolume} from the given potion, with the given amount stored. */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static FluidVolume create(Potion potion, int amount) {
         return FluidKeys.get(potion).withAmount(amount);
     }
@@ -397,7 +397,7 @@ public abstract class FluidVolume {
     }
 
     /** @deprecated Use {@link Objects#equals(Object)} instead of this. */
-    @Deprecated // (since = "0.1.11", forRemoval = true)
+    @Deprecated(since = "0.1.11", forRemoval = true)
     public static boolean areFullyEqual(FluidVolume a, FluidVolume b) {
         return Objects.equals(a, b);
     }
@@ -446,7 +446,7 @@ public abstract class FluidVolume {
     }
 
     /** @deprecated Replaced by {@link #getAmount_F()} and {@link #amount()}. */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     public final int getAmount() {
         return isEmpty() ? 0 : getRawAmount();
     }
@@ -471,7 +471,7 @@ public abstract class FluidVolume {
 
     /** @return The raw amount value, which might not be 0 if this is {@link #isEmpty() empty}.
      * @deprecated Replaced by {@link #getRawAmount_F()}. */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     protected final int getRawAmount() {
         return amount.as1620();
     }
@@ -484,7 +484,7 @@ public abstract class FluidVolume {
 
     /** Protected to allow the implementation of {@link #split(int)} and
      * {@link #merge0(FluidVolume, FluidMergeRounding)} to set the amount. */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     protected final void setAmount(int newAmount) {
         setAmount(FluidAmount.of1620(newAmount));
     }
@@ -660,7 +660,7 @@ public abstract class FluidVolume {
      *             <p>
      *             So instead of overriding this it's recommended that you <em>only</em> override
      *             {@link #mergeInternal(FluidVolume, FluidMergeResult)}. */
-    @Deprecated // (since = "0.7.0", forRemoval = true)
+    @Deprecated(since = "0.7.0", forRemoval = true)
     protected void merge0(FluidVolume other, FluidMergeRounding rounding) {
         mergeInternal(other, FluidAmount.merge(getAmount_F(), other.getAmount_F(), rounding));
     }
@@ -677,7 +677,7 @@ public abstract class FluidVolume {
     }
 
     /** @deprecated Replaced by {@link #split(FluidAmount)} */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     public final FluidVolume split(int toRemove) {
         return split(FluidAmount.of1620(toRemove));
     }
@@ -822,7 +822,7 @@ public abstract class FluidVolume {
     // Tooltips
 
     /** @deprecated Replaced by {@link #getFullTooltip()}. */
-    @Deprecated // (since = "0.7.0", forRemoval = true)
+    @Deprecated(since = "0.7.0", forRemoval = true)
     @Environment(EnvType.CLIENT)
     public List<Text> getTooltipText(TooltipContext ctx) {
         List<Text> list = new ArrayList<>();

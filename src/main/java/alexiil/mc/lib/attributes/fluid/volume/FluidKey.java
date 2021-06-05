@@ -89,7 +89,7 @@ public abstract class FluidKey {
     /** The singular (main) unit to use when displaying amounts, capacities, and flow rates to the player.
      * 
      * @deprecated Because most of the time you should use {@link #unitSet} rather than this. */
-    @Deprecated // (since = "0.5.0", forRemoval = true)
+    @Deprecated(since = "0.5.0", forRemoval = true)
     public final FluidUnit unit;
 
     /** All units to use when displaying amounts, capacities, and flow rates to the player. */
@@ -210,7 +210,7 @@ public abstract class FluidKey {
         /* package-private */ FluidTemperature temperature;
 
         /** @deprecated As the flowing sprite ID is needed as well. */
-        @Deprecated // (since = "0.5.0", forRemoval = true)
+        @Deprecated(since = "0.5.0", forRemoval = true)
         public FluidKeyBuilder(FluidRegistryEntry<?> registryEntry, Identifier spriteId, Text name) {
             this(registryEntry, spriteId, spriteId, name);
         }
@@ -834,7 +834,7 @@ public abstract class FluidKey {
         return this == FluidKeys.EMPTY;
     }
 
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     public FluidVolume withAmount(int amount) {
         return withAmount(FluidAmount.of1620(amount));
     }

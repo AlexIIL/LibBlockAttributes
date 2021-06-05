@@ -86,7 +86,7 @@ public interface LimitedFixedFluidInv extends FixedFluidInv {
          * 
          * @deprecated Because this is ambiguous as the name could refer to the count, or the filter, so instead you
          *             should use {@link #noInsertionFilter()} */
-        @Deprecated // (since = "0.8.2", forRemoval = "true")
+        @Deprecated(since = "0.8.2", forRemoval = true)
         default FluidTankLimitRule noInsertionLimits() {
             return filterInserts(null);
         }
@@ -112,7 +112,7 @@ public interface LimitedFixedFluidInv extends FixedFluidInv {
          * @param max The maximum. A value below 0 will reset this rule.
          * @return this.
          * @deprecated Replaced by {@link #limitInsertionAmount(FluidAmount)}. */
-        @Deprecated // (since = "0.6.0", forRemoval = true)
+        @Deprecated(since = "0.6.0", forRemoval = true)
         default FluidTankLimitRule limitInsertionCount(int max) {
             return limitInsertionAmount(FluidAmount.of1620(max));
         }
@@ -129,7 +129,7 @@ public interface LimitedFixedFluidInv extends FixedFluidInv {
          * 
          * @return this.
          * @deprecated Replaced by {@link #setMinimum(FluidAmount)} */
-        @Deprecated // (since = "0.6.0", forRemoval = true)
+        @Deprecated(since = "0.6.0", forRemoval = true)
         default FluidTankLimitRule setMinimum(int min) {
             return setMinimum(FluidAmount.of1620(min));
         }

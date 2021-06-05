@@ -29,11 +29,11 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
  * 
  * @deprecated Because any {@link FluidKey} can map to a single {@link Fluid}, and {@link SimpleFluidKey} has a much
  *             better name than this. */
-@Deprecated // (since = "0.6.0", forRemoval = true)
+@Deprecated(since = "0.6.0", forRemoval = true)
 public class NormalFluidKey extends FluidKey {
 
     /** @deprecated As the flowing sprite ID is needed as well. */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     public static NormalFluidKeyBuilder builder(Fluid fluid, Identifier spriteId, Text name) {
         return new NormalFluidKeyBuilder(fluid, spriteId, name);
     }
@@ -46,11 +46,11 @@ public class NormalFluidKey extends FluidKey {
 
     public static class NormalFluidKeyBuilder extends FluidKeyBuilder {
 
-        @Deprecated // (since = "0.6.0", forRemoval = true)
+        @Deprecated(since = "0.6.0", forRemoval = true)
         public final Fluid fluid;
 
         /** @deprecated As the flowing sprite ID is needed as well. */
-        @Deprecated // (since = "0.6.0", forRemoval = true)
+        @Deprecated(since = "0.6.0", forRemoval = true)
         public NormalFluidKeyBuilder(Fluid fluid, Identifier spriteId, Text name) {
             super(new FluidRegistryEntry<>(Registry.FLUID, fluid), spriteId, name);
             this.fluid = fluid;
@@ -109,7 +109,7 @@ public class NormalFluidKey extends FluidKey {
     }
 
     @Override
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     public NormalFluidVolume withAmount(int amount) {
         return new NormalFluidVolume(this, amount);
     }

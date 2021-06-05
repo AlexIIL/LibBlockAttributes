@@ -37,7 +37,7 @@ public class DefaultedAttribute<T> extends Attribute<T> {
 
     /** @deprecated Kept for backwards compatibility, instead you should call {@link #DefaultedAttribute(Class, Object)}
      *             followed by {@link #appendBlockAdder(CustomAttributeAdder)}. */
-    @Deprecated // (since = "0.5.0", forRemoval = true)
+    @Deprecated(since = "0.5.0", forRemoval = true)
     public DefaultedAttribute(Class<T> clazz, @Nonnull T defaultValue, CustomAttributeAdder<T> customAdder) {
         super(clazz, customAdder);
         this.defaultValue = defaultValue;

@@ -31,7 +31,7 @@ import alexiil.mc.lib.attributes.item.FixedItemInvView;
  *             directly modify items in an inventory.</li>
  *             </ul>
  */
-@Deprecated // (since = "0.5.0", forRemoval = true)
+@Deprecated(since = "0.5.0", forRemoval = true)
 public class SimpleFixedItemInv extends FullFixedItemInv {
 
     // Copy-pasted from the top
@@ -52,7 +52,7 @@ public class SimpleFixedItemInv extends FullFixedItemInv {
      *             directly modify items in an inventory.</li>
      *             </ul>
      */
-    @Deprecated // (since = "0.5.0", forRemoval = true)
+    @Deprecated(since = "0.5.0", forRemoval = true)
     public SimpleFixedItemInv(int invSize) {
         super(invSize);
     }

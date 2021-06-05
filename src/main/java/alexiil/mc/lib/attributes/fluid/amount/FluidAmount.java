@@ -69,7 +69,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
      * 
      * @deprecated As {@link #MAX_BUCKETS} should generally be used instead, however if you really need the absolute
      *             value then you can use {@link #ABSOLUTE_MAXIMUM}. */
-    @Deprecated // (since = "0.8.0", forRemoval = true)
+    @Deprecated(since = "0.8.0", forRemoval = true)
     public static final FluidAmount MAX_VALUE = ABSOLUTE_MAXIMUM;
 
     /** The minimum possible value that a valid {@link FluidAmount} can hold. It's not recommended to use this as it can
@@ -77,7 +77,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
      * 
      * @deprecated As {@link #MIN_BUCKETS} should generally be used instead, however if you really need the absolute
      *             minimum value then you can use {@link #ABSOLUTE_MINIMUM}. */
-    @Deprecated // (since = "0.8.0", forRemoval = true)
+    @Deprecated(since = "0.8.0", forRemoval = true)
     public static final FluidAmount MIN_VALUE = ABSOLUTE_MINIMUM;
 
     public static final JsonDeserializer<FluidAmount> DESERIALIZER = (json, type, ctx) -> fromJson(json);
@@ -94,7 +94,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
      * is set to 1.
      * 
      * @deprecated As {@link #ofWhole(long)} should be used instead. */
-    @Deprecated // (since = "0.8.2", forRemoval = true)
+    @Deprecated(since = "0.8.2", forRemoval = true)
     public FluidAmount(long whole) {
         this(whole, 0, 1);
     }
@@ -157,7 +157,7 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
     }
 
     /** @deprecated Use {@link #parse(String)} instead. */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static FluidAmount fromDouble(double value) {
         if (!Double.isFinite(value)) {
             throw new IllegalArgumentException("Cannot turn infinity or NaN into a FluidAmount!");

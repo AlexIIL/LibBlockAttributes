@@ -125,7 +125,7 @@ public final class FluidUnit extends FluidUnitBase implements Comparable<FluidUn
     /** @param key The name for this unit. (Please refer to {@link #FluidUnit(FluidAmount, String)} for the full
      *            description of what language keys you need to add).
      * @deprecated Replaced by {@link #FluidUnit(FluidAmount, String)}. */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public FluidUnit(int unitAmount, String key) {
         this(FluidAmount.of1620(unitAmount), key);
     }

@@ -15,7 +15,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** @deprecated Because {@link DefaultFluidVolumeRenderer} does everything that this does. */
-@Deprecated // (since = "0.6.0", forRemoval = true)
+@Deprecated(since = "0.6.0", forRemoval = true)
 public class ImplicitVanillaFluidVolumeRenderer extends FluidVolumeRenderer {
 
     public static final ImplicitVanillaFluidVolumeRenderer INSTANCE = new ImplicitVanillaFluidVolumeRenderer();

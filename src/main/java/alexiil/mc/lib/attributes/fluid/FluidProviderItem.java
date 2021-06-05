@@ -18,7 +18,7 @@ import alexiil.mc.lib.attributes.misc.Ref;
  * 
  * @deprecated This has been completely replaced by item-based attribute accessors and
  *             {@link FluidContainerRegistry}. */
-@Deprecated // (since = "0.5.0", forRemoval = true)
+@Deprecated(since = "0.5.0", forRemoval = true)
 public interface FluidProviderItem {
     /** Attempts to drain some fluid from the given stack.
      * 
@@ -28,7 +28,7 @@ public interface FluidProviderItem {
      * @deprecated This has been replaced by {@link FluidAttributes#EXTRACTABLE}.
      *             {@link CombinableAttribute#get(alexiil.mc.lib.attributes.misc.Reference) get}(stack).
      *             {@link FluidExtractable#extract(int) extract(maximumAmount)} */
-    @Deprecated // (since = "0.5.0", forRemoval = true)
+    @Deprecated(since = "0.5.0", forRemoval = true)
     FluidVolume drain(Ref<ItemStack> stack);
 
     /** Attempts to fill the given stack with the given fluid.
@@ -41,6 +41,6 @@ public interface FluidProviderItem {
      * @deprecated This has been replaced by {@link FluidAttributes#INSERTABLE}.
      *             {@link CombinableAttribute#get(alexiil.mc.lib.attributes.misc.Reference) get}(stack).
      *             {@link FluidInsertable#insert(FluidVolume) insert}(with) */
-    @Deprecated // (since = "0.5.0", forRemoval = true)
+    @Deprecated(since = "0.5.0", forRemoval = true)
     boolean fill(Ref<ItemStack> stack, Ref<FluidVolume> with);
 }

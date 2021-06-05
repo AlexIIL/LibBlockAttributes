@@ -71,7 +71,7 @@ public interface FixedFluidInvView extends Convertible {
      *         shouldn't implement this interface).
      * @throws RuntimeException if the given tank wasn't a valid index.
      * @deprecated Replaced by {@link #getMaxAmount_F(int)} */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     default int getMaxAmount(int tank) {
         if (AttributeUtil.EXPENSIVE_DEBUG_CHECKS) {
             validateFixedFluidInvView(this);
@@ -216,7 +216,7 @@ public interface FixedFluidInvView extends Convertible {
      * 
      * @deprecated Because this functionality has been fully replaced by {@link Convertible} and it's usage in
      *             {@link AttributeList}. */
-    @Deprecated // (since = "0.4.9", forRemoval = true)
+    @Deprecated(since = "0.4.9", forRemoval = true)
     default void offerSelfAsAttribute(
         AttributeList<?> list, @Nullable CacheInfo cacheInfo, @Nullable VoxelShape shape
     ) {

@@ -22,7 +22,7 @@ public class BiomeSourcedFluidVolume extends ColouredFluidVolume {
         setColourFromBiome(source);
     }
 
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public BiomeSourcedFluidVolume(BiomeSourcedFluidKey key, Biome source, int amount) {
         super(key, amount);
         setColourFromBiome(source);
@@ -32,7 +32,7 @@ public class BiomeSourcedFluidVolume extends ColouredFluidVolume {
         super(key, amount);
     }
 
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public BiomeSourcedFluidVolume(BiomeSourcedFluidKey key, int amount) {
         super(key, amount);
     }

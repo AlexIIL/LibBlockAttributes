@@ -20,7 +20,7 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
         super(WaterFluidKey.INSTANCE, amount);
     }
 
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public WaterFluidVolume(int amount) {
         super(WaterFluidKey.INSTANCE, amount);
     }
@@ -29,7 +29,7 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
         super(WaterFluidKey.INSTANCE, source, amount);
     }
 
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public WaterFluidVolume(Biome source, int amount) {
         super(WaterFluidKey.INSTANCE, source, amount);
     }

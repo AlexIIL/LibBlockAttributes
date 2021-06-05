@@ -66,13 +66,13 @@ public class DirectFixedItemInv implements ModifiableFixedItemInv, GroupedItemIn
 
     /** @deprecated This used to be necessary in 0.4.x, but since 0.5.0 {@link #getInvStack(int)} just returns the
      *             itemstack in the slot index. */
-    @Deprecated // (since = "0.5.0", forRemoval = true)
+    @Deprecated(since = "0.5.0", forRemoval = true)
     public final ItemStack get(int slot) {
         return getInvStack(slot);
     }
 
     /** @deprecated This used to be necessary in 0.4.x, but since 0.5.0 this is unnecessary. */
-    @Deprecated // (since = "0.5.0", forRemoval = true)
+    @Deprecated(since = "0.5.0", forRemoval = true)
     public final void set(int slot, ItemStack stack) {
         forceSetInvStack(slot, stack);
     }

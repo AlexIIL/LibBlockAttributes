@@ -57,7 +57,7 @@ public final class FluidVolumeUtil {
      * @return A copy of the fluid moved.
      * @see #move(FluidExtractable, FluidInsertable, FluidFilter, int)
      * @deprecated Replaced by {@link #move(FluidExtractable, FluidInsertable, FluidAmount)} */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     public static FluidVolume move(FluidExtractable from, FluidInsertable to, int maximum) {
         return move(from, to, null, FluidAmount.of1620(maximum), Simulation.ACTION);
     }
@@ -87,7 +87,7 @@ public final class FluidVolumeUtil {
      * 
      * @return A copy of the fluid moved.
      * @deprecated Replaced by {@link #move(FluidExtractable, FluidInsertable, FluidFilter, FluidAmount)} */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     public static FluidVolume move(FluidExtractable from, FluidInsertable to, FluidFilter filter, int maximum) {
         return move(from, to, filter, FluidAmount.of1620(maximum), Simulation.ACTION);
     }
@@ -193,7 +193,7 @@ public final class FluidVolumeUtil {
     /** @return An {@link FluidInsertable} that will insert fluids into the given stack (overflowing into the given
      *         {@link Consumer})
      * @deprecated This has been replaced by the item-based attributes system. */
-    @Deprecated // (since = "0.5.0", forRemoval = true)
+    @Deprecated(since = "0.5.0", forRemoval = true)
     public static FluidInsertable createItemInventoryInsertable(
         Ref<ItemStack> stackRef, Consumer<ItemStack> excessStacks
     ) {
@@ -203,7 +203,7 @@ public final class FluidVolumeUtil {
     /** @return An {@link FluidExtractable} that will extract fluids from the given stack (overflowing into the given
      *         {@link Consumer})
      * @deprecated This has been replaced by the item-based attributes system. */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static FluidExtractable createItemInventoryExtractable(
         Ref<ItemStack> stackRef, Consumer<ItemStack> excessStacks
     ) {
@@ -216,21 +216,21 @@ public final class FluidVolumeUtil {
 
     /** @deprecated The boolean return has been deprecated, and the main method has been moved to
      *             {@link FluidInvUtil#interactHandWithTank(FixedFluidInv, PlayerEntity, Hand)} */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static boolean interactWithTank(FixedFluidInv inv, PlayerEntity player, Hand hand) {
         return FluidInvUtil.interactHandWithTank(inv, player, hand).didMoveAny();
     }
 
     /** @deprecated The boolean return has been deprecated, and the main method has been moved to
      *             {@link FluidInvUtil#interactHandWithTank(FluidTransferable, PlayerEntity, Hand)} */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static boolean interactWithTank(FluidTransferable inv, PlayerEntity player, Hand hand) {
         return FluidInvUtil.interactHandWithTank(inv, player, hand).didMoveAny();
     }
 
     /** @deprecated The boolean return has been deprecated, and the main method has been moved to
      *             {@link FluidInvUtil#interactHandWithTank(FluidInsertable, FluidExtractable, PlayerEntity, Hand)} */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static boolean interactWithTank(
         @Nullable FluidInsertable invInsert, @Nullable FluidExtractable invExtract, PlayerEntity player, Hand hand
     ) {
@@ -239,21 +239,21 @@ public final class FluidVolumeUtil {
 
     /** @deprecated The boolean return has been deprecated, and the main method has been moved to
      *             {@link FluidInvUtil#interactCursorWithTank(FixedFluidInv, ServerPlayerEntity)} */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static boolean interactCursorWithTank(FixedFluidInv inv, ServerPlayerEntity player) {
         return FluidInvUtil.interactCursorWithTank(inv, player).didMoveAny();
     }
 
     /** @deprecated The boolean return has been deprecated, and the main method has been moved to
      *             {@link FluidInvUtil#interactCursorWithTank(FluidTransferable, ServerPlayerEntity)} */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static boolean interactCursorWithTank(FluidTransferable inv, ServerPlayerEntity player) {
         return FluidInvUtil.interactCursorWithTank(inv, player).didMoveAny();
     }
 
     /** @deprecated The boolean return has been deprecated, and the main method has been moved to
      *             {@link FluidInvUtil#interactCursorWithTank(FluidInsertable, FluidExtractable, ServerPlayerEntity)} */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static boolean interactCursorWithTank(
         FluidInsertable invInsert, FluidExtractable invExtract, ServerPlayerEntity player
     ) {
@@ -262,7 +262,7 @@ public final class FluidVolumeUtil {
 
     /** @deprecated The boolean return has been deprecated, and the main method has been moved to
      *             {@link FluidInvUtil#interactWithTank(FluidInsertable, FluidExtractable, PlayerEntity, Reference)} */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static boolean interactWithTank(
         @Nullable FluidInsertable invInsert, @Nullable FluidExtractable invExtract, PlayerEntity player,
         Reference<ItemStack> mainStackRef
@@ -272,7 +272,7 @@ public final class FluidVolumeUtil {
 
     /** @deprecated This has been replaced by
      *             {@link FluidInvUtil#interactItemWithTank(FixedFluidInv, Reference, LimitedConsumer)}. */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static FluidTankInteraction interactWithTank(
         FixedFluidInv inv, Ref<ItemStack> stack, Consumer<ItemStack> excessStacks
     ) {
@@ -281,7 +281,7 @@ public final class FluidVolumeUtil {
 
     /** @deprecated This has been replaced by
      *             {@link FluidInvUtil#interactItemWithTank(FluidTransferable, Reference, LimitedConsumer)}. */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static FluidTankInteraction interactWithTank(
         FluidTransferable inv, Ref<ItemStack> stack, Consumer<ItemStack> excessStacks
     ) {
@@ -294,7 +294,7 @@ public final class FluidVolumeUtil {
      * @param excessStacks A {@link Consumer} to take the excess {@link ItemStack}'s.
      * @deprecated This has been replaced by
      *             {@link FluidInvUtil#interactItemWithTank(FluidInsertable, FluidExtractable, Reference, LimitedConsumer)}. */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static FluidTankInteraction interactWithTank(
         FluidInsertable invInsert, FluidExtractable invExtract, Ref<ItemStack> stack, Consumer<ItemStack> excessStacks
     ) {
@@ -304,7 +304,7 @@ public final class FluidVolumeUtil {
 
     /** @deprecated Use {@link FluidInvUtil#interactItemWithTank(FixedFluidInv, Reference, LimitedConsumer)} instead:
      *             all interactWithTank methods have been moved to {@link FluidInvUtil}. */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static FluidTankInteraction interactWithTank(
         FixedFluidInv inv, Reference<ItemStack> stack, LimitedConsumer<ItemStack> excessStacks
     ) {
@@ -313,7 +313,7 @@ public final class FluidVolumeUtil {
 
     /** @deprecated Use {@link FluidInvUtil#interactItemWithTank(FluidTransferable, Reference, LimitedConsumer)}
      *             instead: all interactWithTank methods have been moved to {@link FluidInvUtil}. */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static FluidTankInteraction interactWithTank(
         FluidTransferable inv, Reference<ItemStack> stack, LimitedConsumer<ItemStack> excessStacks
     ) {
@@ -323,7 +323,7 @@ public final class FluidVolumeUtil {
     /** @deprecated Use
      *             {@link FluidInvUtil#interactItemWithTank(FluidInsertable, FluidExtractable, Reference, LimitedConsumer)}
      *             instead: all interactWithTank methods have been moved to {@link FluidInvUtil}. */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static FluidTankInteraction interactWithTank(
         FluidInsertable invInsert, FluidExtractable invExtract, Reference<ItemStack> stack,
         LimitedConsumer<ItemStack> excessStacks
@@ -350,12 +350,12 @@ public final class FluidVolumeUtil {
         public final ItemContainerStatus intoTankStatus;
         public final ItemContainerStatus fromTankStatus;
 
-        @Deprecated // (since = "0.6.4", forRemoval = true)
+        @Deprecated(since = "0.6.4", forRemoval = true)
         public static FluidTankInteraction intoTank(FluidVolume fluid) {
             return new FluidTankInteraction(fluid, true);
         }
 
-        @Deprecated // (since = "0.6.4", forRemoval = true)
+        @Deprecated(since = "0.6.4", forRemoval = true)
         public static FluidTankInteraction fromTank(FluidVolume fluid) {
             return new FluidTankInteraction(fluid, false);
         }
@@ -366,7 +366,7 @@ public final class FluidVolumeUtil {
             return new FluidTankInteraction(EMPTY, false, intoTankStatus, fromTankStatus);
         }
 
-        @Deprecated // (since = "0.6.4", forRemoval = true)
+        @Deprecated(since = "0.6.4", forRemoval = true)
         public FluidTankInteraction(FluidVolume fluidMoved, boolean intoTank) {
             this.fluidMoved = fluidMoved;
             this.intoTank = intoTank;
@@ -427,7 +427,7 @@ public final class FluidVolumeUtil {
             return wasContainerValid() ? ActionResult.FAIL : ActionResult.PASS;
         }
 
-        @Deprecated // (since = "0.6.0", forRemoval = true)
+        @Deprecated(since = "0.6.0", forRemoval = true)
         public int amountMoved() {
             return fluidMoved.getAmount();
         }
@@ -461,7 +461,7 @@ public final class FluidVolumeUtil {
      * @param toInsert The volume to insert. This will not be modified.
      * @return The excess {@link FluidVolume} that wasn't inserted.
      * @deprecated As this has been moved to {@link FixedFluidInv#insertFluid(int, FluidVolume, Simulation)} */
-    @Deprecated // (since = "0.8.0", forRemoval = true)
+    @Deprecated(since = "0.8.0", forRemoval = true)
     public static FluidVolume insertSingle(FixedFluidInv inv, int tank, FluidVolume toInsert, Simulation simulation) {
         return inv.insertFluid(tank, toInsert, simulation);
     }
@@ -507,7 +507,7 @@ public final class FluidVolumeUtil {
      * @return The extracted {@link FluidVolume}, inTank with "toAddWith".
      * @deprecated Replaced by
      *             {@link #extractSingle(FixedFluidInv, int, FluidFilter, FluidVolume, FluidAmount, Simulation)} */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     public static FluidVolume extractSingle(
         FixedFluidInv inv, int tank, @Nullable FluidFilter filter, FluidVolume toAddWith, int maxAmount,
         Simulation simulation
@@ -527,7 +527,7 @@ public final class FluidVolumeUtil {
      * @return The extracted {@link FluidVolume}, inTank with "toAddWith".
      * @deprecated Moved to
      *             {@link FixedFluidInv#extractFluid(int, FluidFilter, FluidVolume, FluidAmount, Simulation)} */
-    @Deprecated // (since = "0.8.0", forRemoval = true)
+    @Deprecated(since = "0.8.0", forRemoval = true)
     public static FluidVolume extractSingle(
         FixedFluidInv inv, int tank, @Nullable FluidFilter filter, FluidVolume toAddWith, FluidAmount maxAmount,
         Simulation simulation

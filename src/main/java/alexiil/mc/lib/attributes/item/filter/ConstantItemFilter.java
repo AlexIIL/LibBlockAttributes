@@ -12,10 +12,10 @@ import net.minecraft.item.ItemStack;
 public enum ConstantItemFilter implements ReadableItemFilter {
     ANYTHING(true, true),
 
-    @Deprecated // (since = "0.8.0", forRemoval = true)
+    @Deprecated(since = "0.8.0", forRemoval = true)
     ANYTHING_EXCEPT_EMPTY(true, false),
 
-    @Deprecated // (since = "0.8.0", forRemoval = true)
+    @Deprecated(since = "0.8.0", forRemoval = true)
     ONLY_EMPTY(false, true),
 
     NOTHING(false, false);
@@ -30,7 +30,7 @@ public enum ConstantItemFilter implements ReadableItemFilter {
         return result ? ANYTHING : NOTHING;
     }
 
-    @Deprecated // (since = "0.8.0", forRemoval = true)
+    @Deprecated(since = "0.8.0", forRemoval = true)
     public static ConstantItemFilter of(boolean fullResult, boolean emptyResult) {
         if (fullResult) {
             return emptyResult ? ANYTHING : ANYTHING_EXCEPT_EMPTY;

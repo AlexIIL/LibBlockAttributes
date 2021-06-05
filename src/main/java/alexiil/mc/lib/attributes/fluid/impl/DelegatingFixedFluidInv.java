@@ -37,7 +37,7 @@ public class DelegatingFixedFluidInv implements FixedFluidInv {
     }
 
     @Override
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     public int getMaxAmount(int tank) {
         return delegate.getMaxAmount(tank);
     }

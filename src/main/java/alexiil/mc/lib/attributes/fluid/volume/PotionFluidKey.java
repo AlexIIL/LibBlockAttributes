@@ -67,7 +67,7 @@ public final class PotionFluidKey extends FluidKey {
 
     /** @deprecated Replaced by {@link #withAmount(FluidAmount)}. */
     @Override
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     public PotionFluidVolume withAmount(int amount) {
         return new PotionFluidVolume(this, amount);
     }

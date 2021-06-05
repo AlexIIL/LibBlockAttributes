@@ -41,7 +41,7 @@ public final class ItemInvUtil {
      * to it.
      * 
      * @deprecated Use {@link PlayerInvUtil#createPlayerInsertable(PlayerEntity)} instead */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static Consumer<ItemStack> createPlayerInsertable(PlayerEntity player) {
         return PlayerInvUtil.createPlayerInsertable(player);
     }
@@ -49,7 +49,7 @@ public final class ItemInvUtil {
     /** Creates a {@link Reference} to the what the player is currently holding in the given {@link Hand}.
      * 
      * @deprecated Use {@link PlayerInvUtil#referenceHand(PlayerEntity,Hand)} instead */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static Reference<ItemStack> referenceHand(PlayerEntity player, Hand hand) {
         return PlayerInvUtil.referenceHand(player, hand);
     }
@@ -58,7 +58,7 @@ public final class ItemInvUtil {
      * updates the client whenever it is changed.
      * 
      * @deprecated Use {@link PlayerInvUtil#referenceGuiCursor(ServerPlayerEntity)} instead */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static Reference<ItemStack> referenceGuiCursor(ServerPlayerEntity player) {
         return PlayerInvUtil.referenceGuiCursor(player);
     }
@@ -67,7 +67,7 @@ public final class ItemInvUtil {
      * always keep a reference to the passed stack (and might modify it!)
      * 
      * @deprecated Use {@link PlayerInvUtil#insertItemIntoPlayerInventory(PlayerEntity,ItemStack)} instead */
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public static void insertItemIntoPlayerInventory(PlayerEntity player, ItemStack stack) {
         PlayerInvUtil.insertItemIntoPlayerInventory(player, stack);
     }
@@ -214,7 +214,7 @@ public final class ItemInvUtil {
      * @param toInsert The stack to insert. This won't be modified.
      * @return The excess {@link ItemStack} that wasn't inserted.
      * @deprecated Because this has been moved to {@link FixedItemInv#insertStack(int, ItemStack, Simulation)}. */
-    @Deprecated // (since = "0.8.0", forRemoval = true)
+    @Deprecated(since = "0.8.0", forRemoval = true)
     public static ItemStack insertSingle(FixedItemInv inv, int slot, ItemStack toInsert, Simulation simulation) {
         return inv.insertStack(slot, toInsert, simulation);
     }
@@ -230,7 +230,7 @@ public final class ItemInvUtil {
      * @return The extracted ItemStack, plus the parameter "toAddWith".
      * @deprecated Because this has been moved to
      *             {@link FixedItemInv#extractStack(int, ItemFilter, ItemStack, int, Simulation)}. */
-    @Deprecated // (since = "0.8.0", forRemoval = true)
+    @Deprecated(since = "0.8.0", forRemoval = true)
     public static ItemStack extractSingle(
         FixedItemInv inv, int slot, @Nullable ItemFilter filter, ItemStack toAddWith, int maxAmount,
         Simulation simulation

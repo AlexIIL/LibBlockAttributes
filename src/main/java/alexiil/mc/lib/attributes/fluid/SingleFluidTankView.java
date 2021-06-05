@@ -42,7 +42,7 @@ public class SingleFluidTankView {
     }
 
     /** @deprecated Replaced by {@link #getMaxAmount_F()}. */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     public final int getMaxAmount() {
         return backingView.getMaxAmount(tank);
     }

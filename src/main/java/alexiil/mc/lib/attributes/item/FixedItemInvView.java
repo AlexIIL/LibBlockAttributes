@@ -200,7 +200,7 @@ public interface FixedItemInvView extends Convertible, AbstractItemInvView {
      * 
      * @deprecated Because this functionality has been fully replaced by {@link Convertible} and it's usage in
      *             {@link AttributeList}, so you can always just offer this object directly to the attribute list. */
-    @Deprecated // (since = "0.4.9", forRemoval = true)
+    @Deprecated(since = "0.4.9", forRemoval = true)
     default void offerSelfAsAttribute(
         AttributeList<?> list, @Nullable CacheInfo cacheInfo, @Nullable VoxelShape shape
     ) {

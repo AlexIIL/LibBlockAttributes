@@ -26,14 +26,14 @@ public abstract class WeightedFluidKey<T> extends FluidKey {
     }
 
     @Override
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     public WeightedFluidVolume<T> withAmount(int amount) {
         return withAmount(FluidAmount.of1620(amount));
     }
 
     public abstract WeightedFluidVolume<T> withAmount(T value, FluidAmount amount);
 
-    @Deprecated // (since = "0.6.4", forRemoval = true)
+    @Deprecated(since = "0.6.4", forRemoval = true)
     public WeightedFluidVolume<T> withAmount(T value, int amount) {
         return withAmount(value, FluidAmount.of1620(amount));
     }

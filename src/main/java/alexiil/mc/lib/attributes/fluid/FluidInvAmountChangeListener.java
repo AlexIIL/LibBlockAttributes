@@ -12,7 +12,7 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 
 /** Replaced by {@link FluidInvAmountChangeListener_F}. */
 @FunctionalInterface
-@Deprecated // (since = "0.6.0", forRemoval = true)
+@Deprecated(since = "0.6.0", forRemoval = true)
 public interface FluidInvAmountChangeListener {
 
     /** @param inv The inventory that changed

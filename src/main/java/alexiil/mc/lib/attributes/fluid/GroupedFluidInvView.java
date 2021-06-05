@@ -32,7 +32,7 @@ public interface GroupedFluidInvView {
     /** @param fluid The stack to check for. Must not be {@link ItemStack#isEmpty() empty}.
      * @return The total amount of the given stack that is stored in this inventory.
      * @deprecated Replaced by {@link #getAmount_F(FluidKey)} */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     default int getAmount(FluidKey fluid) {
         FluidInvStatistic stats = getStatistics(fluid.exactFilter);
         assert stats.spaceTotal >= 0;
@@ -50,7 +50,7 @@ public interface GroupedFluidInvView {
     /** @param fluid The fluid to check for. Cannot be the empty fluid.
      * @return The total space that is available (right now!) to store the given stack.
      * @deprecated Replaced by {@link #getCapacity_F(FluidKey)} */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     default int getCapacity(FluidKey fluid) {
         FluidInvStatistic stats = getStatistics(fluid.exactFilter);
         assert stats.spaceTotal >= 0;
@@ -70,7 +70,7 @@ public interface GroupedFluidInvView {
      *         NOTE: This value might <i>not</i> be equal to the sum of {@link #getCapacity(FluidKey)} over
      *         {@link #getStoredFluids()}!
      * @deprecated Replaced by {@link #getTotalCapacity_F()} */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     default int getTotalCapacity() {
         return getTotalCapacity_F().as1620(RoundingMode.DOWN);
     }
@@ -86,7 +86,7 @@ public interface GroupedFluidInvView {
     /** @return The total space that could store the given stack, not including space that is currently taken up by the
      *         stack (so this should change with {@link #getAmount(FluidKey)}).
      * @deprecated Replaced by {@link #getSpace_F(FluidKey)} */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     default int getSpace(FluidKey fluid) {
         return getCapacity(fluid) - getAmount(fluid);
     }
@@ -111,7 +111,7 @@ public interface GroupedFluidInvView {
 
     /** @return A count of all the {@link FluidKey}'s that match the given filter.
      * @deprecated Replaced by {@link #getAmount_F(FluidFilter)} */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     default int getAmount(FluidFilter filter) {
         return getStatistics(filter).amount;
     }
@@ -129,7 +129,7 @@ public interface GroupedFluidInvView {
      * @param removalToken A token that will be called whenever the given listener is removed from this inventory (or if
      *            this inventory itself is unloaded or otherwise invalidated).
      * @return A token that represents the listener, or null if the listener could not be added. */
-    @Deprecated // (since = "0.6.0", forRemoval = true)
+    @Deprecated(since = "0.6.0", forRemoval = true)
     default ListenerToken addListener(FluidInvAmountChangeListener listener, ListenerRemovalToken removalToken) {
         if (AttributeUtil.EXPENSIVE_DEBUG_CHECKS) {
             validateGroupedFluidInvView(this);
@@ -241,7 +241,7 @@ public interface GroupedFluidInvView {
         /** The total amount of the given filter.
          * 
          * @deprecated Replaced by {@link #amount_F} instead. */
-        @Deprecated // (since = "0.6.0", forRemoval = true)
+        @Deprecated(since = "0.6.0", forRemoval = true)
         public final int amount;
 
         /** The total amount of the given filter. */
@@ -251,7 +251,7 @@ public interface GroupedFluidInvView {
          * partial stack).
          * 
          * @deprecated Replaced by {@link #spaceAddable_F} instead. */
-        @Deprecated // (since = "0.6.0", forRemoval = true)
+        @Deprecated(since = "0.6.0", forRemoval = true)
         public final int spaceAddable;
 
         /** The total amount of space that the given filter can be added to (where an inventory already contains a
@@ -262,7 +262,7 @@ public interface GroupedFluidInvView {
          * isn't specific enough to properly calculate this value.
          * 
          * @deprecated Replaced by {@link #spaceTotal_F} instead. */
-        @Deprecated // (since = "0.6.0", forRemoval = true)
+        @Deprecated(since = "0.6.0", forRemoval = true)
         public final int spaceTotal;
 
         /** The total amount of additional entries that could be added to by this filter. This might be
@@ -272,7 +272,7 @@ public interface GroupedFluidInvView {
         /** @deprecated Use
          *             {@link FluidInvStatistic#FluidInvStatistic(FluidFilter, FluidAmount, FluidAmount, FluidAmount)}
          *             instead. */
-        @Deprecated // (since = "0.6.0", forRemoval = true)
+        @Deprecated(since = "0.6.0", forRemoval = true)
         public FluidInvStatistic(FluidFilter filter, int amount, int spaceAddable, int spaceTotal) {
             this.filter = filter;
 

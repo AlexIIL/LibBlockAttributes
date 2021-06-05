@@ -17,7 +17,7 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 /** @deprecated This has been replaced with {@link FixedFluidInv#getMappedInv(int...)} followed by
  *             {@link FixedFluidInv#getExtractable()}. (And optionally {@link FluidExtractable#getPureExtractable()} if
  *             you only want to expose it as an extractable). */
-@Deprecated // (since = "0.4.0", forRemoval = true)
+@Deprecated(since = "0.4.0", forRemoval = true)
 public final class SimpleFixedFluidInvExtractable implements FluidExtractable {
 
     private final FluidExtractable real;

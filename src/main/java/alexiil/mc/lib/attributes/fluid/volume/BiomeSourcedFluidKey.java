@@ -23,7 +23,7 @@ public class BiomeSourcedFluidKey extends ColouredFluidKey {
 
     /** @deprecated because it's recommended to create a {@link ColouredFluidKey.ColouredFluidKeyBuilder} instead and
      *             pass that to {@link #BiomeSourcedFluidKey(ColouredFluidKeyBuilder)}. */
-    @Deprecated // (since = "0.8.1", forRemoval = true)
+    @Deprecated(since = "0.8.1", forRemoval = true)
     public BiomeSourcedFluidKey(FluidKeyBuilder builder) {
         this(new ColouredFluidKeyBuilder().copyFrom(builder));
     }
