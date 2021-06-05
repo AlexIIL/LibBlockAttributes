@@ -18,6 +18,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-java@v2.1.0
+      with:
+        distribution: 'adopt-hotspot'
+        java-version: '16'
     - id: tasks
       name: 'Setup'
       run: './gradlew tasks'
