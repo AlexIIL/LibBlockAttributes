@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "alexiil.mc.lib.attributes.mixin.impl.mx",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "ServerWorldMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

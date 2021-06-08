@@ -20,7 +20,7 @@ repositories {
 }
 
 archivesBaseName = "libblockatttributes"
-version = "0.9.0-pre.2"
+version = "0.9.0-pre.6"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -79,7 +79,9 @@ if (gradle.startParameter.taskNames.contains("checkstyle")) {
 processResources {
     inputs.property "version", project.version
     duplicatesStrategy = DuplicatesStrategy.FAIL
-    filter({str -> str.replace("$version", project.version)});
+    filesMatching('fabric.mod.json', {
+        filter({str -> str.replace("$version", project.version)});
+    })
 }
 
 compileJava {
@@ -168,11 +170,13 @@ coreExclude.addAll(itemsIncludes);
 coreExclude.addAll(fluidsIncludes);
 coreExclude.add("alexiil/mc/lib/attributes/fatjar/**");
 
-generateJar("core", ["**"], coreExclude, false);
-generateJar("items", itemsIncludes, [], true, ["core"]);
-generateJar("fluids", fluidsIncludes, [], true, ["core"]);
-generateJar("all", allIncludes, [], false, [], ["core", "items", "fluids"]);
-generateFatJar("fatjar_devonly", ["**"], [], false, [], ["core", "items", "fluids"]);
+def jsr305 = ["com.google.code.findbugs", "jsr305", "3.0.1"]
+
+generateJar("core", ["**"], coreExclude, false, [], [], [jsr305]);
+generateJar("items", itemsIncludes, [], true, ["core"], [], [jsr305]);
+generateJar("fluids", fluidsIncludes, [], true, ["core"], [], [jsr305]);
+generateJar("all", allIncludes, [], false, [], ["core", "items", "fluids"], [jsr305]);
+generateFatJar("fatjar_devonly", ["**"], [], false, [], ["core", "items", "fluids"], [jsr305]);
 
 tasks.withType(AbstractArchiveTask) {
     preserveFileTimestamps = false

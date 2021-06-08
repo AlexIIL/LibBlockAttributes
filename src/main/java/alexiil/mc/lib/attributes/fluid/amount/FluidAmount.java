@@ -1720,6 +1720,141 @@ public final class FluidAmount extends FluidAmountBase<FluidAmount> {
         return _bigDiv(by);
     }
 
+    // --------------
+    // Splitting
+    // --------------
+
+    /** Splits this {@link FluidAmount} evenly into the given count, but not letting the denominator exceed the default
+     * value (2000). If the denominator is bigger than the default then some of the entries might be
+     * {@link FluidAmount#ZERO}.
+     * 
+     * @return An array with length "count" containing the split fluids. May contain duplicates. */
+    public FluidAmount[] splitBalanced(int count) {
+        return splitBalanced(count, 2000);
+    }
+
+    /** Splits this {@link FluidAmount} evenly into the given count, but not letting the denominator exceed the given
+     * value. If the denominator is bigger than the default then some of the entries might be {@link FluidAmount#ZERO}.
+     * 
+     * @return An array with length "count" containing the split fluids. May contain duplicates. */
+    public FluidAmount[] splitBalanced(int count, long maxDenominator) {
+        return splitBalanced(new FluidAmount[count], maxDenominator);
+    }
+
+    /** Splits this {@link FluidAmount} evenly into the given count, but not letting the denominator exceed the given
+     * value. If the denominator is bigger than the default then some of the entries might be {@link FluidAmount#ZERO}.
+     * 
+     * @param dest The array to place the {@link FluidAmount}s into, which will also be returned.
+     * @return The "dest" array, which will contain the split fluids. May contain duplicates.
+     * @throws IllegalArgumentException if "dest" is an array of length 0 and this is not {@link #isZero()}. */
+    public FluidAmount[] splitBalanced(FluidAmount[] dest, long maxDenominator) {
+        FluidAmount[] ret = splitBalanced0(dest, maxDenominator);
+
+        boolean validate = false;
+        assert validate = true;
+        if (validate) {
+            assert ret == dest : "ret != dest";
+            FluidAmount total = ZERO;
+            for (FluidAmount in : dest) {
+                total = total.checkedAdd(in);
+            }
+            assert equals(total) : "this " + this + " != total " + total + " for " + Arrays.toString(ret);
+        }
+
+        return ret;
+    }
+
+    private FluidAmount[] splitBalanced0(FluidAmount[] dest, long maxDenominator) {
+        int count = dest.length;
+        if (count == 1) {
+            dest[0] = this;
+            return dest;
+        } else if (count == 0) {
+            if (isZero()) {
+                return dest;
+            }
+            throw new IllegalArgumentException("Cannot balance a FluidAmount into nothing unless we're zero!");
+        }
+
+        long realDivisor = LongMath.saturatedMultiply(denominator, count);
+        if (!didOverflow(realDivisor) && realDivisor <= maxDenominator) {
+            // We're below (or equal to) the maximum denominator
+            // So we don't need to do anything special
+            FluidAmount amount = div(count);
+            Arrays.fill(dest, amount);
+            return dest;
+        } else {
+            // Divide up the numerator and whole parts by count
+
+            long numeratorPer = numerator / count;
+            long overflowNumerator = numerator % count;
+
+            long wholePer = whole / count;
+            long overflowWhole = whole % count;
+
+            if (overflowWhole != 0) {
+                long addToNumerator = denominator * overflowWhole / count;
+                long remainder = denominator * overflowWhole % count;
+                if (remainder >= count) {
+                    addToNumerator += remainder / count;
+                    remainder %= count;
+                }
+                overflowNumerator += remainder;
+
+                if (overflowNumerator > count) {
+                    overflowNumerator -= count;
+                    numeratorPer++;
+                } else if (overflowNumerator < -count) {
+                    overflowNumerator += count;
+                    numeratorPer--;
+                }
+
+                numeratorPer += addToNumerator;
+                if (numeratorPer > denominator) {
+                    numeratorPer -= denominator;
+                    wholePer++;
+                } else if (numeratorPer < -denominator) {
+                    numeratorPer += denominator;
+                    wholePer--;
+                }
+            }
+
+            if (overflowNumerator == 0) {
+                // Exact split
+                FluidAmount amount = of(wholePer, numeratorPer, denominator);
+                Arrays.fill(dest, amount);
+                return dest;
+            } else {
+                if (overflowNumerator < 0) {
+                    numeratorPer--;
+                    overflowNumerator = -overflowNumerator;
+                }
+                // Some of overflowNumerator needs to go to the bigger amount, the rest to the smaller
+                FluidAmount bigger = of(wholePer, numeratorPer + 1, denominator);
+                FluidAmount smaller = of(wholePer, numeratorPer, denominator);
+                Arrays.fill(dest, 0, (int) overflowNumerator, bigger);
+                Arrays.fill(dest, (int) overflowNumerator, dest.length, smaller);
+                return dest;
+            }
+
+        }
+    }
+
+    // /** Splits this {@link FluidAmount} up according to the ratios given, but not letting the denominator exceed the
+    // * default value (2000). If the denominator is bigger than the default then some of the entries might be
+    // * {@link FluidAmount#ZERO}.
+    // *
+    // * @param ratios An array with the same length as the ratios array.
+    // * @return An array that's the same size as the ratio array containing the split fluids. May contain duplicates.
+    // */
+    // public FluidAmount[] splitRatio(FluidAmount[] ratios) {
+    // return splitRatio(ratios, 2000);
+    // }
+    //
+    // public FluidAmount[] splitRatio(FluidAmount[] ratios, long maxDenominator) {
+    //
+    // }
+
     // Internal
 
     @Override

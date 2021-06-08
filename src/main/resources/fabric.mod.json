@@ -19,6 +19,8 @@
     "universalcomponents": "<0.9.0"
   },
   "mixins": [
+    "libblockattributes_core.common.json",
+    "libblockattributes_core.client.json",
     "libblockattributes_item.common.json",
     "libblockattributes_fluid.common.json",
     "libblockattributes_fluid.client.json"
