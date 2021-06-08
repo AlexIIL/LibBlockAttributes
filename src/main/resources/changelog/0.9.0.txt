@@ -1,0 +1,7 @@
+Changes:
+
+* Ported to 1.17.
+    * Cauldron compat isn't finished yet, so it's been disabled (for now).
+* Added "since" and "forRemoval" attributes to Deprecated annotations.
+* Added FluidAmount.splitBalanced.
+* Moved the LBA helper interface "UnloadableBlockEntity" to LBA.

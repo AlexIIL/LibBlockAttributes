@@ -70,9 +70,12 @@ public final class VanillaFluidCompat {
             })
         );
 
+        // Temporarily removed until this is fixed.
+        /*
         registerCauldronAttributes(Blocks.CAULDRON, Fluids.EMPTY);
         registerCauldronAttributes(Blocks.WATER_CAULDRON, Fluids.WATER);
         registerCauldronAttributes(Blocks.LAVA_CAULDRON, Fluids.LAVA);
+        */
     }
 
     public static void registerCauldronAttributes(Block cauldron, Fluid fluid) {

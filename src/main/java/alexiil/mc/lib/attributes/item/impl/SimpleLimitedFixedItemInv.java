@@ -50,11 +50,11 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
     }
 
     public static SimpleLimitedFixedItemInv createLimited(FixedItemInv inv) {
-        if (inv instanceof alexiil.mc.lib.attributes.item.impl.SimpleLimitedFixedItemInv.OfModifiable) {
-            return new alexiil.mc.lib.attributes.item.impl.SimpleLimitedFixedItemInv.OfModifiable((ModifiableFixedItemInv) inv);
+        if (inv instanceof ModifiableFixedItemInv) {
+            return new SimpleLimitedFixedItemInv.OfModifiable((ModifiableFixedItemInv) inv);
         }
-        if (inv instanceof alexiil.mc.lib.attributes.item.impl.SimpleLimitedFixedItemInv.OfCopying) {
-            return new alexiil.mc.lib.attributes.item.impl.SimpleLimitedFixedItemInv.OfCopying((CopyingFixedItemInv) inv);
+        if (inv instanceof CopyingFixedItemInv) {
+            return new SimpleLimitedFixedItemInv.OfCopying((CopyingFixedItemInv) inv);
         }
         return new SimpleLimitedFixedItemInv(inv);
     }
@@ -77,10 +77,10 @@ public class SimpleLimitedFixedItemInv extends DelegatingFixedItemInv implements
     public LimitedFixedItemInv copy() {
         final SimpleLimitedFixedItemInv inv;
         // Test this class so we don't have any unexpected surprises if the returned class is different
-        if (this instanceof alexiil.mc.lib.attributes.item.impl.SimpleLimitedFixedItemInv.OfModifiable) {
-            inv = new alexiil.mc.lib.attributes.item.impl.SimpleLimitedFixedItemInv.OfModifiable((ModifiableFixedItemInv) delegate);
-        } else if (this instanceof alexiil.mc.lib.attributes.item.impl.SimpleLimitedFixedItemInv.OfCopying) {
-            inv = new alexiil.mc.lib.attributes.item.impl.SimpleLimitedFixedItemInv.OfCopying((CopyingFixedItemInv) delegate);
+        if (this instanceof SimpleLimitedFixedItemInv.OfModifiable) {
+            inv = new SimpleLimitedFixedItemInv.OfModifiable((ModifiableFixedItemInv) delegate);
+        } else if (this instanceof SimpleLimitedFixedItemInv.OfCopying) {
+            inv = new SimpleLimitedFixedItemInv.OfCopying((CopyingFixedItemInv) delegate);
         } else {
             inv = new SimpleLimitedFixedItemInv(delegate);
         }
