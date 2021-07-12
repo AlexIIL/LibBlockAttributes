@@ -92,7 +92,7 @@ public final class LbaFluidsConfig {
         TOOLTIP_JOIN_NAME_AMOUNT = "true".equalsIgnoreCase(props.getProperty("tooltip_join_name_amount", "false"));
 
         if (!hasAll) {
-            try (Writer fw = Files.newBufferedWriter(cfgFile, StandardCharsets.UTF_8, StandardOpenOption.APPEND)) {
+            try (Writer fw = Files.newBufferedWriter(cfgFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
                 if (!didFileExist) {
                     fw.append("# LibBlockAttributes options file (fluids module)\n");
                     fw.append("# Removing an option will reset it back to the default value\n");
