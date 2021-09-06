@@ -104,7 +104,7 @@ public final class ItemInvUtil {
         }
         ItemFilter insertionFilter = to.getInsertionFilter();
         if (filter != null && filter != ConstantItemFilter.ANYTHING) {
-            insertionFilter = AggregateItemFilter.and(insertionFilter, filter);
+            insertionFilter = AggregateItemFilter.and(filter, insertionFilter);
         }
 
         ItemStack extracted = from.attemptExtraction(insertionFilter, maximum, Simulation.SIMULATE);
