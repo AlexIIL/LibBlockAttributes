@@ -1,0 +1,3 @@
+Bug fixes:
+
+* Fixed the fluid config file being created directly in the game directory rather than in the config directory.

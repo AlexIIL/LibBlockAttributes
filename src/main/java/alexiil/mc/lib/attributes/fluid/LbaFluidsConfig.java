@@ -48,12 +48,14 @@ public final class LbaFluidsConfig {
     static {
         FabricLoader fabric = FabricLoader.getInstance();
         final Path cfgDir;
-        if (fabric.getGameDir() == null) {
+        Path gameDir = fabric.getGameDir();
+        if (gameDir == null) {
             // Can happen during a JUnit test
             cfgDir = Paths.get("config");
         } else {
-            cfgDir = fabric.getGameDir();
+            cfgDir = fabric.getConfigDir();
         }
+
         if (!Files.isDirectory(cfgDir)) {
             try {
                 Files.createDirectories(cfgDir);
@@ -61,9 +63,23 @@ public final class LbaFluidsConfig {
                 throw new RuntimeException("Failed to create the config directory! (" + cfgDir + ")", e);
             }
         }
+
         Path cfgFile = cfgDir.resolve(FILE_NAME);
         Properties props = new Properties();
         boolean didFileExist = Files.exists(cfgFile);
+
+        if (gameDir != null) {
+            Path oldConfigFile = gameDir.resolve(FILE_NAME);
+            if (!didFileExist && Files.exists(oldConfigFile)) {
+                didFileExist = true;
+                try {
+                    Files.move(oldConfigFile, cfgFile);
+                } catch (IOException e) {
+                    LibBlockAttributes.LOGGER.error("Failed to move the old config file to the new one!", e);
+                }
+            }
+        }
+
         if (didFileExist) {
             try (Reader reader = Files.newBufferedReader(cfgFile, StandardCharsets.UTF_8)) {
                 props.load(reader);
@@ -71,6 +87,7 @@ public final class LbaFluidsConfig {
                 LibBlockAttributes.LOGGER.error("Failed to read the config file!", e);
             }
         }
+
         boolean hasAll = true;
 
         hasAll &= props.containsKey("symbols");
@@ -92,7 +109,11 @@ public final class LbaFluidsConfig {
         TOOLTIP_JOIN_NAME_AMOUNT = "true".equalsIgnoreCase(props.getProperty("tooltip_join_name_amount", "false"));
 
         if (!hasAll) {
-            try (Writer fw = Files.newBufferedWriter(cfgFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+            try (
+                Writer fw = Files.newBufferedWriter(
+                    cfgFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND
+                )
+            ) {
                 if (!didFileExist) {
                     fw.append("# LibBlockAttributes options file (fluids module)\n");
                     fw.append("# Removing an option will reset it back to the default value\n");
