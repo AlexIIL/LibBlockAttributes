@@ -52,7 +52,7 @@ public enum ItemStackCollections {
                 return 0;
             }
             return Arrays.hashCode(
-                new int[] { o.getCount(), System.identityHashCode(o.getItem()), Objects.hashCode(o.getTag()) }
+                new int[] { o.getCount(), System.identityHashCode(o.getItem()), Objects.hashCode(o.getNbt()) }
             );
         }
 
@@ -73,7 +73,7 @@ public enum ItemStackCollections {
             if (o == null || o.isEmpty()) {
                 return 0;
             }
-            return Arrays.hashCode(new int[] { System.identityHashCode(o.getItem()), Objects.hashCode(o.getTag()) });
+            return Arrays.hashCode(new int[] { System.identityHashCode(o.getItem()), Objects.hashCode(o.getNbt()) });
         }
 
         @Override
@@ -86,11 +86,11 @@ public enum ItemStackCollections {
     };
 
     /** A {@link Comparator} that compares {@link ItemStack}'s by their Registry {@link Identifier}, then
-     * {@link ItemStack#getTag()}, then amounts. */
+     * {@link ItemStack#getNbt()}, then amounts. */
     public static final Comparator<ItemStack> COMPARATOR_ID_EXACT = ItemStackCollections::compareItemStacksExact;
 
     /** A {@link Comparator} that compares {@link ItemStack}'s by their Registry {@link Identifier}, then
-     * {@link ItemStack#getTag()}. */
+     * {@link ItemStack#getNbt()}. */
     public static final Comparator<ItemStack> COMPARATOR_IGNORE_AMOUNT
         = ItemStackCollections::compareItemStacksIgnoreAmounts;
 
@@ -124,8 +124,8 @@ public enum ItemStackCollections {
                 return comp;
             }
         }
-        NbtCompound tagA = a.getTag();
-        NbtCompound tagB = b.getTag();
+        NbtCompound tagA = a.getNbt();
+        NbtCompound tagB = b.getNbt();
         if (tagA == null) {
             if (tagB != null) {
                 return 1;

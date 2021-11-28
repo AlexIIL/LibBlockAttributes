@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.8-SNAPSHOT'
+    id 'fabric-loom' version '0.10-SNAPSHOT'
     id 'org.cadixdev.licenser' version '0.6.0'
 }
 
@@ -20,7 +20,7 @@ repositories {
 }
 
 archivesBaseName = "libblockatttributes"
-version = "0.9.2"
+version = "0.10.0-pre.1"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -31,12 +31,12 @@ minecraft {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:1.17-rc1"
-    mappings "net.fabricmc:yarn:1.17-rc1+build.1:v2"
-    modImplementation "net.fabricmc:fabric-loader:0.11.3"
+    minecraft "com.mojang:minecraft:1.18-rc3"
+    mappings "net.fabricmc:yarn:1.18-rc3+build.2:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.12.5"
 
     //Fabric api
-    modImplementation "net.fabricmc.fabric-api:fabric-api:0.34.8+1.17"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.43.1+1.18"
 
     // Silk API
     modImplementation("io.github.prospector.silk:SilkAPI:${silk_version}") { transitive = false }

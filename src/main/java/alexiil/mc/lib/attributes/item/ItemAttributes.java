@@ -237,7 +237,7 @@ public final class ItemAttributes {
             assert 0 <= slot && slot < 27;
 
             ItemStack stack = ref.get();
-            NbtCompound tag = stack.getSubTag("BlockEntityTag");
+            NbtCompound tag = stack.getSubNbt("BlockEntityTag");
             if (tag == null || stack.isEmpty() || stack.getCount() != 1 || !isShulkerBox(stack.getItem())) {
                 return ItemStack.EMPTY;
             }
@@ -282,10 +282,10 @@ public final class ItemAttributes {
                 stack = stack.copy();
             }
 
-            NbtCompound tag = stack.getSubTag("BlockEntityTag");
+            NbtCompound tag = stack.getSubNbt("BlockEntityTag");
             if (tag == null) {
                 if (simulation == Simulation.ACTION) {
-                    tag = stack.getOrCreateSubTag("BlockEntityTag");
+                    tag = stack.getOrCreateSubNbt("BlockEntityTag");
                 } else {
                     tag = new NbtCompound();
                 }

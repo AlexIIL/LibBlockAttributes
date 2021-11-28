@@ -94,7 +94,7 @@ public abstract class FluidVolumeRenderer {
                 flowing = sprites[1];
             } else {
                 BlockState state = fl.getDefaultState().getBlockState();
-                still = mc.getBlockRenderManager().getModel(state).getSprite();
+                still = mc.getBlockRenderManager().getModel(state).getParticleSprite();
                 flowing = still;
             }
         } else {
@@ -220,12 +220,12 @@ public abstract class FluidVolumeRenderer {
         VertexConsumer vc, MatrixStack matrices, double x, double y, double z, float u, float v, int r, int g, int b,
         int a, int light, float nx, float ny, float nz
     ) {
-        vc.vertex(matrices.peek().getModel(), (float) x, (float) y, (float) z);
+        vc.vertex(matrices.peek().getPositionMatrix(), (float) x, (float) y, (float) z);
         vc.color(r, g, b, a == 0 ? 0xFF : a);
         vc.texture(u, v);
         vc.overlay(OverlayTexture.DEFAULT_UV);
         vc.light(light);
-        vc.normal(matrices.peek().getNormal(), nx, ny, nz);
+        vc.normal(matrices.peek().getNormalMatrix(), nx, ny, nz);
         vc.next();
     }
 

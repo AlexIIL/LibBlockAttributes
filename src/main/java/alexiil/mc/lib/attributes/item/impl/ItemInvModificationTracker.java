@@ -64,6 +64,6 @@ public final class ItemInvModificationTracker {
         }
         int amount = stack.getCount();
         String stackStr = amount + "x" + stack.getTranslationKey();
-        return stackStr + " tag = " + stack.getTag();
+        return stackStr + " tag = " + stack.getNbt();
     }
 }
