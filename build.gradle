@@ -37,9 +37,6 @@ dependencies {
     //Fabric api
     modImplementation "net.fabricmc.fabric-api:fabric-api:0.43.1+1.18"
 
-    // Silk API
-    modImplementation("io.github.prospector.silk:SilkAPI:${silk_version}") { transitive = false }
-
     // Item-inventory
     //modImplementation("com.github.emilyploszaj:item-inventory:v1.1.0") { transitive = false }
 
