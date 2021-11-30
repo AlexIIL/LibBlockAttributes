@@ -77,7 +77,7 @@ final class TransferItemApiCompat {
         @Override
         public Set<ItemStack> getStoredStacks() {
             Set<ItemStack> set = ItemStackCollections.set();
-            try (Transaction t = Transaction.openOuter()) {
+            try (Transaction t = beginTransaction()) {
                 for (StorageView<ItemVariant> entry : from.iterable(t)) {
                     ItemVariant res = entry.getResource();
                     if (!res.isBlank()) {
@@ -91,7 +91,7 @@ final class TransferItemApiCompat {
         @Override
         public int getTotalCapacity() {
             int capacity = 0;
-            try (Transaction t = Transaction.openOuter()) {
+            try (Transaction t = beginTransaction()) {
                 for (StorageView<ItemVariant> entry : from.iterable(t)) {
                     int c = (int) Math.max(0, Math.min(Integer.MAX_VALUE, entry.getCapacity()));
                     capacity = IntMath.saturatedAdd(capacity, c);
@@ -104,7 +104,7 @@ final class TransferItemApiCompat {
         public ItemInvStatistic getStatistics(ItemFilter filter) {
             int amount = 0;
             int spaceAddable = 0;
-            try (Transaction t = Transaction.openOuter()) {
+            try (Transaction t = beginTransaction()) {
                 for (StorageView<ItemVariant> entry : from.iterable(t)) {
                     ItemVariant res = entry.getResource();
 
@@ -130,7 +130,7 @@ final class TransferItemApiCompat {
 
             ItemStack result;
 
-            try (Transaction t = Transaction.openOuter()) {
+            try (Transaction t = beginTransaction()) {
 
                 int inserted = (int) from.insert(ItemVariant.of(stack), stack.getCount(), t);
 
@@ -156,7 +156,7 @@ final class TransferItemApiCompat {
 
             if (filter instanceof ExactItemStackFilter exact) {
 
-                try (Transaction t = Transaction.openOuter()) {
+                try (Transaction t = beginTransaction()) {
 
                     long extracted = from.extract(ItemVariant.of(exact.stack), maxAmount, t);
 
@@ -171,7 +171,7 @@ final class TransferItemApiCompat {
                 }
             } else {
 
-                try (Transaction t = Transaction.openOuter()) {
+                try (Transaction t = beginTransaction()) {
 
                     try_extract: {
                         for (StorageView<ItemVariant> entry : from.iterable(t)) {
@@ -194,6 +194,10 @@ final class TransferItemApiCompat {
             }
 
             return result;
+        }
+
+        private static Transaction beginTransaction() {
+            return Transaction.openNested(Transaction.getCurrentUnsafe());
         }
 
         private static void endTransaction(Simulation simulation, Transaction t) {

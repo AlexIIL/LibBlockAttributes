@@ -84,7 +84,7 @@ final class TransferFluidApiCompat {
         @Override
         public Set<FluidKey> getStoredFluids() {
             Set<FluidKey> set = new HashSet<>();
-            try (Transaction t = Transaction.openOuter()) {
+            try (Transaction t = beginTransaction()) {
                 for (StorageView<FluidVariant> entry : from.iterable(t)) {
                     FluidVariant res = entry.getResource();
                     if (!res.isBlank()) {
@@ -98,7 +98,7 @@ final class TransferFluidApiCompat {
         @Override
         public FluidAmount getTotalCapacity_F() {
             FluidAmount capacity = FluidAmount.ZERO;
-            try (Transaction t = Transaction.openOuter()) {
+            try (Transaction t = beginTransaction()) {
                 for (StorageView<FluidVariant> entry : from.iterable(t)) {
                     capacity = capacity.saturatedAdd(FluidAmount.of(entry.getAmount(), BUCKET_VALUE));
                 }
@@ -110,7 +110,7 @@ final class TransferFluidApiCompat {
         public FluidInvStatistic getStatistics(FluidFilter filter) {
             FluidAmount amount = FluidAmount.ZERO;
             FluidAmount spaceAddable = FluidAmount.ZERO;
-            try (Transaction t = Transaction.openOuter()) {
+            try (Transaction t = beginTransaction()) {
                 for (StorageView<FluidVariant> entry : from.iterable(t)) {
                     FluidVariant res = entry.getResource();
 
@@ -135,7 +135,7 @@ final class TransferFluidApiCompat {
 
             FluidVolume result;
 
-            try (Transaction t = Transaction.openOuter()) {
+            try (Transaction t = beginTransaction()) {
 
                 long inserted
                     = from.insert(FluidVariant.of(mcFluid), volume.amount().asLong(BUCKET_VALUE, RoundingMode.DOWN), t);
@@ -170,7 +170,7 @@ final class TransferFluidApiCompat {
                     return FluidVolumeUtil.EMPTY;
                 }
 
-                try (Transaction t = Transaction.openOuter()) {
+                try (Transaction t = beginTransaction()) {
 
                     long extracted
                         = from.extract(FluidVariant.of(mcFluid), maxAmount.asLong(BUCKET_VALUE, RoundingMode.DOWN), t);
@@ -184,7 +184,7 @@ final class TransferFluidApiCompat {
                 }
             } else {
 
-                try (Transaction t = Transaction.openOuter()) {
+                try (Transaction t = beginTransaction()) {
 
                     try_extract: {
                         for (StorageView<FluidVariant> entry : from.iterable(t)) {
@@ -211,6 +211,10 @@ final class TransferFluidApiCompat {
             }
 
             return result;
+        }
+
+        private static Transaction beginTransaction() {
+            return Transaction.openNested(Transaction.getCurrentUnsafe());
         }
 
         private static void endTransaction(Simulation simulation, Transaction t) {

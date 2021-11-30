@@ -64,7 +64,8 @@ public class TransferItemInvCompatLoader extends LbaModCompatLoader {
             new Class<?>[] { World.class, BlockPos.class, BlockState.class, BlockEntity.class, Object.class },
             Object.class
         );
-        requireMethod(t, "openOuter", new Class<?>[0], t);
+        requireMethod(t, "openNested", new Class<?>[] { tCtx }, t);
+        requireMethod(t, "getCurrentUnsafe", null, tCtx);
         requireMethod(t, "abort", null, void.class);
         requireMethod(t, "commit", null, void.class);
         requireMethod(sto, "iterable", new Class<?>[] { tCtx }, Iterable.class);
