@@ -8,6 +8,7 @@
 package alexiil.mc.lib.attributes.fluid.compat.mod;
 
 import alexiil.mc.lib.attributes.fluid.compat.mod.silk.SilkFluidCompat;
+import alexiil.mc.lib.attributes.fluid.compat.mod.transfer.TransferFluidInvCompatLoader;
 import alexiil.mc.lib.attributes.fluid.compat.mod.vanilla.VanillaFluidCompat;
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
 
@@ -25,7 +26,6 @@ public final class LbaFluidModCompatLoader {
             LibBlockAttributes.LOGGER.info("Silk not found, not loading compatibility for fluids.");
         }
 
-        // FIXME: Fix reborn core compat once it updates to 1.17
-        // RebornCompatLoader.load();
+        TransferFluidInvCompatLoader.load();
     }
 }

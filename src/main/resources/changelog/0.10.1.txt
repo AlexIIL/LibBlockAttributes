@@ -1,0 +1,7 @@
+Changes:
+
+* Added one-way compatibility with fabric's transfer API
+    * Mods using LBA can insert into and extract from vanilla, LBA inventories, and transfer api inventries.
+    * Mods using transfer API can only insert into and extract from vanilla and transfer api inventories.
+        * If mods want to insert into and extract from LBA inventories they they will need to add compat with LBA.
+* Removed legacy compatibility with TechReborn's fluid code, since it's moved over to transfer api.

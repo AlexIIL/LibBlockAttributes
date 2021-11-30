@@ -8,6 +8,7 @@
 package alexiil.mc.lib.attributes.item.compat.mod;
 
 import alexiil.mc.lib.attributes.item.compat.mod.dank.DankItemInvCompatLoader;
+import alexiil.mc.lib.attributes.item.compat.mod.transfer.TransferItemInvCompatLoader;
 
 public final class LbaItemModCompat {
     private LbaItemModCompat() {}
@@ -15,5 +16,6 @@ public final class LbaItemModCompat {
     public static void load() {
         // EmiItemInvCompatLoader.load();
         DankItemInvCompatLoader.load();
+        TransferItemInvCompatLoader.load();
     }
 }

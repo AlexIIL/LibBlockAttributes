@@ -20,7 +20,7 @@ jobs:
     - uses: actions/setup-java@v2.1.0
       with:
         distribution: 'adopt-hotspot'
-        java-version: '16'
+        java-version: '17'
     - id: tasks
       name: 'Setup'
       run: './gradlew tasks'
