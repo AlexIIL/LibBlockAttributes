@@ -5,3 +5,4 @@ Changes:
     * Mods using transfer API can only insert into and extract from vanilla and transfer api inventories.
         * If mods want to insert into and extract from LBA inventories they they will need to add compat with LBA.
 * Removed legacy compatibility with TechReborn's fluid code, since it's moved over to transfer api.
+* Fixed "FixedInventoryVanillaWrapper" not calling "Inventory.markDirty" whenever it changed the inventory.

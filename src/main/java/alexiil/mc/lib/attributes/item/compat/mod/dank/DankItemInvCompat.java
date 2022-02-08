@@ -55,6 +55,7 @@ class DankItemInvCompat {
 
                         if (simulation.isAction()) {
                             inv.setStack(slot, newInSlot);
+                            inv.markDirty();
                         }
 
                         return stack;
