@@ -11,17 +11,30 @@ import java.util.HashSet;
 
 import net.minecraft.fluid.Fluid;
 import net.minecraft.tag.Tag;
+import net.minecraft.tag.TagKey;
 
+import alexiil.mc.lib.attributes.LbaMinecraftProxy;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 
 /** A {@link FluidFilter} that operates on a {@link Tag} of vanilla minecraft's {@link Fluid}'s. */
 public final class RawFluidTagFilter implements ResolvableFluidFilter {
 
+    @Deprecated
     public final Tag<Fluid> tag;
 
+    private TagKey<Fluid> tagKey;
+
+    /** 1.18.1 constructor. Don't use this for 1.18.2 or later. */
+    @Deprecated
     public RawFluidTagFilter(Tag<Fluid> tag) {
         this.tag = tag;
+    }
+
+    /** 1.18.2 constructor. Don't use this for 1.18.1 or earlier. */
+    public RawFluidTagFilter(TagKey<Fluid> tagKey) {
+        this.tagKey = tagKey;
+        this.tag = null;
     }
 
     @Override
@@ -30,7 +43,10 @@ public final class RawFluidTagFilter implements ResolvableFluidFilter {
         if (raw == null) {
             return false;
         }
-        return raw.isIn(tag);
+        if (tag != null) {
+            return LbaMinecraftProxy.instance().isInTag(raw, tag);
+        }
+        return raw.isIn(tagKey);
     }
 
     @Override
