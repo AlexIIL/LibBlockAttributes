@@ -1,5 +1,7 @@
 Changes:
 
+* Updated to 1.18.2
+    * This version should still work on 1.18.1 however, if you don't want to update your mod but do want the other changes here.
 * Added one-way compatibility with fabric's transfer API
     * Mods using LBA can insert into and extract from vanilla, LBA inventories, and transfer api inventries.
     * Mods using transfer API can only insert into and extract from vanilla and transfer api inventories.
