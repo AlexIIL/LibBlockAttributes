@@ -21,7 +21,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Identifier;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
@@ -208,14 +208,14 @@ public abstract class FluidProperty<T> {
     /** Adds tooltip extras for this fluid property when getting the tooltip for just the {@link FluidKey}. */
     public void addTooltipExtras(FluidKey fluid, FluidTooltipContext context, List<Text> tooltip) {
         if (context.isAdvanced()) {
-            tooltip.add(new TranslatableText("libblockattributes.fluid_property.advanced_prefix_key", nbtKey));
+            tooltip.add(Text.translatable("libblockattributes.fluid_property.advanced_prefix_key", nbtKey));
         }
     }
 
     /** Adds tooltip extras for this fluid property when getting the tooltip for a full {@link FluidVolume}. */
     public void addTooltipExtras(FluidVolume fluid, FluidTooltipContext context, List<Text> tooltip) {
         if (context.isAdvanced()) {
-            tooltip.add(new TranslatableText("libblockattributes.fluid_property.advanced_prefix_value", get(fluid)));
+            tooltip.add(Text.translatable("libblockattributes.fluid_property.advanced_prefix_value", get(fluid)));
         }
     }
 }

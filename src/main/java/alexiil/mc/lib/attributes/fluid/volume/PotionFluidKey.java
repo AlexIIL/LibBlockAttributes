@@ -17,10 +17,10 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -49,7 +49,7 @@ public final class PotionFluidKey extends FluidKey {
         builder.setSprites(POTION_TEXTURE, FLOWING_POTION_TEXTURE);
         builder.setUnit(FluidUnit.BOTTLE);
         int colour = PotionUtil.getColor(potion);
-        TranslatableText text = new TranslatableText(potion.finishTranslationKey("item.minecraft.potion.effect."));
+        MutableText text = Text.translatable(potion.finishTranslationKey("item.minecraft.potion.effect."));
         builder.setName(text.setStyle(Style.EMPTY.withColor(TextColor.fromRgb(colour))));
         builder.setRenderColor(colour);
         return builder;

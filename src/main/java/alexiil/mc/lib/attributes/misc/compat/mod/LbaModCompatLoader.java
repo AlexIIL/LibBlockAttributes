@@ -31,6 +31,14 @@ public abstract class LbaModCompatLoader {
         }
     }
 
+    protected static void requireClassExtends(Class<?> cls, Class<?> expectedParent)
+        throws ReflectiveOperationException {
+
+        if (!expectedParent.isAssignableFrom(cls)) {
+            throw new ReflectiveOperationException("Needed the " + cls + " to extend " + expectedParent);
+        }
+    }
+
     protected static boolean hasOldMethod(Class<?> cls, String name, Class<?>[] args, Class<?> ret) {
         try {
             Method m = cls.getMethod(name, args);

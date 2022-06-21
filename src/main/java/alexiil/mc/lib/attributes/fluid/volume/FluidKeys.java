@@ -25,7 +25,7 @@ import net.minecraft.potion.Potions;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -66,12 +66,12 @@ public final class FluidKeys {
         // Empty doesn't have a proper sprite or text component because it doesn't ever make sense to use it.
         EMPTY = new SimpleFluidKey(
             new FluidKeyBuilder(Fluids.EMPTY)//
-                .setName(new TranslatableText("libblockattributes.fluid.empty"))
+                .setName(Text.translatable("libblockattributes.fluid.empty"))
         );
 
         LAVA = new SimpleFluidKey(
             new FluidKeyBuilder(Fluids.LAVA)//
-                .setName(new TranslatableText(Blocks.LAVA.getTranslationKey())//
+                .setName(Text.translatable(Blocks.LAVA.getTranslationKey())//
                     .setStyle(Style.EMPTY.withColor(Formatting.RED))
                 )//
                 .setLuminosity(15)//
@@ -147,7 +147,7 @@ public final class FluidKeys {
 
     private static SimpleFluidKey createImplicitFluid(Fluid fluid) {
         Block block = fluid.getDefaultState().getBlockState().getBlock();
-        Text name = new TranslatableText(block.getTranslationKey());
+        Text name = Text.translatable(block.getTranslationKey());
         FluidKeyBuilder builder = new FluidKeyBuilder(fluid).setName(name);
         if (fluid instanceof FluidKeyCustomiser) {
             ((FluidKeyCustomiser) fluid).customiseKey(builder);

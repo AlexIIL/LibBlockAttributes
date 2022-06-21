@@ -28,7 +28,7 @@ import net.minecraft.client.item.TooltipContext;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -330,7 +330,7 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
     }
 
     protected Text getTextFor(T value) {
-        return new LiteralText(Objects.toString(value));
+        return Text.literal(Objects.toString(value));
     }
 
     @Override
@@ -416,7 +416,7 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
         List<Text> list = super.getTooltipText(ctx);
         if (ctx.isAdvanced()) {
             for (Entry<T, FluidAmount> entry : values.entrySet()) {
-                MutableText text = new LiteralText(entry.getKey() + " of ");
+                MutableText text = Text.literal(entry.getKey() + " of ");
                 list.add(text.append(getTextFor(entry.getKey())).formatted(Formatting.GRAY));
             }
         }

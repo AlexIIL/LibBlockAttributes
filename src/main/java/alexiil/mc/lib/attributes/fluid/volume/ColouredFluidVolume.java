@@ -20,7 +20,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtFloat;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
@@ -140,7 +139,7 @@ public class ColouredFluidVolume extends FluidVolume {
 
     @Override
     public Text getName() {
-        MutableText copy = super.getName().copy();
+        MutableText copy = super.getName().copyContentOnly();
         float r = getRed();
         float g = getGreen();
         float b = getBlue();
@@ -283,11 +282,11 @@ public class ColouredFluidVolume extends FluidVolume {
     public void addTooltipExtras(FluidTooltipContext context, List<Text> tooltip) {
         super.addTooltipExtras(context, tooltip);
         if (context.isAdvanced()) {
-            tooltip.add(new LiteralText("ARGB = 0x" + Integer.toHexString(asArgb())));
-            tooltip.add(new LiteralText("red = " + red));
-            tooltip.add(new LiteralText("green = " + green));
-            tooltip.add(new LiteralText("blue = " + blue));
-            tooltip.add(new LiteralText("alpha = " + alpha));
+            tooltip.add(Text.literal("ARGB = 0x" + Integer.toHexString(asArgb())));
+            tooltip.add(Text.literal("red = " + red));
+            tooltip.add(Text.literal("green = " + green));
+            tooltip.add(Text.literal("blue = " + blue));
+            tooltip.add(Text.literal("alpha = " + alpha));
         }
     }
 }

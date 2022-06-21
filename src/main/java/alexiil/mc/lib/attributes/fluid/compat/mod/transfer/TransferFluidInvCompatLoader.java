@@ -68,7 +68,7 @@ public class TransferFluidInvCompatLoader extends LbaModCompatLoader {
         requireMethod(t, "getCurrentUnsafe", null, tCtx);
         requireMethod(t, "abort", null, void.class);
         requireMethod(t, "commit", null, void.class);
-        requireMethod(sto, "iterable", new Class<?>[] { tCtx }, Iterable.class);
+        requireClassExtends(sto, Iterable.class);
         requireMethod(stoView, "getResource", null, Object.class);
         requireMethod(itemVar, "isBlank", null, boolean.class);
         requireMethod(itemVar, "getFluid", null, Fluid.class);

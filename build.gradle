@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.10-SNAPSHOT'
+    id 'fabric-loom' version '0.12-SNAPSHOT'
     id 'org.cadixdev.licenser' version '0.6.1'
 }
 
@@ -19,23 +19,20 @@ repositories {
 }
 
 archivesBaseName = "libblockatttributes"
-version = "0.10.2"
+version = "0.11.0-pre.1"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
     newLine = false;
 }
 
-minecraft {
-}
-
 dependencies {
-    minecraft "com.mojang:minecraft:1.18.2"
-    mappings "net.fabricmc:yarn:1.18.2+build.1:v2"
+    minecraft "com.mojang:minecraft:1.19"
+    mappings "net.fabricmc:yarn:1.19+build.4:v2"
     modImplementation "net.fabricmc:fabric-loader:0.13.3"
 
     //Fabric api
-    modImplementation "net.fabricmc.fabric-api:fabric-api:0.47.8+1.18.2"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.56.1+1.19"
 
     // Item-inventory
     //modImplementation("com.github.emilyploszaj:item-inventory:v1.1.0") { transitive = false }

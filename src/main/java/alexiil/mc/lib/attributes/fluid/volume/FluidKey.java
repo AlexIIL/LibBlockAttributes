@@ -29,7 +29,7 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -884,8 +884,8 @@ public abstract class FluidKey {
     /** Add extra data to the tooltip. */
     public void addTooltipExtras(FluidTooltipContext context, List<Text> tooltip) {
         if (context.isAdvanced()) {
-            tooltip.add(new LiteralText(entry.getRegistryInternalName()).formatted(Formatting.DARK_GRAY));
-            tooltip.add(new LiteralText(entry.getId().toString()).formatted(Formatting.DARK_GRAY));
+            tooltip.add(Text.literal(entry.getRegistryInternalName()).formatted(Formatting.DARK_GRAY));
+            tooltip.add(Text.literal(entry.getId().toString()).formatted(Formatting.DARK_GRAY));
         }
     }
 

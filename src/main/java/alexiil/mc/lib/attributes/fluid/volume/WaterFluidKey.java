@@ -12,7 +12,7 @@ import com.google.gson.JsonSyntaxException;
 
 import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.biome.Biome;
 
@@ -29,7 +29,7 @@ import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
         super(
             ((ColouredFluidKeyBuilder) new ColouredFluidKeyBuilder(Fluids.WATER)//
                 .setSprites(SPRITE_STILL, SPRITE_FLOWING)//
-                .setName(new TranslatableText("block.minecraft.water"))//
+                .setName(Text.translatable("block.minecraft.water"))//
                 .addUnit(FluidUnit.BOTTLE)//
             )// end of FluidKeyBuilder
                 .setAlphaBounds(0.25f, 1)//

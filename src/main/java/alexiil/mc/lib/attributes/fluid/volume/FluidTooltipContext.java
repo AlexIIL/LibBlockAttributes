@@ -9,7 +9,7 @@ package alexiil.mc.lib.attributes.fluid.volume;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.TooltipContext;
-import net.minecraft.text.LiteralText;
+import net.minecraft.client.option.GameOptions;
 import net.minecraft.text.Text;
 
 import alexiil.mc.lib.attributes.fluid.LbaFluidsConfig;
@@ -190,7 +190,7 @@ public final class FluidTooltipContext {
      * fluid name as-is. */
     public Text stripFluidColours(Text fluidName) {
         if (shouldStripFluidColours()) {
-            return new LiteralText(fluidName.getString());
+            return Text.literal(fluidName.getString());
         } else {
             return fluidName;
         }

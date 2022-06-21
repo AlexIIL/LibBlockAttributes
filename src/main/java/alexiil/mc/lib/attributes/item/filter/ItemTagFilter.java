@@ -7,20 +7,29 @@
  */
 package alexiil.mc.lib.attributes.item.filter;
 
-import net.minecraft.item.Item;
-import net.minecraft.tag.Tag;
+import java.util.ArrayList;
+import java.util.List;
 
-/** A {@link ResolvableItemFilter} that matches any {@link Item}s in a {@link Tag}. */
+import net.minecraft.item.Item;
+import net.minecraft.tag.TagKey;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryEntry;
+
+/** A {@link ResolvableItemFilter} that matches any {@link Item}s in a {@link TagKey}. */
 public final class ItemTagFilter implements ResolvableItemFilter {
 
-    public final Tag<Item> tag;
+    public final TagKey<Item> tag;
 
-    public ItemTagFilter(Tag<Item> tag) {
+    public ItemTagFilter(TagKey<Item> tag) {
         this.tag = tag;
     }
 
     @Override
     public ReadableItemFilter resolve() {
-        return ExactItemFilter.anyOf(tag.values());
+        List<Item> items = new ArrayList<>();
+        for (RegistryEntry<Item> entry : Registry.ITEM.iterateEntries(tag)) {
+            items.add(entry.value());
+        }
+        return ExactItemFilter.anyOf(items);
     }
 }

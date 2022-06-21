@@ -7,11 +7,9 @@
  */
 package alexiil.mc.lib.attributes.fluid.filter;
 
-import net.minecraft.tag.Tag;
-
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 
-/** A {@link FluidFilter} that operates on a {@link Tag} of LBA's {@link FluidKey}'s.
+/** A {@link FluidFilter} that operates on tags of LBA's {@link FluidKey}'s.
  * <p>
  * Note that this <strong>has not been implemented yet!</strong> Instead you'll have to use the
  * {@link RawFluidTagFilter} to use tags (but only for raw vanilla minecraft fluids) */

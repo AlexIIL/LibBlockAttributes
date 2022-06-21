@@ -83,7 +83,7 @@ final class TransferItemApiCompat {
         public Set<ItemStack> getStoredStacks() {
             Set<ItemStack> set = ItemStackCollections.set();
             try (Transaction t = beginTransaction()) {
-                for (StorageView<ItemVariant> entry : from.iterable(t)) {
+                for (StorageView<ItemVariant> entry : from) {
                     ItemVariant res = entry.getResource();
                     if (!res.isBlank()) {
                         set.add(res.toStack());
@@ -97,7 +97,7 @@ final class TransferItemApiCompat {
         public int getTotalCapacity() {
             int capacity = 0;
             try (Transaction t = beginTransaction()) {
-                for (StorageView<ItemVariant> entry : from.iterable(t)) {
+                for (StorageView<ItemVariant> entry : from) {
                     int c = (int) Math.max(0, Math.min(Integer.MAX_VALUE, entry.getCapacity()));
                     capacity = IntMath.saturatedAdd(capacity, c);
                 }
@@ -110,7 +110,7 @@ final class TransferItemApiCompat {
             int amount = 0;
             int spaceAddable = 0;
             try (Transaction t = beginTransaction()) {
-                for (StorageView<ItemVariant> entry : from.iterable(t)) {
+                for (StorageView<ItemVariant> entry : from) {
                     ItemVariant res = entry.getResource();
 
                     if (res.isBlank()) {
@@ -179,7 +179,7 @@ final class TransferItemApiCompat {
                 try (Transaction t = beginTransaction()) {
 
                     try_extract: {
-                        for (StorageView<ItemVariant> entry : from.iterable(t)) {
+                        for (StorageView<ItemVariant> entry : from) {
                             ItemVariant res = entry.getResource();
                             if (!res.isBlank() && filter.matches(res.toStack())) {
 

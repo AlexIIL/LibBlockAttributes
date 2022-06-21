@@ -38,7 +38,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.potion.Potion;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -829,8 +828,8 @@ public abstract class FluidVolume {
         list.add(getName());
         if (ctx.isAdvanced()) {
             FluidEntry entry = getFluidKey().entry;
-            list.add(new LiteralText(entry.getRegistryInternalName()).formatted(Formatting.DARK_GRAY));
-            list.add(new LiteralText(entry.getId().toString()).formatted(Formatting.DARK_GRAY));
+            list.add(Text.literal(entry.getRegistryInternalName()).formatted(Formatting.DARK_GRAY));
+            list.add(Text.literal(entry.getId().toString()).formatted(Formatting.DARK_GRAY));
         }
         return list;
     }

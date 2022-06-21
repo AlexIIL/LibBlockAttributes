@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -29,7 +29,7 @@ public class FluidPropertyTester extends VanillaSetupBaseTester {
     public void testFluidProperty() {
         FluidKey mana = new SimpleFluidKey(
             new FluidKeyBuilder(new Identifier("lba_test:mana"))//
-                .setName(new LiteralText("Mana"))//
+                .setName(Text.literal("Mana"))//
                 .setUnit(FluidUnit.BOTTLE)//
         );
         mana.register();
@@ -110,9 +110,9 @@ public class FluidPropertyTester extends VanillaSetupBaseTester {
         @Override
         public void addTooltipExtras(FluidVolume fluid, FluidTooltipContext context, List<Text> tooltip) {
             Purity purity = get(fluid);
-            tooltip.add(new LiteralText("Quality = " + (int) (purity.quality * 1000) / 10.0 + "%"));
-            tooltip.add(new LiteralText("Uniformity = " + (int) (purity.uniformity * 1000) / 10.0 + "%"));
-            tooltip.add(new LiteralText("Alignment = " + (int) (purity.alignment * 1000) / 10.0 + "%"));
+            tooltip.add(Text.literal("Quality = " + (int) (purity.quality * 1000) / 10.0 + "%"));
+            tooltip.add(Text.literal("Uniformity = " + (int) (purity.uniformity * 1000) / 10.0 + "%"));
+            tooltip.add(Text.literal("Alignment = " + (int) (purity.alignment * 1000) / 10.0 + "%"));
         }
     }
 

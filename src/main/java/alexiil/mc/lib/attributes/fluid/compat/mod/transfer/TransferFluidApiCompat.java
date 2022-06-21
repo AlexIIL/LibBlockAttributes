@@ -85,7 +85,7 @@ final class TransferFluidApiCompat {
         public Set<FluidKey> getStoredFluids() {
             Set<FluidKey> set = new HashSet<>();
             try (Transaction t = beginTransaction()) {
-                for (StorageView<FluidVariant> entry : from.iterable(t)) {
+                for (StorageView<FluidVariant> entry : from) {
                     FluidVariant res = entry.getResource();
                     if (!res.isBlank()) {
                         set.add(FluidKeys.get(res.getFluid()));
@@ -99,7 +99,7 @@ final class TransferFluidApiCompat {
         public FluidAmount getTotalCapacity_F() {
             FluidAmount capacity = FluidAmount.ZERO;
             try (Transaction t = beginTransaction()) {
-                for (StorageView<FluidVariant> entry : from.iterable(t)) {
+                for (StorageView<FluidVariant> entry : from) {
                     capacity = capacity.saturatedAdd(FluidAmount.of(entry.getAmount(), BUCKET_VALUE));
                 }
             }
@@ -111,7 +111,7 @@ final class TransferFluidApiCompat {
             FluidAmount amount = FluidAmount.ZERO;
             FluidAmount spaceAddable = FluidAmount.ZERO;
             try (Transaction t = beginTransaction()) {
-                for (StorageView<FluidVariant> entry : from.iterable(t)) {
+                for (StorageView<FluidVariant> entry : from) {
                     FluidVariant res = entry.getResource();
 
                     if (res.isBlank()) {
@@ -187,7 +187,7 @@ final class TransferFluidApiCompat {
                 try (Transaction t = beginTransaction()) {
 
                     try_extract: {
-                        for (StorageView<FluidVariant> entry : from.iterable(t)) {
+                        for (StorageView<FluidVariant> entry : from) {
                             FluidVariant res = entry.getResource();
                             if (res.isBlank()) {
                                 continue;

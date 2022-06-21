@@ -15,7 +15,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.biome.Biome;
 
-import alexiil.mc.lib.attributes.LbaMinecraftProxy;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.mixin.impl.BiomeEffectsAccessor;
 
@@ -60,6 +59,6 @@ public class BiomeSourcedFluidKey extends ColouredFluidKey {
 
     @Override
     public FluidVolume fromWorld(WorldView world, BlockPos pos) {
-        return withAmount(LbaMinecraftProxy.instance().getBiome(world, pos), FluidAmount.BUCKET);
+        return withAmount(world.getBiome(pos).value(), FluidAmount.BUCKET);
     }
 }

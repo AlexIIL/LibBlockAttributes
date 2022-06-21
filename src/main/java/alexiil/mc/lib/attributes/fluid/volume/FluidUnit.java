@@ -14,11 +14,9 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Language;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
-import alexiil.mc.lib.attributes.fluid.volume.FluidUnit.SpsLocaleKey;
 
 /** A single unit that a {@link FluidVolume} may be expressed as, for example a bucket or a bottle.
  * <p>
@@ -303,7 +301,7 @@ public final class FluidUnit extends FluidUnitBase implements Comparable<FluidUn
     }
 
     private static Text toText(String key, Object... args) {
-        return new TranslatableText(key, args);
+        return Text.translatable(key, args);
     }
 
     @Override
