@@ -75,6 +75,11 @@ final class TransferItemApiCompat {
         }
 
         @Override
+        public String toString() {
+            return "lba.TransferItemApiCompat.Transfer2Lba{" + from + "}";
+        }
+
+        @Override
         public Set<ItemStack> getStoredStacks() {
             Set<ItemStack> set = ItemStackCollections.set();
             try (Transaction t = beginTransaction()) {
