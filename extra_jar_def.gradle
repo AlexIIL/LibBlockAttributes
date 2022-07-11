@@ -136,6 +136,7 @@ generateJar("items", itemsReq, [], false, [], ["core"]);
 // 2020/01/23 AlexIIL: Add "fat" jars and the option for optimised compression.
 // 2020/02/22 AlexIIL: Added better error handling when generating fabric.mod.json files.
 // 2021/06/05 AlexIIL: Fixed a few missing task dependencies in gradle 7.
+// 2022/06/23 AlexIIL: Changed input jar (for nested jar extractions) to use remapJar directly, rather than just "jar"
 
 // ==========================================================
 // User config - change both of these on a per-project basis
@@ -183,7 +184,7 @@ ext.extra_jar_def__decompress_external_included = false;
 // Internals - don't touch this!
 // ==============================
 
-ext.extra_jar_def__jarFile = zipTree(jar.archivePath)
+ext.extra_jar_def__jarFile = zipTree(remapJar.archivePath)
 ext.extra_jar_def__modulesDir = new File(System.getenv("LIBS_DIR") ?: "$projectDir/build/libs/", version)
 ext.extra_jar_def__taken = new HashSet<>();
 ext.extra_jar_def__includedJarTasks = new HashSet<String>();
