@@ -18,9 +18,9 @@ import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 
@@ -52,7 +52,7 @@ public class NormalFluidKey extends FluidKey {
         /** @deprecated As the flowing sprite ID is needed as well. */
         @Deprecated(since = "0.6.0", forRemoval = true)
         public NormalFluidKeyBuilder(Fluid fluid, Identifier spriteId, Text name) {
-            super(new FluidRegistryEntry<>(Registry.FLUID, fluid), spriteId, name);
+            super(new FluidRegistryEntry<>(Registries.FLUID, fluid), spriteId, name);
             this.fluid = fluid;
             setRawFluid(fluid);
         }
@@ -60,7 +60,7 @@ public class NormalFluidKey extends FluidKey {
         public NormalFluidKeyBuilder(
             @Nullable Fluid fluid, Identifier spriteId, Identifier flowingSpriteId, Text name
         ) {
-            super(new FluidRegistryEntry<>(Registry.FLUID, fluid), spriteId, flowingSpriteId, name);
+            super(new FluidRegistryEntry<>(Registries.FLUID, fluid), spriteId, flowingSpriteId, name);
             this.fluid = fluid;
             setRawFluid(fluid);
         }

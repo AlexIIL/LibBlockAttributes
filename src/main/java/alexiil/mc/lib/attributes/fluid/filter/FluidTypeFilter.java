@@ -8,7 +8,8 @@
 package alexiil.mc.lib.attributes.fluid.filter;
 
 import net.minecraft.fluid.Fluid;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 
 import alexiil.mc.lib.attributes.fluid.volume.FluidEntry;
 import alexiil.mc.lib.attributes.fluid.volume.FluidEntry.FluidFloatingEntry;
@@ -27,8 +28,8 @@ public abstract /* sealed */ class FluidTypeFilter implements ReadableFluidFilte
     public static final FluidTypeFilter RAW_FLUID = new RawFluidFilter();
 
     /** Matches any {@link FluidKey} whose {@link FluidEntry} is a {@link FluidRegistryEntry} and uses the
-     * {@link Registry#POTION} registry. */
-    public static final FluidTypeFilter POTION = get(Registry.POTION);
+     * {@link Registries#POTION} registry. */
+    public static final FluidTypeFilter POTION = get(Registries.POTION);
 
     /** @return A {@link FluidTypeFilter} that matches on the given registry. */
     public static final FluidTypeFilter get(Registry<?> registry) {

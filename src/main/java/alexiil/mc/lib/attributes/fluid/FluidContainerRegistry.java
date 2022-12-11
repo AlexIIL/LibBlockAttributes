@@ -17,8 +17,8 @@ import java.util.function.Consumer;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 import alexiil.mc.lib.attributes.AttributeSourceType;
 import alexiil.mc.lib.attributes.CombinableAttribute;
@@ -26,21 +26,13 @@ import alexiil.mc.lib.attributes.CompatLeveledMap;
 import alexiil.mc.lib.attributes.ItemAttributeAdder;
 import alexiil.mc.lib.attributes.ItemAttributeList;
 import alexiil.mc.lib.attributes.Simulation;
-import alexiil.mc.lib.attributes.fluid.FluidContainerRegistry.FluidFillHandler.StackReturnFunc;
-import alexiil.mc.lib.attributes.fluid.FluidContainerRegistry.FluidFillHandlerWrapper;
-import alexiil.mc.lib.attributes.fluid.FluidContainerRegistry.ItemContainerState;
-import alexiil.mc.lib.attributes.fluid.FluidContainerRegistry.NullFluidFillHandler;
-import alexiil.mc.lib.attributes.fluid.FluidContainerRegistry.SimpleDirectFillHandler;
-import alexiil.mc.lib.attributes.fluid.FluidContainerRegistry.StateEmpty;
-import alexiil.mc.lib.attributes.fluid.FluidContainerRegistry.StateEmpty.EmptyBucketInv;
-import alexiil.mc.lib.attributes.fluid.FluidContainerRegistry.StateFull;
-import alexiil.mc.lib.attributes.fluid.FluidContainerRegistry.StateFull.FullBucketInv;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.filter.ConstantFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.ExactFluidFilter;
 import alexiil.mc.lib.attributes.fluid.filter.FluidFilter;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.fluid.FluidContainerRegistry.FluidFillHandler.StackReturnFunc;
 import alexiil.mc.lib.attributes.misc.AbstractItemBasedAttribute;
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
 import alexiil.mc.lib.attributes.misc.LimitedConsumer;
@@ -429,8 +421,8 @@ public final class FluidContainerRegistry {
         }
 
         static String itemToString(Item item) {
-            Identifier id = Registry.ITEM.getId(item);
-            if (id == null || Registry.ITEM.getDefaultId().equals(id)) {
+            Identifier id = Registries.ITEM.getId(item);
+            if (id == null || Registries.ITEM.getDefaultId().equals(id)) {
                 return "{UnregisteredItem " + item.getClass() + " #" + System.identityHashCode(item) + "}";
             }
             return "{Item " + id + " #" + System.identityHashCode(item) + "}";

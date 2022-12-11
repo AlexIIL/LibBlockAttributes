@@ -18,10 +18,10 @@ import org.junit.BeforeClass;
 
 import net.minecraft.Bootstrap;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.font.TextVisitFactory;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Style;
+import net.minecraft.text.TextVisitFactory;
 import net.minecraft.util.Language;
 
 public class VanillaSetupBaseTester {

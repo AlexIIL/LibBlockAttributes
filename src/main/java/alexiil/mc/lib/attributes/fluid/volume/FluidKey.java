@@ -29,13 +29,13 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.LiteralTextContent;
+import net.minecraft.registry.DefaultedRegistry;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.DefaultedRegistry;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.WorldView;
 
 import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
@@ -232,7 +232,7 @@ public abstract class FluidKey {
         }
 
         public FluidKeyBuilder(Fluid fluid) {
-            this.entry = new FluidRegistryEntry<>(Registry.FLUID, fluid);
+            this.entry = new FluidRegistryEntry<>(Registries.FLUID, fluid);
             this.rawFluid = fluid;
         }
 
@@ -548,9 +548,9 @@ public abstract class FluidKey {
             json.addProperty("floating_fluid", entry.getId().toString());
         } else {
             FluidRegistryEntry<?> reg = (FluidRegistryEntry<?>) entry;
-            if (reg.backingRegistry == Registry.FLUID) {
+            if (reg.backingRegistry == Registries.FLUID) {
                 json.addProperty("fluid", reg.getId().toString());
-            } else if (reg.backingRegistry == Registry.POTION) {
+            } else if (reg.backingRegistry == Registries.POTION) {
                 json.addProperty("potion", reg.getId().toString());
             } else {
                 JsonObject sub = new JsonObject();
@@ -610,14 +610,14 @@ public abstract class FluidKey {
                     "Expected 'fluid' or 'potion' or 'floating_fluid', but got both! You should use one or the other, not both"
                 );
             }
-            return FluidKeys.get(getRegistryEntry(json.get("potion"), "potion", "potions", Registry.POTION));
+            return FluidKeys.get(getRegistryEntry(json.get("potion"), "potion", "potions", Registries.POTION));
         } else if (json.has("fluid")) {
             JsonElement jFluid = json.get("fluid");
             if (!jFluid.isJsonObject()) {
-                return FluidKeys.get(getRegistryEntry(jFluid, "fluid", "fluids", Registry.FLUID));
+                return FluidKeys.get(getRegistryEntry(jFluid, "fluid", "fluids", Registries.FLUID));
             } else {
                 JsonObject obj = jFluid.getAsJsonObject();
-                Registry<?> reg = getRegistryEntry(obj.get("registry"), "registry", "registries", Registry.REGISTRIES);
+                Registry<?> reg = getRegistryEntry(obj.get("registry"), "registry", "registries", Registries.REGISTRIES);
                 return fromRegistry(obj, reg);
             }
         } else {

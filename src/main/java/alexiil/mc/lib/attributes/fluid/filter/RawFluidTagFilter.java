@@ -10,9 +10,9 @@ package alexiil.mc.lib.attributes.fluid.filter;
 import java.util.HashSet;
 
 import net.minecraft.fluid.Fluid;
-import net.minecraft.tag.TagKey;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryEntry;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.TagKey;
 
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
@@ -38,7 +38,7 @@ public final class RawFluidTagFilter implements ResolvableFluidFilter {
     @Override
     public ReadableFluidFilter resolve() {
         HashSet<FluidKey> set = new HashSet<>();
-        for (RegistryEntry<Fluid> entry : Registry.FLUID.iterateEntries(tagKey)) {
+        for (RegistryEntry<Fluid> entry : Registries.FLUID.iterateEntries(tagKey)) {
             set.add(FluidKeys.get(entry.value()));
         }
         return new FluidSetFilter(set);

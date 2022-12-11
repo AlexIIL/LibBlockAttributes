@@ -18,7 +18,7 @@ import net.minecraft.item.EntityBucketItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
 
 import alexiil.mc.lib.attributes.fluid.FluidProviderItem;
 import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
@@ -64,7 +64,7 @@ public class BucketItemMixin extends Item implements FluidProviderItem, IBucketI
         if (fluid != Fluids.EMPTY) {
             return false;
         }
-        for (Item item : Registry.ITEM) {
+        for (Item item : Registries.ITEM) {
             if (!(item instanceof FluidProviderItem)) {
                 continue;
             }
@@ -116,7 +116,7 @@ public class BucketItemMixin extends Item implements FluidProviderItem, IBucketI
         } else if (this != Items.BUCKET) {
             if (!logged_nonVanillaButNotCustom) {
                 logged_nonVanillaButNotCustom = true;
-                LibBlockAttributes.LOGGER.warn("Unknown non-vanilla BucketItem " + Registry.ITEM.getId(this));
+                LibBlockAttributes.LOGGER.warn("Unknown non-vanilla BucketItem " + Registries.ITEM.getId(this));
             }
             return ItemStack.EMPTY;
         }

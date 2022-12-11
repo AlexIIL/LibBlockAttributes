@@ -8,20 +8,12 @@
 package alexiil.mc.lib.attributes.fluid.init;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.screen.PlayerScreenHandler;
-
-import alexiil.mc.lib.attributes.fluid.volume.PotionFluidKey;
 
 public class ClientFluidInit implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        ClientSpriteRegistryCallback.event(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).register((atlasTexture, registry) -> {
-            registry.register(PotionFluidKey.POTION_TEXTURE);
-        });
-
         LbaFluidProxy.MC_TOOLTIPS_ADVANCED = () -> {
             MinecraftClient mc = MinecraftClient.getInstance();
             if (mc == null) {

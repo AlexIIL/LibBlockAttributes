@@ -11,9 +11,10 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.potion.Potion;
+import net.minecraft.registry.DefaultedRegistry;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.DefaultedRegistry;
-import net.minecraft.util.registry.Registry;
 
 /** {@link Identifier} equivalent for {@link FluidKey}. The only two permitted sub-types are:
  * <ol>
@@ -70,7 +71,7 @@ public abstract class FluidEntry {
         DefaultedRegistry<?> registry = FluidRegistryEntry.getRegistryFromName(str);
         if (registry == null) {
             // The registry that contains the empty fluid
-            registry = Registry.FLUID;
+            registry = Registries.FLUID;
         }
         String name = tag.getString(KEY_OBJ_IDENTIFIER);
         return FluidRegistryEntry.fromTag0(registry, name);
@@ -85,13 +86,13 @@ public abstract class FluidEntry {
         }
         Registry<?> registry;
         if (type == 1) {
-            registry = Registry.FLUID;
+            registry = Registries.FLUID;
         } else if (type == 2) {
-            registry = Registry.POTION;
+            registry = Registries.POTION;
         } else {
             assert type == 3 : "Unknown remote FluidEntry type " + type;
             Identifier id = buffer.readIdentifier();
-            registry = Registry.REGISTRIES.get(id);
+            registry = Registries.REGISTRIES.get(id);
             if (registry == null) {
                 throw new IllegalArgumentException("Unknown remote registry " + id);
             }
