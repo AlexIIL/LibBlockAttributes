@@ -28,7 +28,7 @@ public class DropperBlockMixin {
     private static final String DISPENSER_BLOCK_ENTITY = "Lnet/minecraft/block/entity/DispenserBlockEntity;";
 
     @Inject(
-        method = "dispense", at = @At(value = "INVOKE_ASSIGN", target = DISPENSER_BLOCK_ENTITY + "chooseNonEmptySlot()I"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD
+        method = "dispense", at = @At(value = "INVOKE_ASSIGN", target = DISPENSER_BLOCK_ENTITY + "chooseNonEmptySlot(Lnet/minecraft/util/math/random/Random;)I"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD
     )
     void dispenseIntoLba(
         ServerWorld serverWorld, BlockPos pos, CallbackInfo ci, BlockPointerImpl pointer, DispenserBlockEntity be,
