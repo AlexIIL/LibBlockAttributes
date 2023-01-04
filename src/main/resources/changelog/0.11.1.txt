@@ -1,0 +1,3 @@
+Changes:
+
+* Fixed LBA-Core mixins not applying, leading to `UnloadableBlockEntity.onChunkUnload` never being called (#50).

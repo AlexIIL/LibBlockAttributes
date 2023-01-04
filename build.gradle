@@ -163,7 +163,7 @@ coreExclude.add("alexiil/mc/lib/attributes/fatjar/**");
 
 def jsr305 = ["com.google.code.findbugs", "jsr305", "3.0.1"]
 
-generateJar("core", ["**"], coreExclude, false, [], [], [jsr305]);
+generateJar("core", ["**"], coreExclude, true, [], [], [jsr305]);
 generateJar("items", itemsIncludes, [], true, ["core"], [], [jsr305]);
 generateJar("fluids", fluidsIncludes, [], true, ["core"], [], [jsr305]);
 generateJar("all", allIncludes, [], false, [], ["core", "items", "fluids"], [jsr305]);

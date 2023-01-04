@@ -42,7 +42,10 @@
       "+name": "LibBlockAttributes (Core)",
       "+description": "Attribute definitions and getter functions and utilities",
       "-entrypoints": {},
-      "-mixins": [],
+      "+mixins": [
+        "libblockattributes_core.common.json",
+        "libblockattributes_core.client.json"
+      ],
       "~custom": { "+modmenu:parent": "libblockattributes" }
     },
     "items": {
