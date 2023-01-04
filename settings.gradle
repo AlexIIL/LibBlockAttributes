@@ -7,8 +7,8 @@ pluginManagement {
             url = 'https://maven.fabricmc.net/'
         }
         maven {
-            name = "BuildCraft"
-            url = "https://mod-buildcraft.com/maven"
+            name = "AlexIIL"
+            url = "https://maven.alexiil.uk/"
         }
         gradlePluginPortal()
     }

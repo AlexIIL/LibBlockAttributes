@@ -15,7 +15,7 @@ targetCompatibility = JavaVersion.VERSION_17
 repositories {
     mavenLocal()
     maven { name="Modmuss50"; url="https://maven.modmuss50.me/" }
-    maven { name="BuildCraft"; url="https://mod-buildcraft.com/maven/" }
+    maven { name="AlexIIL"; url="https://maven.alexiil.uk/" }
 }
 
 archivesBaseName = "libblockatttributes"
