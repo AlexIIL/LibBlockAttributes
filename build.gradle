@@ -15,11 +15,11 @@ targetCompatibility = JavaVersion.VERSION_17
 repositories {
     mavenLocal()
     maven { name="Modmuss50"; url="https://maven.modmuss50.me/" }
-    maven { name="BuildCraft"; url="https://mod-buildcraft.com/maven/" }
+    maven { name="AlexIIL"; url="https://maven.alexiil.uk/" }
 }
 
 archivesBaseName = "libblockatttributes"
-version = "0.11.0-pre.2"
+version = "0.12.0-pre.1"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -163,7 +163,7 @@ coreExclude.add("alexiil/mc/lib/attributes/fatjar/**");
 
 def jsr305 = ["com.google.code.findbugs", "jsr305", "3.0.1"]
 
-generateJar("core", ["**"], coreExclude, false, [], [], [jsr305]);
+generateJar("core", ["**"], coreExclude, true, [], [], [jsr305]);
 generateJar("items", itemsIncludes, [], true, ["core"], [], [jsr305]);
 generateJar("fluids", fluidsIncludes, [], true, ["core"], [], [jsr305]);
 generateJar("all", allIncludes, [], false, [], ["core", "items", "fluids"], [jsr305]);
