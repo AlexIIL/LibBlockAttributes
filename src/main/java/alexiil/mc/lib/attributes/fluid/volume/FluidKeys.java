@@ -22,13 +22,12 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.Potions;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.volume.FluidEntry.FluidFloatingEntry;
@@ -104,9 +103,9 @@ public final class FluidKeys {
     }
 
     public static synchronized void put(FluidRegistryEntry<?> entry, FluidKey fluidKey) {
-        if (entry.backingRegistry == Registry.FLUID) {
+        if (entry.backingRegistry == Registries.FLUID) {
             put((Fluid) entry.backingObject, fluidKey);
-        } else if (entry.backingObject == Registry.POTION) {
+        } else if (entry.backingObject == Registries.POTION) {
             put((Potion) entry.backingObject, fluidKey);
         } else {
             OTHERS.put(entry, fluidKey);
@@ -173,12 +172,12 @@ public final class FluidKeys {
             FluidRegistryEntry<?> re = (FluidRegistryEntry<?>) entry;
             // Potions are created "on demand" rather than all upfront
             // so we hack around that by adding potions here.
-            if (re.backingRegistry == Registry.POTION) {
+            if (re.backingRegistry == Registries.POTION) {
                 Potion potion = (Potion) re.backingObject;
                 return get(potion);
             }
             // custom, simple, modded fluids are also created "on demand"
-            if (re.backingRegistry == Registry.FLUID) {
+            if (re.backingRegistry == Registries.FLUID) {
                 Fluid fluid = (Fluid) re.backingObject;
                 return get(fluid);
             }

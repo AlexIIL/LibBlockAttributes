@@ -21,10 +21,10 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
 
@@ -592,8 +592,8 @@ public class Attribute<T> {
     }
 
     private static String getName(Block block) {
-        Identifier id = Registry.BLOCK.getId(block);
-        if (!Registry.BLOCK.getDefaultId().equals(id)) {
+        Identifier id = Registries.BLOCK.getId(block);
+        if (!Registries.BLOCK.getDefaultId().equals(id)) {
             return id.toString();
         } else {
             return "UnknownBlock{" + block.getClass() + " @" + Integer.toHexString(System.identityHashCode(block))
@@ -602,7 +602,7 @@ public class Attribute<T> {
     }
 
     private static String getName(BlockEntityType<?> type) {
-        Identifier id = Registry.BLOCK_ENTITY_TYPE.getId(type);
+        Identifier id = Registries.BLOCK_ENTITY_TYPE.getId(type);
         if (id != null) {
             return id.toString();
         } else {
@@ -612,8 +612,8 @@ public class Attribute<T> {
     }
 
     private static String getName(Item item) {
-        Identifier id = Registry.ITEM.getId(item);
-        if (!Registry.ITEM.getDefaultId().equals(id)) {
+        Identifier id = Registries.ITEM.getId(item);
+        if (!Registries.ITEM.getDefaultId().equals(id)) {
             return id.toString();
         } else {
             return "UnknownItem{" + item.getClass() + " @" + Integer.toHexString(System.identityHashCode(item)) + "}";

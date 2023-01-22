@@ -15,9 +15,10 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.potion.Potion;
+import net.minecraft.registry.DefaultedRegistry;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.DefaultedRegistry;
-import net.minecraft.util.registry.Registry;
 
 /** {@link FluidEntry} that is backed by a {@link Registry}. */
 public final class FluidRegistryEntry<T> extends FluidEntry {
@@ -68,9 +69,9 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
      *         registries may have additional special names. The only guarantee given is that
      *         {@link #getRegistryFromName(String)} will know what the mapping is. */
     public static String getName(Registry<?> registry) {
-        if (registry == Registry.FLUID) {
+        if (registry == Registries.FLUID) {
             return "f";
-        } else if (registry == Registry.POTION) {
+        } else if (registry == Registries.POTION) {
             return "p";
         } else {
             return getFullRegistryName(registry).toString();
@@ -79,7 +80,7 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
 
     /** @return The full {@link Identifier} for the given registry. This isn't directly used for saving. */
     public static Identifier getFullRegistryName(Registry<?> registry) {
-        Identifier id = ((Registry<Registry<?>>) Registry.REGISTRIES).getId(registry);
+        Identifier id = ((Registry<Registry<?>>) Registries.REGISTRIES).getId(registry);
         if (id == null) {
             throw new IllegalArgumentException("Unregistered registry: " + registry);
         }
@@ -89,12 +90,12 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
     @Nullable
     public static DefaultedRegistry<?> getRegistryFromName(String name) {
         if ("f".equals(name)) {
-            return Registry.FLUID;
+            return Registries.FLUID;
         } else if ("p".equals(name)) {
-            return Registry.POTION;
+            return Registries.POTION;
         } else {
             Identifier id = Identifier.tryParse(name);
-            Registry<?> registry = Registry.REGISTRIES.get(id);
+            Registry<?> registry = Registries.REGISTRIES.get(id);
             if (registry instanceof DefaultedRegistry<?>) {
                 return (DefaultedRegistry<?>) registry;
             }
@@ -122,13 +123,13 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
 
     @Override
     public void toMcBuffer(PacketByteBuf buffer) {
-        if (backingRegistry == Registry.FLUID) {
+        if (backingRegistry == Registries.FLUID) {
             buffer.writeByte(1);
-        } else if (backingRegistry == Registry.POTION) {
+        } else if (backingRegistry == Registries.POTION) {
             buffer.writeByte(2);
         } else {
             buffer.writeByte(3);
-            buffer.writeIdentifier(((Registry<Registry<?>>) Registry.REGISTRIES).getId(backingRegistry));
+            buffer.writeIdentifier(((Registry<Registry<?>>) Registries.REGISTRIES).getId(backingRegistry));
         }
         buffer.writeIdentifier(objId);
     }

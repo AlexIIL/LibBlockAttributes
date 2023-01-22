@@ -17,12 +17,12 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
@@ -45,7 +45,7 @@ public final class PotionFluidKey extends FluidKey {
 
     private static FluidKeyBuilder createKeyBuilder(Potion potion) {
         FluidKeyBuilder builder = new FluidKeyBuilder();
-        builder.setRegistryEntry(new FluidRegistryEntry<>(Registry.POTION, potion));
+        builder.setRegistryEntry(new FluidRegistryEntry<>(Registries.POTION, potion));
         builder.setSprites(POTION_TEXTURE, FLOWING_POTION_TEXTURE);
         builder.setUnit(FluidUnit.BOTTLE);
         int colour = PotionUtil.getColor(potion);

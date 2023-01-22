@@ -14,10 +14,10 @@ import net.minecraft.block.entity.DispenserBlockEntity;
 import net.minecraft.block.entity.Hopper;
 import net.minecraft.block.entity.HopperBlockEntity;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
 import alexiil.mc.lib.attributes.SearchOption;
@@ -129,7 +129,7 @@ public final class HopperHooks {
 
     private static boolean isVanillaInventoryAt(World world, BlockPos pos) {
         Block block = world.getBlockState(pos).getBlock();
-        if ("minecraft".equals(Registry.BLOCK.getId(block).getNamespace())) {
+        if ("minecraft".equals(Registries.BLOCK.getId(block).getNamespace())) {
             return true;
         }
         return false;

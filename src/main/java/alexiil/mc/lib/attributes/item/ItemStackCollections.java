@@ -16,8 +16,8 @@ import java.util.SortedMap;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 import it.unimi.dsi.fastutil.Hash.Strategy;
 import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
@@ -114,8 +114,8 @@ public enum ItemStackCollections {
             return -1;
         }
         if (a.getItem() != b.getItem()) {
-            Identifier idA = Registry.ITEM.getId(a.getItem());
-            Identifier idB = Registry.ITEM.getId(b.getItem());
+            Identifier idA = Registries.ITEM.getId(a.getItem());
+            Identifier idB = Registries.ITEM.getId(b.getItem());
             int comp;
             if ((comp = idA.getNamespace().compareTo(idB.getNamespace())) != 0) {
                 return comp;

@@ -12,7 +12,7 @@ import org.junit.Assert;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
 
 import alexiil.mc.lib.attributes.VanillaSetupBaseTester;
 import alexiil.mc.lib.attributes.item.FixedItemInv;
@@ -27,7 +27,7 @@ public abstract class ItemInvTester extends VanillaSetupBaseTester {
         ITEMS = new Item[50];
 
         int i = 0;
-        for (Item item : Registry.ITEM) {
+        for (Item item : Registries.ITEM) {
             if (item == Items.AIR) {
                 continue;
             }

@@ -20,17 +20,13 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import net.fabricmc.loader.api.FabricLoader;
-
 import net.minecraft.block.Block;
-import net.minecraft.block.InventoryProvider;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
-import alexiil.mc.lib.attributes.CompatLeveledMap.PredicateEntry;
-import alexiil.mc.lib.attributes.CompatLeveledMap.PriorityEntry;
+
 import alexiil.mc.lib.attributes.fluid.FluidContainerRegistry;
 import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
 
