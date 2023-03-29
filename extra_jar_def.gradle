@@ -137,6 +137,7 @@ generateJar("items", itemsReq, [], false, [], ["core"]);
 // 2020/02/22 AlexIIL: Added better error handling when generating fabric.mod.json files.
 // 2021/06/05 AlexIIL: Fixed a few missing task dependencies in gradle 7.
 // 2022/06/23 AlexIIL: Changed input jar (for nested jar extractions) to use remapJar directly, rather than just "jar"
+// 2023/03/29 Kneelawk: Switch to non-deprecated method names to support gradle 8.
 
 // ==========================================================
 // User config - change both of these on a per-project basis
@@ -184,7 +185,7 @@ ext.extra_jar_def__decompress_external_included = false;
 // Internals - don't touch this!
 // ==============================
 
-ext.extra_jar_def__jarFile = zipTree(remapJar.archivePath)
+ext.extra_jar_def__jarFile = zipTree(remapJar.archiveFile)
 ext.extra_jar_def__modulesDir = new File(System.getenv("LIBS_DIR") ?: "$projectDir/build/libs/", version)
 ext.extra_jar_def__taken = new HashSet<>();
 ext.extra_jar_def__includedJarTasks = new HashSet<String>();
@@ -231,7 +232,7 @@ def getExpandedJarContentsFolder(String name) {
 
 ext.extra_jar_def__unzippedSourceJar = new File("$projectDir/build/processing/tasks/unzipped_src_jar/unzip")
 task unzipSourcesJar(type: Copy, dependsOn: remapSourcesJar) {
-    from (zipTree(sourcesJar.archivePath)) {
+    from (zipTree(sourcesJar.archiveFile)) {
         include "**"
     }
     into extra_jar_def__unzippedSourceJar
@@ -387,9 +388,9 @@ def defineUnzipRezipTasks(
         into workingDir;
     }
     task(taskName, type: Zip, dependsOn: tasks[taskName + "_unzip"]) {
-        archiveName = _outputName;
+        archiveFileName = _outputName;
         from workingDir;
-        destinationDir _to;
+        destinationDirectory = _to;
         entryCompression ZipEntryCompression.STORED;
     }
 }
@@ -468,8 +469,8 @@ def generateJarInternal(
 
     task("submod_" + key + "Jar", type: Jar, dependsOn: ["writeFabricModJson_" + key, "remapJar"]) {
 
-        baseName = "$mainName-$key";
-        destinationDir = extra_jar_def__modulesDir;
+        archiveBaseName = "$mainName-$key";
+        destinationDirectory = extra_jar_def__modulesDir;
 
         from(getFabricModJsonFile(key).parentFile);
         for (nKey in nestedJars) {
@@ -521,14 +522,14 @@ def generateJarInternal(
                 }
             }
         }
-        destinationDir getStrippedJarFile(key).parentFile;
-        archiveName "$mainName-$key-stripped-${project.version}.jar";
+        destinationDirectory = getStrippedJarFile(key).parentFile;
+        archiveFileName = "$mainName-$key-stripped-${project.version}.jar";
     }
 
     task("submod_" + key + "SourcesJar", type: Jar, dependsOn: [unzipSourcesJar, "writeFabricModJson_" + key]) {
-        baseName = "$mainName-$key";
-        classifier = "sources";
-        destinationDir = extra_jar_def__modulesDir;
+        archiveBaseName = "$mainName-$key";
+        archiveClassifier = "sources";
+        destinationDirectory = extra_jar_def__modulesDir;
         from(getFabricModJsonFile(key).parentFile);
         for (nKey in nestedJars) {
             from(getNestedSourceJarFile(nKey).parentFile);
