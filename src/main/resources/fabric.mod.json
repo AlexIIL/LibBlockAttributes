@@ -34,7 +34,9 @@
   },
   "license": "Mozilla Public License Version 2.0",
   "custom": {
-    "modmenu:api": true
+    "modmenu": {
+      "badges": ["library"]
+    }
   },
   "__buildscript_diff": {
     "core": {
@@ -46,7 +48,11 @@
         "libblockattributes_core.common.json",
         "libblockattributes_core.client.json"
       ],
-      "~custom": { "+modmenu:parent": "libblockattributes" }
+      "~custom": {
+        "~modmenu": {
+          "+parent": "libblockattributes"
+        }
+      }
     },
     "items": {
       "+id": "libblockattributes_items",
@@ -60,7 +66,11 @@
         "+libblockattributes_core": ">=$version"
       },
       "+icon": "assets/libblockattributes/icon_items.png",
-      "~custom": { "+modmenu:parent": "libblockattributes" }
+      "~custom": {
+        "~modmenu": {
+          "+parent": "libblockattributes"
+        }
+      }
     },
     "fluids": {
       "+id": "libblockattributes_fluids",
@@ -74,7 +84,11 @@
         "+libblockattributes_core": ">=$version"
       },
       "+icon": "assets/libblockattributes/icon_fluids.png",
-      "~custom": { "+modmenu:parent": "libblockattributes" }
+      "~custom": {
+        "~modmenu": {
+          "+parent": "libblockattributes"
+        }
+      }
     },
     "all": {
       "-entrypoints": {},
