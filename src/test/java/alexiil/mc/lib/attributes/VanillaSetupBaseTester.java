@@ -123,11 +123,11 @@ public class VanillaSetupBaseTester {
             }
 
             @Override
-            public String get(String key) {
+            public String get(String key, String fallback) {
                 if (!map.containsKey(key)) {
                     Assert.fail("No translation for '" + key + "'");
                 }
-                return map.getOrDefault(key, key);
+                return map.getOrDefault(key, fallback);
             }
         });
     }

@@ -76,7 +76,7 @@ public final class HopperHooks {
      * @return {@link ActionResult#PASS} to continue with the original Vanilla logic, otherwise indicates whether
      *         extraction failed or succeeded. */
     public static ActionResult tryExtract(World world, Hopper hopper) {
-        BlockPos blockAbove = new BlockPos(hopper.getHopperX(), hopper.getHopperY() + 1, hopper.getHopperZ());
+        BlockPos blockAbove = BlockPos.ofFloored(hopper.getHopperX(), hopper.getHopperY() + 1, hopper.getHopperZ());
 
         if (isVanillaInventoryAt(world, blockAbove)) {
             return ActionResult.PASS;

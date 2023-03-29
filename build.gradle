@@ -19,7 +19,7 @@ repositories {
 }
 
 archivesBaseName = "libblockatttributes"
-version = "0.12.0"
+version = "0.13.0-pre.1"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -27,12 +27,12 @@ license {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:1.19.3"
-    mappings "net.fabricmc:yarn:1.19.3+build.2:v2"
-    modImplementation "net.fabricmc:fabric-loader:0.14.11"
+    minecraft "com.mojang:minecraft:1.19.4"
+    mappings "net.fabricmc:yarn:1.19.4+build.1:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.14.18"
 
     //Fabric api
-    modImplementation "net.fabricmc.fabric-api:fabric-api:0.68.1+1.19.3"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.76.0+1.19.4"
 
     // Item-inventory
     //modImplementation("com.github.emilyploszaj:item-inventory:v1.1.0") { transitive = false }
