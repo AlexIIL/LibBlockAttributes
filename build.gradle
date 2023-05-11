@@ -161,6 +161,9 @@ coreExclude.addAll(itemsIncludes);
 coreExclude.addAll(fluidsIncludes);
 coreExclude.add("alexiil/mc/lib/attributes/fatjar/**");
 
+itemsIncludes.add("assets/libblockattributes/icon_all.png")
+fluidsIncludes.add("assets/libblockattributes/icon_all.png")
+
 def jsr305 = ["com.google.code.findbugs", "jsr305", "3.0.1"]
 
 generateJar("core", ["**"], coreExclude, true, [], [], [jsr305]);

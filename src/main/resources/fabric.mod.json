@@ -50,7 +50,13 @@
       ],
       "~custom": {
         "~modmenu": {
-          "+parent": "libblockattributes"
+          "+parent": {
+            "id": "libblockattributes",
+            "name": "LibBlockAttributes",
+            "description": "Various definitions for item inventory access for blocks.",
+            "icon": "assets/libblockattributes/icon_all.png",
+            "badges": ["library"]
+          }
         }
       }
     },
@@ -68,7 +74,13 @@
       "+icon": "assets/libblockattributes/icon_items.png",
       "~custom": {
         "~modmenu": {
-          "+parent": "libblockattributes"
+          "+parent": {
+            "id": "libblockattributes",
+            "name": "LibBlockAttributes",
+            "description": "Various definitions for item inventory access for blocks.",
+            "icon": "assets/libblockattributes/icon_all.png",
+            "badges": ["library"]
+          }
         }
       }
     },
@@ -86,7 +98,13 @@
       "+icon": "assets/libblockattributes/icon_fluids.png",
       "~custom": {
         "~modmenu": {
-          "+parent": "libblockattributes"
+          "+parent": {
+            "id": "libblockattributes",
+            "name": "LibBlockAttributes",
+            "description": "Various definitions for item inventory access for blocks.",
+            "icon": "assets/libblockattributes/icon_all.png",
+            "badges": ["library"]
+          }
         }
       }
     },
