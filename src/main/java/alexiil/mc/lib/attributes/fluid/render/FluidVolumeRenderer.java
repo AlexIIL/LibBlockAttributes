@@ -331,7 +331,7 @@ public abstract class FluidVolumeRenderer {
             for (RenderLayer layer : layers) {
                 BufferBuilder buffer = activeBuffers.remove(layer);
                 if (buffer != null) {
-                    layer.draw(buffer, 0, 0, 0);
+                    layer.draw(buffer, RenderSystem.getVertexSorting());
                 }
             }
         }
