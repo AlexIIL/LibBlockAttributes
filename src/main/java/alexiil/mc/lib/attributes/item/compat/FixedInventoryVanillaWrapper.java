@@ -29,7 +29,8 @@ public class FixedInventoryVanillaWrapper extends FixedInventoryViewVanillaWrapp
     public boolean setInvStack(int slot, ItemStack to, Simulation simulation) {
         boolean allowed = false;
         ItemStack current = getInvStack(slot);
-        if (to.isEmpty()) {
+        boolean removing = to.isEmpty();
+        if (removing) {
             allowed = canExtract(slot, current);
         } else {
             if (current.isEmpty()) {
@@ -46,7 +47,7 @@ public class FixedInventoryVanillaWrapper extends FixedInventoryViewVanillaWrapp
         }
         if (allowed) {
             if (simulation == Simulation.ACTION) {
-                if (to.isEmpty()) {
+                if (removing) {
                     inv.removeStack(slot);
                 } else {
                     inv.setStack(slot, to);
