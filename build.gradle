@@ -29,10 +29,12 @@ license {
 dependencies {
     minecraft "com.mojang:minecraft:1.20"
     mappings "net.fabricmc:yarn:1.20+build.1:v2"
-    modImplementation "net.fabricmc:fabric-loader:0.14.21"
+    modCompileOnly "net.fabricmc:fabric-loader:0.14.21"
+    modLocalRuntime "net.fabricmc:fabric-loader:0.14.21"
 
     //Fabric api
-    modImplementation "net.fabricmc.fabric-api:fabric-api:0.83.0+1.20"
+    modCompileOnly "net.fabricmc.fabric-api:fabric-api:0.83.0+1.20"
+    modLocalRuntime "net.fabricmc.fabric-api:fabric-api:0.83.0+1.20"
 
     // Item-inventory
     //modImplementation("com.github.emilyploszaj:item-inventory:v1.1.0") { transitive = false }
