@@ -1,4 +1,4 @@
-name: Validation
+name: Publish
 
 on: [workflow_dispatch] # Manual trigger
 
