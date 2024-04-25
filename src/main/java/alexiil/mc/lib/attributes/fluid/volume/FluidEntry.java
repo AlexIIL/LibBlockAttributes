@@ -68,7 +68,7 @@ public abstract class FluidEntry {
             }
             return new FluidFloatingEntry(id);
         }
-        DefaultedRegistry<?> registry = FluidRegistryEntry.getRegistryFromName(str);
+        Registry<?> registry = FluidRegistryEntry.getRegistryFromName(str);
         if (registry == null) {
             // The registry that contains the empty fluid
             registry = Registries.FLUID;

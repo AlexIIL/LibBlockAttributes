@@ -9,13 +9,14 @@ package alexiil.mc.lib.attributes.fluid.mixin.impl;
 
 import org.spongepowered.asm.mixin.Mixin;
 
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.item.GlassBottleItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
+import net.minecraft.registry.entry.RegistryEntry;
 
 import alexiil.mc.lib.attributes.fluid.FluidProviderItem;
 import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
@@ -48,7 +49,7 @@ public class GlassBottleItemMixin extends Item implements FluidProviderItem, IBu
         if (with.obj.getAmount_F().isLessThan(FluidAmount.BOTTLE)) {
             return false;
         }
-        final Potion potion;
+        final RegistryEntry<Potion> potion;
         if (with.obj instanceof PotionFluidVolume) {
             potion = ((PotionFluidVolume) with.obj).getPotion();
         } else if (with.obj.fluidKey == FluidKeys.WATER) {
@@ -59,8 +60,7 @@ public class GlassBottleItemMixin extends Item implements FluidProviderItem, IBu
         with.obj = with.obj.copy();
         FluidVolume split = with.obj.split(FluidAmount.BOTTLE);
         if (!split.isEmpty()) {
-            ItemStack potionStack = new ItemStack(Items.POTION);
-            PotionUtil.setPotion(potionStack, potion);
+            ItemStack potionStack = PotionContentsComponent.createStack(Items.POTION, potion);
             stack.obj = potionStack;
             return true;
         }
@@ -79,7 +79,7 @@ public class GlassBottleItemMixin extends Item implements FluidProviderItem, IBu
 
     @Override
     public ItemStack libblockattributes__withFluid(FluidKey fluid) {
-        Potion potion;
+        RegistryEntry<Potion> potion;
         if (fluid instanceof PotionFluidKey) {
             potion = ((PotionFluidKey) fluid).potion;
         } else if (fluid == FluidKeys.WATER) {
@@ -89,9 +89,7 @@ public class GlassBottleItemMixin extends Item implements FluidProviderItem, IBu
         } else {
             return ItemStack.EMPTY;
         }
-        ItemStack potionStack = new ItemStack(Items.POTION);
-        PotionUtil.setPotion(potionStack, potion);
-        return potionStack;
+        return PotionContentsComponent.createStack(Items.POTION, potion);
     }
 
     @Override

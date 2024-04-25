@@ -8,8 +8,8 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.option.GameOptions;
+import net.minecraft.item.Item;
 import net.minecraft.text.Text;
 
 import alexiil.mc.lib.attributes.fluid.LbaFluidsConfig;
@@ -41,8 +41,13 @@ public final class FluidTooltipContext {
         this.options = values;
     }
 
-    public static FluidTooltipContext fromMinecraft(TooltipContext ctx) {
-        return USE_CONFIG.forceAdvanced(ctx.isAdvanced());
+    /**
+     * @deprecated {@link Item.TooltipContext} does not provide any useful information anymore.
+     * Use {@link #USE_CONFIG} instead.
+     */
+    @Deprecated
+    public static FluidTooltipContext fromMinecraft(Item.TooltipContext ctx) {
+        return USE_CONFIG;
     }
 
     // #######

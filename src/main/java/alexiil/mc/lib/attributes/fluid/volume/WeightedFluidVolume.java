@@ -24,11 +24,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -409,17 +407,5 @@ public abstract class WeightedFluidVolume<T> extends FluidVolume {
         for (Entry<T, FluidAmount> entry : sources.entrySet()) {
             addAmount(entry.getKey(), entry.getValue());
         }
-    }
-
-    @Override
-    public List<Text> getTooltipText(TooltipContext ctx) {
-        List<Text> list = super.getTooltipText(ctx);
-        if (ctx.isAdvanced()) {
-            for (Entry<T, FluidAmount> entry : values.entrySet()) {
-                MutableText text = Text.literal(entry.getKey() + " of ");
-                list.add(text.append(getTextFor(entry.getKey())).formatted(Formatting.GRAY));
-            }
-        }
-        return list;
     }
 }

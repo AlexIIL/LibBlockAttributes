@@ -7,15 +7,19 @@
  */
 package alexiil.mc.lib.attributes.fluid.mixin.impl;
 
+import java.util.Optional;
+
 import org.spongepowered.asm.mixin.Mixin;
 
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.PotionItem;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
+import net.minecraft.registry.entry.RegistryEntry;
 
 import alexiil.mc.lib.attributes.fluid.FluidProviderItem;
 import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
@@ -36,12 +40,16 @@ public class PotionItemMixin extends Item implements FluidProviderItem, IBucketI
 
     @Override
     public FluidVolume drain(Ref<ItemStack> stack) {
-        Potion potion = PotionUtil.getPotion(stack.obj);
-        if (potion == Potions.EMPTY) {
+        PotionContentsComponent potionComponent = stack.obj.get(DataComponentTypes.POTION_CONTENTS);
+        if (potionComponent == null) {
+            return FluidVolumeUtil.EMPTY;
+        }
+        Optional<RegistryEntry<Potion>> potion = potionComponent.potion();
+        if (potion.isEmpty()) {
             return FluidVolumeUtil.EMPTY;
         }
 
-        FluidKey fluidKey = FluidKeys.get(potion);
+        FluidKey fluidKey = FluidKeys.get(potion.get());
         if (fluidKey == null) {
             return FluidVolumeUtil.EMPTY;
         }
@@ -61,12 +69,21 @@ public class PotionItemMixin extends Item implements FluidProviderItem, IBucketI
 
     @Override
     public FluidKey libblockattributes__getFluid(ItemStack stack) {
-        return FluidKeys.get(PotionUtil.getPotion(stack));
+        PotionContentsComponent potionComponent = stack.get(DataComponentTypes.POTION_CONTENTS);
+        if (potionComponent == null) {
+            return FluidKeys.EMPTY;
+        }
+        Optional<RegistryEntry<Potion>> potion = potionComponent.potion();
+        if (potion.isEmpty()) {
+            return FluidKeys.EMPTY;
+        }
+
+        return FluidKeys.get(potion.get());
     }
 
     @Override
     public ItemStack libblockattributes__withFluid(FluidKey fluid) {
-        Potion potion;
+        RegistryEntry<Potion> potion;
         if (fluid instanceof PotionFluidKey) {
             potion = ((PotionFluidKey) fluid).potion;
         } else if (fluid == FluidKeys.WATER) {
@@ -76,9 +93,7 @@ public class PotionItemMixin extends Item implements FluidProviderItem, IBucketI
         } else {
             return ItemStack.EMPTY;
         }
-        ItemStack potionStack = new ItemStack(Items.POTION);
-        PotionUtil.setPotion(potionStack, potion);
-        return potionStack;
+        return PotionContentsComponent.createStack(Items.POTION, potion);
     }
 
     @Override

@@ -14,6 +14,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 
+import net.minecraft.component.ComponentChanges;
+import net.minecraft.component.ComponentMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
@@ -52,7 +54,7 @@ public enum ItemStackCollections {
                 return 0;
             }
             return Arrays.hashCode(
-                new int[] { o.getCount(), System.identityHashCode(o.getItem()), Objects.hashCode(o.getNbt()) }
+                new int[] { o.getCount(), System.identityHashCode(o.getItem()), Objects.hashCode(o.getComponentChanges()) }
             );
         }
 
@@ -73,7 +75,7 @@ public enum ItemStackCollections {
             if (o == null || o.isEmpty()) {
                 return 0;
             }
-            return Arrays.hashCode(new int[] { System.identityHashCode(o.getItem()), Objects.hashCode(o.getNbt()) });
+            return Arrays.hashCode(new int[] { System.identityHashCode(o.getItem()), Objects.hashCode(o.getComponentChanges()) });
         }
 
         @Override
@@ -86,11 +88,11 @@ public enum ItemStackCollections {
     };
 
     /** A {@link Comparator} that compares {@link ItemStack}'s by their Registry {@link Identifier}, then
-     * {@link ItemStack#getNbt()}, then amounts. */
+     * {@link ItemStack#getComponentChanges()}, then amounts. */
     public static final Comparator<ItemStack> COMPARATOR_ID_EXACT = ItemStackCollections::compareItemStacksExact;
 
     /** A {@link Comparator} that compares {@link ItemStack}'s by their Registry {@link Identifier}, then
-     * {@link ItemStack#getNbt()}. */
+     * {@link ItemStack#getComponentChanges()}. */
     public static final Comparator<ItemStack> COMPARATOR_IGNORE_AMOUNT
         = ItemStackCollections::compareItemStacksIgnoreAmounts;
 
@@ -124,8 +126,8 @@ public enum ItemStackCollections {
                 return comp;
             }
         }
-        NbtCompound tagA = a.getNbt();
-        NbtCompound tagB = b.getNbt();
+        ComponentChanges tagA = a.getComponentChanges();
+        ComponentChanges tagB = b.getComponentChanges();
         if (tagA == null) {
             if (tagB != null) {
                 return 1;

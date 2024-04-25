@@ -8,16 +8,16 @@
 package alexiil.mc.lib.attributes.fluid.volume;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -36,20 +36,20 @@ public final class PotionFluidKey extends FluidKey {
         FLOWING_POTION_TEXTURE = LibBlockAttributes.id("fluid/potion_flowing");
     }
 
-    public final Potion potion;
+    public final RegistryEntry<Potion> potion;
 
-    /* package-private */ PotionFluidKey(Potion potion) {
+    /* package-private */ PotionFluidKey(RegistryEntry<Potion> potion) {
         super(createKeyBuilder(potion));
         this.potion = potion;
     }
 
-    private static FluidKeyBuilder createKeyBuilder(Potion potion) {
+    private static FluidKeyBuilder createKeyBuilder(RegistryEntry<Potion> potion) {
         FluidKeyBuilder builder = new FluidKeyBuilder();
-        builder.setRegistryEntry(new FluidRegistryEntry<>(Registries.POTION, potion));
+        builder.setRegistryEntry(new FluidRegistryEntry<>(Registries.POTION, potion.value()));
         builder.setSprites(POTION_TEXTURE, FLOWING_POTION_TEXTURE);
         builder.setUnit(FluidUnit.BOTTLE);
-        int colour = PotionUtil.getColor(potion);
-        MutableText text = Text.translatable(potion.finishTranslationKey("item.minecraft.potion.effect."));
+        int colour = PotionContentsComponent.getColor(potion);
+        MutableText text = Text.translatable(Potion.finishTranslationKey(Optional.of(potion), "item.minecraft.potion.effect."));
         builder.setName(text.setStyle(Style.EMPTY.withColor(TextColor.fromRgb(colour))));
         builder.setRenderColor(colour);
         return builder;
@@ -80,6 +80,6 @@ public final class PotionFluidKey extends FluidKey {
     @Override
     public void addTooltipExtras(FluidTooltipContext context, List<Text> tooltip) {
         super.addTooltipExtras(context, tooltip);
-        PotionUtil.buildTooltip(PotionUtil.setPotion(new ItemStack(Items.POTION), potion), tooltip, 1.0F);
+        PotionContentsComponent.buildTooltip(potion.value().getEffects(), tooltip::add, 1.0f, 20.0f);
     }
 }

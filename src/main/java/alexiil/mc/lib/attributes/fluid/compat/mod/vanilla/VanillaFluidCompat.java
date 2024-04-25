@@ -9,19 +9,20 @@ package alexiil.mc.lib.attributes.fluid.compat.mod.vanilla;
 
 import java.math.RoundingMode;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.LeveledCauldronBlock;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -98,7 +99,7 @@ public final class VanillaFluidCompat {
         protected FluidVolume insert(
             ItemStack stack, FluidVolume fluid, Simulation simulation, StackReturnFunc stackReturn
         ) {
-            Potion potion;
+            RegistryEntry<Potion> potion;
             if (fluid.getFluidKey() == FluidKeys.WATER) {
                 potion = Potions.WATER;
             } else {
@@ -109,8 +110,7 @@ public final class VanillaFluidCompat {
             ItemStack oldStack = stack;
             stack.decrement(1);
             newFluid.split(FluidAmount.BOTTLE);
-            ItemStack newStack = new ItemStack(Items.POTION);
-            PotionUtil.setPotion(newStack, potion);
+            ItemStack newStack = PotionContentsComponent.createStack(Items.POTION, potion);
             return stackReturn.returnStacks(oldStack, newStack) ? newFluid : fluid;
         }
 
@@ -132,7 +132,15 @@ public final class VanillaFluidCompat {
             if (stack.getItem() != Items.POTION) {
                 return Collections.emptySet();
             }
-            FluidKey key = FluidKeys.get(PotionUtil.getPotion(stack));
+            PotionContentsComponent potionComponent = stack.get(DataComponentTypes.POTION_CONTENTS);
+            if (potionComponent == null) {
+                return Collections.emptySet();
+            }
+            Optional<RegistryEntry<Potion>> potion = potionComponent.potion();
+            if (potion.isEmpty()) {
+                return Collections.emptySet();
+            }
+            FluidKey key = FluidKeys.get(potion.get());
             return key.isEmpty() ? Collections.emptySet() : Collections.singleton(key);
         }
 
@@ -142,7 +150,15 @@ public final class VanillaFluidCompat {
             if (stack.getItem() != Items.POTION) {
                 return FluidInvStatistic.emptyOf(filter);
             }
-            FluidKey key = FluidKeys.get(PotionUtil.getPotion(stack));
+            PotionContentsComponent potionComponent = stack.get(DataComponentTypes.POTION_CONTENTS);
+            if (potionComponent == null) {
+                return FluidInvStatistic.emptyOf(filter);
+            }
+            Optional<RegistryEntry<Potion>> potion = potionComponent.potion();
+            if (potion.isEmpty()) {
+                return FluidInvStatistic.emptyOf(filter);
+            }
+            FluidKey key = FluidKeys.get(potion.get());
             if (key.isEmpty() || !filter.matches(key)) {
                 return FluidInvStatistic.emptyOf(filter);
             }

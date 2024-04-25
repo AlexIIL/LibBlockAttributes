@@ -88,22 +88,18 @@ public final class FluidRegistryEntry<T> extends FluidEntry {
     }
 
     @Nullable
-    public static DefaultedRegistry<?> getRegistryFromName(String name) {
+    public static Registry<?> getRegistryFromName(String name) {
         if ("f".equals(name)) {
             return Registries.FLUID;
         } else if ("p".equals(name)) {
             return Registries.POTION;
         } else {
             Identifier id = Identifier.tryParse(name);
-            Registry<?> registry = Registries.REGISTRIES.get(id);
-            if (registry instanceof DefaultedRegistry<?>) {
-                return (DefaultedRegistry<?>) registry;
-            }
-            return null;
+            return Registries.REGISTRIES.get(id);
         }
     }
 
-    static <T> FluidRegistryEntry<T> fromTag0(DefaultedRegistry<T> registry, String name) {
+    static <T> FluidRegistryEntry<T> fromTag0(Registry<T> registry, String name) {
         T obj = registry.get(Identifier.tryParse(name));
         return new FluidRegistryEntry<>(registry, obj);
     }

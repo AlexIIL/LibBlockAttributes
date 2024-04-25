@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.2-SNAPSHOT'
+    id 'fabric-loom' version '1.6-SNAPSHOT'
     id 'org.cadixdev.licenser' version '0.6.1'
 }
 
@@ -9,8 +9,8 @@ if (gradle.startParameter.taskNames.contains("checkstyle")) {
     apply plugin: "checkstyle"
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
 
 repositories {
     mavenLocal()
@@ -19,7 +19,7 @@ repositories {
 }
 
 archivesBaseName = "libblockatttributes"
-version = "0.14.0"
+version = "0.15.0-pre.1"
 
 license {
     header = project.file('misc/LICENSE_HEADER.txt');
@@ -27,14 +27,14 @@ license {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:1.20"
-    mappings "net.fabricmc:yarn:1.20+build.1:v2"
-    modCompileOnly "net.fabricmc:fabric-loader:0.14.21"
-    modLocalRuntime "net.fabricmc:fabric-loader:0.14.21"
+    minecraft "com.mojang:minecraft:1.20.5"
+    mappings "net.fabricmc:yarn:1.20.5+build.1:v2"
+    modCompileOnly "net.fabricmc:fabric-loader:0.15.9"
+    modLocalRuntime "net.fabricmc:fabric-loader:0.15.9"
 
     //Fabric api
-    modCompileOnly "net.fabricmc.fabric-api:fabric-api:0.83.0+1.20"
-    modLocalRuntime "net.fabricmc.fabric-api:fabric-api:0.83.0+1.20"
+    modCompileOnly "net.fabricmc.fabric-api:fabric-api:0.97.6+1.20.5"
+    modLocalRuntime "net.fabricmc.fabric-api:fabric-api:0.97.6+1.20.5"
 
     // Item-inventory
     //modImplementation("com.github.emilyploszaj:item-inventory:v1.1.0") { transitive = false }
@@ -108,7 +108,7 @@ build.dependsOn(javadoc);
 // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
-    it.options.release = 17
+    it.options.release = 21
 }
 
 java.withSourcesJar()

@@ -28,7 +28,6 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.fluid.EmptyFluid;
@@ -38,8 +37,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.potion.Potion;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
 import alexiil.mc.lib.attributes.Simulation;
@@ -325,22 +324,22 @@ public abstract class FluidVolume {
     }
 
     /** Creates a new {@link FluidVolume} from the given fluid, with the given amount stored. This just delegates
-     * internally to {@link FluidKey#withAmount(int)}. */
+     * internally to {@link FluidKey#withAmount(FluidAmount)}. */
     @Deprecated(since = "0.6.4", forRemoval = true)
     public static FluidVolume create(FluidKey fluid, int amount) {
-        return fluid.withAmount(amount);
+        return fluid.withAmount(FluidAmount.of1620(amount));
     }
 
     /** Creates a new {@link FluidVolume} from the given fluid, with the given amount stored. */
     @Deprecated(since = "0.6.4", forRemoval = true)
     public static FluidVolume create(Fluid fluid, int amount) {
-        return FluidKeys.get(fluid).withAmount(amount);
+        return FluidKeys.get(fluid).withAmount(FluidAmount.of1620(amount));
     }
 
     /** Creates a new {@link FluidVolume} from the given potion, with the given amount stored. */
     @Deprecated(since = "0.6.4", forRemoval = true)
-    public static FluidVolume create(Potion potion, int amount) {
-        return FluidKeys.get(potion).withAmount(amount);
+    public static FluidVolume create(RegistryEntry<Potion> potion, int amount) {
+        return FluidKeys.get(potion).withAmount(FluidAmount.of1620(amount));
     }
 
     @Override
@@ -819,20 +818,6 @@ public abstract class FluidVolume {
     }
 
     // Tooltips
-
-    /** @deprecated Replaced by {@link #getFullTooltip()}. */
-    @Deprecated(since = "0.7.0", forRemoval = true)
-    @Environment(EnvType.CLIENT)
-    public List<Text> getTooltipText(TooltipContext ctx) {
-        List<Text> list = new ArrayList<>();
-        list.add(getName());
-        if (ctx.isAdvanced()) {
-            FluidEntry entry = getFluidKey().entry;
-            list.add(Text.literal(entry.getRegistryInternalName()).formatted(Formatting.DARK_GRAY));
-            list.add(Text.literal(entry.getId().toString()).formatted(Formatting.DARK_GRAY));
-        }
-        return list;
-    }
 
     /** Simple getter for retrieving the entire fluid tooltip, instead of adding it to an already-existing list.
      * 

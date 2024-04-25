@@ -7,21 +7,15 @@
  */
 package alexiil.mc.lib.attributes.fluid.volume;
 
-import java.util.List;
-
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.text.Text;
+import net.minecraft.registry.entry.RegistryEntry;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.render.DefaultFluidVolumeRenderer;
@@ -47,7 +41,7 @@ public final class PotionFluidVolume extends FluidVolume {
         super(key, json);
     }
 
-    public Potion getPotion() {
+    public RegistryEntry<Potion> getPotion() {
         return getFluidKey().potion;
     }
 
@@ -56,20 +50,10 @@ public final class PotionFluidVolume extends FluidVolume {
         return (PotionFluidKey) fluidKey;
     }
 
-    /** @deprecated Replaced by {@link #getFullTooltip()}. */
-    @Override
-    @Environment(EnvType.CLIENT)
-    @Deprecated(since = "0.7.0", forRemoval = true)
-    public List<Text> getTooltipText(TooltipContext ctx) {
-        List<Text> tooltip = super.getTooltipText(ctx);
-        PotionUtil.buildTooltip(PotionUtil.setPotion(new ItemStack(Items.POTION), getPotion()), tooltip, 1.0F);
-        return tooltip;
-    }
-
     @Override
     @Environment(EnvType.CLIENT)
     public FluidVolumeRenderer getRenderer() {
-        if (getPotion().getEffects().isEmpty()) {
+        if (getPotion().value().getEffects().isEmpty()) {
             return DefaultFluidVolumeRenderer.INSTANCE;
         } else {
             return EnchantmentGlintFluidRenderer.INSTANCE;

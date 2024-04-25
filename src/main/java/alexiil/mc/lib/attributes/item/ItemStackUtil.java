@@ -22,6 +22,6 @@ public final class ItemStackUtil {
         if (b.isEmpty()) {
             return false;
         }
-        return a.getItem() == b.getItem() && Objects.equals(a.getNbt(), b.getNbt());
+        return a.getItem() == b.getItem() && Objects.equals(a.getComponentChanges(), b.getComponentChanges());
     }
 }

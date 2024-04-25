@@ -13,11 +13,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.block.DropperBlock;
 import net.minecraft.block.entity.DispenserBlockEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPointerImpl;
+import net.minecraft.util.math.BlockPointer;
 import net.minecraft.util.math.BlockPos;
 
 import alexiil.mc.lib.attributes.item.mixin.HopperHooks;
@@ -30,11 +31,8 @@ public class DropperBlockMixin {
     @Inject(
         method = "dispense", at = @At(value = "INVOKE_ASSIGN", target = DISPENSER_BLOCK_ENTITY + "chooseNonEmptySlot(Lnet/minecraft/util/math/random/Random;)I"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD
     )
-    void dispenseIntoLba(
-        ServerWorld serverWorld, BlockPos pos, CallbackInfo ci, BlockPointerImpl pointer, DispenserBlockEntity be,
-        int index
-    ) {
-        ActionResult result = HopperHooks.tryDispense(be, index);
+    void dispenseIntoLba(ServerWorld world, BlockState state, BlockPos pos, CallbackInfo ci, DispenserBlockEntity dispenserBlockEntity, BlockPointer blockPointer, int index) {
+        ActionResult result = HopperHooks.tryDispense(dispenserBlockEntity, index);
         if (result != ActionResult.PASS) {
             ci.cancel();
         }

@@ -23,6 +23,8 @@ import net.minecraft.block.ChestBlock;
 import net.minecraft.block.InventoryProvider;
 import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
@@ -282,15 +284,12 @@ public final class ItemAttributes {
                 stack = stack.copy();
             }
 
-            NbtCompound tag = stack.getSubNbt("BlockEntityTag");
-            if (tag == null) {
-                if (simulation == Simulation.ACTION) {
-                    tag = stack.getOrCreateSubNbt("BlockEntityTag");
-                } else {
-                    tag = new NbtCompound();
-                }
-            } else if (simulation == Simulation.SIMULATE) {
-                tag = new NbtCompound().copyFrom(tag);
+            NbtComponent component = stack.get(DataComponentTypes.BLOCK_ENTITY_DATA);
+            NbtCompound tag;
+            if (component == null) {
+                tag = new NbtCompound();
+            } else {
+                tag = component.copyNbt();
             }
 
             DefaultedList<ItemStack> list = DefaultedList.of();
@@ -302,6 +301,9 @@ public final class ItemAttributes {
 
             list.set(slot, to);
             Inventories.writeNbt(tag, list);
+            if (simulation.isAction()) {
+                stack.set(DataComponentTypes.BLOCK_ENTITY_DATA, NbtComponent.of(tag));
+            }
             return ref.set(stack, simulation);
         }
     }

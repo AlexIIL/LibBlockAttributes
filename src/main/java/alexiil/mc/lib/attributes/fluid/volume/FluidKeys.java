@@ -15,6 +15,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.mojang.datafixers.util.Either;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.fluid.FlowableFluid;
@@ -23,6 +25,8 @@ import net.minecraft.fluid.Fluids;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.Potions;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -45,7 +49,7 @@ public final class FluidKeys {
     public static final BiomeSourcedFluidKey WATER;
 
     private static final Map<Fluid, FluidKey> FLUIDS = new IdentityHashMap<>();
-    private static final Map<Potion, FluidKey> POTIONS = new IdentityHashMap<>();
+    private static final Map<Either<RegistryKey<Potion>, Potion>, FluidKey> POTIONS = new HashMap<>();
     private static final Map<FluidRegistryEntry<?>, FluidKey> OTHERS = new HashMap<>();
     private static final Map<FluidFloatingEntry, FluidKey> FLOATING = new HashMap<>();
 
@@ -98,8 +102,8 @@ public final class FluidKeys {
         }
     }
 
-    public static synchronized void put(Potion potion, FluidKey fluidKey) {
-        POTIONS.put(potion, fluidKey);
+    public static synchronized void put(RegistryEntry<Potion> potion, FluidKey fluidKey) {
+        POTIONS.put(potion.getKeyOrValue(), fluidKey);
     }
 
     public static synchronized void put(FluidRegistryEntry<?> entry, FluidKey fluidKey) {
@@ -154,8 +158,8 @@ public final class FluidKeys {
         return new SimpleFluidKey(builder);
     }
 
-    public static synchronized FluidKey get(Potion potion) {
-        FluidKey fluidKey = POTIONS.get(potion);
+    public static synchronized FluidKey get(RegistryEntry<Potion> potion) {
+        FluidKey fluidKey = POTIONS.get(potion.getKeyOrValue());
         if (fluidKey == null) {
             fluidKey = new PotionFluidKey(potion);
             put(potion, fluidKey);
