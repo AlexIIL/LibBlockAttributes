@@ -10,10 +10,17 @@ package alexiil.mc.lib.attributes.item;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+
+import org.apache.commons.lang3.math.Fraction;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -22,16 +29,16 @@ import net.minecraft.block.Block;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.block.InventoryProvider;
 import net.minecraft.block.ShulkerBoxBlock;
+import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.BundleContentsComponent;
 import net.minecraft.component.type.ContainerComponent;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
+import net.minecraft.item.BundleItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Direction;
 
@@ -44,7 +51,6 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fatjar.FatJarChecker;
 import alexiil.mc.lib.attributes.fluid.FluidAttributes;
 import alexiil.mc.lib.attributes.item.FixedItemInv.CopyingFixedItemInv;
-import alexiil.mc.lib.attributes.item.ItemAttributes.ShulkerBoxItemInv;
 import alexiil.mc.lib.attributes.item.compat.FixedInventoryVanillaWrapper;
 import alexiil.mc.lib.attributes.item.compat.FixedSidedInventoryVanillaWrapper;
 import alexiil.mc.lib.attributes.item.compat.mod.LbaItemModCompat;
@@ -99,13 +105,13 @@ public final class ItemAttributes {
     }
 
     static {
-        FIXED_INV_VIEW = create(
+        FIXED_INV_VIEW = createFixed(
             FixedItemInvView.class, //
             EmptyFixedItemInv.INSTANCE, //
             list -> new CombinedFixedItemInvView<>(list), //
             inv -> inv//
         );
-        FIXED_INV = create(
+        FIXED_INV = createFixed(
             FixedItemInv.class, //
             EmptyFixedItemInv.INSTANCE, //
             list -> new CombinedFixedItemInv<>(list), //
@@ -115,25 +121,29 @@ public final class ItemAttributes {
             GroupedItemInvView.class, //
             EmptyGroupedItemInv.INSTANCE, //
             list -> new CombinedGroupedItemInvView(list), //
-            FixedItemInv::getGroupedInv//
+            FixedItemInv::getGroupedInv,//
+            inv -> inv//
         );
         GROUPED_INV = create(
             GroupedItemInv.class, //
             EmptyGroupedItemInv.INSTANCE, //
             list -> new CombinedGroupedItemInv(list), //
-            FixedItemInv::getGroupedInv//
+            FixedItemInv::getGroupedInv,//
+            Function.identity()//
         );
         INSERTABLE = create(
             ItemInsertable.class, //
             RejectingItemInsertable.NULL, //
             list -> new CombinedItemInsertable(list), //
-            FixedItemInv::getInsertable//
+            FixedItemInv::getInsertable,//
+            inv -> inv//
         );
         EXTRACTABLE = create(
             ItemExtractable.class, //
             EmptyItemExtractable.NULL, //
             list -> new CombinedItemExtractable(list), //
-            FixedItemInv::getExtractable//
+            FixedItemInv::getExtractable,//
+            inv -> inv//
         );
         FILTER = Attributes.createCombinable(
             ItemFilter.class, //
@@ -154,12 +164,41 @@ public final class ItemAttributes {
         LbaItemModCompat.load();
     }
 
-    private static <T> CombinableAttribute<T> create(
+    private static <T> CombinableAttribute<T> createFixed(
         Class<T> clazz, @Nonnull T defaultValue, AttributeCombiner<T> combiner, Function<FixedItemInv, T> convertor
     ) {
         CombinableAttribute<T> attribute = Attributes.createCombinable(clazz, defaultValue, combiner);
 
         AttributeSourceType srcType = AttributeSourceType.COMPAT_WRAPPER;
+        addInventoryProvider(convertor, attribute, srcType);
+
+        addChestBlock(convertor, attribute, srcType);
+
+        addInventoryBlockEntities(convertor, attribute);
+
+        addShulkerBox(convertor, attribute, srcType);
+
+        return attribute;
+    }
+    
+    private static <T> CombinableAttribute<T> create(Class<T> clazz, @Nonnull T defaultValue, AttributeCombiner<T> combiner, Function<FixedItemInv, T> fixedConvertor, Function<GroupedItemInv, T> groupedConverter) {
+        CombinableAttribute<T> attribute = Attributes.createCombinable(clazz, defaultValue, combiner);
+
+        AttributeSourceType srcType = AttributeSourceType.COMPAT_WRAPPER;
+        addInventoryProvider(fixedConvertor, attribute, srcType);
+
+        addChestBlock(fixedConvertor, attribute, srcType);
+
+        addInventoryBlockEntities(fixedConvertor, attribute);
+
+        addShulkerBox(fixedConvertor, attribute, srcType);
+        
+        addBundle(groupedConverter, attribute, srcType);
+        
+        return attribute;
+    }
+
+    private static <T> void addInventoryProvider(Function<FixedItemInv, T> convertor, CombinableAttribute<T> attribute, AttributeSourceType srcType) {
         attribute.putBlockClassAdder(srcType, InventoryProvider.class, true, (w, p, s, l) -> {
             InventoryProvider provider = (InventoryProvider) s.getBlock();
             SidedInventory inventory = provider.getInventory(s, w, p);
@@ -180,7 +219,9 @@ public final class ItemAttributes {
                 }
             }
         });
+    }
 
+    private static <T> void addChestBlock(Function<FixedItemInv, T> convertor, CombinableAttribute<T> attribute, AttributeSourceType srcType) {
         attribute.putBlockClassAdder(srcType, ChestBlock.class, true, (w, p, s, l) -> {
             boolean checkForBlockingCats = false;
             ChestBlock chest = (ChestBlock) s.getBlock();
@@ -189,7 +230,9 @@ public final class ItemAttributes {
                 l.add(convertor.apply(new FixedInventoryVanillaWrapper(chestInv)));
             }
         });
+    }
 
+    private static <T> void addInventoryBlockEntities(Function<FixedItemInv, T> convertor, CombinableAttribute<T> attribute) {
         attribute.appendBlockAdder((w, p, s, l) -> {
             if (!s.hasBlockEntity()) {
                 return;
@@ -211,16 +254,26 @@ public final class ItemAttributes {
                 l.add(convertor.apply(new FixedInventoryVanillaWrapper((Inventory) be)));
             }
         });
+    }
 
+    private static <T> void addShulkerBox(Function<FixedItemInv, T> convertor, CombinableAttribute<T> attribute, AttributeSourceType srcType) {
         attribute.addItemPredicateAdder(srcType, true, ItemAttributes::isShulkerBox, (ref, excess, list) -> {
             list.add(convertor.apply(new ShulkerBoxItemInv(ref)));
         });
+    }
 
-        return attribute;
+    private static <T> void addBundle(Function<GroupedItemInv,T> converter, CombinableAttribute<T> attribute, AttributeSourceType srcType) {
+        attribute.addItemPredicateAdder(srcType, true, ItemAttributes::isBundle, (ref, excess, list) -> {
+            list.add(converter.apply(new BundleItemInv(ref)));
+        });
     }
 
     static boolean isShulkerBox(Item item) {
         return Block.getBlockFromItem(item) instanceof ShulkerBoxBlock;
+    }
+    
+    static boolean isBundle(Item item) {
+        return item instanceof BundleItem;
     }
 
     abstract static class AbstractFixedItemInv implements CopyingFixedItemInv {
@@ -309,6 +362,134 @@ public final class ItemAttributes {
             return stack.isEmpty() || ItemAttributes.GROUPED_INV_VIEW.getFirstOrNull(stack) == null;
         }
 
+    }
+    
+    static final class BundleItemInv implements GroupedItemInv {
+        private static final Fraction NESTED_BUNDLE_OCCUPANCY = Fraction.getFraction(1, 16);
+
+        final Reference<ItemStack> ref;
+
+        BundleItemInv(Reference<ItemStack> ref) {
+            this.ref = ref;
+        }
+
+        @Override
+        public Set<ItemStack> getStoredStacks() {
+            ItemStack stack = ref.get();
+            BundleContentsComponent component = stack.get(DataComponentTypes.BUNDLE_CONTENTS);
+            if (component == null) {
+                return Set.of();
+            }
+            return ImmutableSet.copyOf(component.iterateCopy());
+        }
+
+        @Override
+        public int getTotalCapacity() {
+            return 64;
+        }
+
+        @Override
+        public ItemInvStatistic getStatistics(ItemFilter filter) {
+            int amount = 0;
+            Fraction filterOccupancy = Fraction.ZERO;
+            for (ItemStack stack : getStacks()) {
+                if (filter.matches(stack)) {
+                    amount += stack.getCount();
+                    if (Objects.equals(filterOccupancy, Fraction.ZERO)) {
+                        filterOccupancy = getOccupancy(stack);
+                    } else {
+                        filterOccupancy = null;
+                    }
+                }
+            }
+
+            int space;
+            if (filterOccupancy != null && !filterOccupancy.equals(Fraction.ZERO)) {
+                Fraction spaceFrac = Fraction.ONE.subtract(getOccupancy());
+                space = Math.max(spaceFrac.divideBy(filterOccupancy).intValue(), 0);
+            } else {
+                space = 0;
+            }
+
+            return new ItemInvStatistic(filter, amount, space, -1);
+        }
+
+        @Override
+        public int getCapacity(ItemStack stack) {
+            Fraction occupancy = Fraction.ZERO;
+            for (ItemStack oldStack : getStacks()) {
+                if (!ItemStackUtil.areEqualIgnoreAmounts(stack, oldStack)) {
+                    occupancy = occupancy.add(getOccupancy(oldStack).multiplyBy(Fraction.getFraction(oldStack.getCount(), 1)));
+                }
+            }
+            return Math.max(Fraction.ONE.subtract(occupancy).intValue(), 0);
+        }
+
+        @Override
+        public int getSpace(ItemStack stack) {
+            Fraction space = Fraction.ONE.subtract(getOccupancy());
+            return Math.max(space.divideBy(getOccupancy(stack)).intValue(), 0);
+        }
+
+        @Override
+        public ItemStack attemptExtraction(ItemFilter filter, int maxAmount, Simulation simulation) {
+            ItemStack result = ItemStack.EMPTY;
+            List<ItemStack> stacks = Lists.newArrayList(getStacksCopy());
+            for (ItemStack stack : stacks) {
+                if (filter.matches(stack)) {
+                    result = stack.split(maxAmount);
+                }
+            }
+            stacks.removeIf(ItemStack::isEmpty);
+            if (simulation.isAction()) {
+                ItemStack stack = ref.get();
+                stack.set(DataComponentTypes.BUNDLE_CONTENTS, new BundleContentsComponent(stacks));
+                ref.set(stack);
+            }
+            return result;
+        }
+
+        @Override
+        public ItemStack attemptInsertion(ItemStack stack, Simulation simulation) {
+            BundleContentsComponent component = ref.get().getOrDefault(DataComponentTypes.BUNDLE_CONTENTS, BundleContentsComponent.DEFAULT);
+            BundleContentsComponent.Builder builder = new BundleContentsComponent.Builder(component);
+            stack = stack.copy();
+            builder.add(stack);
+            if (simulation.isAction()) {
+                ItemStack ourStack = ref.get();
+                ourStack.set(DataComponentTypes.BUNDLE_CONTENTS, builder.build());
+                ref.set(ourStack);
+            }
+            return stack;
+        }
+
+        private Iterable<ItemStack> getStacks() {
+            ItemStack stack = ref.get();
+            BundleContentsComponent component = stack.getOrDefault(DataComponentTypes.BUNDLE_CONTENTS, BundleContentsComponent.DEFAULT);
+            return component.iterate();
+        }
+        
+        private Iterable<ItemStack> getStacksCopy() {
+            ItemStack stack = ref.get();
+            BundleContentsComponent component = stack.getOrDefault(DataComponentTypes.BUNDLE_CONTENTS, BundleContentsComponent.DEFAULT);
+            return component.iterateCopy();
+        }
+
+        private Fraction getOccupancy() {
+            ItemStack stack = ref.get();
+            BundleContentsComponent component = stack.getOrDefault(DataComponentTypes.BUNDLE_CONTENTS, BundleContentsComponent.DEFAULT);
+            return component.getOccupancy();
+        }
+
+        private static Fraction getOccupancy(ItemStack stack) {
+            BundleContentsComponent component = stack.get(DataComponentTypes.BUNDLE_CONTENTS);
+            if (component != null) {
+                return NESTED_BUNDLE_OCCUPANCY.add(component.getOccupancy());
+            } else {
+                List<BeehiveBlockEntity.BeeData> list = stack.getOrDefault(DataComponentTypes.BEES, List.of());
+                return !list.isEmpty() ? Fraction.ONE : Fraction.getFraction(1, stack.getMaxCount());
+            }
+        }
     }
 
     static {
