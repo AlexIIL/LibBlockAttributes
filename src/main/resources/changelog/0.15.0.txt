@@ -2,3 +2,4 @@ Changes:
 
 * Updated to Minecraft 1.20.5.
 * Added support for potion fluids holding the potions' custom effects.
+* Added support for inserting and extracting from bundles.
