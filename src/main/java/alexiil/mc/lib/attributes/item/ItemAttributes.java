@@ -24,6 +24,7 @@ import net.minecraft.block.InventoryProvider;
 import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.Inventory;
@@ -222,50 +223,39 @@ public final class ItemAttributes {
         return Block.getBlockFromItem(item) instanceof ShulkerBoxBlock;
     }
 
-    static final class ShulkerBoxItemInv implements CopyingFixedItemInv {
-        private final Reference<ItemStack> ref;
+    abstract static class AbstractFixedItemInv implements CopyingFixedItemInv {
+        protected final Reference<ItemStack> ref;
 
-        private ShulkerBoxItemInv(Reference<ItemStack> ref) {
+        public AbstractFixedItemInv(Reference<ItemStack> ref) {
             this.ref = ref;
         }
 
-        @Override
-        public int getSlotCount() {
-            return 27;
-        }
+        public abstract int getSlotCount();
 
-        @Override
         public ItemStack getInvStack(int slot) {
             assert 0 <= slot && slot < 27;
 
             ItemStack stack = ref.get();
-            NbtCompound tag = stack.getSubNbt("BlockEntityTag");
-            if (tag == null || stack.isEmpty() || stack.getCount() != 1 || !isShulkerBox(stack.getItem())) {
+            ContainerComponent component = stack.get(DataComponentTypes.CONTAINER);
+            if (component == null || stack.isEmpty() || stack.getCount() != 1 || !ItemAttributes.isShulkerBox(stack.getItem())) {
                 return ItemStack.EMPTY;
             }
 
-            DefaultedList<ItemStack> list = DefaultedList.of();
-            Inventories.readNbt(tag, list);
+            DefaultedList<ItemStack> list = DefaultedList.ofSize(getSlotCount(), ItemStack.EMPTY);
+            component.copyTo(list);
             if (slot >= list.size()) {
                 return ItemStack.EMPTY;
             }
             return list.get(slot);
         }
 
-        @Override
         public ItemStack getUnmodifiableInvStack(int slot) {
             // Because we deserialise every time it's safe to just return it
             return getInvStack(slot);
         }
 
-        @Override
-        public boolean isItemValidForSlot(int slot, ItemStack stack) {
-            // Check for grouped item inv because everything else boils down to this
-            // (Plus we don't care about insertable or extractable's, only inventories)
-            return stack.isEmpty() || ItemAttributes.GROUPED_INV_VIEW.getFirstOrNull(stack) == null;
-        }
+        public abstract boolean isItemValidForSlot(int slot, ItemStack stack);
 
-        @Override
         public boolean setInvStack(int slot, ItemStack to, Simulation simulation) {
             if (slot <= 0 || slot > 27) {
                 return false;
@@ -276,7 +266,7 @@ public final class ItemAttributes {
             }
 
             ItemStack stack = ref.get();
-            if (!stack.isEmpty() || stack.getCount() != 1 || !isShulkerBox(stack.getItem())) {
+            if (!stack.isEmpty() || stack.getCount() != 1 || !ItemAttributes.isShulkerBox(stack.getItem())) {
                 return false;
             }
 
@@ -284,28 +274,41 @@ public final class ItemAttributes {
                 stack = stack.copy();
             }
 
-            NbtComponent component = stack.get(DataComponentTypes.BLOCK_ENTITY_DATA);
-            NbtCompound tag;
+            ContainerComponent component = stack.get(DataComponentTypes.CONTAINER);
             if (component == null) {
-                tag = new NbtCompound();
-            } else {
-                tag = component.copyNbt();
+                component = ContainerComponent.DEFAULT;
             }
 
-            DefaultedList<ItemStack> list = DefaultedList.of();
-            Inventories.readNbt(tag, list);
-
-            while (slot >= list.size()) {
-                list.add(ItemStack.EMPTY);
-            }
+            DefaultedList<ItemStack> list = DefaultedList.ofSize(getSlotCount(), ItemStack.EMPTY);
+            component.copyTo(list);
 
             list.set(slot, to);
-            Inventories.writeNbt(tag, list);
+
             if (simulation.isAction()) {
-                stack.set(DataComponentTypes.BLOCK_ENTITY_DATA, NbtComponent.of(tag));
+                stack.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(list));
             }
             return ref.set(stack, simulation);
         }
+    }
+
+    static final class ShulkerBoxItemInv extends AbstractFixedItemInv implements CopyingFixedItemInv {
+
+        private ShulkerBoxItemInv(Reference<ItemStack> ref) {
+            super(ref);
+        }
+
+        @Override
+        public int getSlotCount() {
+            return 27;
+        }
+
+        @Override
+        public boolean isItemValidForSlot(int slot, ItemStack stack) {
+            // Check for grouped item inv because everything else boils down to this
+            // (Plus we don't care about insertable or extractable's, only inventories)
+            return stack.isEmpty() || ItemAttributes.GROUPED_INV_VIEW.getFirstOrNull(stack) == null;
+        }
+
     }
 
     static {

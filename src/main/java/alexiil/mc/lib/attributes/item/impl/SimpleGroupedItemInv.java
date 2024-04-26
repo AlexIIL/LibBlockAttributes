@@ -13,7 +13,8 @@ import java.util.Set;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.util.Util;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.registry.RegistryWrapper;
 
 import alexiil.mc.lib.attributes.ListenerRemovalToken;
 import alexiil.mc.lib.attributes.ListenerToken;
@@ -21,11 +22,13 @@ import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.item.GroupedItemInv;
 import alexiil.mc.lib.attributes.item.ItemInvAmountChangeListener;
 import alexiil.mc.lib.attributes.item.ItemStackCollections;
+import alexiil.mc.lib.attributes.item.ItemStackUtil;
 import alexiil.mc.lib.attributes.item.filter.ItemFilter;
+import alexiil.mc.lib.attributes.misc.LibBlockAttributes;
 import alexiil.mc.lib.attributes.misc.Saveable;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap;
 
 /** A simple {@link GroupedItemInv} that has a limit on both the number of different items that this can store, and the
  * total number of items that can be stored. */
@@ -47,7 +50,7 @@ public class SimpleGroupedItemInv implements GroupedItemInv, Saveable {
     private ItemInvAmountChangeListener ownerListener;
 
     private final Map<ItemInvAmountChangeListener, ListenerRemovalToken> listeners
-        = new Object2ObjectLinkedOpenCustomHashMap<>(Util.identityHashStrategy());
+        = new Reference2ObjectLinkedOpenHashMap<>();
 
     // Should this use WeakReference instead of storing them directly?
     private ItemInvAmountChangeListener[] bakedListeners = NO_LISTENERS;
@@ -195,7 +198,7 @@ public class SimpleGroupedItemInv implements GroupedItemInv, Saveable {
     // NBT support
 
     @Override
-    public NbtCompound toTag(NbtCompound tag) {
+    public void toTag(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
         NbtList items = new NbtList();
         for (Object2IntMap.Entry<ItemStack> entry : this.stacks.object2IntEntrySet()) {
             ItemStack stack = entry.getKey();
@@ -203,24 +206,22 @@ public class SimpleGroupedItemInv implements GroupedItemInv, Saveable {
             if (count <= 0) {
                 continue;
             }
-            NbtCompound itemTag = stack.writeNbt(new NbtCompound());
+            NbtCompound itemTag = (NbtCompound) ItemStackUtil.writeNbtUncounted(stack, lookup);
             itemTag.putInt("Count", count);
             items.add(itemTag);
         }
         if (!items.isEmpty()) {
             tag.put("items", items);
         }
-        return tag;
     }
 
     @Override
-    public void fromTag(NbtCompound tag) {
+    public void fromTag(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
         NbtList items = tag.getList("items", new NbtCompound().getType());
         for (int i = 0; i < items.size(); i++) {
             NbtCompound itemTag = items.getCompound(i);
             int count = itemTag.getInt("Count");
-            itemTag.putByte("Count", (byte) 1);
-            ItemStack stack = ItemStack.fromNbt(itemTag);
+            ItemStack stack = ItemStackUtil.fromNbtUncounted(itemTag, lookup);
             if (!stack.isEmpty()) {
                 stacks.put(stack, count);
             }

@@ -225,7 +225,7 @@ public abstract class FluidVolumeRenderer {
         vc.texture(u, v);
         vc.overlay(OverlayTexture.DEFAULT_UV);
         vc.light(light);
-        vc.normal(matrices.peek().getNormalMatrix(), nx, ny, nz);
+        vc.normal(matrices.peek(), nx, ny, nz);
         vc.next();
     }
 
@@ -257,7 +257,7 @@ public abstract class FluidVolumeRenderer {
             addLayer(RenderLayer.getCutout());
             addLayer(RenderLayer.getCutoutMipped());
             addLayer(RenderLayer.getTranslucent());
-            addLayer(RenderLayer.getTranslucentNoCrumbling());
+            addLayer(RenderLayer.getTranslucentMovingBlock());
             addLayerAfter(RenderLayer.getGlint());
             addLayerAfter(RenderLayer.getEntityGlint());
         }

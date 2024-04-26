@@ -13,7 +13,7 @@ import java.util.Map;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.util.Util;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.collection.DefaultedList;
 
 import alexiil.mc.lib.attributes.AttributeUtil;
@@ -32,7 +32,7 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
 import alexiil.mc.lib.attributes.misc.Saveable;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap;
 
 /** A simple, extendible, fixed size item inventory that supports all of the features that {@link FixedFluidInv}
  * exposes.
@@ -62,7 +62,7 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable, Sa
     private FluidInvTankChangeListener ownerListener;
 
     private final Map<FluidInvTankChangeListener, ListenerRemovalToken> listeners
-        = new Object2ObjectLinkedOpenCustomHashMap<>(Util.identityHashStrategy());
+        = new Reference2ObjectLinkedOpenHashMap<>();
 
     // Should this use WeakReference instead of storing them directly?
     private FluidInvTankChangeListener[] bakedListeners = NO_LISTENERS;
@@ -209,22 +209,16 @@ public class SimpleFixedFluidInv implements FixedFluidInv, FluidTransferable, Sa
     // NBT support
 
     @Override
-    public final NbtCompound toTag() {
-        return toTag(new NbtCompound());
-    }
-
-    @Override
-    public NbtCompound toTag(NbtCompound tag) {
+    public void toTag(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
         NbtList tanksTag = new NbtList();
         for (FluidVolume volume : tanks) {
             tanksTag.add(volume.toTag());
         }
         tag.put("tanks", tanksTag);
-        return tag;
     }
 
     @Override
-    public void fromTag(NbtCompound tag) {
+    public void fromTag(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
         NbtList tanksTag = tag.getList("tanks", new NbtCompound().getType());
         for (int i = 0; i < tanksTag.size() && i < tanks.size(); i++) {
             tanks.set(i, FluidVolume.fromTag(tanksTag.getCompound(i)));

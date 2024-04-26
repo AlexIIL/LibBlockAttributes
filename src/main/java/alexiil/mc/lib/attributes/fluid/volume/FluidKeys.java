@@ -90,7 +90,6 @@ public final class FluidKeys {
         put(Fluids.EMPTY, EMPTY);
         put(Fluids.LAVA, LAVA);
         put(Fluids.WATER, WATER);
-        put(Potions.EMPTY, EMPTY);
         put(Potions.WATER, WATER);
     }
 
@@ -109,8 +108,8 @@ public final class FluidKeys {
     public static synchronized void put(FluidRegistryEntry<?> entry, FluidKey fluidKey) {
         if (entry.backingRegistry == Registries.FLUID) {
             put((Fluid) entry.backingObject, fluidKey);
-        } else if (entry.backingObject == Registries.POTION) {
-            put((Potion) entry.backingObject, fluidKey);
+        } else if (entry.backingRegistry == Registries.POTION) {
+            put((RegistryEntry<Potion>) entry.backingObject, fluidKey);
         } else {
             OTHERS.put(entry, fluidKey);
         }
@@ -177,7 +176,7 @@ public final class FluidKeys {
             // Potions are created "on demand" rather than all upfront
             // so we hack around that by adding potions here.
             if (re.backingRegistry == Registries.POTION) {
-                Potion potion = (Potion) re.backingObject;
+                RegistryEntry<Potion> potion = (RegistryEntry<Potion>) re.backingObject;
                 return get(potion);
             }
             // custom, simple, modded fluids are also created "on demand"

@@ -8,15 +8,18 @@
 package alexiil.mc.lib.attributes.misc;
 
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 
 /** An object that can be saved and loaded (in place, unlike fluid keys or volumes which must be loaded from a
  * specialised static method). */
 public interface Saveable {
-    default NbtCompound toTag() {
-        return toTag(new NbtCompound());
+    default NbtCompound toTag(RegistryWrapper.WrapperLookup lookup) {
+        NbtCompound tag = new NbtCompound();
+        toTag(tag, lookup);
+        return tag;
     }
 
-    NbtCompound toTag(NbtCompound tag);
+    void toTag(NbtCompound tag, RegistryWrapper.WrapperLookup lookup);
 
-    void fromTag(NbtCompound tag);
+    void fromTag(NbtCompound tag, RegistryWrapper.WrapperLookup lookup);
 }

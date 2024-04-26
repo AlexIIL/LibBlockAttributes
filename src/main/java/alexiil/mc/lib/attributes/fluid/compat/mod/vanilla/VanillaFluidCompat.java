@@ -181,7 +181,15 @@ public final class VanillaFluidCompat {
             if (stack.getItem() != Items.POTION) {
                 return FluidVolumeUtil.EMPTY;
             }
-            FluidKey key = FluidKeys.get(PotionUtil.getPotion(stack));
+            PotionContentsComponent component = stack.get(DataComponentTypes.POTION_CONTENTS);
+            if (component == null) {
+                return FluidVolumeUtil.EMPTY;
+            }
+            Optional<RegistryEntry<Potion>> potion = component.potion();
+            if (potion.isEmpty()) {
+                return FluidVolumeUtil.EMPTY;
+            }
+            FluidKey key = FluidKeys.get(potion.get());
             if (key.isEmpty() || !filter.matches(key)) {
                 return FluidVolumeUtil.EMPTY;
             }

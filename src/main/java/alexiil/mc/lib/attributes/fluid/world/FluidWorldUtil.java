@@ -16,6 +16,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.block.FluidFillable;
 import net.minecraft.block.Waterloggable;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
@@ -80,7 +81,7 @@ public final class FluidWorldUtil {
     /** Attempts to place the given fluid volume into the given block position.
      * 
      * @return The leftover amount of fluid after placing, or the original volume if it was unable to be placed. */
-    public static FluidVolume fill(WorldAccess world, BlockPos pos, FluidVolume volume, Simulation simulation) {
+    public static FluidVolume fill(PlayerEntity player, WorldAccess world, BlockPos pos, FluidVolume volume, Simulation simulation) {
 
         if (volume.getAmount_F().isLessThan(FluidAmount.BUCKET)) {
             return volume; // Need at least a buckets worth
@@ -108,7 +109,7 @@ public final class FluidWorldUtil {
             // FluidFillable includes waterloggable blocks, but not cauldrons, etc.
             FluidFillable fillable = (FluidFillable) block;
             if (simulation == Simulation.SIMULATE) {
-                success = fillable.canFillWithFluid(world, pos, state, fluid);
+                success = fillable.canFillWithFluid(player, world, pos, state, fluid);
             } else {
                 success = fillable.tryFillWithFluid(world, pos, state, fluid.getDefaultState());
             }
@@ -161,11 +162,11 @@ public final class FluidWorldUtil {
 
     /** @return A {@link FluidInsertable} that places the fluid given directly at the given world co-ordinates, if there
      *         isn't already fluid there. */
-    public static FluidInsertable createFluidPlacer(WorldAccess world, BlockPos pos) {
+    public static FluidInsertable createFluidPlacer(PlayerEntity player, WorldAccess world, BlockPos pos) {
         return new FluidInsertable() {
             @Override
             public FluidVolume attemptInsertion(FluidVolume fluid, Simulation simulation) {
-                return fill(world, pos, fluid, simulation);
+                return fill(player, world, pos, fluid, simulation);
             }
 
             @Override

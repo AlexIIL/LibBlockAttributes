@@ -13,6 +13,7 @@ import java.util.Map;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Util;
 import net.minecraft.util.collection.DefaultedList;
 
@@ -30,6 +31,7 @@ import alexiil.mc.lib.attributes.item.filter.ItemFilter;
 import alexiil.mc.lib.attributes.misc.Saveable;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap;
 
 /** A simple, extendible, fixed size item inventory that supports all of the features that {@link CopyingFixedItemInv}
  * exposes.
@@ -52,7 +54,7 @@ public class FullFixedItemInv implements CopyingFixedItemInv, ItemTransferable, 
     private ItemInvSlotChangeListener ownerListener;
 
     private final Map<ItemInvSlotChangeListener, ListenerRemovalToken> listeners
-        = new Object2ObjectLinkedOpenCustomHashMap<>(Util.identityHashStrategy());
+        = new Reference2ObjectLinkedOpenHashMap<>();
 
     // Should this use WeakReference instead of storing them directly?
     private ItemInvSlotChangeListener[] bakedListeners = NO_LISTENERS;
@@ -206,30 +208,24 @@ public class FullFixedItemInv implements CopyingFixedItemInv, ItemTransferable, 
     // NBT support
 
     @Override
-    public final NbtCompound toTag() {
-        return toTag(new NbtCompound());
-    }
-
-    @Override
-    public NbtCompound toTag(NbtCompound tag) {
+    public void toTag(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
         NbtList slotsTag = new NbtList();
         for (ItemStack stack : slots) {
             ItemInvModificationTracker.trackNeverChanging(stack);
             if (stack.isEmpty()) {
                 slotsTag.add(new NbtCompound());
             } else {
-                slotsTag.add(stack.writeNbt(new NbtCompound()));
+                slotsTag.add(ItemStackUtil.writeNbt(stack, lookup));
             }
         }
         tag.put("slots", slotsTag);
-        return tag;
     }
 
     @Override
-    public void fromTag(NbtCompound tag) {
+    public void fromTag(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
         NbtList slotsTag = tag.getList("slots", new NbtCompound().getType());
         for (int i = 0; i < slotsTag.size() && i < slots.size(); i++) {
-            slots.set(i, ItemStack.fromNbt(slotsTag.getCompound(i)));
+            slots.set(i, ItemStackUtil.fromNbt(slotsTag.get(i), lookup, false));
         }
         for (int i = slotsTag.size(); i < slots.size(); i++) {
             slots.set(i, ItemStack.EMPTY);

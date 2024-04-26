@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -32,6 +33,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.DefaultedRegistry;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -614,10 +616,10 @@ public abstract class FluidKey {
         } else if (json.has("fluid")) {
             JsonElement jFluid = json.get("fluid");
             if (!jFluid.isJsonObject()) {
-                return FluidKeys.get(getRegistryEntry(jFluid, "fluid", "fluids", Registries.FLUID));
+                return FluidKeys.get(getRegistryEntryValue(jFluid, "fluid", "fluids", Registries.FLUID));
             } else {
                 JsonObject obj = jFluid.getAsJsonObject();
-                Registry<?> reg = getRegistryEntry(obj.get("registry"), "registry", "registries", Registries.REGISTRIES);
+                Registry<?> reg = getRegistryEntryValue(obj.get("registry"), "registry", "registries", Registries.REGISTRIES);
                 return fromRegistry(obj, reg);
             }
         } else {
@@ -628,7 +630,7 @@ public abstract class FluidKey {
     }
 
     private static <T> FluidKey fromRegistry(JsonObject obj, Registry<T> reg) {
-        T entry = getRegistryEntry(obj, "id", "ids", reg);
+        T entry = getRegistryEntryValue(obj, "id", "ids", reg);
         FluidRegistryEntry<T> fluidEntry = new FluidRegistryEntry<>(reg, entry);
         FluidKey fluidKey = FluidKeys.get(fluidEntry);
         if (fluidKey == null) {
@@ -639,7 +641,7 @@ public abstract class FluidKey {
         return fluidKey;
     }
 
-    private static <T> T getRegistryEntry(JsonElement json, String key, String keys, Registry<T> registry) {
+    private static <T> T getRegistryEntryValue(JsonElement json, String key, String keys, Registry<T> registry) {
         if (json == null) {
             throw new JsonSyntaxException("Expected '" + key + "' to be a string, but got nothing!");
         }
@@ -654,6 +656,20 @@ public abstract class FluidKey {
             } else {
                 return value;
             }
+        }
+
+        throw throwBadEntryException(key, key, keys, id.toString(), registry.getIds());
+    }
+    
+    private static <T> RegistryEntry<T> getRegistryEntry(JsonElement json, String key, String keys, Registry<T> registry) {
+        if (json == null) {
+            throw new JsonSyntaxException("Expected '" + key + "' to be a string, but got nothing!");
+        }
+        Identifier id = getAsIdentifier(json, key);
+
+        Optional<RegistryEntry.Reference<T>> entry = registry.getEntry(id);
+        if (entry.isPresent()) {
+            return entry.get();
         }
 
         throw throwBadEntryException(key, key, keys, id.toString(), registry.getIds());
