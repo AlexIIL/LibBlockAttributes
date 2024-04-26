@@ -31,11 +31,10 @@ import alexiil.mc.lib.attributes.item.mixin.HopperHooks;
 public class HopperBlockEntityMixin {
 
     @Inject(method = "insert", at = @At("HEAD"), cancellable = true, require = 1, allow = 1)
-    private static void onInsert(World world, BlockPos blockPos, BlockState blockState, Inventory inventory, CallbackInfoReturnable<Boolean> cri) {
-        HopperBlockEntity self = (HopperBlockEntity) inventory;
-        ActionResult result = HopperHooks.tryInsert(self);
+    private static void onInsert(World world, BlockPos pos, HopperBlockEntity blockEntity, CallbackInfoReturnable<Boolean> cir) {
+        ActionResult result = HopperHooks.tryInsert(blockEntity);
         if (result != ActionResult.PASS) {
-            cri.setReturnValue(result.isAccepted());
+            cir.setReturnValue(result.isAccepted());
         }
     }
 
