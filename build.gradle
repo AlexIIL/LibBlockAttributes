@@ -119,10 +119,56 @@ test {
     workingDir = "run/"
 }
 
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+if (System.getenv("UPLOAD_MAVEN_URL") != null) {
+    task packageJavadoc(type: Zip, dependsOn: javadoc) {
+        from javadoc.destinationDir
+        archiveFileName = "libnetworkstack-javadoc-" + version + ".zip"
+    }
+
+    task uploadJavadoc(dependsOn: packageJavadoc) {
+        doLast {
+            HttpClient cl = HttpClient.newBuilder().authenticator(new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(System.getenv("UPLOAD_USERNAME"), System.getenv("UPLOAD_PASSWORD").toCharArray());
+                }
+            }).build();
+            java.io.File file = packageJavadoc.outputs.files.singleFile;
+            java.nio.file.Path path = file.toPath();
+            HttpRequest put = HttpRequest.newBuilder()
+                .PUT(HttpRequest.BodyPublishers.ofFile(path))
+                .uri(new URI(System.getenv("UPLOAD_MAVEN_URL") +  "/tmp-javadocs/" + file.getName()))
+                .build();
+            HttpResponse<String> response = cl.send(put, HttpResponse.BodyHandlers.ofString());
+            if ((int)(response.statusCode() / 100) != 2) {
+                println(response.statusCode());
+                println(response.body());
+                throw new Error("Upload Javadoc Zip Failed!");
+            }
+        }
+    }
+}
+
 publishing {
     repositories {
-        maven {
-            url System.getenv("MAVEN_DIR") ?: "$projectDir/build/maven"
+        if (System.getenv("UPLOAD_MAVEN_URL") != null) {
+            maven {
+                url System.getenv("UPLOAD_MAVEN_URL");
+                credentials {
+                    username System.getenv("UPLOAD_USERNAME");
+                    password System.getenv("UPLOAD_PASSWORD");
+                }
+            }
+        } else {
+            maven {
+                url System.getenv("MAVEN_DIR") ?: "$projectDir/build/maven"
+            }
         }
     }
 }
