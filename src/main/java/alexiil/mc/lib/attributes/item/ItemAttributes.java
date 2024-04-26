@@ -438,6 +438,7 @@ public final class ItemAttributes {
             for (ItemStack stack : stacks) {
                 if (filter.matches(stack)) {
                     result = stack.split(maxAmount);
+                    break;
                 }
             }
             stacks.removeIf(ItemStack::isEmpty);
