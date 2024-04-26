@@ -25,6 +25,7 @@ import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.fluid.volume.PotionContents;
 import alexiil.mc.lib.attributes.fluid.volume.PotionFluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.PotionFluidVolume;
 import alexiil.mc.lib.attributes.misc.Ref;
@@ -49,19 +50,18 @@ public class GlassBottleItemMixin extends Item implements FluidProviderItem, IBu
         if (with.obj.getAmount_F().isLessThan(FluidAmount.BOTTLE)) {
             return false;
         }
-        final RegistryEntry<Potion> potion;
+        final PotionContents potion;
         if (with.obj instanceof PotionFluidVolume) {
             potion = ((PotionFluidVolume) with.obj).getPotion();
         } else if (with.obj.fluidKey == FluidKeys.WATER) {
-            potion = Potions.WATER;
+            potion = PotionContents.ofPotion(Potions.WATER);
         } else {
             return false;
         }
         with.obj = with.obj.copy();
         FluidVolume split = with.obj.split(FluidAmount.BOTTLE);
         if (!split.isEmpty()) {
-            ItemStack potionStack = PotionContentsComponent.createStack(Items.POTION, potion);
-            stack.obj = potionStack;
+            stack.obj = potion.createStack(Items.POTION, 1);
             return true;
         }
         return false;
@@ -79,17 +79,17 @@ public class GlassBottleItemMixin extends Item implements FluidProviderItem, IBu
 
     @Override
     public ItemStack libblockattributes__withFluid(FluidKey fluid) {
-        RegistryEntry<Potion> potion;
+        PotionContents potion;
         if (fluid instanceof PotionFluidKey) {
             potion = ((PotionFluidKey) fluid).potion;
         } else if (fluid == FluidKeys.WATER) {
-            potion = Potions.WATER;
+            potion = PotionContents.ofPotion(Potions.WATER);
         } else if (fluid == FluidKeys.EMPTY) {
             return new ItemStack(Items.GLASS_BOTTLE);
         } else {
             return ItemStack.EMPTY;
         }
-        return PotionContentsComponent.createStack(Items.POTION, potion);
+        return potion.createStack(Items.POTION, 1);
     }
 
     @Override

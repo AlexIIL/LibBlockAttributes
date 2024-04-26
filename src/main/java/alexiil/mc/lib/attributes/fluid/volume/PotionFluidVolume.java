@@ -14,8 +14,6 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.potion.Potion;
-import net.minecraft.registry.entry.RegistryEntry;
 
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.render.DefaultFluidVolumeRenderer;
@@ -41,7 +39,7 @@ public final class PotionFluidVolume extends FluidVolume {
         super(key, json);
     }
 
-    public RegistryEntry<Potion> getPotion() {
+    public PotionContents getPotion() {
         return getFluidKey().potion;
     }
 
@@ -53,7 +51,7 @@ public final class PotionFluidVolume extends FluidVolume {
     @Override
     @Environment(EnvType.CLIENT)
     public FluidVolumeRenderer getRenderer() {
-        if (getPotion().value().getEffects().isEmpty()) {
+        if (getPotion().hasEffects()) {
             return DefaultFluidVolumeRenderer.INSTANCE;
         } else {
             return EnchantmentGlintFluidRenderer.INSTANCE;

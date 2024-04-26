@@ -338,7 +338,7 @@ public abstract class FluidVolume {
 
     /** Creates a new {@link FluidVolume} from the given potion, with the given amount stored. */
     @Deprecated(since = "0.6.4", forRemoval = true)
-    public static FluidVolume create(RegistryEntry<Potion> potion, int amount) {
+    public static FluidVolume create(PotionContents potion, int amount) {
         return FluidKeys.get(potion).withAmount(FluidAmount.of1620(amount));
     }
 

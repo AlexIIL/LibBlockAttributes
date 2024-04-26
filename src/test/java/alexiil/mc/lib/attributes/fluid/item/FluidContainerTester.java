@@ -20,6 +20,7 @@ import alexiil.mc.lib.attributes.fluid.FluidVolumeUtil;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.fluid.volume.PotionContents;
 import alexiil.mc.lib.attributes.misc.Ref;
 
 public class FluidContainerTester extends VanillaSetupBaseTester {
@@ -27,7 +28,7 @@ public class FluidContainerTester extends VanillaSetupBaseTester {
     @Test
     public void testFilling() {
         Ref<ItemStack> ref = new Ref<>(new ItemStack(Items.GLASS_BOTTLE));
-        FluidVolume toInsert = FluidKeys.get(Potions.HEALING).withAmount(FluidAmount.BOTTLE);
+        FluidVolume toInsert = FluidKeys.get(PotionContents.ofPotion(Potions.HEALING)).withAmount(FluidAmount.BOTTLE);
         FluidVolume excess = FluidAttributes.INSERTABLE.get(ref).insert(toInsert);
         Assert.assertEquals(FluidVolumeUtil.EMPTY, excess);
         Assert.assertEquals(Items.POTION, ref.get().getItem());

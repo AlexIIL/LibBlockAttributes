@@ -612,7 +612,7 @@ public abstract class FluidKey {
                     "Expected 'fluid' or 'potion' or 'floating_fluid', but got both! You should use one or the other, not both"
                 );
             }
-            return FluidKeys.get(getRegistryEntry(json.get("potion"), "potion", "potions", Registries.POTION));
+            return FluidKeys.get(PotionContents.ofPotion(getRegistryEntry(json.get("potion"), "potion", "potions", Registries.POTION)));
         } else if (json.has("fluid")) {
             JsonElement jFluid = json.get("fluid");
             if (!jFluid.isJsonObject()) {

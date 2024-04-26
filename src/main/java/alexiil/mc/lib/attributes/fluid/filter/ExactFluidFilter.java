@@ -13,6 +13,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
+import alexiil.mc.lib.attributes.fluid.volume.PotionContents;
 
 /** An {@link FluidFilter} that only matches on a single {@link FluidKey}. */
 public final class ExactFluidFilter implements ReadableFluidFilter {
@@ -34,7 +35,7 @@ public final class ExactFluidFilter implements ReadableFluidFilter {
         return FluidKeys.get(fluid).exactFilter;
     }
 
-    public static ReadableFluidFilter of(RegistryEntry<Potion> potion) {
+    public static ReadableFluidFilter of(PotionContents potion) {
         return FluidKeys.get(potion).exactFilter;
     }
 

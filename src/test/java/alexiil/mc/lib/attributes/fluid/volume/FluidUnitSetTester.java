@@ -21,7 +21,7 @@ public class FluidUnitSetTester extends VanillaSetupBaseTester {
     public void testWaterUnits() {
 
         boolean[] bools = { false, true };
-        for (FluidKey fluid : new FluidKey[] { FluidKeys.WATER, FluidKeys.LAVA, FluidKeys.get(Potions.HEALING) }) {
+        for (FluidKey fluid : new FluidKey[] { FluidKeys.WATER, FluidKeys.LAVA, FluidKeys.get(PotionContents.ofPotion(Potions.HEALING)) }) {
             for (int flags = 0; flags <= 2 * 2 * 2; flags++) {
                 boolean useSymbols = (flags & 1) == 1;
                 boolean useShortDesc = (flags & 2) == 2;

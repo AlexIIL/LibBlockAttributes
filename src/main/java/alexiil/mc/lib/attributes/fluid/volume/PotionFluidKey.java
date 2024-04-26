@@ -16,6 +16,7 @@ import com.google.gson.JsonSyntaxException;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.potion.Potion;
+import net.minecraft.potion.Potions;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.MutableText;
@@ -36,20 +37,20 @@ public final class PotionFluidKey extends FluidKey {
         FLOWING_POTION_TEXTURE = LibBlockAttributes.id("fluid/potion_flowing");
     }
 
-    public final RegistryEntry<Potion> potion;
+    public final PotionContents potion;
 
-    /* package-private */ PotionFluidKey(RegistryEntry<Potion> potion) {
+    /* package-private */ PotionFluidKey(PotionContents potion) {
         super(createKeyBuilder(potion));
         this.potion = potion;
     }
 
-    private static FluidKeyBuilder createKeyBuilder(RegistryEntry<Potion> potion) {
+    private static FluidKeyBuilder createKeyBuilder(PotionContents potion) {
         FluidKeyBuilder builder = new FluidKeyBuilder();
-        builder.setRegistryEntry(new FluidRegistryEntry<>(Registries.POTION, potion.value()));
+        builder.setRegistryEntry(new FluidRegistryEntry<>(Registries.POTION, potion.potion().orElse(Potions.WATER).value()));
         builder.setSprites(POTION_TEXTURE, FLOWING_POTION_TEXTURE);
         builder.setUnit(FluidUnit.BOTTLE);
-        int colour = PotionContentsComponent.getColor(potion);
-        MutableText text = Text.translatable(Potion.finishTranslationKey(Optional.of(potion), "item.minecraft.potion.effect."));
+        int colour = potion.getColor();
+        MutableText text = Text.translatable(Potion.finishTranslationKey(potion.potion(), "item.minecraft.potion.effect."));
         builder.setName(text.setStyle(Style.EMPTY.withColor(TextColor.fromRgb(colour))));
         builder.setRenderColor(colour);
         return builder;
@@ -80,6 +81,6 @@ public final class PotionFluidKey extends FluidKey {
     @Override
     public void addTooltipExtras(FluidTooltipContext context, List<Text> tooltip) {
         super.addTooltipExtras(context, tooltip);
-        PotionContentsComponent.buildTooltip(potion.value().getEffects(), tooltip::add, 1.0f, 20.0f);
+        PotionContentsComponent.buildTooltip(potion.getEffects(), tooltip::add, 1.0f, 20.0f);
     }
 }

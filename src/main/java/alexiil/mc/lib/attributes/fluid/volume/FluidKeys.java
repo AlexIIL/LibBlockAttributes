@@ -49,7 +49,7 @@ public final class FluidKeys {
     public static final BiomeSourcedFluidKey WATER;
 
     private static final Map<Fluid, FluidKey> FLUIDS = new IdentityHashMap<>();
-    private static final Map<Either<RegistryKey<Potion>, Potion>, FluidKey> POTIONS = new HashMap<>();
+    private static final Map<PotionContents, FluidKey> POTIONS = new HashMap<>();
     private static final Map<FluidRegistryEntry<?>, FluidKey> OTHERS = new HashMap<>();
     private static final Map<FluidFloatingEntry, FluidKey> FLOATING = new HashMap<>();
 
@@ -90,7 +90,7 @@ public final class FluidKeys {
         put(Fluids.EMPTY, EMPTY);
         put(Fluids.LAVA, LAVA);
         put(Fluids.WATER, WATER);
-        put(Potions.WATER, WATER);
+        put(PotionContents.ofPotion(Potions.WATER), WATER);
     }
 
     public static synchronized void put(Fluid fluid, FluidKey fluidKey) {
@@ -101,15 +101,15 @@ public final class FluidKeys {
         }
     }
 
-    public static synchronized void put(RegistryEntry<Potion> potion, FluidKey fluidKey) {
-        POTIONS.put(potion.getKeyOrValue(), fluidKey);
+    public static synchronized void put(PotionContents potion, FluidKey fluidKey) {
+        POTIONS.put(potion, fluidKey);
     }
 
     public static synchronized void put(FluidRegistryEntry<?> entry, FluidKey fluidKey) {
         if (entry.backingRegistry == Registries.FLUID) {
             put((Fluid) entry.backingObject, fluidKey);
         } else if (entry.backingRegistry == Registries.POTION) {
-            put((RegistryEntry<Potion>) entry.backingObject, fluidKey);
+            put(PotionContents.ofPotion((Potion) entry.backingObject), fluidKey);
         } else {
             OTHERS.put(entry, fluidKey);
         }
@@ -157,8 +157,8 @@ public final class FluidKeys {
         return new SimpleFluidKey(builder);
     }
 
-    public static synchronized FluidKey get(RegistryEntry<Potion> potion) {
-        FluidKey fluidKey = POTIONS.get(potion.getKeyOrValue());
+    public static synchronized FluidKey get(PotionContents potion) {
+        FluidKey fluidKey = POTIONS.get(potion);
         if (fluidKey == null) {
             fluidKey = new PotionFluidKey(potion);
             put(potion, fluidKey);
@@ -176,8 +176,8 @@ public final class FluidKeys {
             // Potions are created "on demand" rather than all upfront
             // so we hack around that by adding potions here.
             if (re.backingRegistry == Registries.POTION) {
-                RegistryEntry<Potion> potion = (RegistryEntry<Potion>) re.backingObject;
-                return get(potion);
+                Potion potion = (Potion) re.backingObject;
+                return get(PotionContents.ofPotion(potion));
             }
             // custom, simple, modded fluids are also created "on demand"
             if (re.backingRegistry == Registries.FLUID) {

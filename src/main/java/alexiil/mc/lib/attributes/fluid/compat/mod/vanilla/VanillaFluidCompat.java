@@ -40,6 +40,7 @@ import alexiil.mc.lib.attributes.fluid.impl.GroupedFluidInvFixedWrapper;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.fluid.volume.PotionContents;
 import alexiil.mc.lib.attributes.fluid.volume.PotionFluidKey;
 import alexiil.mc.lib.attributes.misc.AbstractItemBasedAttribute;
 import alexiil.mc.lib.attributes.misc.LimitedConsumer;
@@ -99,9 +100,9 @@ public final class VanillaFluidCompat {
         protected FluidVolume insert(
             ItemStack stack, FluidVolume fluid, Simulation simulation, StackReturnFunc stackReturn
         ) {
-            RegistryEntry<Potion> potion;
+            PotionContents potion;
             if (fluid.getFluidKey() == FluidKeys.WATER) {
-                potion = Potions.WATER;
+                potion = PotionContents.ofPotion(Potions.WATER);
             } else {
                 potion = ((PotionFluidKey) fluid.getFluidKey()).potion;
             }
@@ -110,7 +111,7 @@ public final class VanillaFluidCompat {
             ItemStack oldStack = stack;
             stack.decrement(1);
             newFluid.split(FluidAmount.BOTTLE);
-            ItemStack newStack = PotionContentsComponent.createStack(Items.POTION, potion);
+            ItemStack newStack = potion.createStack(Items.POTION, 1);
             return stackReturn.returnStacks(oldStack, newStack) ? newFluid : fluid;
         }
 
@@ -132,15 +133,11 @@ public final class VanillaFluidCompat {
             if (stack.getItem() != Items.POTION) {
                 return Collections.emptySet();
             }
-            PotionContentsComponent potionComponent = stack.get(DataComponentTypes.POTION_CONTENTS);
-            if (potionComponent == null) {
+            PotionContents potion = PotionContents.fromStack(stack);
+            if (potion == null) {
                 return Collections.emptySet();
             }
-            Optional<RegistryEntry<Potion>> potion = potionComponent.potion();
-            if (potion.isEmpty()) {
-                return Collections.emptySet();
-            }
-            FluidKey key = FluidKeys.get(potion.get());
+            FluidKey key = FluidKeys.get(potion);
             return key.isEmpty() ? Collections.emptySet() : Collections.singleton(key);
         }
 
@@ -150,15 +147,11 @@ public final class VanillaFluidCompat {
             if (stack.getItem() != Items.POTION) {
                 return FluidInvStatistic.emptyOf(filter);
             }
-            PotionContentsComponent potionComponent = stack.get(DataComponentTypes.POTION_CONTENTS);
-            if (potionComponent == null) {
+            PotionContents potion = PotionContents.fromStack(stack);
+            if (potion == null) {
                 return FluidInvStatistic.emptyOf(filter);
             }
-            Optional<RegistryEntry<Potion>> potion = potionComponent.potion();
-            if (potion.isEmpty()) {
-                return FluidInvStatistic.emptyOf(filter);
-            }
-            FluidKey key = FluidKeys.get(potion.get());
+            FluidKey key = FluidKeys.get(potion);
             if (key.isEmpty() || !filter.matches(key)) {
                 return FluidInvStatistic.emptyOf(filter);
             }
@@ -181,15 +174,11 @@ public final class VanillaFluidCompat {
             if (stack.getItem() != Items.POTION) {
                 return FluidVolumeUtil.EMPTY;
             }
-            PotionContentsComponent component = stack.get(DataComponentTypes.POTION_CONTENTS);
-            if (component == null) {
+            PotionContents potion = PotionContents.fromStack(stack);
+            if (potion == null) {
                 return FluidVolumeUtil.EMPTY;
             }
-            Optional<RegistryEntry<Potion>> potion = component.potion();
-            if (potion.isEmpty()) {
-                return FluidVolumeUtil.EMPTY;
-            }
-            FluidKey key = FluidKeys.get(potion.get());
+            FluidKey key = FluidKeys.get(potion);
             if (key.isEmpty() || !filter.matches(key)) {
                 return FluidVolumeUtil.EMPTY;
             }

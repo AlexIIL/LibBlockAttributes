@@ -28,6 +28,7 @@ import alexiil.mc.lib.attributes.fluid.mixin.api.IBucketItem;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKey;
 import alexiil.mc.lib.attributes.fluid.volume.FluidKeys;
 import alexiil.mc.lib.attributes.fluid.volume.FluidVolume;
+import alexiil.mc.lib.attributes.fluid.volume.PotionContents;
 import alexiil.mc.lib.attributes.fluid.volume.PotionFluidKey;
 import alexiil.mc.lib.attributes.misc.Ref;
 
@@ -40,16 +41,12 @@ public class PotionItemMixin extends Item implements FluidProviderItem, IBucketI
 
     @Override
     public FluidVolume drain(Ref<ItemStack> stack) {
-        PotionContentsComponent potionComponent = stack.obj.get(DataComponentTypes.POTION_CONTENTS);
-        if (potionComponent == null) {
-            return FluidVolumeUtil.EMPTY;
-        }
-        Optional<RegistryEntry<Potion>> potion = potionComponent.potion();
-        if (potion.isEmpty()) {
+        PotionContents potion = PotionContents.fromStack(stack.obj);
+        if (potion == null) {
             return FluidVolumeUtil.EMPTY;
         }
 
-        FluidKey fluidKey = FluidKeys.get(potion.get());
+        FluidKey fluidKey = FluidKeys.get(potion);
         if (fluidKey == null) {
             return FluidVolumeUtil.EMPTY;
         }
@@ -69,31 +66,27 @@ public class PotionItemMixin extends Item implements FluidProviderItem, IBucketI
 
     @Override
     public FluidKey libblockattributes__getFluid(ItemStack stack) {
-        PotionContentsComponent potionComponent = stack.get(DataComponentTypes.POTION_CONTENTS);
-        if (potionComponent == null) {
-            return FluidKeys.EMPTY;
-        }
-        Optional<RegistryEntry<Potion>> potion = potionComponent.potion();
-        if (potion.isEmpty()) {
+        PotionContents potion = PotionContents.fromStack(stack);
+        if (potion == null) {
             return FluidKeys.EMPTY;
         }
 
-        return FluidKeys.get(potion.get());
+        return FluidKeys.get(potion);
     }
 
     @Override
     public ItemStack libblockattributes__withFluid(FluidKey fluid) {
-        RegistryEntry<Potion> potion;
+        PotionContents potion;
         if (fluid instanceof PotionFluidKey) {
             potion = ((PotionFluidKey) fluid).potion;
         } else if (fluid == FluidKeys.WATER) {
-            potion = Potions.WATER;
+            potion = PotionContents.ofPotion(Potions.WATER);
         } else if (fluid == FluidKeys.EMPTY) {
             return new ItemStack(Items.GLASS_BOTTLE);
         } else {
             return ItemStack.EMPTY;
         }
-        return PotionContentsComponent.createStack(Items.POTION, potion);
+        return potion.createStack(Items.POTION, 1);
     }
 
     @Override
