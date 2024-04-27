@@ -29,7 +29,7 @@ license {
 dependencies {
     minecraft "com.mojang:minecraft:1.20.5"
     mappings "net.fabricmc:yarn:1.20.5+build.1:v2"
-    modCompileOnly "net.fabricmc:fabric-loader:0.15.9"
+    modCompileOnly "net.fabricmc:fabric-loader:0.15.10"
     modLocalRuntime "net.fabricmc:fabric-loader:0.15.9"
 
     //Fabric api
