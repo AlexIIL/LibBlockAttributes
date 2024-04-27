@@ -17,6 +17,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 
 import alexiil.mc.lib.attributes.Simulation;
 import alexiil.mc.lib.attributes.fluid.amount.FluidAmount;
@@ -425,6 +426,25 @@ public final class FluidVolumeUtil {
                 return ActionResult.SUCCESS;
             }
             return wasContainerValid() ? ActionResult.FAIL : ActionResult.PASS;
+        }
+
+        /** Converts this interaction result into a vanilla minecraft {@link ActionResult}, suitable for normal block or
+         * item "use" methods.
+         *
+         * @return
+         *         <ol>
+         *         <li>{@link ActionResult#SUCCESS} if {@link #didMoveAny()} returns true.</li>
+         *         <li>{@link ActionResult#FAIL} if {@link #wasContainerValid()} returns true.</li>
+         *         <li>{@link ActionResult#PASS} otherwise.</li>
+         *         </ol>
+         *         (This is based on the principle that attempting to use an empty bucket on an empty tank should return
+         *         {@link ActionResult#FAIL}, but using an unrelated item - such as an iron ingot - should return
+         *         {@link ActionResult#PASS}) */
+        public ItemActionResult asItemActionResult() {
+            if (didMoveAny()) {
+                return ItemActionResult.SUCCESS;
+            }
+            return wasContainerValid() ? ItemActionResult.FAIL : ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
         @Deprecated(since = "0.6.0", forRemoval = true)
