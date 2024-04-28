@@ -49,7 +49,7 @@ public abstract class FluidVolumeRenderer {
 
     public void renderGuiRectangle(FluidVolume fluid, double x0, double y0, double x1, double y1) {
         List<FluidRenderFace> faces = new ArrayList<>();
-        faces.add(FluidRenderFace.createFlatFaceZ(0, 0, 0, x1 - x0, y1 - y0, 0, 1 / 16.0, false, false));
+        faces.add(FluidRenderFace.createFlatFaceZ(0, 0, 0, x1 - x0, y1 - y0, 0, 1 / 16.0, false, false, FluidRenderFace.FULL_LIGHT));
 
         MatrixStack matrices = new MatrixStack();
         matrices.translate(x0, y0, 0);

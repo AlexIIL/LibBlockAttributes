@@ -133,29 +133,29 @@ public final class FluidRenderFace {
 
     public static void appendCuboid(
         double x0, double y0, double z0, double x1, double y1, double z1, double textureScale, EnumSet<Direction> faces,
-        List<FluidRenderFace> to
+        List<FluidRenderFace> to, int light
     ) {
-        appendCuboid(x0, y0, z0, x1, y1, z1, textureScale, faces, to, false);
+        appendCuboid(x0, y0, z0, x1, y1, z1, textureScale, faces, to, false, light);
     }
 
     public static void appendCuboid(
         double x0, double y0, double z0, double x1, double y1, double z1, double textureScale, EnumSet<Direction> faces,
-        List<FluidRenderFace> to, boolean flowing
+        List<FluidRenderFace> to, boolean flowing, int light
     ) {
         for (Direction face : faces) {
-            to.add(createFlatFace(x0, y0, z0, x1, y1, z1, textureScale, face, flowing));
+            to.add(createFlatFace(x0, y0, z0, x1, y1, z1, textureScale, face, flowing, light));
         }
     }
 
     public static FluidRenderFace createFlatFaceX(
-        double x0, double y0, double z0, double x1, double y1, double z1, double textureScale, boolean positive
+        double x0, double y0, double z0, double x1, double y1, double z1, double textureScale, boolean positive, int light
     ) {
-        return createFlatFaceX(x0, y0, z0, x1, y1, z1, textureScale, positive, false);
+        return createFlatFaceX(x0, y0, z0, x1, y1, z1, textureScale, positive, false, light);
     }
 
     public static FluidRenderFace createFlatFaceX(
         double x0, double y0, double z0, double x1, double y1, double z1, double textureScale, boolean positive,
-        boolean flowing
+        boolean flowing, int light
     ) {
         final double s = textureScale;
         if (positive) {
@@ -164,7 +164,7 @@ public final class FluidRenderFace {
                 x1, y1, z0, z0 * s, y1 * s, //
                 x1, y1, z1, z1 * s, y1 * s, //
                 x1, y0, z1, z1 * s, y0 * s, //
-                FULL_LIGHT, +1, 0, 0, flowing
+                light, +1, 0, 0, flowing
             );
         } else {
             return new FluidRenderFace(
@@ -172,20 +172,20 @@ public final class FluidRenderFace {
                 x0, y0, z1, z1 * s, y0 * s, //
                 x0, y1, z1, z1 * s, y1 * s, //
                 x0, y1, z0, z0 * s, y1 * s, //
-                FULL_LIGHT, -1, 0, 0, flowing
+                light, -1, 0, 0, flowing
             );
         }
     }
 
     public static FluidRenderFace createFlatFaceY(
-        double x0, double y0, double z0, double x1, double y1, double z1, double textureScale, boolean positive
+        double x0, double y0, double z0, double x1, double y1, double z1, double textureScale, boolean positive, int light
     ) {
-        return createFlatFaceY(x0, y0, z0, x1, y1, z1, textureScale, positive, false);
+        return createFlatFaceY(x0, y0, z0, x1, y1, z1, textureScale, positive, false, light);
     }
 
     public static FluidRenderFace createFlatFaceY(
         double x0, double y0, double z0, double x1, double y1, double z1, double textureScale, boolean positive,
-        boolean flowing
+        boolean flowing, int light
     ) {
         final double s = textureScale;
         if (positive) {
@@ -194,7 +194,7 @@ public final class FluidRenderFace {
                 x0, y1, z1, x0 * s, z1 * s, //
                 x1, y1, z1, x1 * s, z1 * s, //
                 x1, y1, z0, x1 * s, z0 * s, //
-                FULL_LIGHT, 0, +1, 0, flowing
+                light, 0, +1, 0, flowing
             );
         } else {
             return new FluidRenderFace(
@@ -202,20 +202,20 @@ public final class FluidRenderFace {
                 x1, y0, z0, x1 * s, z0 * s, //
                 x1, y0, z1, x1 * s, z1 * s, //
                 x0, y0, z1, x0 * s, z1 * s, //
-                FULL_LIGHT, 0, -1, 0, flowing
+                light, 0, -1, 0, flowing
             );
         }
     }
 
     public static FluidRenderFace createFlatFaceZ(
-        double x0, double y0, double z0, double x1, double y1, double z1, double textureScale, boolean positive
+        double x0, double y0, double z0, double x1, double y1, double z1, double textureScale, boolean positive, int light
     ) {
-        return createFlatFaceZ(x0, y0, z0, x1, y1, z1, textureScale, positive, false);
+        return createFlatFaceZ(x0, y0, z0, x1, y1, z1, textureScale, positive, false, light);
     }
 
     public static FluidRenderFace createFlatFaceZ(
         double x0, double y0, double z0, double x1, double y1, double z1, double textureScale, boolean positive,
-        boolean flowing
+        boolean flowing, int light
     ) {
         final double s = textureScale;
         if (positive) {
@@ -224,7 +224,7 @@ public final class FluidRenderFace {
                 x1, y0, z1, x1 * s, y0 * s, //
                 x1, y1, z1, x1 * s, y1 * s, //
                 x0, y1, z1, x0 * s, y1 * s, //
-                FULL_LIGHT, 0, 0, +1, flowing
+                light, 0, 0, +1, flowing
             );
         } else {
             return new FluidRenderFace(
@@ -232,34 +232,34 @@ public final class FluidRenderFace {
                 x0, y1, z0, x0 * s, y1 * s, //
                 x1, y1, z0, x1 * s, y1 * s, //
                 x1, y0, z0, x1 * s, y0 * s, //
-                FULL_LIGHT, 0, 0, -1, flowing
+                light, 0, 0, -1, flowing
             );
         }
     }
 
     public static FluidRenderFace createFlatFace(
-        double x0, double y0, double z0, double x1, double y1, double z1, double textureScale, Direction face
+        double x0, double y0, double z0, double x1, double y1, double z1, double textureScale, Direction face, int light
     ) {
-        return createFlatFace(x0, y0, z0, x1, y1, z1, textureScale, face, false);
+        return createFlatFace(x0, y0, z0, x1, y1, z1, textureScale, face, false, light);
     }
 
     public static FluidRenderFace createFlatFace(
         double x0, double y0, double z0, double x1, double y1, double z1, double textureScale, Direction face,
-        boolean flowing
+        boolean flowing, int light
     ) {
         switch (face) {
             case DOWN:
-                return createFlatFaceY(x0, y0, z0, x1, y1, z1, textureScale, false, flowing);
+                return createFlatFaceY(x0, y0, z0, x1, y1, z1, textureScale, false, flowing, light);
             case UP:
-                return createFlatFaceY(x0, y0, z0, x1, y1, z1, textureScale, true, flowing);
+                return createFlatFaceY(x0, y0, z0, x1, y1, z1, textureScale, true, flowing, light);
             case NORTH:
-                return createFlatFaceZ(x0, y0, z0, x1, y1, z1, textureScale, false, flowing);
+                return createFlatFaceZ(x0, y0, z0, x1, y1, z1, textureScale, false, flowing, light);
             case SOUTH:
-                return createFlatFaceZ(x0, y0, z0, x1, y1, z1, textureScale, true, flowing);
+                return createFlatFaceZ(x0, y0, z0, x1, y1, z1, textureScale, true, flowing, light);
             case WEST:
-                return createFlatFaceX(x0, y0, z0, x1, y1, z1, textureScale, false, flowing);
+                return createFlatFaceX(x0, y0, z0, x1, y1, z1, textureScale, false, flowing, light);
             case EAST:
-                return createFlatFaceX(x0, y0, z0, x1, y1, z1, textureScale, true, flowing);
+                return createFlatFaceX(x0, y0, z0, x1, y1, z1, textureScale, true, flowing, light);
             default: {
                 throw new IllegalStateException("Unknown Direction " + face);
             }

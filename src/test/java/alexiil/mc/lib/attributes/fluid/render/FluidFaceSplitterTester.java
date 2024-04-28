@@ -17,7 +17,7 @@ public class FluidFaceSplitterTester {
     public void printFace() {
         double l = 0.25;
         double h = 0.75;
-        FluidRenderFace face = FluidRenderFace.createFlatFaceZ(l, l, 0, h, h, 0, 1, true);
+        FluidRenderFace face = FluidRenderFace.createFlatFaceZ(l, l, 0, h, h, 0, 1, true, FluidRenderFace.FULL_LIGHT);
         System.out.println(face);
 
         System.out.println("SPLIT:");
