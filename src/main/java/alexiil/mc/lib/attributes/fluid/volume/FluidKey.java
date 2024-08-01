@@ -66,7 +66,7 @@ public abstract class FluidKey {
     /** The default {@link #density} (and {@link #thermalCapacity}) that gases use: 1/160. */
     public static final FluidAmount DEFAULT_GAS_DENSITY = FluidAmount.of(1, 160);
 
-    private static final Identifier MISSING_SPRITE = new Identifier("minecraft", "missingno");
+    private static final Identifier MISSING_SPRITE = Identifier.ofVanilla("missingno");
 
     public static final JsonDeserializer<FluidKey> DESERIALIZER = (json, type, ctx) -> {
         if (json.isJsonNull()) {

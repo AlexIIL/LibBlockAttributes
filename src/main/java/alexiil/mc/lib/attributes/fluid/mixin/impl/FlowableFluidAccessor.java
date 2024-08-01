@@ -15,6 +15,6 @@ import net.minecraft.world.WorldView;
 
 @Mixin(FlowableFluid.class)
 public interface FlowableFluidAccessor {
-    @Invoker("getFlowSpeed")
-    int lba_getFlowSpeed(WorldView worldView);
+    @Invoker("getMaxFlowDistance")
+    int lba_getMaxFlowDistance(WorldView worldView);
 }

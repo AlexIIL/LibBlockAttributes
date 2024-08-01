@@ -30,6 +30,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.texture.SpriteAtlasTexture;
+import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.screen.PlayerScreenHandler;
@@ -226,7 +227,6 @@ public abstract class FluidVolumeRenderer {
         vc.overlay(OverlayTexture.DEFAULT_UV);
         vc.light(light);
         vc.normal(matrices.peek(), nx, ny, nz);
-        vc.next();
     }
 
     public static final class ComponentRenderFaces {
@@ -248,8 +248,8 @@ public abstract class FluidVolumeRenderer {
         private final List<RenderLayer> translucent = new ArrayList<>();
         private final List<RenderLayer> after = new ArrayList<>();
 
-        private final List<BufferBuilder> availableBuffers = new ArrayList<>();
-        private final Map<RenderLayer, BufferBuilder> activeBuffers = new HashMap<>();
+        private final Map<RenderLayer, BufferAllocator> layerBuffers = new HashMap<>();
+        private final Map<RenderLayer, BufferBuilder> pending = new HashMap<>();
         private final Set<RenderLayer> knownLayers = new HashSet<>();
 
         public ExpandingVcp() {
@@ -264,6 +264,7 @@ public abstract class FluidVolumeRenderer {
 
         public void addLayer(RenderLayer layer) {
             if (knownLayers.add(layer)) {
+                layerBuffers.put(layer, new BufferAllocator(1 << 12));
                 if (((RenderLayerAccessor) layer).libblockattributes_isTranslucent()) {
                     translucent.add(layer);
                 } else {
@@ -274,18 +275,21 @@ public abstract class FluidVolumeRenderer {
 
         public void addLayerBefore(RenderLayer layer) {
             if (knownLayers.add(layer)) {
+                layerBuffers.put(layer, new BufferAllocator(1 << 12));
                 before.add(layer);
             }
         }
 
         public void addLayerMiddle(RenderLayer layer) {
             if (knownLayers.add(layer)) {
+                layerBuffers.put(layer, new BufferAllocator(1 << 12));
                 middle.add(layer);
             }
         }
 
         public void addLayerAfter(RenderLayer layer) {
             if (knownLayers.add(layer)) {
+                layerBuffers.put(layer, new BufferAllocator(1 << 12));
                 after.add(layer);
             }
         }
@@ -293,17 +297,12 @@ public abstract class FluidVolumeRenderer {
         @Override
         public VertexConsumer getBuffer(RenderLayer layer) {
             addLayer(layer);
-            BufferBuilder buffer = activeBuffers.get(layer);
+            BufferBuilder buffer = pending.get(layer);
             if (buffer == null) {
-                if (availableBuffers.isEmpty()) {
-                    buffer = new BufferBuilder(1 << 12);
-                } else {
-                    buffer = availableBuffers.remove(availableBuffers.size() - 1);
-                }
-                activeBuffers.put(layer, buffer);
-            }
-            if (!buffer.isBuilding()) {
-                buffer.begin(layer.getDrawMode(), layer.getVertexFormat());
+                // should never be null, thanks to addLayer
+                BufferAllocator allocator = layerBuffers.get(layer);
+                buffer = new BufferBuilder(allocator, layer.getDrawMode(), layer.getVertexFormat());
+                pending.put(layer, buffer);
             }
             return buffer;
         }
@@ -324,14 +323,14 @@ public abstract class FluidVolumeRenderer {
             draw(middle);
             draw(translucent);
             draw(after);
-            assert activeBuffers.isEmpty();
+            assert pending.isEmpty();
         }
 
         private void draw(List<RenderLayer> layers) {
             for (RenderLayer layer : layers) {
-                BufferBuilder buffer = activeBuffers.remove(layer);
+                BufferBuilder buffer = pending.remove(layer);
                 if (buffer != null) {
-                    layer.draw(buffer, RenderSystem.getVertexSorting());
+                    layer.draw(buffer.end());
                 }
             }
         }

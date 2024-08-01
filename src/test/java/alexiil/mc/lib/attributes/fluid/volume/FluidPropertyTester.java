@@ -27,7 +27,7 @@ public class FluidPropertyTester extends VanillaSetupBaseTester {
     @Test
     public void testFluidProperty() {
         FluidKey mana = new SimpleFluidKey(
-            new FluidKeyBuilder(new Identifier("lba_test:mana"))//
+            new FluidKeyBuilder(Identifier.of("lba_test:mana"))//
                 .setName(Text.literal("Mana"))//
                 .setUnit(FluidUnit.BOTTLE)//
         );
@@ -65,7 +65,7 @@ public class FluidPropertyTester extends VanillaSetupBaseTester {
         public static final PurityProp INSTANCE = new PurityProp();
 
         private PurityProp() {
-            super(new Identifier("lba_test:purity"), Purity.class, Purity.NONE);
+            super(Identifier.of("lba_test:purity"), Purity.class, Purity.NONE);
         }
 
         @Override

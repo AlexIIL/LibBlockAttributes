@@ -42,7 +42,7 @@ import alexiil.mc.lib.attributes.fluid.volume.FluidKey.FluidKeyBuilder;
 public final class FluidKeys {
     private FluidKeys() {}
 
-    public static final Identifier MISSING_SPRITE = new Identifier("minecraft", "missingno");
+    public static final Identifier MISSING_SPRITE = Identifier.ofVanilla("missingno");
 
     public static final FluidKey EMPTY;
     public static final FluidKey LAVA;

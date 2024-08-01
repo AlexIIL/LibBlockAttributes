@@ -38,7 +38,7 @@ public class LibBlockAttributes {
         }
 
         public Identifier id(String path) {
-            return new Identifier(id, path);
+            return Identifier.of(id, path);
         }
 
         @Nullable
@@ -48,6 +48,6 @@ public class LibBlockAttributes {
     }
 
     public static Identifier id(String path) {
-        return new Identifier(MODID, path);
+        return Identifier.of(MODID, path);
     }
 }
